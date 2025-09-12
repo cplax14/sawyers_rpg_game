@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sawyer's RPG Game</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas" width="800" height="600"></canvas>
+        
+        <!-- UI Overlay for game screens -->
+        <div id="ui-overlay">
+            <!-- Main Menu Screen -->
+            <div id="main-menu" class="screen active">
+                <h1>Sawyer's RPG Game</h1>
+                <div class="menu-buttons">
+                    <button id="new-game-btn" class="btn primary">New Game</button>
+                    <button id="load-game-btn" class="btn secondary">Load Game</button>
+                    <button id="settings-btn" class="btn secondary">Settings</button>
+                </div>
+            </div>
+
+            <!-- Character Selection Screen -->
+            <div id="character-select" class="screen">
+                <h2>Choose Your Class</h2>
+                <div class="character-classes">
+                    <div class="class-card" data-class="knight">
+                        <h3>Knight</h3>
+                        <p>Strong defense and sword mastery</p>
+                    </div>
+                    <div class="class-card" data-class="wizard">
+                        <h3>Wizard</h3>
+                        <p>Master of elemental magic</p>
+                    </div>
+                    <div class="class-card" data-class="rogue">
+                        <h3>Rogue</h3>
+                        <p>Swift and sneaky combatant</p>
+                    </div>
+                    <div class="class-card" data-class="paladin">
+                        <h3>Paladin</h3>
+                        <p>Holy warrior with healing powers</p>
+                    </div>
+                    <div class="class-card" data-class="ranger">
+                        <h3>Ranger</h3>
+                        <p>Nature's guardian with bow mastery</p>
+                    </div>
+                    <div class="class-card" data-class="warrior">
+                        <h3>Warrior</h3>
+                        <p>Fierce fighter with axe expertise</p>
+                    </div>
+                </div>
+                <button id="start-adventure-btn" class="btn primary" disabled>Start Adventure</button>
+            </div>
+
+            <!-- Game World Screen -->
+            <div id="game-world" class="screen">
+                <!-- World map and exploration interface -->
+            </div>
+
+            <!-- Combat Screen -->
+            <div id="combat" class="screen">
+                <!-- Turn-based combat interface -->
+            </div>
+
+            <!-- Monster Management Screen -->
+            <div id="monster-management" class="screen">
+                <!-- Monster party and storage interface -->
+            </div>
+
+            <!-- Inventory Screen -->
+            <div id="inventory" class="screen">
+                <!-- Equipment and items interface -->
+            </div>
+
+            <!-- Settings Screen -->
+            <div id="settings" class="screen">
+                <h2>Settings</h2>
+                <div class="settings-options">
+                    <div class="setting-row">
+                        <label>Master Volume:</label>
+                        <input type="range" id="master-volume" min="0" max="100" value="50">
+                    </div>
+                    <div class="setting-row">
+                        <label>Sound Effects:</label>
+                        <input type="range" id="sfx-volume" min="0" max="100" value="75">
+                    </div>
+                    <div class="setting-row">
+                        <label>Auto-Save:</label>
+                        <input type="checkbox" id="auto-save" checked>
+                    </div>
+                </div>
+                <button id="back-to-menu-btn" class="btn secondary">Back to Menu</button>
+            </div>
+        </div>
+
+        <!-- Game HUD (always visible during gameplay) -->
+        <div id="game-hud" class="hidden">
+            <div class="hud-section player-stats">
+                <div class="stat">Level: <span id="player-level">1</span></div>
+                <div class="stat">HP: <span id="player-hp">100</span>/<span id="player-max-hp">100</span></div>
+                <div class="stat">MP: <span id="player-mp">50</span>/<span id="player-max-mp">50</span></div>
+                <div class="stat">Gold: <span id="player-gold">0</span></div>
+            </div>
+            
+            <div class="hud-section action-buttons">
+                <button id="world-map-btn" class="btn hud">Map</button>
+                <button id="monsters-btn" class="btn hud">Monsters</button>
+                <button id="inventory-btn" class="btn hud">Inventory</button>
+                <button id="save-game-btn" class="btn hud">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load JavaScript modules -->
+    <script src="js/gameState.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/player.js"></script>
+    <script src="js/monster.js"></script>
+    <script src="js/combat.js"></script>
+    <script src="js/worldMap.js"></script>
+    <script src="js/saveSystem.js"></script>
+    <script src="js/game.js"></script>
+    
+    <!-- Load game data -->
+    <script src="data/characters.js"></script>
+    <script src="data/monsters.js"></script>
+    <script src="data/areas.js"></script>
+    <script src="data/story.js"></script>
+</body>
+</html>

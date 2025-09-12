@@ -36,12 +36,12 @@
 
 ## Tasks
 
-- [ ] 1.0 Project Setup and Foundation
-  - [ ] 1.1 Create basic HTML5 structure with canvas element for game rendering
-  - [ ] 1.2 Set up CSS framework with fantasy-themed styling and responsive design
-  - [ ] 1.3 Create main JavaScript entry point with game initialization
-  - [ ] 1.4 Set up project directory structure for assets, data, and modules
-  - [ ] 1.5 Create basic testing framework using vanilla JavaScript assertions
+- [x] 1.0 Project Setup and Foundation
+  - [x] 1.1 Create basic HTML5 structure with canvas element for game rendering
+  - [x] 1.2 Set up CSS framework with fantasy-themed styling and responsive design
+  - [x] 1.3 Create main JavaScript entry point with game initialization
+  - [x] 1.4 Set up project directory structure for assets, data, and modules
+  - [x] 1.5 Create basic testing framework using vanilla JavaScript assertions
 
 - [ ] 2.0 Core Game Engine and State Management
   - [ ] 2.1 Implement central game state manager to track all game data
