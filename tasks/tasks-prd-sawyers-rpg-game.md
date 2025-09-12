@@ -78,12 +78,12 @@
   - [x] 4.8 Create monster release functionality
 
 - [ ] 5.0 Combat System (Turn-based)
-  - [ ] 5.1 Implement turn-based combat engine with initiative order
-  - [ ] 5.2 Create combat actions (attack, magic, items, capture, flee)
-  - [ ] 5.3 Implement damage calculations and status effects
-  - [ ] 5.4 Add monster AI for enemy behavior patterns
-  - [ ] 5.5 Create combat rewards system (experience, gold, items)
-  - [ ] 5.6 Implement monster capture chance calculations
+  - [x] 5.1 Implement turn-based combat engine with initiative order
+  - [x] 5.2 Create combat actions (attack, magic, items, capture, flee)
+  - [x] 5.3 Implement damage calculations and status effects
+  - [x] 5.4 Add monster AI for enemy behavior patterns
+  - [x] 5.5 Create combat rewards system (experience, gold, items)
+  - [x] 5.6 Implement monster capture chance calculations
 
 - [ ] 6.0 World Map and Area Progression
   - [ ] 6.1 Create world map data structure with interconnected areas
