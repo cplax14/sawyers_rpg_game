@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sawyer's RPG Game - Test Runner</title>
+    <style>
+        body {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2d1b0e, #5d4037);
+            color: #d4af37;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+        
+        .controls {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            background: linear-gradient(145deg, #d4af37, #b8860b);
+            color: #2d1b0e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background: linear-gradient(145deg, #b8860b, #8b7355);
+            transform: translateY(-2px);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            accent-color: #d4af37;
+        }
+        
+        .checkbox-group label {
+            color: #e0e0e0;
+            cursor: pointer;
+        }
+        
+        .output {
+            background: #1e1e1e;
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            max-height: 70vh;
+        }
+        
+        .status {
+            background: #2a2a2a;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: none;
+        }
+        
+        .status.running {
+            background: #1a4d3a;
+            border-left: 4px solid #28a745;
+            display: block;
+        }
+        
+        .status.completed {
+            background: #3a3a1a;
+            border-left: 4px solid #ffc107;
+            display: block;
+        }
+        
+        .status.error {
+            background: #4d1a1a;
+            border-left: 4px solid #dc3545;
+            display: block;
+        }
+        
+        .test-info {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .test-info h3 {
+            color: #d4af37;
+            margin-top: 0;
+        }
+        
+        .test-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .test-file {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #d4af37;
+        }
+        
+        .test-file h4 {
+            margin-top: 0;
+            color: #d4af37;
+        }
+        
+        .test-file p {
+            margin: 5px 0;
+            color: #b0b0b0;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎮 Sawyer's RPG Game Test Suite</h1>
+        <p>Unit Testing Framework for Game Components</p>
+    </div>
+    
+    <div class="test-info">
+        <h3>📋 Available Test Suites</h3>
+        <div class="test-list">
+            <div class="test-file">
+                <h4>🎯 Core Game Tests</h4>
+                <p>• Game initialization and setup</p>
+                <p>• Game loop functionality</p>
+                <p>• Event handling systems</p>
+                <p>• Utility methods</p>
+            </div>
+            <div class="test-file">
+                <h4>📊 Data Module Tests</h4>
+                <p>• Character class definitions</p>
+                <p>• Monster species and breeding</p>
+                <p>• World areas and progression</p>
+                <p>• Story events and endings</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="controls">
+        <button id="run-all-tests" class="btn">🚀 Run All Tests</button>
+        <button id="run-game-tests" class="btn">🎯 Run Game Tests</button>
+        <button id="run-data-tests" class="btn">📊 Run Data Tests</button>
+        <button id="clear-output" class="btn">🧹 Clear Output</button>
+        
+        <div class="checkbox-group">
+            <input type="checkbox" id="verbose-mode" />
+            <label for="verbose-mode">Verbose Output</label>
+        </div>
+        
+        <div class="checkbox-group">
+            <input type="checkbox" id="auto-scroll" checked />
+            <label for="auto-scroll">Auto Scroll</label>
+        </div>
+    </div>
+    
+    <div id="status" class="status">
+        <span id="status-text">Ready to run tests</span>
+    </div>
+    
+    <div id="output" class="output">
+📌 Test Runner Ready
+
+Click "Run All Tests" to execute the complete test suite, or run individual test categories.
+
+Available Commands:
+• runTests() - Run all loaded tests
+• setVerbose(true) - Enable detailed output
+• TestFramework - Access the test framework directly
+
+Loaded Modules:
+• Test Framework: ✅
+• Game Data: Checking...
+• Game Engine: Checking...
+</div>
+
+    <!-- Load Test Framework -->
+    <script src="test-framework.js"></script>
+    
+    <!-- Load Game Data for Testing -->
+    <script src="../data/characters.js"></script>
+    <script src="../data/monsters.js"></script>
+    <script src="../data/areas.js"></script>
+    <script src="../data/story.js"></script>
+    
+    <!-- Load Game Engine for Testing (with mocking) -->
+    <script>
+        // Mock DOM elements for testing
+        const mockCanvas = document.createElement('canvas');
+        mockCanvas.id = 'game-canvas';
+        mockCanvas.width = 800;
+        mockCanvas.height = 600;
+        document.body.appendChild(mockCanvas);
+        
+        // Override some browser APIs for testing
+        window.requestAnimationFrame = window.requestAnimationFrame || ((callback) => {
+            return setTimeout(callback, 16);
+        });
+        window.cancelAnimationFrame = window.cancelAnimationFrame || clearTimeout;
+    </script>
+    <script src="../js/game.js"></script>
+    
+    <!-- Load Test Files -->
+    <script src="game.test.js"></script>
+    <script src="data.test.js"></script>
+    
+    <script>
+        // Test runner interface
+        const output = document.getElementById('output');
+        const status = document.getElementById('status');
+        const statusText = document.getElementById('status-text');
+        const verboseCheckbox = document.getElementById('verbose-mode');
+        const autoScrollCheckbox = document.getElementById('auto-scroll');
+        
+        let originalConsoleLog = console.log;
+        let originalConsoleError = console.error;
+        let originalConsoleWarn = console.warn;
+        
+        function setupConsoleCapture() {
+            console.log = (...args) => {
+                const message = args.map(arg => 
+                    typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+                ).join(' ');
+                
+                appendOutput(message);
+                originalConsoleLog.apply(console, args);
+            };
+            
+            console.error = (...args) => {
+                const message = '❌ ERROR: ' + args.join(' ');
+                appendOutput(message);
+                originalConsoleError.apply(console, args);
+            };
+            
+            console.warn = (...args) => {
+                const message = '⚠️ WARNING: ' + args.join(' ');
+                appendOutput(message);
+                originalConsoleWarn.apply(console, args);
+            };
+        }
+        
+        function restoreConsole() {
+            console.log = originalConsoleLog;
+            console.error = originalConsoleError;
+            console.warn = originalConsoleWarn;
+        }
+        
+        function appendOutput(text) {
+            output.textContent += text + '\n';
+            if (autoScrollCheckbox.checked) {
+                output.scrollTop = output.scrollHeight;
+            }
+        }
+        
+        function clearOutput() {
+            output.textContent = '📌 Output cleared. Ready for new test run.\n\n';
+        }
+        
+        function setStatus(type, message) {
+            status.className = `status ${type}`;
+            statusText.textContent = message;
+        }
+        
+        async function runAllTests() {
+            setStatus('running', 'Running all tests...');
+            clearOutput();
+            setupConsoleCapture();
+            
+            setVerbose(verboseCheckbox.checked);
+            
+            try {
+                appendOutput('🚀 Starting complete test suite...\n');
+                const results = await runTests();
+                
+                if (results.failed === 0) {
+                    setStatus('completed', `✅ All tests passed! (${results.passed}/${results.total})`);
+                } else {
+                    setStatus('error', `❌ ${results.failed} test(s) failed (${results.passed}/${results.total} passed)`);
+                }
+                
+            } catch (error) {
+                appendOutput(`\n❌ Test execution failed: ${error.message}`);
+                setStatus('error', 'Test execution failed');
+            } finally {
+                restoreConsole();
+            }
+        }
+        
+        async function runGameTests() {
+            setStatus('running', 'Running game tests...');
+            clearOutput();
+            setupConsoleCapture();
+            
+            setVerbose(verboseCheckbox.checked);
+            
+            try {
+                appendOutput('🎯 Running game-specific tests...\n');
+                // This would require filtering tests by suite - simplified for now
+                const results = await runTests();
+                setStatus('completed', 'Game tests completed');
+            } catch (error) {
+                appendOutput(`\n❌ Game test execution failed: ${error.message}`);
+                setStatus('error', 'Game tests failed');
+            } finally {
+                restoreConsole();
+            }
+        }
+        
+        async function runDataTests() {
+            setStatus('running', 'Running data tests...');
+            clearOutput();
+            setupConsoleCapture();
+            
+            setVerbose(verboseCheckbox.checked);
+            
+            try {
+                appendOutput('📊 Running data module tests...\n');
+                // This would require filtering tests by suite - simplified for now
+                const results = await runTests();
+                setStatus('completed', 'Data tests completed');
+            } catch (error) {
+                appendOutput(`\n❌ Data test execution failed: ${error.message}`);
+                setStatus('error', 'Data tests failed');
+            } finally {
+                restoreConsole();
+            }
+        }
+        
+        // Event listeners
+        document.getElementById('run-all-tests').addEventListener('click', runAllTests);
+        document.getElementById('run-game-tests').addEventListener('click', runGameTests);
+        document.getElementById('run-data-tests').addEventListener('click', runDataTests);
+        document.getElementById('clear-output').addEventListener('click', clearOutput);
+        
+        // Initialize
+        setTimeout(() => {
+            appendOutput('✅ Test environment initialized');
+            appendOutput(`✅ Modules loaded: CharacterData=${typeof CharacterData !== 'undefined'}, MonsterData=${typeof MonsterData !== 'undefined'}, AreaData=${typeof AreaData !== 'undefined'}, StoryData=${typeof StoryData !== 'undefined'}`);
+            appendOutput(`✅ Game engine: SawyersRPG=${typeof SawyersRPG !== 'undefined'}`);
+            appendOutput('\n📋 Ready to run tests! Click a button above to start.\n');
+        }, 100);
+    </script>
+</body>
+</html>
