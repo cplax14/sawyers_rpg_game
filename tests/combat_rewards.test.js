@@ -1,0 +1,74 @@
+/**
+ * Unit Tests for Combat Rewards (5.5)
+ */
+
+describe('Combat Rewards Tests', () => {
+    let game;
+    let gameState;
+
+    beforeAll(() => {
+        assertTruthy(typeof window.SawyersRPG !== 'undefined', 'Global game instance should be defined');
+        game = window.SawyersRPG;
+        assertTruthy(typeof game.getGameState === 'function', 'Global game instance should expose getGameState');
+        gameState = game.getGameState();
+        assertTruthy(gameState, 'GameState should be available');
+        if (!gameState.combatEngine) gameState.initializeCombatEngine();
+    });
+
+    beforeEach(() => {
+        // Reset state and inventory
+        gameState.resetCombat();
+        gameState.player.level = 1;
+        gameState.player.experience = 0;
+        gameState.player.experienceToNext = gameState.calculateExperienceRequired(2);
+        gameState.player.inventory.items = {};
+        if (!gameState.combatEngine) gameState.initializeCombatEngine();
+    });
+
+    function makeParticipants() {
+        // Two enemies to ensure aggregate rewards
+        const player = new Monster('slime', 10, false);
+        player.currentStats = { hp: player.stats.hp, mp: player.stats.mp };
+        const e1 = new Monster('goblin', 5, true);
+        const e2 = new Monster('wolf', 7, true);
+        e1.currentStats = { hp: e1.stats.hp, mp: e1.stats.mp };
+        e2.currentStats = { hp: e2.stats.hp, mp: e2.stats.mp };
+        const participants = [
+            { id: 'P', side: 'player', speed: player.stats.speed, ref: player },
+            { id: 'E1', side: 'enemy', speed: e1.stats.speed, ref: e1 },
+            { id: 'E2', side: 'enemy', speed: e2.stats.speed, ref: e2 }
+        ];
+        return { player, e1, e2, participants };
+    }
+
+    it('grants XP and gold on victory and may drop items', () => {
+        const { participants } = makeParticipants();
+        gameState.combatEngine.startBattle(participants);
+        const defeated = participants.filter(p => p.side === 'enemy');
+
+        // Force drops by RNG
+        const originalRandom = Math.random;
+        Math.random = () => 0.0;
+        try {
+            const beforeXP = gameState.player.experience;
+            const beforeGold = gameState.player.inventory.gold;
+            const beforeItems = { ...gameState.player.inventory.items };
+
+            gameState.combatEngine.endBattle({ victory: true, defeated });
+
+            // XP: level*10 => (5*10 + 7*10) = 120
+            assertTruthy(gameState.player.experience >= beforeXP + 120 || gameState.player.level > 1, 'Player should gain XP or level up');
+            // Gold: level*3 => (5*3 + 7*3) = 36
+            assertEqual(gameState.player.inventory.gold, beforeGold + 36, 'Player should gain expected gold');
+            // Drops should include at least one health_potion when RNG forced to 0
+            const potions = gameState.player.inventory.items['health_potion'] || 0;
+            assertTruthy(potions >= 1, 'Should receive at least one health_potion drop');
+        } finally {
+            Math.random = originalRandom;
+        }
+    });
+});
+
+if (typeof window !== 'undefined') {
+    console.log('🧪 Combat rewards tests loaded.');
+}

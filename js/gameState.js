@@ -107,6 +107,8 @@ class GameState {
             
             // Initialize breeding system if available
             this.initializeBreedingSystem();
+            // Initialize combat engine if available
+            this.initializeCombatEngine();
             
             this.initialized = true;
             console.log('✅ GameState initialized');
@@ -198,6 +200,22 @@ class GameState {
             }
         } else {
             console.warn('⚠️ MonsterBreedingSystem not loaded');
+        }
+    }
+    
+    /**
+     * Initialize combat engine wrapper
+     */
+    initializeCombatEngine() {
+        this.combatEngine = null;
+        if (typeof CombatEngine !== 'undefined') {
+            try {
+                this.combatEngine = new CombatEngine(this);
+            } catch (e) {
+                console.warn('⚠️ Failed to initialize CombatEngine:', e);
+            }
+        } else {
+            console.warn('⚠️ CombatEngine not loaded');
         }
     }
     
