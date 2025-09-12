@@ -19,6 +19,11 @@ class Monster {
         // Initialize stats and properties
         this.experience = 0;
         this.experienceToNext = this.calculateExperienceForLevel(level + 1);
+        // Individual characteristics (must be ready before stats calc)
+        this.personality = this.generatePersonality();
+        this.individualValues = this.generateIVs();
+
+        // Now that IVs exist, calculate stats
         this.stats = this.calculateStats();
         this.currentStats = {
             hp: this.stats.hp,
@@ -28,10 +33,6 @@ class Monster {
         // Abilities and moves
         this.abilities = [...this.speciesData.abilities];
         this.learnedMoves = this.getMovesForLevel(level);
-        
-        // Individual characteristics
-        this.personality = this.generatePersonality();
-        this.individualValues = this.generateIVs();
         this.nickname = null;
         this.friendship = isWild ? 0 : 50;
         
@@ -392,18 +393,42 @@ class Monster {
         // Check level requirement
         if (this.level < evolutionData.level) return false;
         
-        // Check item requirements (would need to check player inventory)
-        if (evolutionData.items && evolutionData.items.length > 0) {
-            // This would need to be checked against player inventory
-            // For now, assume items are available
+        // If items are required, verify player has them and confirm consumption
+        const itemsRequired = Array.isArray(evolutionData.items) ? evolutionData.items : [];
+        if (itemsRequired.length > 0) {
+            const gameState = this.getGameState();
+            if (!gameState) {
+                console.warn('GameState not available; cannot verify evolution items.');
+                return false;
+            }
+            // Verify inventory
+            if (!this.hasRequiredItems(itemsRequired, gameState)) {
+                gameState.addNotification('Missing required items for evolution', 'error');
+                return false;
+            }
+            // Simple confirmation UX
+            const itemList = itemsRequired.join(', ');
+            const confirmed = typeof window !== 'undefined' ? window.confirm(
+                `Evolve ${this.getDisplayName()} using required items: ${itemList}?`
+            ) : true;
+            if (!confirmed) return false;
         }
         
         // Evolution is possible
         const possibleEvolutions = evolutionData.possibleEvolutions;
         if (possibleEvolutions.length > 0) {
-            // For now, evolve to the first available evolution
             const newSpecies = possibleEvolutions[0];
+            const gameState = this.getGameState();
+            // Consume items if required
+            const itemsRequired = Array.isArray(evolutionData.items) ? evolutionData.items : [];
+            if (itemsRequired.length > 0 && gameState) {
+                this.consumeEvolutionItems(itemsRequired, gameState);
+                gameState.addNotification(`Used items for evolution: ${itemsRequired.join(', ')}`, 'item');
+            }
             this.evolve(newSpecies);
+            if (gameState) {
+                gameState.addNotification(`${this.getDisplayName()} evolved into ${this.speciesData?.name || newSpecies}!`, 'success');
+            }
             return true;
         }
         
@@ -445,6 +470,45 @@ class Monster {
         console.log(`${oldName} evolved into ${this.getDisplayName()}!`);
         
         return true;
+    }
+
+    /**
+     * Helpers for evolution item checks/consumption
+     */
+    getGameState() {
+        try {
+            if (typeof window !== 'undefined' && window.SawyersRPG && typeof window.SawyersRPG.getGameState === 'function') {
+                return window.SawyersRPG.getGameState();
+            }
+        } catch (e) {
+            // ignore
+        }
+        return null;
+    }
+    
+    hasRequiredItems(items, gameState) {
+        if (!gameState || !Array.isArray(items) || items.length === 0) return true;
+        const inv = gameState.player?.inventory?.items || {};
+        // All items listed are required once each
+        return items.every(itemId => (inv[itemId] || 0) >= 1);
+    }
+    
+    consumeEvolutionItems(items, gameState) {
+        if (!gameState || !Array.isArray(items) || items.length === 0) return;
+        for (const itemId of items) {
+            // Remove one of each required item
+            if (typeof gameState.removeItem === 'function') {
+                gameState.removeItem(itemId, 1);
+            } else {
+                // Fallback direct decrement if needed
+                if (gameState.player?.inventory?.items?.[itemId]) {
+                    gameState.player.inventory.items[itemId] = Math.max(0, gameState.player.inventory.items[itemId] - 1);
+                    if (gameState.player.inventory.items[itemId] === 0) {
+                        delete gameState.player.inventory.items[itemId];
+                    }
+                }
+            }
+        }
     }
     
     /**

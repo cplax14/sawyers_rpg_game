@@ -58,14 +58,24 @@
   - [x] 3.5 Add spell learning system with class-specific magic abilities
 
 - [ ] 4.0 Monster System (Capture, Evolution, Breeding)
-  - [ ] 4.1 Create monster class with stats, abilities, and evolution data
-  - [ ] 4.2 Implement monster capture mechanics during combat encounters
-  - [ ] 4.3 Create monster storage system with unlimited capacity
-  - [ ] 4.4 Implement active party management (limit 3 monsters)
-  - [ ] 4.5 Create monster evolution system based on level and items
+  - [x] 4.1 Create monster class with stats, abilities, and evolution data
+  - [x] 4.2 Implement monster capture mechanics during combat encounters
+  - [x] 4.3 Create monster storage system with unlimited capacity
+  - [x] 4.4 Implement active party management (limit 3 monsters)
+  - [x] 4.5 Create monster evolution system based on level and items
+    - [x] Integrate item-requirement check with `GameState.player.inventory` in evolution flow
+    - [x] Consume required items upon evolution and provide UX confirmation
+    - [x] Add tests for level-based and item-based evolution
   - [ ] 4.6 Implement monster breeding mechanics to create new species
+    - [ ] Wire `MonsterBreedingSystem` into `GameState` and UI for selecting pairs and initiating breeding
+    - [ ] Enforce cooldowns and maintain breeding history
+    - [ ] Add offspring to storage with proper initialization and notifications
+    - [ ] Add tests for compatibility, cooldown, and offspring outcomes
   - [ ] 4.7 Add skill learning system for captured monsters
-  - [ ] 4.8 Create monster release functionality
+    - [ ] Add item-based skill teaching (e.g., scrolls), including UI and inventory consumption
+    - [ ] Implement move slot management and move replacement flow
+    - [ ] Add tests for teaching/forgetting logic
+  - [x] 4.8 Create monster release functionality
 
 - [ ] 5.0 Combat System (Turn-based)
   - [ ] 5.1 Implement turn-based combat engine with initiative order
