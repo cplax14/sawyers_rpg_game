@@ -66,15 +66,15 @@
     - [x] Integrate item-requirement check with `GameState.player.inventory` in evolution flow
     - [x] Consume required items upon evolution and provide UX confirmation
     - [x] Add tests for level-based and item-based evolution
-  - [ ] 4.6 Implement monster breeding mechanics to create new species
-    - [ ] Wire `MonsterBreedingSystem` into `GameState` and UI for selecting pairs and initiating breeding
-    - [ ] Enforce cooldowns and maintain breeding history
-    - [ ] Add offspring to storage with proper initialization and notifications
-    - [ ] Add tests for compatibility, cooldown, and offspring outcomes
-  - [ ] 4.7 Add skill learning system for captured monsters
-    - [ ] Add item-based skill teaching (e.g., scrolls), including UI and inventory consumption
-    - [ ] Implement move slot management and move replacement flow
-    - [ ] Add tests for teaching/forgetting logic
+  - [x] 4.6 Implement monster breeding mechanics to create new species
+    - [x] Wire `MonsterBreedingSystem` into `GameState` and UI for selecting pairs and initiating breeding
+    - [x] Enforce cooldowns and maintain breeding history
+    - [x] Add offspring to storage with proper initialization and notifications
+    - [x] Add tests for compatibility, cooldown, and offspring outcomes
+  - [x] 4.7 Add skill learning system for captured monsters
+    - [x] Add item-based skill teaching (e.g., scrolls), including UI and inventory consumption
+    - [x] Implement move slot management and move replacement flow
+    - [x] Add tests for teaching/forgetting logic
   - [x] 4.8 Create monster release functionality
 
 - [ ] 5.0 Combat System (Turn-based)

@@ -157,6 +157,42 @@ class Monster {
         return levelMoves;
     }
     
+    /**
+     * Check if this monster can learn a move
+     */
+    canLearnMove(moveId) {
+        if (!moveId) return { canLearn: false, reason: 'Invalid move' };
+        if (this.learnedMoves.includes(moveId)) {
+            return { canLearn: false, reason: 'Already knows this move' };
+        }
+        // Placeholder: allow all scroll moves for now
+        return { canLearn: true };
+    }
+    
+    /**
+     * Learn a move, optionally replacing an existing one if at capacity
+     */
+    learnMove(moveId, replaceIndex = null) {
+        const check = this.canLearnMove(moveId);
+        if (!check.canLearn) return { success: false, reason: check.reason };
+        
+        if (this.learnedMoves.length < 4) {
+            this.learnedMoves.push(moveId);
+            console.log(`${this.getDisplayName()} learned ${moveId}!`);
+            return { success: true };
+        }
+        
+        // Must replace when at capacity
+        const idx = Number.isInteger(replaceIndex) ? replaceIndex : -1;
+        if (idx < 0 || idx >= this.learnedMoves.length) {
+            return { success: false, reason: 'Move slots full; specify valid replace index (0-3)' };
+        }
+        const old = this.learnedMoves[idx];
+        this.learnedMoves[idx] = moveId;
+        console.log(`${this.getDisplayName()} forgot ${old} and learned ${moveId}!`);
+        return { success: true, replaced: old };
+    }
+    
     // ================================================
     // LEVEL PROGRESSION
     // ================================================
