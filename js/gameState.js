@@ -1,0 +1,835 @@
+/**
+ * Game State Manager
+ * Central system for tracking all game data, progress, and state
+ */
+
+class GameState {
+    constructor() {
+        this.initialized = false;
+        this.currentScene = 'main_menu';
+        this.previousScene = null;
+        
+        // Player data
+        this.player = {
+            name: '',
+            class: null,
+            level: 1,
+            experience: 0,
+            experienceToNext: 100,
+            stats: {},
+            spells: [],
+            equipment: {
+                weapon: null,
+                armor: null,
+                accessory: null
+            },
+            inventory: {
+                items: {},
+                gold: 100
+            }
+        };
+        
+        // Monster collection
+        this.monsters = {
+            party: [], // Active party (max 3)
+            storage: [], // All captured monsters
+            nextId: 1
+        };
+        
+        // World and story progress
+        this.world = {
+            currentArea: 'starting_village',
+            unlockedAreas: ['starting_village'],
+            storyFlags: [],
+            completedEvents: [],
+            currentStoryPath: null
+        };
+        
+        // Game settings
+        this.settings = {
+            masterVolume: 0.5,
+            sfxVolume: 0.75,
+            musicVolume: 0.5,
+            autoSave: true,
+            keyBindings: {
+                confirm: 'Enter',
+                cancel: 'Escape',
+                menu: 'KeyM',
+                inventory: 'KeyI',
+                monsters: 'KeyP'
+            }
+        };
+        
+        // Combat state
+        this.combat = {
+            active: false,
+            enemy: null,
+            turn: 0,
+            turnOrder: [],
+            currentTurn: 0,
+            actions: [],
+            battleResult: null
+        };
+        
+        // UI state
+        this.ui = {
+            activeMenu: null,
+            selectedIndex: 0,
+            dialogueActive: false,
+            currentDialogue: null,
+            notifications: []
+        };
+        
+        // Game statistics
+        this.stats = {
+            playtime: 0,
+            monstersEncountered: 0,
+            monstersCaptured: 0,
+            battlesWon: 0,
+            areasExplored: 0,
+            storyChoicesMade: 0
+        };
+        
+        // Initialize the state
+        this.init();
+    }
+    
+    /**
+     * Initialize the game state
+     */
+    init() {
+        try {
+            // Set up event listeners for state changes
+            this.setupEventHandlers();
+            
+            // Initialize default values
+            this.resetToDefaults();
+            
+            this.initialized = true;
+            console.log('✅ GameState initialized');
+            
+        } catch (error) {
+            console.error('❌ GameState initialization failed:', error);
+            throw error;
+        }
+    }
+    
+    /**
+     * Set up event handlers for state management
+     */
+    setupEventHandlers() {
+        // Listen for storage events (for cross-tab synchronization)
+        if (typeof window !== 'undefined') {
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'sawyers_rpg_autosave') {
+                    console.log('Auto-save detected from another tab');
+                }
+            });
+        }
+    }
+    
+    /**
+     * Reset state to default values
+     */
+    resetToDefaults() {
+        // Reset player to starting state
+        this.player = {
+            name: '',
+            class: null,
+            level: 1,
+            experience: 0,
+            experienceToNext: 100,
+            stats: {},
+            spells: [],
+            equipment: {
+                weapon: null,
+                armor: null,
+                accessory: null
+            },
+            inventory: {
+                items: { 'health_potion': 3, 'mana_potion': 2 },
+                gold: 100
+            }
+        };
+        
+        // Reset world progress
+        this.world = {
+            currentArea: 'starting_village',
+            unlockedAreas: ['starting_village'],
+            storyFlags: ['game_start'],
+            completedEvents: [],
+            currentStoryPath: null
+        };
+        
+        // Clear monster collection
+        this.monsters = {
+            party: [],
+            storage: [],
+            nextId: 1
+        };
+        
+        // Reset combat state
+        this.resetCombat();
+        
+        // Reset statistics
+        this.stats = {
+            playtime: 0,
+            monstersEncountered: 0,
+            monstersCaptured: 0,
+            battlesWon: 0,
+            areasExplored: 1, // Starting village
+            storyChoicesMade: 0
+        };
+    }
+    
+    /**
+     * Update game state (called every frame)
+     */
+    update(deltaTime) {
+        if (!this.initialized) return;
+        
+        // Update playtime
+        this.stats.playtime += deltaTime;
+        
+        // Update UI notifications
+        this.updateNotifications(deltaTime);
+        
+        // Update combat state if active
+        if (this.combat.active) {
+            this.updateCombat(deltaTime);
+        }
+        
+        // Auto-save periodically
+        if (this.settings.autoSave && this.stats.playtime % 30 < deltaTime) {
+            this.triggerAutoSave();
+        }
+    }
+    
+    /**
+     * Render game state (for canvas-based rendering)
+     */
+    render(ctx) {
+        if (!this.initialized || !ctx) return;
+        
+        // Render current scene
+        switch (this.currentScene) {
+            case 'world':
+                this.renderWorld(ctx);
+                break;
+            case 'combat':
+                this.renderCombat(ctx);
+                break;
+            case 'menu':
+                this.renderMenu(ctx);
+                break;
+        }
+        
+        // Render UI overlays
+        this.renderUI(ctx);
+    }
+    
+    /**
+     * Handle input events
+     */
+    handleInput(inputType, inputData) {
+        if (!this.initialized) return;
+        
+        switch (this.currentScene) {
+            case 'main_menu':
+                this.handleMenuInput(inputType, inputData);
+                break;
+            case 'character_select':
+                this.handleCharacterSelectInput(inputType, inputData);
+                break;
+            case 'world':
+                this.handleWorldInput(inputType, inputData);
+                break;
+            case 'combat':
+                this.handleCombatInput(inputType, inputData);
+                break;
+            case 'monster_management':
+                this.handleMonsterInput(inputType, inputData);
+                break;
+        }
+    }
+    
+    // ================================================
+    // PLAYER MANAGEMENT
+    // ================================================
+    
+    /**
+     * Set player character class
+     */
+    setPlayerClass(className) {
+        if (typeof CharacterData === 'undefined') {
+            console.error('CharacterData not loaded');
+            return false;
+        }
+        
+        const classData = CharacterData.getClass(className);
+        if (!classData) {
+            console.error(`Unknown character class: ${className}`);
+            return false;
+        }
+        
+        this.player.class = className;
+        this.player.stats = CharacterData.getStatsAtLevel(className, this.player.level);
+        this.player.spells = [...classData.startingSpells];
+        
+        console.log(`Player class set to: ${classData.name}`);
+        return true;
+    }
+    
+    /**
+     * Add experience to player
+     */
+    addExperience(amount) {
+        this.player.experience += amount;
+        
+        // Check for level up
+        while (this.player.experience >= this.player.experienceToNext) {
+            this.levelUp();
+        }
+        
+        this.addNotification(`+${amount} EXP`, 'success');
+    }
+    
+    /**
+     * Level up the player
+     */
+    levelUp() {
+        this.player.experience -= this.player.experienceToNext;
+        this.player.level++;
+        
+        // Calculate new stats
+        if (this.player.class && typeof CharacterData !== 'undefined') {
+            this.player.stats = CharacterData.getStatsAtLevel(this.player.class, this.player.level);
+            this.player.spells = CharacterData.getSpellsAtLevel(this.player.class, this.player.level);
+        }
+        
+        // Calculate next level experience requirement
+        this.player.experienceToNext = this.calculateExperienceRequired(this.player.level + 1);
+        
+        this.addNotification(`Level Up! Now level ${this.player.level}`, 'success');
+        console.log(`Player leveled up to ${this.player.level}`);
+    }
+    
+    /**
+     * Calculate experience required for a level
+     */
+    calculateExperienceRequired(level) {
+        return Math.floor(100 * Math.pow(1.2, level - 1));
+    }
+    
+    /**
+     * Add item to inventory
+     */
+    addItem(itemId, quantity = 1) {
+        if (!this.player.inventory.items[itemId]) {
+            this.player.inventory.items[itemId] = 0;
+        }
+        this.player.inventory.items[itemId] += quantity;
+        
+        this.addNotification(`+${quantity} ${itemId}`, 'item');
+    }
+    
+    /**
+     * Remove item from inventory
+     */
+    removeItem(itemId, quantity = 1) {
+        if (!this.player.inventory.items[itemId]) return false;
+        
+        if (this.player.inventory.items[itemId] >= quantity) {
+            this.player.inventory.items[itemId] -= quantity;
+            if (this.player.inventory.items[itemId] === 0) {
+                delete this.player.inventory.items[itemId];
+            }
+            return true;
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Add gold to player
+     */
+    addGold(amount) {
+        this.player.inventory.gold += amount;
+        this.addNotification(`+${amount} gold`, 'success');
+    }
+    
+    // ================================================
+    // MONSTER MANAGEMENT
+    // ================================================
+    
+    /**
+     * Capture a monster
+     */
+    captureMonster(species, level, stats = null) {
+        const monster = {
+            id: this.monsters.nextId++,
+            species: species,
+            level: level,
+            experience: 0,
+            stats: stats || (typeof MonsterData !== 'undefined' ? 
+                MonsterData.getStatsAtLevel(species, level) : {}),
+            abilities: typeof MonsterData !== 'undefined' ? 
+                MonsterData.getSpecies(species)?.abilities || [] : [],
+            captureDate: new Date().toISOString(),
+            nickname: null
+        };
+        
+        this.monsters.storage.push(monster);
+        this.stats.monstersCaptured++;
+        
+        this.addNotification(`Captured ${species}!`, 'success');
+        console.log(`Monster captured: ${species} (Level ${level})`);
+        
+        return monster.id;
+    }
+    
+    /**
+     * Add monster to active party
+     */
+    addToParty(monsterId) {
+        if (this.monsters.party.length >= 3) {
+            console.warn('Party is full (max 3 monsters)');
+            return false;
+        }
+        
+        const monster = this.monsters.storage.find(m => m.id === monsterId);
+        if (!monster) {
+            console.error(`Monster with ID ${monsterId} not found`);
+            return false;
+        }
+        
+        // Remove from storage and add to party
+        this.monsters.storage = this.monsters.storage.filter(m => m.id !== monsterId);
+        this.monsters.party.push(monster);
+        
+        console.log(`${monster.species} added to party`);
+        return true;
+    }
+    
+    /**
+     * Remove monster from party
+     */
+    removeFromParty(monsterId) {
+        const monster = this.monsters.party.find(m => m.id === monsterId);
+        if (!monster) return false;
+        
+        // Remove from party and add to storage
+        this.monsters.party = this.monsters.party.filter(m => m.id !== monsterId);
+        this.monsters.storage.push(monster);
+        
+        console.log(`${monster.species} removed from party`);
+        return true;
+    }
+    
+    /**
+     * Release monster back to the wild
+     */
+    releaseMonster(monsterId) {
+        // Remove from storage
+        const storageIndex = this.monsters.storage.findIndex(m => m.id === monsterId);
+        if (storageIndex !== -1) {
+            const monster = this.monsters.storage[storageIndex];
+            this.monsters.storage.splice(storageIndex, 1);
+            this.addNotification(`${monster.species} released`, 'info');
+            return true;
+        }
+        
+        // Remove from party
+        const partyIndex = this.monsters.party.findIndex(m => m.id === monsterId);
+        if (partyIndex !== -1) {
+            const monster = this.monsters.party[partyIndex];
+            this.monsters.party.splice(partyIndex, 1);
+            this.addNotification(`${monster.species} released`, 'info');
+            return true;
+        }
+        
+        return false;
+    }
+    
+    // ================================================
+    // WORLD AND STORY MANAGEMENT
+    // ================================================
+    
+    /**
+     * Travel to a new area
+     */
+    travelToArea(areaName) {
+        if (typeof AreaData === 'undefined') {
+            console.error('AreaData not loaded');
+            return false;
+        }
+        
+        // Check if area is unlocked
+        const isUnlocked = AreaData.isAreaUnlocked(
+            areaName, 
+            this.world.storyFlags, 
+            this.player.level, 
+            Object.keys(this.player.inventory.items)
+        );
+        
+        if (!isUnlocked) {
+            this.addNotification('Area is locked', 'error');
+            return false;
+        }
+        
+        // Check if area is connected to current area
+        const connections = AreaData.getConnectedAreas(this.world.currentArea);
+        if (!connections.includes(areaName) && this.world.currentArea !== areaName) {
+            this.addNotification('Cannot reach that area from here', 'error');
+            return false;
+        }
+        
+        this.world.currentArea = areaName;
+        
+        // Add to unlocked areas if not already there
+        if (!this.world.unlockedAreas.includes(areaName)) {
+            this.world.unlockedAreas.push(areaName);
+            this.stats.areasExplored++;
+            this.addNotification(`New area discovered: ${AreaData.getArea(areaName)?.name || areaName}`, 'success');
+        }
+        
+        console.log(`Traveled to: ${areaName}`);
+        return true;
+    }
+    
+    /**
+     * Add story flag
+     */
+    addStoryFlag(flag) {
+        if (!this.world.storyFlags.includes(flag)) {
+            this.world.storyFlags.push(flag);
+            console.log(`Story flag added: ${flag}`);
+            
+            // Check for newly unlocked areas
+            this.checkUnlockedAreas();
+        }
+    }
+    
+    /**
+     * Check for newly unlocked areas
+     */
+    checkUnlockedAreas() {
+        if (typeof AreaData === 'undefined') return;
+        
+        const allAreas = Object.keys(AreaData.areas);
+        
+        for (const areaName of allAreas) {
+            if (!this.world.unlockedAreas.includes(areaName)) {
+                const isUnlocked = AreaData.isAreaUnlocked(
+                    areaName,
+                    this.world.storyFlags,
+                    this.player.level,
+                    Object.keys(this.player.inventory.items)
+                );
+                
+                if (isUnlocked) {
+                    this.world.unlockedAreas.push(areaName);
+                    const area = AreaData.getArea(areaName);
+                    this.addNotification(`New area available: ${area?.name || areaName}`, 'info');
+                }
+            }
+        }
+    }
+    
+    /**
+     * Process story choice
+     */
+    processStoryChoice(eventName, choiceOutcome) {
+        if (typeof StoryData === 'undefined') return null;
+        
+        const outcome = StoryData.processChoice(eventName, choiceOutcome);
+        if (!outcome) return null;
+        
+        // Apply outcome effects
+        if (outcome.storyFlags) {
+            outcome.storyFlags.forEach(flag => this.addStoryFlag(flag));
+        }
+        
+        if (outcome.unlockAreas) {
+            outcome.unlockAreas.forEach(area => {
+                if (!this.world.unlockedAreas.includes(area)) {
+                    this.world.unlockedAreas.push(area);
+                    this.stats.areasExplored++;
+                }
+            });
+        }
+        
+        if (outcome.items) {
+            outcome.items.forEach(item => this.addItem(item, 1));
+        }
+        
+        this.stats.storyChoicesMade++;
+        this.world.completedEvents.push(eventName);
+        
+        return outcome;
+    }
+    
+    // ================================================
+    // SCENE MANAGEMENT
+    // ================================================
+    
+    /**
+     * Change current scene
+     */
+    changeScene(newScene) {
+        this.previousScene = this.currentScene;
+        this.currentScene = newScene;
+        
+        console.log(`Scene changed: ${this.previousScene} -> ${newScene}`);
+        
+        // Scene-specific initialization
+        switch (newScene) {
+            case 'combat':
+                this.initializeCombat();
+                break;
+            case 'world':
+                this.exitCombat();
+                break;
+        }
+    }
+    
+    /**
+     * Return to previous scene
+     */
+    returnToPreviousScene() {
+        if (this.previousScene) {
+            this.changeScene(this.previousScene);
+        }
+    }
+    
+    // ================================================
+    // COMBAT MANAGEMENT
+    // ================================================
+    
+    /**
+     * Initialize combat state
+     */
+    initializeCombat() {
+        this.combat.active = true;
+        this.combat.turn = 0;
+        this.combat.turnOrder = [];
+        this.combat.currentTurn = 0;
+        this.combat.actions = [];
+        this.combat.battleResult = null;
+    }
+    
+    /**
+     * Reset combat state
+     */
+    resetCombat() {
+        this.combat = {
+            active: false,
+            enemy: null,
+            turn: 0,
+            turnOrder: [],
+            currentTurn: 0,
+            actions: [],
+            battleResult: null
+        };
+    }
+    
+    /**
+     * Exit combat
+     */
+    exitCombat() {
+        this.resetCombat();
+    }
+    
+    /**
+     * Update combat state
+     */
+    updateCombat(deltaTime) {
+        // Combat update logic will be implemented in combat.js
+        // This is just the state management portion
+    }
+    
+    // ================================================
+    // UI AND NOTIFICATIONS
+    // ================================================
+    
+    /**
+     * Add notification
+     */
+    addNotification(message, type = 'info', duration = 3000) {
+        const notification = {
+            id: Date.now(),
+            message: message,
+            type: type,
+            duration: duration,
+            timeRemaining: duration
+        };
+        
+        this.ui.notifications.push(notification);
+        
+        // Limit notifications
+        if (this.ui.notifications.length > 5) {
+            this.ui.notifications.shift();
+        }
+    }
+    
+    /**
+     * Update notifications
+     */
+    updateNotifications(deltaTime) {
+        this.ui.notifications = this.ui.notifications.filter(notification => {
+            notification.timeRemaining -= deltaTime * 1000;
+            return notification.timeRemaining > 0;
+        });
+    }
+    
+    // ================================================
+    // SAVE/LOAD SYSTEM
+    // ================================================
+    
+    /**
+     * Get save data
+     */
+    getSaveData() {
+        return {
+            version: '1.0.0',
+            timestamp: new Date().toISOString(),
+            player: this.player,
+            monsters: this.monsters,
+            world: this.world,
+            settings: this.settings,
+            stats: this.stats
+        };
+    }
+    
+    /**
+     * Load from save data
+     */
+    loadFromSave(saveData) {
+        try {
+            if (saveData.player) this.player = { ...this.player, ...saveData.player };
+            if (saveData.monsters) this.monsters = { ...this.monsters, ...saveData.monsters };
+            if (saveData.world) this.world = { ...this.world, ...saveData.world };
+            if (saveData.settings) this.settings = { ...this.settings, ...saveData.settings };
+            if (saveData.stats) this.stats = { ...this.stats, ...saveData.stats };
+            
+            console.log('✅ Game state loaded from save');
+            return true;
+        } catch (error) {
+            console.error('❌ Failed to load save data:', error);
+            return false;
+        }
+    }
+    
+    /**
+     * Trigger auto-save
+     */
+    triggerAutoSave() {
+        if (typeof SaveSystem !== 'undefined' && this.settings.autoSave) {
+            SaveSystem.autoSave();
+        }
+    }
+    
+    // ================================================
+    // INPUT HANDLERS (Placeholder implementations)
+    // ================================================
+    
+    handleMenuInput(inputType, inputData) {
+        // Menu input handling - will be expanded in ui.js
+    }
+    
+    handleCharacterSelectInput(inputType, inputData) {
+        // Character selection input handling
+    }
+    
+    handleWorldInput(inputType, inputData) {
+        // World exploration input handling
+    }
+    
+    handleCombatInput(inputType, inputData) {
+        // Combat input handling - will be expanded in combat.js
+    }
+    
+    handleMonsterInput(inputType, inputData) {
+        // Monster management input handling
+    }
+    
+    // ================================================
+    // RENDERING (Placeholder implementations)
+    // ================================================
+    
+    renderWorld(ctx) {
+        // World rendering - basic placeholder
+        ctx.fillStyle = '#2d5016';
+        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        
+        // Draw area name
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '24px serif';
+        ctx.textAlign = 'center';
+        const areaData = typeof AreaData !== 'undefined' ? 
+            AreaData.getArea(this.world.currentArea) : null;
+        const areaName = areaData?.name || this.world.currentArea;
+        ctx.fillText(areaName, ctx.canvas.width / 2, 50);
+    }
+    
+    renderCombat(ctx) {
+        // Combat rendering placeholder
+        ctx.fillStyle = '#5d1a1a';
+        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '32px serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('COMBAT', ctx.canvas.width / 2, ctx.canvas.height / 2);
+    }
+    
+    renderMenu(ctx) {
+        // Menu rendering placeholder
+        ctx.fillStyle = '#1a1a2e';
+        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    }
+    
+    renderUI(ctx) {
+        // UI overlay rendering - notifications, HUD, etc.
+        this.renderNotifications(ctx);
+    }
+    
+    renderNotifications(ctx) {
+        let yOffset = 10;
+        
+        for (const notification of this.ui.notifications) {
+            const alpha = Math.min(1, notification.timeRemaining / 1000);
+            
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            
+            // Background
+            ctx.fillStyle = this.getNotificationColor(notification.type);
+            ctx.fillRect(ctx.canvas.width - 250, yOffset, 240, 30);
+            
+            // Text
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '14px serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(notification.message, ctx.canvas.width - 130, yOffset + 20);
+            
+            ctx.restore();
+            
+            yOffset += 35;
+        }
+    }
+    
+    getNotificationColor(type) {
+        switch (type) {
+            case 'success': return '#28a745';
+            case 'error': return '#dc3545';
+            case 'warning': return '#ffc107';
+            case 'info': return '#17a2b8';
+            case 'item': return '#6f42c1';
+            default: return '#6c757d';
+        }
+    }
+}
+
+// Make available globally
+window.GameState = GameState;
