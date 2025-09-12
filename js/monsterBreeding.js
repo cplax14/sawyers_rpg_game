@@ -34,6 +34,15 @@ class MonsterBreedingSystem {
         console.log('✅ Monster Breeding System initialized');
     }
     
+    /**
+     * Check if a monster is currently in breeding cooldown
+     */
+    isInBreedingCooldown(monsterId) {
+        const expiresAt = this.breedingCooldowns.get(monsterId);
+        if (!expiresAt) return false;
+        return Date.now() < expiresAt;
+    }
+    
     // ================================================
     // BREEDING COMPATIBILITY
     // ================================================

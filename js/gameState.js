@@ -105,6 +105,9 @@ class GameState {
             // Initialize default values
             this.resetToDefaults();
             
+            // Initialize breeding system if available
+            this.initializeBreedingSystem();
+            
             this.initialized = true;
             console.log('✅ GameState initialized');
             
@@ -180,6 +183,22 @@ class GameState {
             areasExplored: 1, // Starting village
             storyChoicesMade: 0
         };
+    }
+
+    /**
+     * Initialize breeding system wrapper
+     */
+    initializeBreedingSystem() {
+        this.breeding = null;
+        if (typeof MonsterBreedingSystem !== 'undefined') {
+            try {
+                this.breeding = new MonsterBreedingSystem(this);
+            } catch (e) {
+                console.warn('⚠️ Failed to initialize MonsterBreedingSystem:', e);
+            }
+        } else {
+            console.warn('⚠️ MonsterBreedingSystem not loaded');
+        }
     }
     
     /**
@@ -357,7 +376,7 @@ class GameState {
         this.player.inventory.gold += amount;
         this.addNotification(`+${amount} gold`, 'success');
     }
-    
+
     // ================================================
     // MONSTER MANAGEMENT
     // ================================================
@@ -424,6 +443,152 @@ class GameState {
         
         console.log(`${monster.species} removed from party`);
         return true;
+    }
+
+    // ================================================
+    // SKILL LEARNING (4.7)
+    // ================================================
+    /**
+     * Check if a stored monster can learn a move
+     */
+    canTeachMove(monsterId, moveId) {
+        const { monster } = this.getMonsterByIdAnywhere(monsterId);
+        if (!monster) return { canLearn: false, reason: 'Monster not found' };
+        // Build temp Monster instance to use logic
+        const inst = this.buildMonsterInstance(monster);
+        if (!inst) return { canLearn: false, reason: 'Monster instance unavailable' };
+        // Sync current learned moves from stored data if present
+        if (Array.isArray(monster.abilities)) {
+            inst.learnedMoves = [...monster.abilities];
+        }
+        return inst.canLearnMove(moveId);
+    }
+    
+    /**
+     * Teach a move to a stored monster using an inventory item (scroll)
+     * itemId defaults to `scroll_<moveId>`
+     */
+    teachMoveWithItem(monsterId, moveId, replaceIndex = null, itemId = null) {
+        const { monster, location } = this.getMonsterByIdAnywhere(monsterId);
+        if (!monster) return { success: false, reason: 'Monster not found' };
+        const inv = this.player.inventory.items;
+        const requiredItem = itemId || `scroll_${moveId}`;
+        if (!inv[requiredItem] || inv[requiredItem] <= 0) {
+            return { success: false, reason: 'Required scroll not in inventory' };
+        }
+        // Use a Monster instance for applying the learning logic, then sync back
+        const inst = this.buildMonsterInstance(monster);
+        if (!inst) return { success: false, reason: 'Monster instance unavailable' };
+        // Sync current learned moves from stored data if present
+        if (Array.isArray(monster.abilities)) {
+            inst.learnedMoves = [...monster.abilities];
+        }
+        const res = inst.learnMove(moveId, replaceIndex);
+        if (!res.success) return res;
+        // Consume item
+        this.removeItem(requiredItem, 1);
+        this.addNotification(`Used ${requiredItem} to teach ${moveId}`, 'item');
+        // Persist learned moves back into stored representation
+        monster.abilities = [...inst.learnedMoves];
+        this.addNotification(`${monster.species} learned ${moveId}!`, 'success');
+        return { success: true };
+    }
+
+    // ================================================
+    // BREEDING INTEGRATION
+    // ================================================
+    
+    /**
+     * Find monster by ID in party or storage
+     */
+    getMonsterByIdAnywhere(monsterId) {
+        const inParty = this.monsters.party.find(m => m.id === monsterId);
+        if (inParty) return { monster: inParty, location: 'party' };
+        const inStorage = this.monsters.storage.find(m => m.id === monsterId);
+        if (inStorage) return { monster: inStorage, location: 'storage' };
+        return { monster: null, location: null };
+    }
+    
+    /**
+     * Build a lightweight Monster instance for system checks from stored data
+     */
+    buildMonsterInstance(stored) {
+        if (typeof Monster === 'undefined' || !stored) return null;
+        const instance = new Monster(stored.species, stored.level || 1, false);
+        instance.id = stored.id;
+        // Best-effort friendship default if not tracked in stored object
+        if (typeof instance.friendship === 'undefined') instance.friendship = 50;
+        return instance;
+    }
+    
+    /**
+     * Check if two stored monsters can breed
+     */
+    canBreed(monsterId1, monsterId2) {
+        if (!this.breeding) {
+            return { canBreed: false, reason: 'Breeding system not available' };
+        }
+        const a = this.getMonsterByIdAnywhere(monsterId1).monster;
+        const b = this.getMonsterByIdAnywhere(monsterId2).monster;
+        if (!a || !b) return { canBreed: false, reason: 'Monster not found' };
+        const m1 = this.buildMonsterInstance(a);
+        const m2 = this.buildMonsterInstance(b);
+        return this.breeding.canBreedTogether(m1, m2);
+    }
+    
+    /**
+     * Attempt to breed two monsters and add offspring to storage
+     */
+    breed(monsterId1, monsterId2) {
+        if (!this.breeding) {
+            return { success: false, reason: 'Breeding system not available' };
+        }
+        const check = this.canBreed(monsterId1, monsterId2);
+        if (!check.canBreed) {
+            this.addNotification(check.reason || 'Breeding not allowed', 'error');
+            return { success: false, reason: check.reason };
+        }
+        if (typeof MonsterData === 'undefined') {
+            return { success: false, reason: 'Monster data not available' };
+        }
+        const a = this.getMonsterByIdAnywhere(monsterId1).monster;
+        const b = this.getMonsterByIdAnywhere(monsterId2).monster;
+        
+        // Determine outcome
+        const outcomes = MonsterData.getBreedingOutcomes(a.species, b.species);
+        if (!outcomes || outcomes.length === 0) {
+            this.addNotification('No valid breeding outcomes', 'error');
+            return { success: false, reason: 'No outcomes' };
+        }
+        const total = outcomes.reduce((s, o) => s + o.chance, 0);
+        let roll = Math.random() * total;
+        let chosen = outcomes[0].species;
+        for (const o of outcomes) {
+            roll -= o.chance;
+            if (roll <= 0) { chosen = o.species; break; }
+        }
+        
+        // Create offspring and add to storage at level 1
+        const offspringLevel = 1;
+        const stats = MonsterData.getStatsAtLevel(chosen, offspringLevel) || {};
+        const offspringId = this.captureMonster(chosen, offspringLevel, stats);
+        this.addNotification(`Breeding produced ${MonsterData.getSpecies(chosen)?.name || chosen}!`, 'success');
+        
+        // Apply cooldowns
+        const now = Date.now();
+        const cdSec = (this.breeding.settings?.cooldownTime) || 900; // seconds
+        const expireAt = now + cdSec * 1000;
+        this.breeding.breedingCooldowns.set(monsterId1, expireAt);
+        this.breeding.breedingCooldowns.set(monsterId2, expireAt);
+        
+        // Record history
+        this.breeding.breedingHistory.push({
+            parents: [monsterId1, monsterId2],
+            offspring: { id: offspringId, species: chosen, level: offspringLevel },
+            time: new Date(now).toISOString()
+        });
+        
+        return { success: true, offspringId };
     }
     
     /**

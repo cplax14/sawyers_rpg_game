@@ -120,6 +120,8 @@ class UIManager {
         this.attachButton('monsters-btn', () => this.showScene('monster_management'));
         this.attachButton('inventory-btn', () => this.showScene('inventory'));
         this.attachButton('save-game-btn', () => this.saveGame());
+        // Minimal breeding integration (if button exists)
+        this.attachButton('breed-btn', () => this.promptBreeding());
         
         // Global keyboard shortcuts
         document.addEventListener('keydown', (e) => this.handleGlobalKeys(e));
@@ -500,6 +502,42 @@ class UIManager {
     updateAudioSettings() {
         // Audio system integration - placeholder
         console.log('Audio settings updated');
+    }
+    
+    /**
+     * Prompt user for two monster IDs and initiate breeding
+     */
+    promptBreeding() {
+        const gameState = this.game.getGameState();
+        if (!gameState) return;
+        const input = window.prompt('Enter two monster IDs to breed (e.g., 1,2):');
+        if (!input) return;
+        const parts = input.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+        if (parts.length !== 2) {
+            this.showNotification('Please enter exactly two valid IDs', 'error');
+            return;
+        }
+        this.breedMonsters(parts[0], parts[1]);
+    }
+    
+    /**
+     * Initiate breeding via GameState with notifications
+     */
+    breedMonsters(monsterId1, monsterId2) {
+        const gameState = this.game.getGameState();
+        if (!gameState) return;
+        
+        const check = gameState.canBreed(monsterId1, monsterId2);
+        if (!check.canBreed) {
+            this.showNotification(check.reason || 'Cannot breed these monsters', 'error');
+            return;
+        }
+        const result = gameState.breed(monsterId1, monsterId2);
+        if (result.success) {
+            this.showNotification(`Breeding successful! Offspring added to storage.`, 'success');
+        } else {
+            this.showNotification(result.reason || 'Breeding failed', 'error');
+        }
     }
     
     /**

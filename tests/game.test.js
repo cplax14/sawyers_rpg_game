@@ -146,23 +146,30 @@ describe('Utility Methods Tests', () => {
     });
     
     it('should create notifications properly', () => {
-        // Mock document.body
+        // Mock only the DOM methods we use without reassigning document.body
         const mockElements = [];
-        document.body = {
-            appendChild: (element) => mockElements.push(element),
-            removeChild: (element) => {
-                const index = mockElements.indexOf(element);
-                if (index > -1) mockElements.splice(index, 1);
-            }
+        const originalAppend = document.body.appendChild;
+        const originalRemove = document.body.removeChild;
+        
+        document.body.appendChild = (element) => mockElements.push(element);
+        document.body.removeChild = (element) => {
+            const index = mockElements.indexOf(element);
+            if (index > -1) mockElements.splice(index, 1);
         };
         
-        assertDoesNotThrow(() => {
-            game.showError('Test error');
-        }, 'Error notification should not throw');
-        
-        assertDoesNotThrow(() => {
-            game.showSuccess('Test success');
-        }, 'Success notification should not throw');
+        try {
+            assertDoesNotThrow(() => {
+                game.showError('Test error');
+            }, 'Error notification should not throw');
+            
+            assertDoesNotThrow(() => {
+                game.showSuccess('Test success');
+            }, 'Success notification should not throw');
+        } finally {
+            // Restore original methods
+            document.body.appendChild = originalAppend;
+            document.body.removeChild = originalRemove;
+        }
     });
 });
 
