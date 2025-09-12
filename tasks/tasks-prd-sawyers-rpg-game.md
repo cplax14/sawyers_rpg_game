@@ -43,19 +43,19 @@
   - [x] 1.4 Set up project directory structure for assets, data, and modules
   - [x] 1.5 Create basic testing framework using vanilla JavaScript assertions
 
-- [ ] 2.0 Core Game Engine and State Management
-  - [ ] 2.1 Implement central game state manager to track all game data
-  - [ ] 2.2 Create game loop with update and render cycles
-  - [ ] 2.3 Implement scene management system for different game screens
-  - [ ] 2.4 Set up input handling system for keyboard and mouse events
-  - [ ] 2.5 Create utility functions for random number generation and calculations
+- [x] 2.0 Core Game Engine and State Management
+  - [x] 2.1 Implement central game state manager to track all game data
+  - [x] 2.2 Create game loop with update and render cycles
+  - [x] 2.3 Implement scene management system for different game screens
+  - [x] 2.4 Set up input handling system for keyboard and mouse events
+  - [x] 2.5 Create utility functions for random number generation and calculations
 
-- [ ] 3.0 Character Classes and Player System
-  - [ ] 3.1 Define 6 character classes (Knight, Wizard, Rogue, Paladin, Ranger, Warrior) with unique stats
-  - [ ] 3.2 Implement player character creation and class selection screen
-  - [ ] 3.3 Create player progression system with experience points and leveling
-  - [ ] 3.4 Implement equipment system for weapons, armor, and accessories
-  - [ ] 3.5 Add spell learning system with class-specific magic abilities
+- [x] 3.0 Character Classes and Player System
+  - [x] 3.1 Define 6 character classes (Knight, Wizard, Rogue, Paladin, Ranger, Warrior) with unique stats
+  - [x] 3.2 Implement player character creation and class selection screen
+  - [x] 3.3 Create player progression system with experience points and leveling
+  - [x] 3.4 Implement equipment system for weapons, armor, and accessories
+  - [x] 3.5 Add spell learning system with class-specific magic abilities
 
 - [ ] 4.0 Monster System (Capture, Evolution, Breeding)
   - [ ] 4.1 Create monster class with stats, abilities, and evolution data
