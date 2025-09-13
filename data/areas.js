@@ -27,6 +27,11 @@ const AreaData = {
             unlockRequirements: { story: "tutorial_complete" },
             encounterRate: 30,
             monsters: ["slime", "goblin"],
+            // Optional weighted spawn table overrides generic MonsterData tables
+            spawnTable: [
+                { species: "slime", weight: 70 },
+                { species: "goblin", weight: 30 }
+            ],
             connections: ["starting_village", "deep_forest", "plains"],
             storyEvents: ["first_monster_encounter"],
             services: [],
@@ -41,6 +46,12 @@ const AreaData = {
             unlockRequirements: { story: "forest_path_cleared", level: 5 },
             encounterRate: 45,
             monsters: ["goblin", "wolf", "orc", "slime"],
+            spawnTable: [
+                { species: "wolf", weight: 40 },
+                { species: "goblin", weight: 25 },
+                { species: "orc", weight: 25 },
+                { species: "slime", weight: 10 }
+            ],
             connections: ["forest_path", "wolf_den", "mystic_grove"],
             storyEvents: ["pack_encounter", "ancient_tree"],
             services: [],
@@ -55,6 +66,11 @@ const AreaData = {
             unlockRequirements: { story: "pack_encounter", item: "wolf_tracker" },
             encounterRate: 70,
             monsters: ["wolf", "dire_wolf", "alpha_wolf"],
+            spawnTable: [
+                { species: "wolf", weight: 60 },
+                { species: "dire_wolf", weight: 30 },
+                { species: "alpha_wolf", weight: 10 }
+            ],
             connections: ["deep_forest"],
             storyEvents: ["alpha_challenge", "pack_leader_defeated"],
             services: [],
@@ -75,6 +91,12 @@ const AreaData = {
             unlockRequirements: { story: "first_monster_encounter" },
             encounterRate: 25,
             monsters: ["slime", "goblin", "wild_horse", "hawk"],
+            spawnTable: [
+                { species: "wild_horse", weight: 40 },
+                { species: "hawk", weight: 30 },
+                { species: "slime", weight: 20 },
+                { species: "goblin", weight: 10 }
+            ],
             connections: ["forest_path", "mountain_base", "river_crossing"],
             storyEvents: ["merchant_encounter", "wild_horse_race"],
             services: ["traveling_merchant"],
@@ -89,6 +111,12 @@ const AreaData = {
             unlockRequirements: { story: "plains_explored", level: 8 },
             encounterRate: 50,
             monsters: ["goblin", "orc", "mountain_goat", "rock_lizard"],
+            spawnTable: [
+                { species: "mountain_goat", weight: 35 },
+                { species: "rock_lizard", weight: 30 },
+                { species: "orc", weight: 25 },
+                { species: "goblin", weight: 10 }
+            ],
             connections: ["plains", "mountain_peak", "cave_entrance"],
             storyEvents: ["rockslide", "mountain_guide"],
             services: [],
@@ -103,6 +131,12 @@ const AreaData = {
             unlockRequirements: { story: "mountain_guide", item: "torch" },
             encounterRate: 60,
             monsters: ["bat", "crystal_spider", "cave_troll", "gem_slime"],
+            spawnTable: [
+                { species: "bat", weight: 40 },
+                { species: "crystal_spider", weight: 30 },
+                { species: "gem_slime", weight: 20 },
+                { species: "cave_troll", weight: 10 }
+            ],
             connections: ["mountain_base", "underground_lake"],
             storyEvents: ["crystal_discovery", "cave_collapse"],
             services: [],
@@ -117,6 +151,12 @@ const AreaData = {
             unlockRequirements: { story: "fire_resistance_obtained", level: 20 },
             encounterRate: 80,
             monsters: ["fire_sprite", "lava_golem", "fire_bat", "salamander"],
+            spawnTable: [
+                { species: "fire_sprite", weight: 40 },
+                { species: "fire_bat", weight: 30 },
+                { species: "salamander", weight: 20 },
+                { species: "lava_golem", weight: 10 }
+            ],
             connections: ["mountain_peak", "dragon_peak"],
             storyEvents: ["volcanic_eruption", "fire_temple_found"],
             services: [],
@@ -135,6 +175,11 @@ const AreaData = {
             },
             encounterRate: 90,
             monsters: ["dragon_whelp", "wyvern", "fire_drake"],
+            spawnTable: [
+                { species: "dragon_whelp", weight: 50 },
+                { species: "wyvern", weight: 30 },
+                { species: "fire_drake", weight: 20 }
+            ],
             connections: ["volcanic_region"],
             storyEvents: ["dragon_encounter", "ancient_hoard"],
             services: [],
@@ -162,6 +207,12 @@ const AreaData = {
             },
             encounterRate: 20,
             monsters: ["nature_sprite", "unicorn", "treant", "fairy"],
+            spawnTable: [
+                { species: "nature_sprite", weight: 40 },
+                { species: "fairy", weight: 35 },
+                { species: "unicorn", weight: 15 },
+                { species: "treant", weight: 10 }
+            ],
             connections: ["deep_forest"],
             storyEvents: ["spirit_council", "nature_trial"],
             services: ["healing_spring", "monster_sanctuary"],
@@ -180,6 +231,11 @@ const AreaData = {
             },
             encounterRate: 70,
             monsters: ["guardian_golem", "shadow_wraith", "ancient_spirit"],
+            spawnTable: [
+                { species: "guardian_golem", weight: 50 },
+                { species: "shadow_wraith", weight: 30 },
+                { species: "ancient_spirit", weight: 20 }
+            ],
             connections: ["mystic_grove", "dragon_peak"],
             storyEvents: ["final_trial", "truth_revealed"],
             services: [],
@@ -222,16 +278,16 @@ const AreaData = {
     /**
      * Get all unlocked areas
      */
-    getUnlockedAreas: function(storyProgress, playerLevel, inventory) {
+    getUnlockedAreas: function(storyProgress, playerLevel, inventory, playerClass = null) {
         return Object.keys(this.areas).filter(areaName => {
-            return this.isAreaUnlocked(areaName, storyProgress, playerLevel, inventory);
+            return this.isAreaUnlocked(areaName, storyProgress, playerLevel, inventory, playerClass);
         });
     },
     
     /**
      * Check if an area is unlocked
      */
-    isAreaUnlocked: function(areaName, storyProgress, playerLevel, inventory) {
+    isAreaUnlocked: function(areaName, storyProgress, playerLevel, inventory, playerClass = null) {
         const area = this.getArea(areaName);
         if (!area) return false;
         
@@ -256,7 +312,7 @@ const AreaData = {
         
         // Check character class requirements
         if (requirements.character_class && 
-            !requirements.character_class.includes(storyProgress.playerClass)) {
+            !requirements.character_class.includes(playerClass)) {
             return false;
         }
         
@@ -324,12 +380,37 @@ const AreaData = {
         const monsters = area.monsters;
         if (monsters.length === 0) return null;
         
-        // Use MonsterData to generate the encounter
+        // Prefer local weighted spawn table if present
+        if (Array.isArray(area.spawnTable) && area.spawnTable.length > 0) {
+            const species = this.chooseWeighted(area.spawnTable);
+            // Level near player level
+            const variance = Math.floor(Math.random() * 5) - 2; // -2..+2
+            const level = Math.max(1, (playerLevel || 1) + variance);
+            return { species, level };
+        }
+        
+        // Fallback to MonsterData
         if (typeof MonsterData !== 'undefined') {
             return MonsterData.generateEncounter(areaName, playerLevel);
         }
         
-        return null;
+        // Final fallback: uniform random from area.monsters
+        const idx = Math.floor(Math.random() * monsters.length);
+        const species = monsters[idx];
+        const variance = Math.floor(Math.random() * 5) - 2;
+        const level = Math.max(1, (playerLevel || 1) + variance);
+        return { species, level };
+    },
+
+    /** Weighted choice from a spawn table [{species, weight}] */
+    chooseWeighted: function(table) {
+        const total = table.reduce((s, e) => s + (e.weight || 0), 0) || 1;
+        let roll = Math.random() * total;
+        for (const entry of table) {
+            roll -= (entry.weight || 0);
+            if (roll <= 0) return entry.species;
+        }
+        return table[0]?.species || null;
     },
     
     /**
