@@ -16,12 +16,8 @@ class SawyersRPG {
         // Game loop ID for cancellation
         this.gameLoopId = null;
         
-        // Initialize game on DOM load
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => this.init());
-        } else {
-            this.init();
-        }
+        // Initialize systems immediately for test environments; runtime guards handle DOM readiness
+        this.init();
     }
     
     /**
@@ -33,25 +29,28 @@ class SawyersRPG {
             
             // Get canvas and context
             this.canvas = document.getElementById('game-canvas');
-            if (!this.canvas) {
-                console.warn('⚠️ Game canvas not found; skipping start (test environment)');
-                return; // Tolerate missing canvas in tests
-            }
-            
-            this.ctx = this.canvas.getContext('2d');
-            if (!this.ctx) {
-                console.warn('⚠️ Could not get 2D rendering context; skipping start');
-                return;
+            let hasCanvas = !!this.canvas;
+            if (!hasCanvas) {
+                console.warn('⚠️ Game canvas not found; running in test/headless mode');
+            } else {
+                this.ctx = this.canvas.getContext('2d');
+                if (!this.ctx) {
+                    console.warn('⚠️ Could not get 2D rendering context; running in test/headless mode');
+                    hasCanvas = false;
+                }
             }
             
             // Initialize game systems
             await this.initializeSystems();
             
-            // Set up event listeners
-            this.setupEventListeners();
-            
-            // Start the game
-            this.start();
+            if (hasCanvas) {
+                // Set up event listeners
+                this.setupEventListeners();
+                // Start the game
+                this.start();
+            } else {
+                console.log('🧪 Initialized systems without canvas (tests)');
+            }
             
             console.log('✅ Game initialization complete');
             
@@ -77,6 +76,13 @@ class SawyersRPG {
         if (typeof UIManager !== 'undefined') {
             this.ui = new UIManager(this);
             console.log('✅ UI Manager initialized');
+            try {
+                if (this.ui && typeof this.ui.ensureWorldMapOverlay === 'function') {
+                    this.ui.ensureWorldMapOverlay();
+                }
+            } catch (e) {
+                // ignore in headless
+            }
         } else {
             console.warn('⚠️ UIManager not loaded');
         }

@@ -652,7 +652,8 @@ class GameState {
             areaName, 
             this.world.storyFlags, 
             this.player.level, 
-            Object.keys(this.player.inventory.items)
+            Object.keys(this.player.inventory.items),
+            this.player.class
         );
         
         if (!isUnlocked) {
@@ -707,11 +708,14 @@ class GameState {
                     areaName,
                     this.world.storyFlags,
                     this.player.level,
-                    Object.keys(this.player.inventory.items)
+                    Object.keys(this.player.inventory.items),
+                    this.player.class
                 );
                 
                 if (isUnlocked) {
                     this.world.unlockedAreas.push(areaName);
+                    // Keep stats consistent with travelToArea when discovering new areas
+                    this.stats.areasExplored++;
                     const area = AreaData.getArea(areaName);
                     this.addNotification(`New area available: ${area?.name || areaName}`, 'info');
                 }

@@ -86,11 +86,11 @@
   - [x] 5.6 Implement monster capture chance calculations
 
 - [ ] 6.0 World Map and Area Progression
-  - [ ] 6.1 Create world map data structure with interconnected areas
-  - [ ] 6.2 Implement area unlocking system based on story progress
-  - [ ] 6.3 Create random encounter system for each area
+  - [x] 6.1 Create world map data structure with interconnected areas
+  - [x] 6.2 Implement area unlocking system based on story progress
+  - [x] 6.3 Create random encounter system for each area
   - [ ] 6.4 Implement area-specific monster spawn tables
-  - [ ] 6.5 Add travel system between unlocked areas
+  - [x] 6.5 Add travel system between unlocked areas
 
 - [ ] 7.0 User Interface and Game Screens
   - [ ] 7.1 Design and implement main menu screen
