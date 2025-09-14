@@ -1007,6 +1007,7 @@ class UIManager {
     attachDataSettings() {
         const clearBtn = document.getElementById('clear-save-data');
         const exportBtn = document.getElementById('export-save');
+        const exportSchemaBtn = document.getElementById('export-save-schema');
         const importBtn = document.getElementById('import-save-btn');
         const importInput = document.getElementById('import-save');
         
@@ -1027,8 +1028,15 @@ class UIManager {
             exportBtn.addEventListener('click', () => {
                 if (typeof SaveSystem !== 'undefined') {
                     const ok = SaveSystem.exportSave();
-                    if (!ok) this.showNotification('No save to export', 'error');
+                    if (!ok) this.showNotification(SaveSystem.lastError || 'No save to export', 'error');
+                    else this.showNotification('Save exported', 'success');
                 }
+            });
+        }
+        if (exportSchemaBtn && typeof SaveSystem !== 'undefined' && typeof SaveSystem.exportSchema === 'function') {
+            exportSchemaBtn.addEventListener('click', () => {
+                const ok = SaveSystem.exportSchema();
+                this.showNotification(ok ? 'Save schema exported' : (SaveSystem.lastError || 'Failed to export schema'), ok ? 'success' : 'error');
             });
         }
         if (importBtn && importInput) {
@@ -1042,7 +1050,7 @@ class UIManager {
                 }
                 if (typeof SaveSystem !== 'undefined') {
                     const ok = await SaveSystem.importSave(file);
-                    this.showNotification(ok ? 'Save imported' : 'Import failed', ok ? 'success' : 'error');
+                    this.showNotification(ok ? 'Save imported' : (SaveSystem.lastError || 'Import failed'), ok ? 'success' : 'error');
                     if (ok) {
                         // Reload current UI state from GameState
                         try { this.updateHUDVisibility(); } catch {}

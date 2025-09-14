@@ -7,10 +7,43 @@ const SaveSystem = {
     VERSION: '1.0.0',
     SAVE_KEY: 'sawyers_rpg_save',
     AUTOSAVE_KEY: 'sawyers_rpg_autosave',
+    lastError: null,
 
     init() {
         console.log('✅ SaveSystem initialized');
         return true;
+    },
+
+    // Light-weight schema validation
+    validateSaveData(save) {
+        this.lastError = null;
+        try {
+            if (!save || typeof save !== 'object') throw new Error('Save is not an object');
+            if (typeof save.version !== 'string') throw new Error('Missing version');
+            if (typeof save.timestamp !== 'number') throw new Error('Missing timestamp');
+            if (!save.player || typeof save.player !== 'object') throw new Error('Missing player');
+            if (!save.world || typeof save.world !== 'object') throw new Error('Missing world');
+            if (!save.monsters || typeof save.monsters !== 'object') throw new Error('Missing monsters');
+            if (!save.settings || typeof save.settings !== 'object') throw new Error('Missing settings');
+            if (save.meta && typeof save.meta !== 'object') throw new Error('Bad meta block');
+            if (save.meta?.scene && typeof save.meta.scene !== 'string') throw new Error('Bad meta.scene');
+            return true;
+        } catch (e) {
+            this.lastError = e?.message || String(e);
+            return false;
+        }
+    },
+
+    // Migration stub for future versions
+    migrateIfNeeded(save) {
+        try {
+            if (!save || typeof save !== 'object') return save;
+            const ver = String(save.version || '0.0.0');
+            // Future: if (semverLt(ver, '1.0.0')) { ... }
+            return save;
+        } catch {
+            return save;
+        }
     },
 
     // Build a versioned save object from GameState
@@ -77,8 +110,12 @@ const SaveSystem = {
         try {
             const raw = localStorage.getItem(this.SAVE_KEY);
             if (!raw) return false;
-            const save = JSON.parse(raw);
-            // TODO: handle migrations by version
+            const parsed = JSON.parse(raw);
+            const save = this.migrateIfNeeded(parsed);
+            if (!this.validateSaveData(save)) {
+                console.warn('Load validation failed:', this.lastError);
+                return false;
+            }
             const ok = this.applyToGame(save);
             return !!ok;
         } catch (error) {
@@ -119,7 +156,10 @@ const SaveSystem = {
     // Export current save to a file
     exportSave() {
         const raw = localStorage.getItem(this.SAVE_KEY);
-        if (!raw) return false;
+        if (!raw) {
+            this.lastError = 'No manual save found to export';
+            return false;
+        }
         const blob = new Blob([raw], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -130,17 +170,57 @@ const SaveSystem = {
         return true;
     },
 
+    // Emit a JSON schema-like description of the save structure for debugging
+    exportSchema() {
+        try {
+            const schema = {
+                $schema: 'https://json-schema.org/draft/2020-12/schema',
+                title: 'Sawyers RPG Save Schema',
+                type: 'object',
+                required: ['version', 'timestamp', 'player', 'world', 'monsters', 'settings'],
+                properties: {
+                    version: { type: 'string' },
+                    timestamp: { type: 'number', description: 'ms since epoch' },
+                    player: { type: 'object' },
+                    world: { type: 'object' },
+                    monsters: { type: 'object' },
+                    settings: { type: 'object' },
+                    meta: {
+                        type: 'object',
+                        properties: { scene: { type: ['string', 'null'] } },
+                        additionalProperties: true
+                    }
+                },
+                additionalProperties: true
+            };
+            const blob = new Blob([JSON.stringify(schema, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'sawyers_rpg_save_schema.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            return true;
+        } catch (e) {
+            this.lastError = e?.message || String(e);
+            return false;
+        }
+    },
+
     // Import a save file and apply
     async importSave(file) {
         try {
             const text = await file.text();
-            const save = JSON.parse(text);
-            // Basic validation
-            if (!save || !save.version || !save.player) throw new Error('Invalid save file');
+            const parsed = JSON.parse(text);
+            const save = this.migrateIfNeeded(parsed);
+            if (!this.validateSaveData(save)) {
+                throw new Error(this.lastError || 'Invalid save file');
+            }
             localStorage.setItem(this.SAVE_KEY, JSON.stringify(save));
             return this.applyToGame(save);
         } catch (e) {
             console.warn('Import failed:', e);
+            this.lastError = e?.message || String(e);
             return false;
         }
     }

@@ -286,16 +286,7 @@
                                 </div>
                             </div>
                             
-                            <div class="area-actions">
-                                <button id="travel-to-area" class="btn primary" disabled>
-                                    <span class="btn-icon">🚀</span>
-                                    <span class="btn-text">Travel Here</span>
-                                </button>
-                                <button id="explore-area" class="btn secondary" disabled>
-                                    <span class="btn-icon">🔍</span>
-                                    <span class="btn-text">Explore</span>
-                                </button>
-                            </div>
+                            <div class="area-actions"><!-- buttons moved to unified world-action-bar --></div>
                         </div>
                     </div>
                     
@@ -307,16 +298,27 @@
                         </div>
                     </div>
                     
-                    <!-- World Navigation -->
-                    <div class="world-nav">
-                        <button id="back-from-world" class="btn secondary">
-                            <span class="btn-icon">⬅️</span>
-                            <span class="btn-text">Back</span>
-                        </button>
-                        <button id="center-map" class="btn secondary">
-                            <span class="btn-icon">🎯</span>
-                            <span class="btn-text">Center Map</span>
-                        </button>
+                    <!-- Unified World Action Bar -->
+                    <div class="world-action-bar" role="toolbar" aria-label="World actions">
+                        <div class="action-bar-inner">
+                            <button id="travel-to-area" class="btn primary" disabled>
+                                <span class="btn-icon">🚀</span>
+                                <span class="btn-text">Travel Here</span>
+                            </button>
+                            <button id="explore-area" class="btn secondary" disabled>
+                                <span class="btn-icon">🔍</span>
+                                <span class="btn-text">Explore</span>
+                            </button>
+                            <div class="spacer"></div>
+                            <button id="back-from-world" class="btn secondary">
+                                <span class="btn-icon">⬅️</span>
+                                <span class="btn-text">Back</span>
+                            </button>
+                            <button id="center-map" class="btn secondary">
+                                <span class="btn-icon">🎯</span>
+                                <span class="btn-text">Center Map</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1162,6 +1164,16 @@
                                 </div>
                                 <div class="setting-control">
                                     <button id="export-save" class="btn secondary">Export</button>
+                                </div>
+                            </div>
+
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <label class="setting-label">Export Save Schema</label>
+                                    <p class="setting-description">Download JSON schema for debugging migrations</p>
+                                </div>
+                                <div class="setting-control">
+                                    <button id="export-save-schema" class="btn secondary">Export Schema</button>
                                 </div>
                             </div>
                             
