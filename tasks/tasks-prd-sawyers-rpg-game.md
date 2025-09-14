@@ -111,10 +111,16 @@
   - [x] 8.6 Add save file validation and error handling
 
 - [ ] 9.0 Story System and Multiple Endings
-  - [ ] 9.1 Create story event system with branching dialogue
-  - [ ] 9.2 Implement story progress tracking and flag system
-  - [ ] 9.3 Design multiple story paths leading to different endings
-  - [ ] 9.4 Create story choice interface and consequence system
+  - [x] 9.1 Create story event system with branching dialogue (MVP)
+    - Implemented modal UI (`index.html`), minimal styles (`css/components.css`)
+    - `UIManager` methods in `js/ui.js`: `attachStoryUI`, `showStoryEvent`, `renderStoryLine`, `nextStoryLine`, `showStoryChoices`, `chooseStoryOutcome`, `closeStory`
+  - [x] 9.2 Implement story progress tracking and flag system (MVP)
+    - Applies outcomes via `GameState.processStoryChoice()` (flags, unlocks, items)
+    - Adds `<event>_completed` flag and filters re-triggers
+  - [x] 9.3 Design multiple story paths leading to different endings (MVP)
+    - Scaffolding: `GameState.world.currentStoryPath` computed via `StoryData.calculateStoryBranch(storyFlags)` on init, on flag changes, and after choices
+  - [x] 9.4 Create story choice interface and consequence system (MVP)
+    - Choices rendered as buttons; outcomes summarized via toast; auto-save on apply
   - [ ] 9.5 Implement ending trigger conditions and cutscenes
   - [ ] 9.6 Add story content for 2-4 hours of gameplay per playthrough
 

@@ -1952,6 +1952,17 @@ p {
     padding-bottom: var(--spacing-sm);
 }
 
+.story-pill {
+    margin-left: auto;
+    background: rgba(212, 175, 55, 0.2);
+    border: 1px solid var(--primary-gold);
+    color: var(--deep-brown);
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    padding: 4px 8px;
+    border-radius: 999px;
+}
+
 .area-header .area-icon {
     font-size: 3rem;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));

@@ -24,8 +24,154 @@ class UIManager {
         this.worldMapButtons = [];
         this.worldMapIndex = 0;
         this.worldMapKeyHandler = null;
+        this.storyState = null;
         
         this.init();
+    }
+
+    // ===============================
+    // STORY MVP
+    // ===============================
+    attachStoryUI() {
+        this.storyState = { eventName: null, index: 0, queue: [], choices: [] };
+        const nextBtn = document.getElementById('story-next');
+        const closeBtn = document.getElementById('story-close');
+        const backdrop = document.querySelector('#story-modal .modal-backdrop');
+        if (nextBtn) nextBtn.addEventListener('click', () => this.nextStoryLine());
+        if (closeBtn) closeBtn.addEventListener('click', () => this.closeStory());
+        if (backdrop) backdrop.addEventListener('click', () => this.closeStory());
+    }
+
+    triggerStoryEventIfAvailable(areaId) {
+        if (typeof StoryData === 'undefined' || !window.GameState) return;
+        const flags = window.GameState.world?.storyFlags || [];
+        const completed = window.GameState.world?.completedEvents || [];
+        const events = (StoryData.getAreaEvents(areaId, flags) || [])
+            .filter(e => !completed.includes(e));
+        // Avoid opening if modal already visible
+        const modal = document.getElementById('story-modal');
+        const isOpen = modal && !modal.classList.contains('hidden');
+        if (!isOpen && events.length > 0) {
+            this.showStoryEvent(events[0]);
+        }
+    }
+
+    showStoryEvent(eventName) {
+        if (typeof StoryData === 'undefined') return;
+        const event = StoryData.getEvent(eventName);
+        if (!event) return;
+        const modal = document.getElementById('story-modal');
+        if (!modal) return;
+        // Build dialogue queue
+        const gs = this.game?.getGameState ? this.game.getGameState() : null;
+        const playerFlags = gs?.world?.storyFlags || [];
+        const path = gs?.world?.currentStoryPath || null;
+        const base = event.dialogue || [];
+        const lines = (typeof StoryData.generateDynamicDialogue === 'function')
+            ? StoryData.generateDynamicDialogue(base, playerFlags, path)
+            : base;
+        this.storyState = { eventName, index: 0, queue: lines, choices: event.choices || [] };
+        // UI
+        const title = document.getElementById('story-title');
+        if (title) title.textContent = event.name || 'Story';
+        modal.classList.remove('hidden');
+        this.renderStoryLine();
+    }
+
+    renderStoryLine() {
+        const { index, queue, choices } = this.storyState || {};
+        const speakerEl = document.getElementById('story-speaker');
+        const textEl = document.getElementById('story-text');
+        const nextBtn = document.getElementById('story-next');
+        const choicesEl = document.getElementById('story-choices');
+        if (!textEl || !nextBtn || !choicesEl) return;
+        // Hide choices while lines remain
+        choicesEl.classList.add('hidden');
+        choicesEl.innerHTML = '';
+        if (index < (queue?.length || 0)) {
+            const line = queue[index];
+            if (speakerEl) speakerEl.textContent = line?.speaker || '';
+            textEl.textContent = line?.text || '';
+            nextBtn.disabled = false;
+            nextBtn.classList.remove('hidden');
+        } else if ((choices && choices.length) > 0) {
+            // Show choices
+            this.showStoryChoices(choices);
+        } else {
+            // No choices -> allow close
+            if (speakerEl) speakerEl.textContent = '';
+            textEl.textContent = '';
+            nextBtn.disabled = true;
+            nextBtn.classList.add('hidden');
+            // Auto-complete with default outcome if defined
+            this.chooseStoryOutcome('default');
+        }
+    }
+
+    nextStoryLine() {
+        if (!this.storyState) return;
+        this.storyState.index++;
+        this.renderStoryLine();
+    }
+
+    showStoryChoices(choices) {
+        const choicesEl = document.getElementById('story-choices');
+        const nextBtn = document.getElementById('story-next');
+        if (!choicesEl) return;
+        choicesEl.classList.remove('hidden');
+        if (nextBtn) nextBtn.classList.add('hidden');
+        choicesEl.innerHTML = '';
+        choices.forEach(choice => {
+            const btn = document.createElement('button');
+            btn.className = 'btn secondary choice-btn';
+            btn.textContent = choice.text || 'Choose';
+            btn.addEventListener('click', () => this.chooseStoryOutcome(choice.outcome));
+            choicesEl.appendChild(btn);
+        });
+    }
+
+    chooseStoryOutcome(outcomeKey) {
+        if (!this.storyState || typeof StoryData === 'undefined') return;
+        const eventName = this.storyState.eventName;
+        const gs = this.game?.getGameState ? this.game.getGameState() : null;
+        if (gs && typeof gs.processStoryChoice === 'function') {
+            const outcome = gs.processStoryChoice(eventName, outcomeKey);
+            // Mark event completed via story flag to satisfy StoryData.getAreaEvents check
+            try { gs.addStoryFlag(`${eventName}_completed`); } catch {}
+            // Outcome summary toast
+            try {
+                const parts = [];
+                if (Array.isArray(outcome?.storyFlags) && outcome.storyFlags.length) {
+                    parts.push(`Flags: ${outcome.storyFlags.join(', ')}`);
+                }
+                if (Array.isArray(outcome?.unlockAreas) && outcome.unlockAreas.length) {
+                    parts.push(`Areas: ${outcome.unlockAreas.join(', ')}`);
+                }
+                if (Array.isArray(outcome?.items) && outcome.items.length) {
+                    parts.push(`Items: ${outcome.items.join(', ')}`);
+                }
+                if (parts.length) this.showNotification(`Story outcome → ${parts.join(' | ')}`);
+            } catch {}
+            if (outcome?.dialogue && outcome.dialogue.length > 0) {
+                // Show outcome dialogue briefly
+                this.storyState.queue = outcome.dialogue;
+                this.storyState.index = 0;
+                this.storyState.choices = [];
+                this.renderStoryLine();
+            } else {
+                this.closeStory();
+            }
+            // Auto-save after story progression
+            try { window.SaveSystem?.autoSave?.(); } catch {}
+        } else {
+            this.closeStory();
+        }
+    }
+
+    closeStory() {
+        const modal = document.getElementById('story-modal');
+        if (modal) modal.classList.add('hidden');
+        this.storyState = null;
     }
     
     /**
@@ -120,6 +266,8 @@ class UIManager {
         // Settings
         this.attachButton('back-to-menu-btn', () => this.returnToPrevious());
         this.attachSettings();
+        // Story UI
+        if (typeof this.attachStoryUI === 'function') this.attachStoryUI();
         
         // Inventory
         this.attachButton('back-from-inventory', () => this.returnToPrevious());
@@ -1452,6 +1600,22 @@ class UIManager {
         // Initialize scene-specific content (guard for undefined methods)
         if (sceneName === 'game_world' && typeof this.initializeWorldMap === 'function') {
             this.initializeWorldMap();
+            // Trigger story on entering world (MVP)
+            try {
+                const gs = this.game?.getGameState ? this.game.getGameState() : null;
+                const area = this.currentPlayerArea || gs?.world?.currentArea || 'starting_village';
+                // Intro auto-trigger: game_start only once
+                const flags = gs?.world?.storyFlags || [];
+                const completed = gs?.world?.completedEvents || [];
+                const modal = document.getElementById('story-modal');
+                const isOpen = modal && !modal.classList.contains('hidden');
+                const areaEvents = (typeof AreaData !== 'undefined') ? (AreaData.getArea(area)?.storyEvents || []) : [];
+                if (!isOpen && !flags.includes('game_start_completed') && areaEvents.includes('game_start') && !completed.includes('game_start')) {
+                    this.showStoryEvent('game_start');
+                } else {
+                    this.triggerStoryEventIfAvailable(area);
+                }
+            } catch (e) { console.warn('Story trigger on world enter failed:', e); }
         }
         if (sceneName === 'monster_management' && typeof this.switchMonsterTab === 'function') {
             this.switchMonsterTab('party'); // Default to party tab
@@ -3069,6 +3233,19 @@ loadGame() {
             if (nameEl) nameEl.textContent = areaData.name;
             if (typeEl) typeEl.textContent = areaData.type;
             if (descEl) descEl.textContent = areaData.description;
+
+            // Story pill visibility: show if any uncompleted story events are available
+            try {
+                const pill = document.getElementById('story-pill');
+                if (pill && typeof AreaData !== 'undefined') {
+                    const gs = this.game?.getGameState ? this.game.getGameState() : null;
+                    const flags = gs?.world?.storyFlags || [];
+                    const completed = gs?.world?.completedEvents || [];
+                    const events = (AreaData.getArea(areaId)?.storyEvents || [])
+                        .filter(e => !completed.includes(e) && !flags.includes(`${e}_completed`));
+                    pill.classList.toggle('hidden', events.length === 0);
+                }
+            } catch (e) { /* no-op */ }
             
             // Update stats
             this.updateAreaStats(areaData);
@@ -3317,6 +3494,13 @@ loadGame() {
         const name = window.AreaData.areas[this.selectedArea]?.name || this.selectedArea;
         this.showNotification(`Traveled to ${name}`);
         this.autoSaveIfEnabled('travel');
+        // After travel, try to trigger story for new area (MVP)
+        try { 
+            console.log('Attempting to trigger story event after travel...');
+            this.triggerStoryEventIfAvailable(this.currentPlayerArea); 
+        } catch (e) { 
+            console.warn('Story trigger after travel failed:', e); 
+        }
     }
 
     /** Keyboard navigation on world map screen */
@@ -3403,8 +3587,11 @@ loadGame() {
         } else {
             this.showNotification(`Exploring ${window.AreaData.areas[this.selectedArea]?.name}...`);
         }
+
+        // MVP: attempt to trigger a story event available for this area
+        try { this.triggerStoryEventIfAvailable(this.selectedArea); } catch {}
     }
-    
+
     /**
      * Center map on player location
      */
