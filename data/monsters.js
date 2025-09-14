@@ -140,6 +140,518 @@ const MonsterData = {
             areas: ["dragon_peak", "ancient_ruins"]
         },
         
+        // Advanced Forest Monsters
+        dire_wolf: {
+            name: "Dire Wolf",
+            type: ["beast", "nature", "aggressive"],
+            rarity: "uncommon",
+            baseStats: {
+                hp: 85, mp: 35, attack: 75, defense: 50,
+                magicAttack: 40, magicDefense: 45, speed: 95, accuracy: 85
+            },
+            statGrowth: {
+                hp: 6, mp: 3, attack: 6, defense: 4,
+                magicAttack: 3, magicDefense: 4, speed: 7, accuracy: 5
+            },
+            abilities: ["savage_bite", "howl", "pack_hunt", "intimidate"],
+            captureRate: 40,
+            evolutionLevel: 30,
+            evolvesTo: ["alpha_wolf"],
+            evolutionItems: [],
+            breedsWith: ["wolf", "dire_wolf"],
+            areas: ["deep_forest", "wolf_den"]
+        },
+
+        alpha_wolf: {
+            name: "Alpha Wolf",
+            type: ["beast", "nature", "leader"],
+            rarity: "rare",
+            baseStats: {
+                hp: 120, mp: 50, attack: 95, defense: 70,
+                magicAttack: 55, magicDefense: 60, speed: 100, accuracy: 90
+            },
+            statGrowth: {
+                hp: 8, mp: 4, attack: 8, defense: 6,
+                magicAttack: 4, magicDefense: 5, speed: 7, accuracy: 5
+            },
+            abilities: ["alpha_bite", "rally", "pack_leader", "moon_howl"],
+            captureRate: 25,
+            evolutionLevel: 45,
+            evolvesTo: [],
+            evolutionItems: [],
+            breedsWith: ["alpha_wolf", "dire_wolf"],
+            areas: ["wolf_den"]
+        },
+
+        // Plains Monsters
+        wild_horse: {
+            name: "Wild Horse",
+            type: ["beast", "nature"],
+            rarity: "common",
+            baseStats: {
+                hp: 70, mp: 30, attack: 60, defense: 45,
+                magicAttack: 25, magicDefense: 35, speed: 110, accuracy: 80
+            },
+            statGrowth: {
+                hp: 5, mp: 2, attack: 4, defense: 3,
+                magicAttack: 2, magicDefense: 3, speed: 8, accuracy: 4
+            },
+            abilities: ["gallop", "kick", "trample"],
+            captureRate: 65,
+            evolutionLevel: 25,
+            evolvesTo: ["stallion"],
+            evolutionItems: [],
+            breedsWith: ["wild_horse", "unicorn"],
+            areas: ["plains", "grasslands"]
+        },
+
+        hawk: {
+            name: "Hawk",
+            type: ["air", "beast", "flying"],
+            rarity: "common",
+            baseStats: {
+                hp: 50, mp: 40, attack: 70, defense: 35,
+                magicAttack: 45, magicDefense: 50, speed: 120, accuracy: 95
+            },
+            statGrowth: {
+                hp: 3, mp: 3, attack: 5, defense: 2,
+                magicAttack: 4, magicDefense: 4, speed: 8, accuracy: 6
+            },
+            abilities: ["dive_attack", "gust", "keen_eye"],
+            captureRate: 70,
+            evolutionLevel: 20,
+            evolvesTo: ["eagle"],
+            evolutionItems: [],
+            breedsWith: ["hawk", "fire_bat"],
+            areas: ["plains", "mountains"]
+        },
+
+        // Mountain Monsters
+        mountain_goat: {
+            name: "Mountain Goat",
+            type: ["beast", "earth"],
+            rarity: "common",
+            baseStats: {
+                hp: 75, mp: 25, attack: 55, defense: 65,
+                magicAttack: 20, magicDefense: 40, speed: 70, accuracy: 75
+            },
+            statGrowth: {
+                hp: 5, mp: 2, attack: 4, defense: 5,
+                magicAttack: 1, magicDefense: 3, speed: 4, accuracy: 4
+            },
+            abilities: ["ram", "mountain_climb", "sure_footed"],
+            captureRate: 70,
+            evolutionLevel: 22,
+            evolvesTo: ["bighorn"],
+            evolutionItems: [],
+            breedsWith: ["mountain_goat", "wild_horse"],
+            areas: ["mountains", "mountain_base"]
+        },
+
+        rock_lizard: {
+            name: "Rock Lizard",
+            type: ["earth", "reptile"],
+            rarity: "uncommon",
+            baseStats: {
+                hp: 80, mp: 35, attack: 65, defense: 85,
+                magicAttack: 40, magicDefense: 70, speed: 50, accuracy: 70
+            },
+            statGrowth: {
+                hp: 5, mp: 3, attack: 5, defense: 7,
+                magicAttack: 3, magicDefense: 6, speed: 3, accuracy: 3
+            },
+            abilities: ["rock_throw", "camouflage", "stone_skin"],
+            captureRate: 55,
+            evolutionLevel: 28,
+            evolvesTo: ["stone_dragon"],
+            evolutionItems: ["earth_gem"],
+            breedsWith: ["rock_lizard", "cave_troll"],
+            areas: ["mountains", "cave_entrance"]
+        },
+
+        // Cave Monsters
+        bat: {
+            name: "Bat",
+            type: ["air", "dark", "flying"],
+            rarity: "common",
+            baseStats: {
+                hp: 45, mp: 50, attack: 50, defense: 30,
+                magicAttack: 60, magicDefense: 55, speed: 100, accuracy: 85
+            },
+            statGrowth: {
+                hp: 3, mp: 4, attack: 3, defense: 2,
+                magicAttack: 5, magicDefense: 4, speed: 7, accuracy: 5
+            },
+            abilities: ["sonic_screech", "drain", "darkness"],
+            captureRate: 75,
+            evolutionLevel: 18,
+            evolvesTo: ["vampire_bat"],
+            evolutionItems: [],
+            breedsWith: ["bat", "fire_bat"],
+            areas: ["cave_entrance", "underground_lake"]
+        },
+
+        crystal_spider: {
+            name: "Crystal Spider",
+            type: ["earth", "insect", "crystal"],
+            rarity: "uncommon",
+            baseStats: {
+                hp: 60, mp: 70, attack: 65, defense: 55,
+                magicAttack: 80, magicDefense: 75, speed: 85, accuracy: 90
+            },
+            statGrowth: {
+                hp: 4, mp: 6, attack: 5, defense: 4,
+                magicAttack: 7, magicDefense: 6, speed: 6, accuracy: 5
+            },
+            abilities: ["crystal_web", "poison_sting", "reflect"],
+            captureRate: 45,
+            evolutionLevel: 25,
+            evolvesTo: ["crystal_queen"],
+            evolutionItems: ["crystal_shard"],
+            breedsWith: ["crystal_spider"],
+            areas: ["cave_entrance", "crystal_caves"]
+        },
+
+        gem_slime: {
+            name: "Gem Slime",
+            type: ["water", "crystal", "mineral"],
+            rarity: "uncommon",
+            baseStats: {
+                hp: 55, mp: 80, attack: 40, defense: 70,
+                magicAttack: 85, magicDefense: 90, speed: 40, accuracy: 75
+            },
+            statGrowth: {
+                hp: 4, mp: 7, attack: 3, defense: 6,
+                magicAttack: 8, magicDefense: 8, speed: 2, accuracy: 4
+            },
+            abilities: ["gem_blast", "harden", "crystal_heal"],
+            captureRate: 50,
+            evolutionLevel: 30,
+            evolvesTo: ["diamond_slime"],
+            evolutionItems: ["precious_gem"],
+            breedsWith: ["slime", "crystal_spider"],
+            areas: ["cave_entrance", "crystal_caves"]
+        },
+
+        cave_troll: {
+            name: "Cave Troll",
+            type: ["earth", "giant", "aggressive"],
+            rarity: "rare",
+            baseStats: {
+                hp: 140, mp: 30, attack: 110, defense: 90,
+                magicAttack: 35, magicDefense: 50, speed: 30, accuracy: 60
+            },
+            statGrowth: {
+                hp: 9, mp: 2, attack: 9, defense: 7,
+                magicAttack: 2, magicDefense: 4, speed: 2, accuracy: 3
+            },
+            abilities: ["club_smash", "rock_throw", "regenerate", "roar"],
+            captureRate: 30,
+            evolutionLevel: 40,
+            evolvesTo: [],
+            evolutionItems: [],
+            breedsWith: ["cave_troll", "orc"],
+            areas: ["cave_entrance", "deep_caves"]
+        },
+
+        // Volcanic Region Monsters
+        fire_bat: {
+            name: "Fire Bat",
+            type: ["fire", "air", "flying"],
+            rarity: "uncommon",
+            baseStats: {
+                hp: 50, mp: 60, attack: 60, defense: 35,
+                magicAttack: 70, magicDefense: 65, speed: 110, accuracy: 85
+            },
+            statGrowth: {
+                hp: 3, mp: 5, attack: 4, defense: 2,
+                magicAttack: 6, magicDefense: 5, speed: 8, accuracy: 5
+            },
+            abilities: ["fire_screech", "flame_wing", "heat_drain"],
+            captureRate: 55,
+            evolutionLevel: 25,
+            evolvesTo: ["inferno_bat"],
+            evolutionItems: ["fire_gem"],
+            breedsWith: ["bat", "fire_sprite"],
+            areas: ["volcanic_region", "fire_caves"]
+        },
+
+        salamander: {
+            name: "Salamander",
+            type: ["fire", "reptile"],
+            rarity: "uncommon",
+            baseStats: {
+                hp: 70, mp: 65, attack: 70, defense: 60,
+                magicAttack: 85, magicDefense: 80, speed: 75, accuracy: 80
+            },
+            statGrowth: {
+                hp: 5, mp: 5, attack: 5, defense: 4,
+                magicAttack: 7, magicDefense: 6, speed: 5, accuracy: 4
+            },
+            abilities: ["flame_breath", "fire_immunity", "molten_skin"],
+            captureRate: 45,
+            evolutionLevel: 32,
+            evolvesTo: ["fire_dragon"],
+            evolutionItems: ["dragon_scale"],
+            breedsWith: ["salamander", "fire_sprite"],
+            areas: ["volcanic_region", "lava_tubes"]
+        },
+
+        lava_golem: {
+            name: "Lava Golem",
+            type: ["fire", "earth", "construct"],
+            rarity: "rare",
+            baseStats: {
+                hp: 150, mp: 40, attack: 100, defense: 120,
+                magicAttack: 90, magicDefense: 100, speed: 25, accuracy: 70
+            },
+            statGrowth: {
+                hp: 10, mp: 3, attack: 8, defense: 10,
+                magicAttack: 7, magicDefense: 8, speed: 1, accuracy: 3
+            },
+            abilities: ["molten_punch", "lava_spray", "heat_aura", "eruption"],
+            captureRate: 20,
+            evolutionLevel: 50,
+            evolvesTo: [],
+            evolutionItems: [],
+            breedsWith: [],
+            areas: ["volcanic_region", "lava_chambers"]
+        },
+
+        // Dragon Peak Monsters
+        wyvern: {
+            name: "Wyvern",
+            type: ["dragon", "air", "flying"],
+            rarity: "rare",
+            baseStats: {
+                hp: 100, mp: 80, attack: 95, defense: 75,
+                magicAttack: 85, magicDefense: 80, speed: 90, accuracy: 85
+            },
+            statGrowth: {
+                hp: 8, mp: 7, attack: 8, defense: 6,
+                magicAttack: 7, magicDefense: 6, speed: 6, accuracy: 5
+            },
+            abilities: ["wind_slash", "dive_bomb", "wing_buffet", "roar"],
+            captureRate: 18,
+            evolutionLevel: 40,
+            evolvesTo: ["elder_wyvern"],
+            evolutionItems: ["sky_gem"],
+            breedsWith: ["dragon_whelp", "wyvern"],
+            areas: ["dragon_peak", "sky_fortress"]
+        },
+
+        fire_drake: {
+            name: "Fire Drake",
+            type: ["dragon", "fire"],
+            rarity: "rare",
+            baseStats: {
+                hp: 110, mp: 90, attack: 105, defense: 85,
+                magicAttack: 100, magicDefense: 90, speed: 75, accuracy: 85
+            },
+            statGrowth: {
+                hp: 9, mp: 8, attack: 9, defense: 7,
+                magicAttack: 9, magicDefense: 7, speed: 5, accuracy: 5
+            },
+            abilities: ["dragon_fire", "flame_claws", "fire_shield", "intimidate"],
+            captureRate: 15,
+            evolutionLevel: 45,
+            evolvesTo: ["fire_dragon"],
+            evolutionItems: ["ancient_flame"],
+            breedsWith: ["dragon_whelp", "salamander"],
+            areas: ["dragon_peak", "ancient_ruins"]
+        },
+
+        ancient_dragon: {
+            name: "Ancient Dragon",
+            type: ["dragon", "fire", "legendary"],
+            rarity: "legendary",
+            baseStats: {
+                hp: 200, mp: 150, attack: 150, defense: 120,
+                magicAttack: 140, magicDefense: 130, speed: 80, accuracy: 95
+            },
+            statGrowth: {
+                hp: 12, mp: 10, attack: 12, defense: 10,
+                magicAttack: 12, magicDefense: 10, speed: 6, accuracy: 5
+            },
+            abilities: ["ancient_flame", "dragon_claw", "time_magic", "dominate"],
+            captureRate: 3,
+            evolutionLevel: 99,
+            evolvesTo: [],
+            evolutionItems: [],
+            breedsWith: ["ancient_dragon"],
+            areas: ["dragon_peak"]
+        },
+
+        // Mystic Grove Monsters
+        nature_sprite: {
+            name: "Nature Sprite",
+            type: ["nature", "magical", "elemental"],
+            rarity: "uncommon",
+            baseStats: {
+                hp: 50, mp: 90, attack: 45, defense: 40,
+                magicAttack: 95, magicDefense: 85, speed: 100, accuracy: 90
+            },
+            statGrowth: {
+                hp: 3, mp: 8, attack: 3, defense: 3,
+                magicAttack: 8, magicDefense: 7, speed: 7, accuracy: 6
+            },
+            abilities: ["nature_magic", "heal", "entangle", "blessing"],
+            captureRate: 30,
+            evolutionLevel: 35,
+            evolvesTo: ["forest_guardian"],
+            evolutionItems: ["nature_crystal"],
+            breedsWith: ["fairy", "unicorn"],
+            areas: ["mystic_grove", "enchanted_forest"]
+        },
+
+        fairy: {
+            name: "Fairy",
+            type: ["light", "magical", "flying"],
+            rarity: "uncommon",
+            baseStats: {
+                hp: 40, mp: 100, attack: 35, defense: 30,
+                magicAttack: 100, magicDefense: 95, speed: 115, accuracy: 95
+            },
+            statGrowth: {
+                hp: 2, mp: 9, attack: 2, defense: 2,
+                magicAttack: 9, magicDefense: 8, speed: 8, accuracy: 6
+            },
+            abilities: ["fairy_dust", "light_beam", "heal", "charm"],
+            captureRate: 25,
+            evolutionLevel: 40,
+            evolvesTo: ["fairy_queen"],
+            evolutionItems: ["star_fragment"],
+            breedsWith: ["nature_sprite", "phoenix_chick"],
+            areas: ["mystic_grove", "fairy_ring"]
+        },
+
+        unicorn: {
+            name: "Unicorn",
+            type: ["holy", "beast", "magical"],
+            rarity: "rare",
+            baseStats: {
+                hp: 95, mp: 120, attack: 80, defense: 70,
+                magicAttack: 110, magicDefense: 100, speed: 95, accuracy: 90
+            },
+            statGrowth: {
+                hp: 7, mp: 10, attack: 6, defense: 5,
+                magicAttack: 9, magicDefense: 8, speed: 7, accuracy: 6
+            },
+            abilities: ["horn_strike", "purify", "holy_light", "teleport"],
+            captureRate: 12,
+            evolutionLevel: 50,
+            evolvesTo: [],
+            evolutionItems: [],
+            breedsWith: ["unicorn", "wild_horse"],
+            areas: ["mystic_grove", "sacred_glade"]
+        },
+
+        treant: {
+            name: "Treant",
+            type: ["nature", "plant", "giant"],
+            rarity: "rare",
+            baseStats: {
+                hp: 180, mp: 70, attack: 90, defense: 140,
+                magicAttack: 85, magicDefense: 120, speed: 20, accuracy: 75
+            },
+            statGrowth: {
+                hp: 12, mp: 5, attack: 7, defense: 12,
+                magicAttack: 6, magicDefense: 10, speed: 1, accuracy: 4
+            },
+            abilities: ["root_strike", "forest_magic", "bark_skin", "summon_vines"],
+            captureRate: 15,
+            evolutionLevel: 60,
+            evolvesTo: ["elder_treant"],
+            evolutionItems: ["ancient_seed"],
+            breedsWith: ["nature_sprite"],
+            areas: ["mystic_grove", "ancient_forest"]
+        },
+
+        // Ancient Ruins Monsters
+        guardian_golem: {
+            name: "Guardian Golem",
+            type: ["earth", "construct", "guardian"],
+            rarity: "rare",
+            baseStats: {
+                hp: 160, mp: 50, attack: 110, defense: 130,
+                magicAttack: 70, magicDefense: 110, speed: 30, accuracy: 80
+            },
+            statGrowth: {
+                hp: 11, mp: 4, attack: 9, defense: 11,
+                magicAttack: 5, magicDefense: 9, speed: 2, accuracy: 4
+            },
+            abilities: ["stone_fist", "barrier", "ancient_magic", "self_repair"],
+            captureRate: 20,
+            evolutionLevel: 55,
+            evolvesTo: ["titan_golem"],
+            evolutionItems: ["ancient_core"],
+            breedsWith: ["lava_golem"],
+            areas: ["ancient_ruins", "forgotten_temple"]
+        },
+
+        shadow_wraith: {
+            name: "Shadow Wraith",
+            type: ["dark", "undead", "spirit"],
+            rarity: "rare",
+            baseStats: {
+                hp: 80, mp: 120, attack: 75, defense: 45,
+                magicAttack: 125, magicDefense: 100, speed: 105, accuracy: 90
+            },
+            statGrowth: {
+                hp: 6, mp: 10, attack: 6, defense: 3,
+                magicAttack: 11, magicDefense: 8, speed: 8, accuracy: 6
+            },
+            abilities: ["shadow_strike", "drain_life", "phase", "curse"],
+            captureRate: 18,
+            evolutionLevel: 50,
+            evolvesTo: ["lich"],
+            evolutionItems: ["soul_gem"],
+            breedsWith: [],
+            areas: ["ancient_ruins", "shadow_realm"]
+        },
+
+        ancient_spirit: {
+            name: "Ancient Spirit",
+            type: ["spirit", "magical", "ancient"],
+            rarity: "epic",
+            baseStats: {
+                hp: 100, mp: 150, attack: 85, defense: 60,
+                magicAttack: 140, magicDefense: 130, speed: 90, accuracy: 95
+            },
+            statGrowth: {
+                hp: 8, mp: 12, attack: 7, defense: 5,
+                magicAttack: 12, magicDefense: 11, speed: 7, accuracy: 6
+            },
+            abilities: ["ancient_wisdom", "spirit_blast", "time_warp", "prophecy"],
+            captureRate: 10,
+            evolutionLevel: 70,
+            evolvesTo: [],
+            evolutionItems: [],
+            breedsWith: ["shadow_wraith"],
+            areas: ["ancient_ruins"]
+        },
+
+        guardian_titan: {
+            name: "Guardian Titan",
+            type: ["earth", "construct", "legendary", "boss"],
+            rarity: "legendary",
+            baseStats: {
+                hp: 250, mp: 80, attack: 160, defense: 180,
+                magicAttack: 100, magicDefense: 150, speed: 25, accuracy: 85
+            },
+            statGrowth: {
+                hp: 15, mp: 6, attack: 13, defense: 15,
+                magicAttack: 8, magicDefense: 12, speed: 1, accuracy: 4
+            },
+            abilities: ["titan_strike", "earthquake", "ancient_power", "fortress_mode"],
+            captureRate: 2,
+            evolutionLevel: 99,
+            evolvesTo: [],
+            evolutionItems: [],
+            breedsWith: [],
+            areas: ["ancient_ruins"]
+        },
+
         // Legendary Monsters
         phoenix_chick: {
             name: "Phoenix Chick",
