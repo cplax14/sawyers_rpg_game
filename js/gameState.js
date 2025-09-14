@@ -250,6 +250,12 @@ class GameState {
             completedEvents: [],
             currentStoryPath: null
         };
+        // Establish initial story path based on starting flags
+        try {
+            if (typeof StoryData !== 'undefined' && typeof StoryData.calculateStoryBranch === 'function') {
+                this.world.currentStoryPath = StoryData.calculateStoryBranch(this.world.storyFlags);
+            }
+        } catch (e) { console.warn('Story path calc on defaults failed:', e); }
         
         // Clear monster collection
         this.monsters = {
@@ -776,6 +782,14 @@ class GameState {
             
             // Check for newly unlocked areas
             this.checkUnlockedAreas();
+
+            // Recalculate current story path when flags change
+            try {
+                if (typeof StoryData !== 'undefined' && typeof StoryData.calculateStoryBranch === 'function') {
+                    this.world.currentStoryPath = StoryData.calculateStoryBranch(this.world.storyFlags);
+                    console.log('Current story path:', this.world.currentStoryPath);
+                }
+            } catch (e) { console.warn('Story path calc failed:', e); }
         }
     }
     
@@ -837,6 +851,14 @@ class GameState {
         
         this.stats.storyChoicesMade++;
         this.world.completedEvents.push(eventName);
+        // Mark as completed via flag for UI convenience
+        this.addStoryFlag(`${eventName}_completed`);
+        // Ensure story path reflects any new flags
+        try {
+            if (typeof StoryData !== 'undefined' && typeof StoryData.calculateStoryBranch === 'function') {
+                this.world.currentStoryPath = StoryData.calculateStoryBranch(this.world.storyFlags);
+            }
+        } catch (e) { console.warn('Story path recalc after choice failed:', e); }
         
         return outcome;
     }

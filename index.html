@@ -25,6 +25,8 @@
                         <div class="menu-emblem">⚔️</div>
                     </div>
                     
+                    <!-- Story Modal (MVP) moved out of main-menu -->
+                    
                     <div class="menu-buttons">
                         <button id="new-game-btn" class="btn primary menu-btn">
                             <span class="btn-icon">🆕</span>
@@ -243,6 +245,7 @@
                                     <h3 class="area-name" id="area-name">Area Name</h3>
                                     <p class="area-type" id="area-type">Type</p>
                                 </div>
+                                <span id="story-pill" class="story-pill hidden" title="Story events available">Story Available</span>
                             </header>
                             
                             <div class="area-description" id="area-description">
@@ -1237,6 +1240,27 @@
                         </button>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Story Modal (MVP) placed as a top-level child of #ui-overlay -->
+        <div id="story-modal" class="hidden">
+            <div class="modal-backdrop"></div>
+            <div class="modal-content">
+                <header class="modal-header">
+                    <h3 id="story-title">Story</h3>
+                    <button class="modal-close" id="story-close">✕</button>
+                </header>
+                <div class="modal-body">
+                    <div class="story-line">
+                        <div class="story-speaker" id="story-speaker"></div>
+                        <div class="story-text" id="story-text"></div>
+                    </div>
+                    <div class="story-choices hidden" id="story-choices"></div>
+                </div>
+                <footer class="modal-footer">
+                    <button id="story-next" class="btn primary"><span class="btn-text">Next</span></button>
+                </footer>
             </div>
         </div>
 

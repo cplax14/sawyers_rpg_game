@@ -1,3 +1,42 @@
+/* Story Modal MVP */
+#story-modal .modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 999;
+}
+
+#story-modal .modal-content {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(720px, 90vw);
+  background: linear-gradient(135deg, var(--parchment), var(--dark-parchment));
+  border: 2px solid var(--dark-gold);
+  border-radius: var(--border-radius-lg);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  z-index: 1000;
+}
+
+#story-modal .modal-header,
+#story-modal .modal-footer {
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--dark-gold);
+}
+
+#story-modal .modal-footer { border-bottom: 0; border-top: 1px solid var(--dark-gold); }
+
+#story-modal .modal-body {
+  padding: var(--spacing-md);
+}
+
+#story-title { margin: 0; font-family: var(--font-ui); }
+.story-speaker { color: var(--light-brown); font-style: italic; margin-bottom: var(--spacing-xs); }
+.story-text { color: var(--deep-brown); line-height: 1.5; min-height: 72px; }
+
+#story-choices { display: grid; gap: var(--spacing-sm); margin-top: var(--spacing-sm); }
+#story-choices .choice-btn { text-align: left; }
 /* ================================================== */
 /*               COMPONENT-SPECIFIC STYLES           */
 /* ================================================== */
