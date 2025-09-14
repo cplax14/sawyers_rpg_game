@@ -47,15 +47,34 @@ class GameState {
         
         // Game settings
         this.settings = {
+            // Audio settings
             masterVolume: 0.5,
+            musicVolume: 0.7,
             sfxVolume: 0.75,
-            musicVolume: 0.5,
+            voiceVolume: 0.8,
+            
+            // Gameplay settings
+            difficulty: 'normal', // easy, normal, hard, nightmare
             autoSave: true,
+            autoSaveInterval: 5, // minutes
+            battleAnimations: true,
+            skipIntro: false,
+            monsterNotifications: true,
+            
+            // Display settings
+            theme: 'fantasy', // fantasy, dark, light, colorful
+            uiScale: 100, // 80-120%
+            showFPS: false,
+            reduceMotion: false,
+            highContrast: false,
+            
+            // Controls settings
+            keyboardShortcuts: true,
+            mouseSensitivity: 5,
             keyBindings: {
-                confirm: 'Enter',
-                cancel: 'Escape',
-                menu: 'KeyM',
+                menu: 'Escape',
                 inventory: 'KeyI',
+                map: 'KeyM',
                 monsters: 'KeyP'
             }
         };
@@ -92,6 +111,72 @@ class GameState {
         
         // Initialize the state
         this.init();
+    }
+
+    /** Determine if the player can equip a given itemId */
+    canEquip(itemId) {
+        if (typeof ItemData === 'undefined') return { ok: false, reason: 'Item data unavailable' };
+        const item = ItemData.getItem(itemId);
+        if (!item) return { ok: false, reason: 'Item not found' };
+        // Only equipment types
+        if (!['weapon', 'armor', 'accessory'].includes(item.type)) {
+            return { ok: false, reason: 'Not equippable' };
+        }
+        // Class/level restrictions
+        if (!ItemData.canPlayerUseItem(itemId, this.player)) {
+            return { ok: false, reason: 'Requirements not met' };
+        }
+        return { ok: true, slot: item.type };
+    }
+
+    /** Equip an item from inventory into its slot; returns {ok, swapped} */
+    equipItem(itemId) {
+        const check = this.canEquip(itemId);
+        if (!check.ok) {
+            this.addNotification(check.reason || 'Cannot equip item', 'error');
+            return { ok: false };
+        }
+        // Must have item in inventory
+        if (!this.player.inventory.items[itemId] || this.player.inventory.items[itemId] <= 0) {
+            this.addNotification('Item not in inventory', 'error');
+            return { ok: false };
+        }
+        const slot = check.slot; // weapon/armor/accessory
+        const previous = this.player.equipment[slot];
+        // Equip new
+        this.player.equipment[slot] = itemId;
+        // Consume one if items are stackable for equipment; for now treat equipment as unique count
+        // Do not decrement here to keep inventory as owned list; optional: decrement if representing bag counts
+        this.recalcPlayerStats();
+        this.addNotification(`Equipped ${ItemData.getItem(itemId)?.name || itemId}`, 'success');
+        return { ok: true, swapped: previous };
+    }
+
+    /** Unequip item from slot; returns {ok, itemId} */
+    unequipItem(slot) {
+        if (!['weapon', 'armor', 'accessory'].includes(slot)) return { ok: false };
+        const current = this.player.equipment[slot];
+        if (!current) return { ok: false };
+        this.player.equipment[slot] = null;
+        this.recalcPlayerStats();
+        this.addNotification('Unequipped', 'info');
+        return { ok: true, itemId: current };
+    }
+
+    /** Recalculate player stats based on class base and equipment bonuses */
+    recalcPlayerStats() {
+        // Base stats from class/level
+        if (this.player.class && typeof CharacterData !== 'undefined') {
+            this.player.stats = CharacterData.getStatsAtLevel(this.player.class, this.player.level);
+        }
+        // Apply equipment bonuses
+        if (typeof ItemData !== 'undefined') {
+            const eqStats = ItemData.getEquipmentStats(this.player.equipment);
+            for (const key of Object.keys(eqStats)) {
+                const base = this.player.stats[key] || 0;
+                this.player.stats[key] = base + (eqStats[key] || 0);
+            }
+        }
     }
     
     /**

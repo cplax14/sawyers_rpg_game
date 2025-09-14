@@ -85,30 +85,30 @@
   - [x] 5.5 Create combat rewards system (experience, gold, items)
   - [x] 5.6 Implement monster capture chance calculations
 
-- [ ] 6.0 World Map and Area Progression
+- [x] 6.0 World Map and Area Progression
   - [x] 6.1 Create world map data structure with interconnected areas
   - [x] 6.2 Implement area unlocking system based on story progress
   - [x] 6.3 Create random encounter system for each area
-  - [ ] 6.4 Implement area-specific monster spawn tables
+  - [x] 6.4 Implement area-specific monster spawn tables
   - [x] 6.5 Add travel system between unlocked areas
 
 - [ ] 7.0 User Interface and Game Screens
-  - [ ] 7.1 Design and implement main menu screen
-  - [ ] 7.2 Create character selection and creation interface
-  - [ ] 7.3 Implement combat interface with action menus and status displays
-  - [ ] 7.4 Create monster management screens (party, storage, breeding)
-  - [ ] 7.5 Implement world map navigation interface
-  - [ ] 7.6 Create inventory and equipment management screens
-  - [ ] 7.7 Add game settings and options menu
+  - [x] 7.1 Design and implement main menu screen
+  - [x] 7.2 Create character selection and creation interface
+  - [x] 7.3 Implement combat interface with action menus and status displays
+  - [x] 7.4 Create monster management screens (party, storage, breeding)
+  - [x] 7.5 Implement world map navigation interface
+  - [x] 7.6 Create inventory and equipment management screens
+  - [x] 7.7 Add game settings and options menu
   - [ ] 7.8 Implement rich fantasy-themed styling throughout
 
 - [ ] 8.0 Save System and Data Persistence
-  - [ ] 8.1 Implement local storage save system with JSON serialization
-  - [ ] 8.2 Create save game data structure covering all game state
-  - [ ] 8.3 Add auto-save functionality at key game events
-  - [ ] 8.4 Implement manual save/load interface
-  - [ ] 8.5 Create save file export/import functionality
-  - [ ] 8.6 Add save file validation and error handling
+  - [x] 8.1 Implement local storage save system with JSON serialization
+  - [x] 8.2 Create save game data structure covering all game state
+  - [x] 8.3 Add auto-save functionality at key game events
+  - [x] 8.4 Implement manual save/load interface
+  - [x] 8.5 Create save file export/import functionality
+  - [x] 8.6 Add save file validation and error handling
 
 - [ ] 9.0 Story System and Multiple Endings
   - [ ] 9.1 Create story event system with branching dialogue
