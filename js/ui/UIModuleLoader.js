@@ -395,9 +395,14 @@ class UIModuleLoader {
                 // Register modules without loading (already loaded)
                 loader.registerModules(config);
                 
-                // Mark all as loaded
-                Object.keys(config).forEach(name => {
-                    loader.loadedModules.add(name);
+                // Mark only present modules as loaded
+                Object.entries(config).forEach(([name, cfg]) => {
+                    const cls = window[cfg.className];
+                    if (cls) {
+                        loader.loadedModules.add(name);
+                    } else {
+                        console.warn(`⚠️ Skipping preloaded init for ${name}: class ${cfg.className} not found`);
+                    }
                 });
                 
                 // Initialize modules

@@ -445,7 +445,9 @@ class SawyersRPG {
         setTimeout(() => {
             notification.classList.remove('show');
             setTimeout(() => {
-                document.body.removeChild(notification);
+                if (notification && notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
             }, 300);
         }, 5000);
     }
@@ -462,7 +464,9 @@ class SawyersRPG {
         setTimeout(() => {
             notification.classList.remove('show');
             setTimeout(() => {
-                document.body.removeChild(notification);
+                if (notification && notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
             }, 300);
         }, 3000);
     }

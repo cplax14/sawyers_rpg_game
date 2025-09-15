@@ -286,8 +286,7 @@ class UIManager {
         // Character selection interface
         this.attachCharacterSelection();
         
-        // Monster management interface
-        this.attachMonsterManagement();
+        // Monster management interface - moved to MonsterUI module
         
         // World map interface
         this.attachWorldMapInterface();
@@ -1617,9 +1616,7 @@ class UIManager {
                 }
             } catch (e) { console.warn('Story trigger on world enter failed:', e); }
         }
-        if (sceneName === 'monster_management' && typeof this.switchMonsterTab === 'function') {
-            this.switchMonsterTab('party'); // Default to party tab
-        }
+        // Monster management scene handled by MonsterUI module
         if (sceneName === 'inventory' && typeof this.initializeInventory === 'function') {
             this.initializeInventory();
         }
@@ -2450,486 +2447,39 @@ loadGame() {
         }
     }
     
-    /**
-     * Attach monster management interface event handlers
-     */
-    attachMonsterManagement() {
-        // Initialize tab system
-        this.selectedTab = 'party';
-        this.selectedMonsters = new Set();
-        this.breedingParents = { parent1: null, parent2: null };
-        
-        // Tab buttons
-        const tabButtons = document.querySelectorAll('.tab-btn');
-        tabButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const tabName = btn.dataset.tab;
-                this.switchMonsterTab(tabName);
-            });
-        });
-        
-        // Party actions
-        this.attachButton('heal-all-btn', () => this.healAllPartyMonsters());
-        this.attachButton('auto-arrange-btn', () => this.autoArrangeParty());
-        
-        // Storage actions
-        this.attachButton('release-selected-btn', () => this.releaseSelectedMonsters());
-        this.attachButton('sort-storage-btn', () => this.sortStorage());
-        
-        // Storage filters
-        const typeFilter = document.getElementById('type-filter');
-        const rarityFilter = document.getElementById('rarity-filter');
-        if (typeFilter) typeFilter.addEventListener('change', () => this.filterStorage());
-        if (rarityFilter) rarityFilter.addEventListener('change', () => this.filterStorage());
-        
-        // Breeding actions
-        this.attachButton('start-breeding-btn', () => this.startBreeding());
-        this.attachButton('clear-breeding-btn', () => this.clearBreedingSelection());
-        
-        // Modal controls
-        this.attachButton('monster-modal-close', () => this.closeMonsterModal());
-        this.attachButton('modal-add-to-party', () => this.addMonsterToParty());
-        this.attachButton('modal-remove-from-party', () => this.removeMonsterFromParty());
-        this.attachButton('modal-release-monster', () => this.releaseMonster());
-        
-        // Navigation
-        this.attachButton('back-from-monsters', () => this.returnToPrevious());
-        
-        // Modal backdrop click
-        const modalBackdrop = document.querySelector('.modal-backdrop');
-        if (modalBackdrop) {
-            modalBackdrop.addEventListener('click', () => this.closeMonsterModal());
-        }
-    }
+    // Monster management interface moved to MonsterUI module
     
-    /**
-     * Switch between monster management tabs
-     */
-    switchMonsterTab(tabName) {
-        // Update tab buttons
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.tab === tabName);
-        });
-        
-        // Update tab panels
-        document.querySelectorAll('.tab-panel').forEach(panel => {
-            panel.classList.toggle('active', panel.id === `${tabName}-panel`);
-        });
-        
-        this.selectedTab = tabName;
-        
-        // Refresh content based on tab
-        switch(tabName) {
-            case 'party':
-                this.refreshPartyDisplay();
-                break;
-            case 'storage':
-                this.refreshStorageDisplay();
-                break;
-            case 'breeding':
-                this.refreshBreedingDisplay();
-                break;
-        }
-    }
+    // switchMonsterTab method moved to MonsterUI module
     
-    /**
-     * Refresh party display
-     */
-    refreshPartyDisplay() {
-        const partyGrid = document.getElementById('party-grid');
-        const partySizeEl = document.getElementById('party-size');
-        
-        if (!partyGrid || !window.GameState) return;
-        
-        const party = window.GameState.monsters?.party || [];
-        const maxPartySize = 3;
-        
-        // Update party size display
-        if (partySizeEl) partySizeEl.textContent = party.length;
-        
-        // Clear and rebuild party grid
-        partyGrid.innerHTML = '';
-        
-        for (let i = 0; i < maxPartySize; i++) {
-            const monster = party[i];
-            const slot = document.createElement('div');
-            slot.className = `party-slot ${monster ? 'filled' : 'empty'}`;
-            slot.dataset.slot = i;
-            
-            if (monster) {
-                slot.innerHTML = `
-                    <div class="monster-card-icon">${this.getMonsterIcon(monster.species)}</div>
-                    <div class="monster-card-name">${monster.nickname || monster.speciesData?.name || monster.species}</div>
-                    <div class="monster-card-level">Lv. ${monster.level}</div>
-                    <div class="monster-card-stats">
-                        <div>HP: ${monster.currentStats.hp}/${monster.stats.hp}</div>
-                        <div>MP: ${monster.currentStats.mp}/${monster.stats.mp}</div>
-                    </div>
-                `;
-                slot.addEventListener('click', () => this.showMonsterDetails(monster));
-            } else {
-                slot.innerHTML = `
-                    <div class="empty-slot-content">
-                        <span class="empty-icon">➕</span>
-                        <span class="empty-text">Empty Slot</span>
-                    </div>
-                `;
-                slot.addEventListener('click', () => this.showMonsterSelection(i));
-            }
-            
-            partyGrid.appendChild(slot);
-        }
-    }
+    // refreshPartyDisplay method moved to MonsterUI module
     
-    /**
-     * Refresh storage display
-     */
-    refreshStorageDisplay() {
-        const storageGrid = document.getElementById('storage-grid');
-        const totalMonstersEl = document.getElementById('total-monsters');
-        
-        if (!storageGrid || !window.GameState) return;
-        
-        const storage = window.GameState.monsters?.storage || [];
-        
-        // Update total count
-        if (totalMonstersEl) totalMonstersEl.textContent = storage.length;
-        
-        // Apply filters
-        const filteredMonsters = this.getFilteredMonsters(storage);
-        
-        // Clear and rebuild storage grid
-        storageGrid.innerHTML = '';
-        
-        if (filteredMonsters.length === 0) {
-            const emptyMessage = document.createElement('div');
-            emptyMessage.className = 'no-monsters';
-            emptyMessage.innerHTML = '<p>No monsters found matching the current filters.</p>';
-            storageGrid.appendChild(emptyMessage);
-            return;
-        }
-        
-        filteredMonsters.forEach(monster => {
-            const card = this.createMonsterCard(monster);
-            storageGrid.appendChild(card);
-        });
-    }
+    // refreshStorageDisplay method moved to MonsterUI module
     
-    /**
-     * Create a monster card element
-     */
-    createMonsterCard(monster) {
-        const card = document.createElement('div');
-        card.className = 'monster-card';
-        card.dataset.monsterId = monster.id;
-        
-        const types = monster.speciesData?.type || ['unknown'];
-        const typesBadges = types.map(type => 
-            `<span class="type-badge">${type}</span>`
-        ).join('');
-        
-        card.innerHTML = `
-            <div class="monster-card-icon">${this.getMonsterIcon(monster.species)}</div>
-            <div class="monster-card-name">${monster.nickname || monster.speciesData?.name || monster.species}</div>
-            <div class="monster-card-level">Lv. ${monster.level}</div>
-            <div class="monster-card-type">${typesBadges}</div>
-            <div class="monster-card-stats">
-                <div>HP: ${monster.stats.hp}</div>
-                <div>ATK: ${monster.stats.attack}</div>
-                <div>DEF: ${monster.stats.defense}</div>
-                <div>SPD: ${monster.stats.speed}</div>
-            </div>
-        `;
-        
-        // Event handlers
-        card.addEventListener('click', (e) => {
-            if (e.shiftKey) {
-                this.toggleMonsterSelection(monster.id, card);
-            } else {
-                this.showMonsterDetails(monster);
-            }
-        });
-        
-        return card;
-    }
+    // createMonsterCard method moved to MonsterUI module
     
-    /**
-     * Get appropriate icon for monster species
-     */
-    getMonsterIcon(species) {
-        const icons = {
-            slime: '🟢',
-            goblin: '👹',
-            wolf: '🐺',
-            hawk: '🦅',
-            dragon: '🐉',
-            phoenix: '🔥',
-            unicorn: '🦄',
-            spider: '🕷️',
-            skeleton: '💀',
-            orc: '👺',
-            fairy: '🧚',
-            golem: '🗿'
-        };
-        
-        return icons[species] || '👾';
-    }
+    // getMonsterIcon method moved to MonsterUI module
     
-    /**
-     * Show monster details in modal
-     */
-    showMonsterDetails(monster) {
-        const modal = document.getElementById('monster-detail-modal');
-        if (!modal) return;
-        
-        // Populate modal with monster data
-        const nameEl = document.getElementById('modal-monster-name');
-        const iconEl = document.getElementById('modal-monster-icon');
-        const levelEl = document.getElementById('modal-monster-level');
-        const statsEl = document.getElementById('modal-stats');
-        const abilitiesEl = document.getElementById('modal-abilities');
-        const infoEl = document.getElementById('modal-info');
-        
-        if (nameEl) nameEl.textContent = monster.nickname || monster.speciesData?.name || monster.species;
-        if (iconEl) iconEl.textContent = this.getMonsterIcon(monster.species);
-        if (levelEl) levelEl.textContent = monster.level;
-        
-        // Stats display
-        if (statsEl) {
-            statsEl.innerHTML = Object.entries(monster.stats).map(([stat, value]) => 
-                `<div class="stat-row"><span>${stat}:</span> <span>${value}</span></div>`
-            ).join('');
-        }
-        
-        // Abilities display
-        if (abilitiesEl) {
-            const abilities = monster.abilities || [];
-            abilitiesEl.innerHTML = abilities.length > 0 
-                ? abilities.map(ability => `<span class="ability-tag">${ability}</span>`).join('')
-                : '<span class="no-abilities">No special abilities</span>';
-        }
-        
-        // Info display
-        if (infoEl) {
-            infoEl.innerHTML = `
-                <div>Species: ${monster.species}</div>
-                <div>Personality: ${monster.personality || 'Unknown'}</div>
-                <div>Experience: ${monster.experience || 0}</div>
-                <div>Friendship: ${monster.friendship || 0}</div>
-            `;
-        }
-        
-        // Update action buttons
-        const isInParty = this.isMonsterInParty(monster.id);
-        const addBtn = document.getElementById('modal-add-to-party');
-        const removeBtn = document.getElementById('modal-remove-from-party');
-        
-        if (addBtn) {
-            addBtn.classList.toggle('hidden', isInParty);
-            addBtn.onclick = () => this.addMonsterToParty(monster);
-        }
-        
-        if (removeBtn) {
-            removeBtn.classList.toggle('hidden', !isInParty);
-            removeBtn.onclick = () => this.removeMonsterFromParty(monster);
-        }
-        
-        // Store current monster for modal actions
-        this.currentModalMonster = monster;
-        
-        // Show modal
-        modal.classList.remove('hidden');
-    }
+    // showMonsterDetails method moved to MonsterUI module
     
-    /**
-     * Close monster details modal
-     */
-    closeMonsterModal() {
-        const modal = document.getElementById('monster-detail-modal');
-        if (modal) {
-            modal.classList.add('hidden');
-            this.currentModalMonster = null;
-        }
-    }
+    // closeMonsterModal method moved to MonsterUI module
     
-    /**
-     * Check if monster is in party
-     */
-    isMonsterInParty(monsterId) {
-        if (!window.GameState?.monsters?.party) return false;
-        return window.GameState.monsters.party.some(m => m.id === monsterId);
-    }
+    // isMonsterInParty method moved to MonsterUI module
     
-    /**
-     * Apply storage filters
-     */
-    getFilteredMonsters(monsters) {
-        const typeFilter = document.getElementById('type-filter')?.value || '';
-        const rarityFilter = document.getElementById('rarity-filter')?.value || '';
-        
-        return monsters.filter(monster => {
-            const speciesData = monster.speciesData;
-            if (!speciesData) return true;
-            
-            // Type filter
-            if (typeFilter && !speciesData.type?.includes(typeFilter)) {
-                return false;
-            }
-            
-            // Rarity filter
-            if (rarityFilter && speciesData.rarity !== rarityFilter) {
-                return false;
-            }
-            
-            return true;
-        });
-    }
+    // getFilteredMonsters method moved to MonsterUI module
     
-    /**
-     * Filter storage display
-     */
-    filterStorage() {
-        this.refreshStorageDisplay();
-    }
+    // filterStorage method moved to MonsterUI module
     
-    /**
-     * Toggle monster selection for batch operations
-     */
-    toggleMonsterSelection(monsterId, cardElement) {
-        if (this.selectedMonsters.has(monsterId)) {
-            this.selectedMonsters.delete(monsterId);
-            cardElement.classList.remove('selected');
-        } else {
-            this.selectedMonsters.add(monsterId);
-            cardElement.classList.add('selected');
-        }
-        
-        // Update action button states
-        const releaseBtn = document.getElementById('release-selected-btn');
-        if (releaseBtn) {
-            releaseBtn.disabled = this.selectedMonsters.size === 0;
-        }
-    }
+    // toggleMonsterSelection method moved to MonsterUI module
     
-    /**
-     * Refresh breeding display
-     */
-    refreshBreedingDisplay() {
-        this.updateBreedingSlots();
-        this.updateBreedingCompatibility();
-        this.updateBreedingHistory();
-    }
+    // refreshBreedingDisplay method moved to MonsterUI module
     
-    /**
-     * Update breeding slots display
-     */
-    updateBreedingSlots() {
-        ['1', '2'].forEach(slotNum => {
-            const slot = document.querySelector(`[data-slot="${slotNum}"]`);
-            const parent = this.breedingParents[`parent${slotNum}`];
-            
-            if (!slot) return;
-            
-            if (parent) {
-                slot.className = 'breeding-monster-slot filled';
-                slot.innerHTML = `
-                    <div class="monster-card-icon">${this.getMonsterIcon(parent.species)}</div>
-                    <div class="monster-card-name">${parent.nickname || parent.speciesData?.name || parent.species}</div>
-                    <div class="monster-card-level">Lv. ${parent.level}</div>
-                `;
-                slot.addEventListener('click', () => this.clearBreedingSlot(slotNum));
-            } else {
-                slot.className = 'breeding-monster-slot empty';
-                slot.innerHTML = `
-                    <div class="empty-slot-content">
-                        <span class="empty-icon">➕</span>
-                        <span class="empty-text">Select Monster</span>
-                    </div>
-                `;
-                slot.addEventListener('click', () => this.selectBreedingParent(slotNum));
-            }
-        });
-    }
+    // updateBreedingSlots method moved to MonsterUI module
     
-    /**
-     * Update breeding compatibility display
-     */
-    updateBreedingCompatibility() {
-        const statusEl = document.getElementById('compatibility-status');
-        const offspringEl = document.getElementById('offspring-list');
-        const startBtn = document.getElementById('start-breeding-btn');
-        
-        const { parent1, parent2 } = this.breedingParents;
-        
-        if (!parent1 || !parent2) {
-            if (statusEl) statusEl.textContent = 'Select two monsters to check compatibility';
-            if (offspringEl) offspringEl.textContent = 'Select compatible monsters to see possible outcomes';
-            if (startBtn) startBtn.disabled = true;
-            return;
-        }
-        
-        // Check compatibility using breeding system
-        if (window.MonsterBreedingSystem) {
-            const compatibility = window.MonsterBreedingSystem.checkCompatibility(parent1, parent2);
-            
-            if (statusEl) {
-                statusEl.textContent = compatibility.compatible 
-                    ? '✅ Compatible - These monsters can breed!'
-                    : '❌ Incompatible - These monsters cannot breed together';
-                statusEl.style.color = compatibility.compatible ? '#4CAF50' : '#f44336';
-            }
-            
-            if (offspringEl && compatibility.compatible) {
-                const outcomes = window.MonsterBreedingSystem.getPossibleOutcomes(parent1, parent2);
-                offspringEl.innerHTML = outcomes.map(outcome => 
-                    `<div class="offspring-option">
-                        ${this.getMonsterIcon(outcome.species)} ${outcome.species} (${Math.round(outcome.probability * 100)}%)
-                    </div>`
-                ).join('');
-            }
-            
-            if (startBtn) {
-                startBtn.disabled = !compatibility.compatible;
-            }
-        }
-    }
+    // updateBreedingCompatibility method moved to MonsterUI module
     
-    /**
-     * Update breeding history display
-     */
-    updateBreedingHistory() {
-        const historyEl = document.getElementById('breeding-history-list');
-        if (!historyEl || !window.GameState?.monsters?.breedingHistory) return;
-        
-        const history = window.GameState.monsters.breedingHistory || [];
-        
-        if (history.length === 0) {
-            historyEl.innerHTML = '<p class="no-history">No breeding history yet</p>';
-        } else {
-            historyEl.innerHTML = history.slice(-5).reverse().map(record => 
-                `<div class="breeding-record">
-                    ${this.getMonsterIcon(record.parent1Species)} + ${this.getMonsterIcon(record.parent2Species)} 
-                    → ${this.getMonsterIcon(record.offspring)} (${new Date(record.date).toLocaleDateString()})
-                </div>`
-            ).join('');
-        }
-    }
+    // updateBreedingHistory method moved to MonsterUI module
     
-    /**
-     * Heal all party monsters
-     */
-    healAllPartyMonsters() {
-        if (!window.GameState?.monsters?.party) return;
-        
-        window.GameState.monsters.party.forEach(monster => {
-            monster.currentStats.hp = monster.stats.hp;
-            monster.currentStats.mp = monster.stats.mp;
-            monster.statusEffects = [];
-        });
-        
-        this.refreshPartyDisplay();
-        this.showNotification('All party monsters have been fully healed!');
-    }
+    // healAllPartyMonsters method moved to MonsterUI module
     
     /**
      * Show a notification message
@@ -3769,45 +3319,9 @@ class Scene {
         });
     }
     
-    /**
-     * Show monster selection interface for adding to party
-     */
-    showMonsterSelection(slotIndex) {
-        if (!window.GameState?.monsters?.storage) {
-            this.showNotification('No monsters in storage', 'error');
-            return;
-        }
-        
-        const availableMonsters = window.GameState.monsters.storage.filter(monster => 
-            !window.GameState.monsters.party.includes(monster)
-        );
-        
-        if (availableMonsters.length === 0) {
-            this.showNotification('No available monsters to add', 'warning');
-            return;
-        }
-        
-        // For now, auto-select the first available monster
-        // In a full implementation, this would show a selection modal
-        const selectedMonster = availableMonsters[0];
-        this.addMonsterToPartySlot(selectedMonster, slotIndex);
-    }
+    // showMonsterSelection method moved to MonsterUI module
     
-    /**
-     * Add monster to specific party slot
-     */
-    addMonsterToPartySlot(monster, slotIndex) {
-        if (!window.GameState?.monsters) return;
-        
-        // Remove from storage and add to party at specific slot
-        const storageIndex = window.GameState.monsters.storage.indexOf(monster);
-        if (storageIndex !== -1) {
-            window.GameState.monsters.storage.splice(storageIndex, 1);
-            window.GameState.monsters.party[slotIndex] = monster;
-            this.refreshPartyDisplay();
-            this.showNotification(`${monster.nickname || monster.species} added to party`, 'success');
-        }
-    }
+    // addMonsterToPartySlot method moved to MonsterUI module
     
     /**
      * Show monster details modal
@@ -3830,240 +3344,27 @@ class Scene {
         this.currentModalMonster = monster;
     }
     
-    /**
-     * Close monster details modal
-     */
-    closeMonsterModal() {
-        const modal = document.getElementById('monster-detail-modal');
-        if (modal) {
-            modal.classList.add('hidden');
-            this.currentModalMonster = null;
-        }
-    }
+    // closeMonsterModal method moved to MonsterUI module
     
-    /**
-     * Heal all party monsters
-     */
-    healAllPartyMonsters() {
-        if (!window.GameState?.monsters?.party) return;
-        
-        let healedCount = 0;
-        window.GameState.monsters.party.forEach(monster => {
-            if (monster && monster.currentStats) {
-                const hpRestored = monster.stats.hp - monster.currentStats.hp;
-                const mpRestored = monster.stats.mp - monster.currentStats.mp;
-                
-                if (hpRestored > 0 || mpRestored > 0) {
-                    monster.currentStats.hp = monster.stats.hp;
-                    monster.currentStats.mp = monster.stats.mp;
-                    healedCount++;
-                }
-            }
-        });
-        
-        if (healedCount > 0) {
-            this.refreshPartyDisplay();
-            this.showNotification(`Healed ${healedCount} monster(s)`, 'success');
-        } else {
-            this.showNotification('All monsters are already at full health', 'info');
-        }
-    }
+    // healAllPartyMonsters method moved to MonsterUI module
     
-    /**
-     * Auto-arrange party by level
-     */
-    autoArrangeParty() {
-        if (!window.GameState?.monsters?.party) return;
-        
-        const monsters = window.GameState.monsters.party.filter(m => m !== null);
-        monsters.sort((a, b) => (b.level || 1) - (a.level || 1));
-        
-        // Clear and refill party
-        window.GameState.monsters.party = [];
-        for (let i = 0; i < 3; i++) {
-            window.GameState.monsters.party[i] = monsters[i] || null;
-        }
-        
-        this.refreshPartyDisplay();
-        this.showNotification('Party arranged by level', 'success');
-    }
+    // autoArrangeParty method moved to MonsterUI module
     
-    /**
-     * Release selected monsters
-     */
-    releaseSelectedMonsters() {
-        if (!window.GameState?.monsters || this.selectedMonsters.size === 0) return;
-        
-        const confirmed = confirm(`Are you sure you want to release ${this.selectedMonsters.size} monster(s)? This action cannot be undone.`);
-        if (!confirmed) return;
-        
-        let releasedCount = 0;
-        this.selectedMonsters.forEach(monsterId => {
-            const index = window.GameState.monsters.storage.findIndex(m => m.id === monsterId);
-            if (index !== -1) {
-                window.GameState.monsters.storage.splice(index, 1);
-                releasedCount++;
-            }
-        });
-        
-        this.selectedMonsters.clear();
-        this.refreshStorageDisplay();
-        this.showNotification(`Released ${releasedCount} monster(s)`, 'success');
-    }
+    // releaseSelectedMonsters method moved to MonsterUI module
     
-    /**
-     * Sort storage by level
-     */
-    sortStorage() {
-        if (!window.GameState?.monsters?.storage) return;
-        
-        window.GameState.monsters.storage.sort((a, b) => (b.level || 1) - (a.level || 1));
-        this.refreshStorageDisplay();
-        this.showNotification('Storage sorted by level', 'success');
-    }
+    // sortStorage method moved to MonsterUI module
     
-    /**
-     * Start breeding process
-     */
-    startBreeding() {
-        if (!this.breedingParents.parent1 || !this.breedingParents.parent2) {
-            this.showNotification('Select two monsters for breeding', 'error');
-            return;
-        }
-        
-        if (window.GameState?.breeding) {
-            const success = window.GameState.breeding.startBreeding(
-                this.breedingParents.parent1,
-                this.breedingParents.parent2
-            );
-            
-            if (success) {
-                this.showNotification('Breeding started successfully!', 'success');
-                this.clearBreedingSelection();
-                this.refreshBreedingDisplay();
-            } else {
-                this.showNotification('Breeding failed - check compatibility and cooldowns', 'error');
-            }
-        }
-    }
+    // startBreeding method moved to MonsterUI module
     
-    /**
-     * Clear breeding selection
-     */
-    clearBreedingSelection() {
-        this.breedingParents = { parent1: null, parent2: null };
-        this.updateBreedingSlots();
-        this.updateBreedingCompatibility();
-        
-        const startBtn = document.getElementById('start-breeding-btn');
-        if (startBtn) startBtn.disabled = true;
-    }
+    // clearBreedingSelection method moved to MonsterUI module
     
-    /**
-     * Update breeding slots display
-     */
-    updateBreedingSlots() {
-        ['1', '2'].forEach(slotNum => {
-            const slot = document.querySelector(`[data-slot="${slotNum}"]`);
-            if (!slot) return;
-            
-            const parent = this.breedingParents[`parent${slotNum}`];
-            
-            if (parent) {
-                slot.classList.remove('empty');
-                slot.innerHTML = `
-                    <div class="monster-card-icon">${this.getMonsterIcon(parent.species)}</div>
-                    <div class="monster-card-name">${parent.nickname || parent.species}</div>
-                    <div class="monster-card-level">Lv. ${parent.level}</div>
-                `;
-            } else {
-                slot.classList.add('empty');
-                slot.innerHTML = `
-                    <div class="empty-slot-content">
-                        <span class="empty-icon">➕</span>
-                        <span class="empty-text">Select Monster</span>
-                    </div>
-                `;
-            }
-            
-            slot.addEventListener('click', () => this.selectBreedingParent(slotNum));
-        });
-    }
+    // updateBreedingSlots method moved to MonsterUI module
     
-    /**
-     * Select breeding parent
-     */
-    selectBreedingParent(slotNum) {
-        // For now, just clear the slot - in a full implementation this would show monster selection
-        this.breedingParents[`parent${slotNum}`] = null;
-        this.updateBreedingSlots();
-        this.updateBreedingCompatibility();
-    }
+    // selectBreedingParent method moved to MonsterUI module
     
-    /**
-     * Update breeding compatibility display
-     */
-    updateBreedingCompatibility() {
-        const statusEl = document.getElementById('compatibility-status');
-        const offspringEl = document.getElementById('offspring-list');
-        const startBtn = document.getElementById('start-breeding-btn');
-        
-        if (!statusEl || !offspringEl) return;
-        
-        if (!this.breedingParents.parent1 || !this.breedingParents.parent2) {
-            statusEl.textContent = 'Select two monsters to check compatibility';
-            offspringEl.textContent = 'Select compatible monsters to see possible outcomes';
-            if (startBtn) startBtn.disabled = true;
-            return;
-        }
-        
-        // Check compatibility
-        let compatible = false;
-        let offspringInfo = 'No compatible offspring';
-        
-        if (window.GameState?.breeding) {
-            compatible = window.GameState.breeding.areCompatible(
-                this.breedingParents.parent1,
-                this.breedingParents.parent2
-            );
-            
-            if (compatible) {
-                offspringInfo = 'Compatible! Offspring will inherit traits from both parents.';
-            }
-        }
-        
-        statusEl.textContent = compatible ? 'Compatible ✅' : 'Not Compatible ❌';
-        offspringEl.textContent = offspringInfo;
-        
-        if (startBtn) startBtn.disabled = !compatible;
-    }
+    // updateBreedingCompatibility method moved to MonsterUI module
     
-    /**
-     * Update breeding history display
-     */
-    updateBreedingHistory() {
-        const historyEl = document.getElementById('breeding-history-list');
-        if (!historyEl || !window.GameState?.breeding?.breedingHistory) return;
-        
-        const history = window.GameState.breeding.breedingHistory;
-        
-        if (history.length === 0) {
-            historyEl.innerHTML = '<p class="no-history">No breeding history yet</p>';
-            return;
-        }
-        
-        historyEl.innerHTML = history.slice(-5).map(entry => `
-            <div class="breeding-history-item">
-                <div class="history-parents">
-                    ${this.getMonsterIcon(entry.parent1Species)} + ${this.getMonsterIcon(entry.parent2Species)}
-                </div>
-                <div class="history-result">
-                    → ${this.getMonsterIcon(entry.offspringSpecies)} ${entry.offspringSpecies}
-                </div>
-                <div class="history-date">${new Date(entry.timestamp).toLocaleDateString()}</div>
-            </div>
-        `).join('');
-    }
+    // updateBreedingHistory method moved to MonsterUI module
     
     // ================================================
     // INVENTORY & EQUIPMENT MANAGEMENT

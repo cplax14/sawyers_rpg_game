@@ -199,6 +199,26 @@ class BaseUIModule {
     }
 
     /**
+     * Attach a button click by ID using UIManager helper or UIHelpers
+     */
+    attachButton(buttonId, callback) {
+        if (this.uiManager && typeof this.uiManager.attachButton === 'function') {
+            return this.uiManager.attachButton(buttonId, callback);
+        }
+        if (window.uiHelpers && typeof window.uiHelpers.attachButton === 'function') {
+            return window.uiHelpers.attachButton(buttonId, callback);
+        }
+        // Fallback direct binding
+        const el = document.getElementById(buttonId);
+        if (el) {
+            el.addEventListener('click', callback);
+            return true;
+        }
+        console.warn(`[BaseUIModule] Button ${buttonId} not found`);
+        return false;
+    }
+
+    /**
      * Show a notification through the UI manager
      */
     showNotification(message, type = 'info') {
@@ -214,6 +234,19 @@ class BaseUIModule {
         return this.game && typeof this.game.getGameState === 'function' 
             ? this.game.getGameState() 
             : null;
+    }
+
+    /**
+     * Get a reference from the game object (e.g., 'gameState')
+     */
+    getGameReference(property) {
+        if (this.uiManager && this.uiManager.game) {
+            return this.uiManager.game[property];
+        }
+        if (this.game) {
+            return this.game[property];
+        }
+        return null;
     }
 
     /**

@@ -5,9 +5,9 @@
 - `js/ui/UIManager.js` - Main UI coordinator and module management (created)
 - `js/ui/MenuUI.js` - Main menu, character selection, and navigation interfaces (created)
 - `js/ui/GameWorldUI.js` - World map, area selection, travel, and exploration UI (created)
-- `js/ui/CombatUI.js` - Combat interface, actions, battle management, and targeting (to be created)
+- `js/ui/CombatUI.js` - Combat interface, actions, battle management, and targeting (created)
 - `js/ui/MonsterUI.js` - Monster management, breeding, storage, and party interfaces (to be created)
-- `js/ui/InventoryUI.js` - Inventory, equipment, item management, and trading (to be created)
+- `js/ui/InventoryUI.js` - Inventory, equipment, item management, and trading (created)
 - `js/ui/SettingsUI.js` - Settings panels, controls, preferences, and configuration (to be created)
 - `js/ui/StoryUI.js` - Story modal, dialogue, narrative interfaces, and choices (to be created)
 - `js/ui/UIHelpers.js` - Shared utilities, notifications, common UI functions, and helpers (to be created)
@@ -56,26 +56,26 @@
   - [x] 4.5 Integrate story event triggers for area exploration
   - [x] 4.6 Test world map interactions and area transitions work correctly
 
-- [ ] 5.0 Create Combat and Battle UI Modules
-  - [ ] 5.1 Create `js/ui/CombatUI.js` and extract combat interface logic (lines ~1889-2076)
-  - [ ] 5.2 Move combat action handling, submenu management, and target selection
-  - [ ] 5.3 Implement spell list population, item usage, and battle log management
-  - [ ] 5.4 Add combat state display updates and turn management UI
-  - [ ] 5.5 Test all combat interactions, action selection, and battle flow
+- [x] 5.0 Create Combat and Battle UI Modules
+  - [x] 5.1 Create `js/ui/CombatUI.js` and extract combat interface logic (lines ~1889-2076)
+  - [x] 5.2 Move combat action handling, submenu management, and target selection
+  - [x] 5.3 Implement spell list population, item usage, and battle log management
+  - [x] 5.4 Add combat state display updates and turn management UI
+  - [x] 5.5 Test all combat interactions, action selection, and battle flow
 
-- [ ] 6.0 Implement Monster Management UI Modules
-  - [ ] 6.1 Create `js/ui/MonsterUI.js` and extract monster management functionality (lines ~2077-2400)
-  - [ ] 6.2 Move monster tab switching, party management, and storage filtering
-  - [ ] 6.3 Implement breeding interface, monster detail modal, and release functionality
-  - [ ] 6.4 Add monster selection, stat display, and ability management
-  - [ ] 6.5 Integrate breeding prompts and monster interaction workflows
-  - [ ] 6.6 Test monster management, breeding, and storage operations
+- [x] 6.0 Implement Monster Management UI Modules
+  - [x] 6.1 Create `js/ui/MonsterUI.js` and extract monster management functionality (lines ~2077-2400)
+  - [x] 6.2 Move monster tab switching, party management, and storage filtering
+  - [x] 6.3 Implement breeding interface, monster detail modal, and release functionality
+  - [x] 6.4 Add monster selection, stat display, and ability management
+  - [x] 6.5 Integrate breeding prompts and monster interaction workflows
+  - [x] 6.6 Test monster management, breeding, and storage operations
 
 - [ ] 7.0 Create Inventory and Equipment UI Modules
-  - [ ] 7.1 Create `js/ui/InventoryUI.js` and extract inventory functionality (lines ~2401-2800)
-  - [ ] 7.2 Move equipment management, item filtering, and tab switching logic
-  - [ ] 7.3 Implement item detail modals, equipment slots, and stat calculations
-  - [ ] 7.4 Add item usage, selling, and equipment changes functionality
+  - [x] 7.1 Create `js/ui/InventoryUI.js` and extract inventory functionality (lines ~2401-2800)
+  - [x] 7.2 Move equipment management, item filtering, and tab switching logic
+  - [x] 7.3 Implement item detail modals, equipment slots, and stat calculations
+  - [x] 7.4 Add item usage, selling, and equipment changes functionality
   - [ ] 7.5 Test inventory operations, equipment changes, and item interactions
 
 - [ ] 8.0 Implement Settings and Story UI Modules

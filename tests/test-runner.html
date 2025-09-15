@@ -181,6 +181,8 @@
         <button id="run-all-tests" class="btn">🚀 Run All Tests</button>
         <button id="run-game-tests" class="btn">🎯 Run Game Tests</button>
         <button id="run-data-tests" class="btn">📊 Run Data Tests</button>
+        <button id="run-ui-tests" class="btn">🎨 Run UI Tests</button>
+        <button id="validate-ui-refactoring" class="btn">🔍 Validate UI Refactoring</button>
         <button id="clear-output" class="btn">🧹 Clear Output</button>
         
         <div class="checkbox-group">
@@ -243,9 +245,130 @@ Loaded Modules:
     <script src="../js/monster.js"></script>
     <script src="../js/monsterBreeding.js"></script>
     <script src="../js/combat.js"></script>
-    <script src="../js/ui.js"></script>
+    <!-- Removed legacy ui.js to avoid global symbol redeclarations with modular UI -->
+    
+    <!-- UI Module System (dependencies first) -->
+    <script src="../js/ui/BaseUIModule.js"></script>
+    <script src="../js/ui/UIHelpers.js"></script>
+    <script src="../js/ui/SceneManager.js"></script>
+    <script src="../js/ui/NotificationBridge.js"></script>
+    <script src="../js/ui/UIModuleLoader.js"></script>
+    <script src="../js/ui/TransitionController.js"></script>
+    <script src="../js/ui/UIManager.js"></script>
+    <script src="../js/ui/MenuUI.js"></script>
+    <script src="../js/ui/GameWorldUI.js"></script>
+    <script src="../js/ui/CombatUI.js"></script>
+    <script src="../js/ui/MonsterUI.js"></script>
+    
     <script src="../js/game.js"></script>
     
+    <!-- Minimal DOM skeletons for UI validators -->
+    <style>
+        .world-content { display: flex; }
+        .world-map-container { display: grid; grid-template-columns: 1fr; }
+        #world-map { background: linear-gradient(90deg, #223, #445); }
+        /* Responsive checks */
+        @media (max-width: 768px) { .world-content { flex-direction: column; } }
+        @media (max-width: 480px) { .world-map-container { grid-template-columns: 1fr; } }
+    </style>
+    <div id="game-world" class="scene">
+        <header class="world-title"><h2>World Map</h2></header>
+        <div class="world-nav">
+            <button id="world-map-btn">Open Map</button>
+        </div>
+        <div class="world-content">
+            <div class="world-map-container">
+                <div id="world-map"></div>
+            </div>
+            <div class="area-info">
+                <div id="current-area">Starting Village</div>
+                <section class="area-stats">
+                    <div id="encounter-rate">0%</div>
+                    <div id="monster-count">0</div>
+                    <div id="monsters-list"></div>
+                    <div id="services-list"></div>
+                    <div id="connections-list"></div>
+                </section>
+                <div class="area-actions">
+                    <button id="travel-to-area">Travel</button>
+                    <button id="explore-area">Explore</button>
+                </div>
+                <div class="quick-travel" id="quick-travel-buttons"></div>
+                <div class="world-controls">
+                    <button id="back-from-world">Back</button>
+                    <button id="center-map">Center</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="inventory" class="scene">
+        <div id="inventory-content" class="inventory-content" style="display:flex">
+            <header id="inventory-header"><span id="inventory-gold">0</span></header>
+            <nav id="inventory-tabs" class="inventory-tabs">
+                <button class="tab-btn" data-tab="equipment">Equipment</button>
+                <button class="tab-btn" data-tab="items">Items</button>
+                <button class="tab-btn" data-tab="materials">Materials</button>
+            </nav>
+            <section id="equipment-tab" class="inventory-tab-content">
+                <div id="character-display">
+                    <div id="character-name">Hero</div>
+                    <div id="character-class">Knight</div>
+                    <div id="character-level">1</div>
+                    <div id="character-stats">
+                        <span id="stat-hp">0</span>
+                        <span id="stat-mp">0</span>
+                        <span id="stat-attack">0</span>
+                        <span id="stat-defense">0</span>
+                        <span id="stat-magic-attack">0</span>
+                        <span id="stat-magic-defense">0</span>
+                        <span id="stat-speed">0</span>
+                        <span id="stat-accuracy">0</span>
+                    </div>
+                </div>
+                <div id="equipment-panel">
+                    <div class="equipment-row"><span class="equipment-slot" data-slot="weapon">Weapon</span><span class="equipment-item">None</span></div>
+                    <div class="equipment-row"><span class="equipment-slot" data-slot="armor">Armor</span><span class="equipment-item">None</span></div>
+                    <div class="equipment-row"><span class="equipment-slot" data-slot="accessory">Accessory</span><span class="equipment-item">None</span></div>
+                </div>
+                <div class="equipment-filters">
+                    <button class="filter-btn" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="weapon">Weapons</button>
+                    <button class="filter-btn" data-filter="armor">Armor</button>
+                    <button class="filter-btn" data-filter="accessory">Accessories</button>
+                </div>
+                <div id="equipment-list"></div>
+            </section>
+            <section id="items-tab" class="inventory-tab-content">
+                <div class="items-filters">
+                    <button class="filter-btn" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="consumable">Consumables</button>
+                </div>
+                <div id="items-grid"></div>
+            </section>
+            <section id="materials-tab" class="inventory-tab-content">
+                <div class="materials-filters">
+                    <button class="filter-btn" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="ore">Ore</button>
+                </div>
+                <div id="materials-grid"></div>
+            </section>
+            <button id="back-from-inventory"></button>
+        </div>
+        <div id="item-detail-modal" class="modal hidden">
+            <div class="modal-backdrop"></div>
+            <div class="modal-content">
+                <h3 id="item-detail-name"></h3>
+                <div id="item-detail-desc"></div>
+                <div id="item-detail-stats"></div>
+                <button id="equip-item-btn"></button>
+                <button id="use-item-btn"></button>
+                <button id="sell-item-btn"></button>
+                <button id="close-item-detail"></button>
+            </div>
+        </div>
+    </div>
+
     <!-- Load Test Files -->
     <script src="game.test.js"></script>
     <script src="data.test.js"></script>
@@ -264,6 +387,10 @@ Loaded Modules:
     <script src="ui_world_map.test.js"></script>
     <script src="validate_world_map.js"></script>
     <script src="validate_inventory.js"></script>
+    
+    <!-- UI Module Tests -->
+    <script src="ui_modules.test.js"></script>
+    <script src="validate_ui_refactoring.js"></script>
     
     <script>
         // Test runner interface
@@ -387,10 +514,61 @@ Loaded Modules:
             }
         }
         
+        async function runUITests() {
+            setStatus('running', 'Running UI module tests...');
+            clearOutput();
+            setupConsoleCapture();
+            
+            setVerbose(verboseCheckbox.checked);
+            
+            try {
+                appendOutput('🎨 Running UI module tests...\n');
+                
+                // Run MonsterUI specific tests
+                if (typeof runTests === 'function') {
+                    const results = await runTests();
+                }
+                
+                setStatus('completed', 'UI tests completed');
+            } catch (error) {
+                appendOutput(`\n❌ UI test execution failed: ${error.message}`);
+                setStatus('error', 'UI tests failed');
+            } finally {
+                restoreConsole();
+            }
+        }
+        
+        async function validateUIRefactoring() {
+            setStatus('running', 'Validating UI refactoring...');
+            clearOutput();
+            setupConsoleCapture();
+            
+            try {
+                appendOutput('🔍 Starting UI refactoring validation...\n');
+                
+                if (typeof UIRefactoringValidator !== 'undefined') {
+                    const validator = new UIRefactoringValidator();
+                    await validator.runValidation();
+                    appendOutput('\n✅ UI refactoring validation completed');
+                } else {
+                    appendOutput('\n⚠️ UIRefactoringValidator not available');
+                }
+                
+                setStatus('completed', 'UI validation completed');
+            } catch (error) {
+                appendOutput(`\n❌ UI validation failed: ${error.message}`);
+                setStatus('error', 'UI validation failed');
+            } finally {
+                restoreConsole();
+            }
+        }
+        
         // Event listeners
         document.getElementById('run-all-tests').addEventListener('click', runAllTests);
         document.getElementById('run-game-tests').addEventListener('click', runGameTests);
         document.getElementById('run-data-tests').addEventListener('click', runDataTests);
+        document.getElementById('run-ui-tests').addEventListener('click', runUITests);
+        document.getElementById('validate-ui-refactoring').addEventListener('click', validateUIRefactoring);
         document.getElementById('clear-output').addEventListener('click', clearOutput);
         
         // Initialize

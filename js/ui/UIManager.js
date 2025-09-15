@@ -82,9 +82,14 @@ class UIManager extends EventTarget {
             // Initialize legacy compatibility
             this.setupLegacyCompatibility();
             
-            // Auto-load modules if configured
+            // Auto-load modules if configured. Prefer fallback if any core UI modules are already present.
             if (this.config.autoLoadModules) {
-                await this.loadAllModules();
+                const fallback = UIModuleLoader.createFallbackStrategy();
+                if (window.UIHelpers || window.GameWorldUI || window.MonsterUI) {
+                    this.moduleLoader = fallback.initializeFromPreloaded(this);
+                } else {
+                    await this.loadAllModules();
+                }
             }
             
             // Set up default scenes for legacy compatibility
@@ -127,11 +132,20 @@ class UIManager extends EventTarget {
      * Set up legacy compatibility layer
      */
     setupLegacyCompatibility() {
-        // Map scene manager events to legacy properties
-        this.sceneManager.addEventListener('sceneChanged', (event) => {
-            this.legacyCompatibility.currentScene = event.detail.current;
-            this.legacyCompatibility.previousScene = event.detail.previous;
-        });
+        // Map scene manager events to legacy properties (guarded for test/runtime compatibility)
+        if (this.sceneManager && typeof this.sceneManager.addEventListener === 'function') {
+            this.sceneManager.addEventListener('sceneChanged', (event) => {
+                this.legacyCompatibility.currentScene = event.detail.current;
+                this.legacyCompatibility.previousScene = event.detail.previous;
+            });
+        } else {
+            // Fallback: listen to UIManager's own sceneChanged events (emitted in showScene)
+            this.on('sceneChanged', (event) => {
+                const detail = event.detail || event;
+                this.legacyCompatibility.currentScene = detail.scene?.name || detail.sceneName || null;
+                this.legacyCompatibility.previousScene = this.sceneManager?.getPreviousScene?.() || null;
+            });
+        }
         
         // Update notification manager with current game state
         if (this.game?.getGameState) {
@@ -578,29 +592,180 @@ class UIManager extends EventTarget {
         });
     }
 
-    // ===================================
-    // UTILITY METHODS
-    // ===================================
-
     /**
-     * Show help/documentation
+     * Legacy canvas renderer wrapper (used by game loop tests)
      */
-    showHelp() {
-        // TODO: Implement help system
-        this.showNotification('Help system not yet implemented', 'info');
+    renderCanvas(ctx) {
+        this.render(ctx);
     }
 
     /**
-     * Get UI state
+     * Handle escape action without event (compat with game tests)
      */
-    getUIState() {
-        return {
-            ...this.state,
-            currentScene: this.getCurrentScene()?.name,
-            registeredModules: Array.from(this.modules.keys()),
-            isInitialized: this.isInitialized
-        };
+    handleEscape() {
+        // Close overlays if any, otherwise delegate to key handler semantics
+        if (this.state.overlaysOpen.size > 0) {
+            this.closeAllOverlays();
+            return;
+        }
+        // Simulate Escape key press behavior
+        this.handleEscapeKey({ preventDefault: () => {} });
     }
+    // end handleEscape
+
+    
+
+// ===================================
+// WORLD MAP OVERLAY HELPERS (minimal for tests)
+// ===================================
+ensureWorldMapOverlay() {
+    if (this.worldMapOverlay && document.body.contains(this.worldMapOverlay)) {
+        return this.worldMapOverlay;
+    }
+    const overlay = document.createElement('div');
+    overlay.id = 'world-map-overlay';
+    overlay.className = 'world-overlay';
+    overlay.style.display = 'none';
+    overlay.innerHTML = `
+        <div class="overlay-backdrop"></div>
+        <div class="overlay-content" data-role="world-map-panel">
+            <h3>World Areas</h3>
+            <ul id="world-map-list"></ul>
+            <div class="overlay-actions">
+                <button id="overlay-close-world">Close</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    const closeBtn = overlay.querySelector('#overlay-close-world');
+    if (closeBtn) closeBtn.addEventListener('click', () => this.closeWorldMapOverlay());
+    this.worldMapOverlay = overlay;
+    return overlay;
+}
+
+openWorldMapOverlay() {
+    const overlay = this.ensureWorldMapOverlay();
+    overlay.style.display = 'block';
+    return overlay;
+}
+
+closeWorldMapOverlay() {
+    if (this.worldMapOverlay) {
+        this.worldMapOverlay.style.display = 'none';
+        if (this._worldMapKeyHandler) {
+            document.removeEventListener('keydown', this._worldMapKeyHandler);
+            this._worldMapKeyHandler = null;
+        }
+    }
+}
+
+showWorldMap() {
+    const overlay = this.openWorldMapOverlay();
+    this.populateWorldMapAreas();
+    this._worldMapKeyHandler = (e) => this.handleWorldMapKeys(e);
+    document.addEventListener('keydown', this._worldMapKeyHandler);
+    return !!overlay;
+}
+
+/**
+ * Populate world map list with current and connected unlocked areas
+ */
+populateWorldMapAreas() {
+    const gs = this.game?.getGameState ? this.game.getGameState() : null;
+    if (!gs || typeof AreaData === 'undefined') return;
+    const overlay = this.ensureWorldMapOverlay();
+    const list = overlay.querySelector('#world-map-list');
+    if (!list) return;
+    list.innerHTML = '';
+    const current = gs.world?.currentArea || 'starting_village';
+    const connections = (window.AreaData?.getConnectedAreas
+        ? window.AreaData.getConnectedAreas(current)
+        : []) || [];
+
+    // Current area (disabled)
+    const currentArea = (window.AreaData?.getArea && window.AreaData.getArea(current)) || { name: current, description: '' };
+    const curBtn = document.createElement('button');
+    curBtn.setAttribute('data-area', current);
+    curBtn.disabled = true;
+    curBtn.innerHTML = `<strong>${currentArea.name}</strong><br/><small>${currentArea.description || ''}</small>`;
+    list.appendChild(curBtn);
+
+    // Connected and unlocked
+    // Determine unlocked areas using global AreaData API if present
+    const unlockedList = (window.AreaData?.getUnlockedAreas
+        ? window.AreaData.getUnlockedAreas(
+            gs.world?.storyFlags || [],
+            gs.player?.level || 1,
+            Object.keys(gs.player?.inventory?.items || {}),
+            gs.player?.class || null
+          )
+        : []);
+
+    connections.forEach(areaName => {
+        const isUnlocked = unlockedList.length > 0
+            ? unlockedList.includes(areaName)
+            : true;
+        if (!isUnlocked) return;
+        const data = (window.AreaData?.getArea && window.AreaData.getArea(areaName)) || { name: areaName, description: '' };
+        const btn = document.createElement('button');
+        btn.setAttribute('data-area', areaName);
+        btn.innerHTML = `<div class=\"area-entry\"><div class=\"name\">${data.name}</div><div class=\"desc\">${data.description || ''}</div></div>`;
+        btn.addEventListener('click', () => {
+            if (gs.travelToArea(areaName)) {
+                this.closeWorldMapOverlay();
+            }
+        });
+        list.appendChild(btn);
+    });
+
+    // Initialize focus index to first enabled button
+    const buttons = Array.from(list.querySelectorAll('button'));
+    this.worldMapIndex = Math.max(0, buttons.findIndex(b => !b.disabled));
+    this.focusWorldMapIndex();
+}
+
+/**
+ * Focus the button at worldMapIndex
+ */
+focusWorldMapIndex() {
+    const overlay = this.worldMapOverlay || this.ensureWorldMapOverlay();
+    const list = overlay.querySelector('#world-map-list');
+    const buttons = Array.from(list.querySelectorAll('button'));
+    if (buttons.length === 0) return;
+    const idx = Math.min(Math.max(0, this.worldMapIndex || 0), buttons.length - 1);
+    this.worldMapIndex = idx;
+    buttons[idx].focus();
+}
+
+/**
+ * Handle keyboard navigation within the world map overlay
+ */
+handleWorldMapKeys(event) {
+    const overlay = this.worldMapOverlay;
+    if (!overlay || overlay.style.display === 'none') return;
+    const list = overlay.querySelector('#world-map-list');
+    const buttons = Array.from(list.querySelectorAll('button'));
+    if (buttons.length === 0) return;
+    switch (event.key) {
+        case 'ArrowDown':
+            this.worldMapIndex = Math.min((this.worldMapIndex || 0) + 1, buttons.length - 1);
+            this.focusWorldMapIndex();
+            event.preventDefault();
+            break;
+        case 'ArrowUp':
+            this.worldMapIndex = Math.max((this.worldMapIndex || 0) - 1, 0);
+            this.focusWorldMapIndex();
+            event.preventDefault();
+            break;
+        case 'Enter':
+            const btn = buttons[this.worldMapIndex || 0];
+            if (btn && !btn.disabled) {
+                btn.click();
+            }
+            event.preventDefault();
+            break;
+    }
+}
 
     /**
      * Debug info
