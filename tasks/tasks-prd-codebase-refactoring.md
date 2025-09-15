@@ -2,8 +2,8 @@
 
 ## Relevant Files
 
-- `js/ui/UIManager.js` - Main UI coordinator and module management (to be created)
-- `js/ui/MenuUI.js` - Main menu, character selection, and navigation interfaces (to be created)
+- `js/ui/UIManager.js` - Main UI coordinator and module management (created)
+- `js/ui/MenuUI.js` - Main menu, character selection, and navigation interfaces (created)
 - `js/ui/GameWorldUI.js` - World map, area selection, travel, and exploration UI (to be created)
 - `js/ui/CombatUI.js` - Combat interface, actions, battle management, and targeting (to be created)
 - `js/ui/MonsterUI.js` - Monster management, breeding, storage, and party interfaces (to be created)
@@ -41,12 +41,12 @@
   - [x] 2.5 Implement scene transition management and HUD visibility control
   - [x] 2.6 Add module lifecycle management (loading, initialization, cleanup)
 
-- [ ] 3.0 Create Menu and Navigation UI Modules
-  - [ ] 3.1 Create `js/ui/MenuUI.js` and extract main menu functionality from ui.js (lines ~258-314, 1713-1766)
-  - [ ] 3.2 Move character selection logic and class card interaction handling to MenuUI
-  - [ ] 3.3 Implement menu navigation, new game flow, and load game functionality
-  - [ ] 3.4 Add proper event attachment for menu buttons and character selection
-  - [ ] 3.5 Test menu functionality works identically to original implementation
+- [x] 3.0 Create Menu and Navigation UI Modules
+  - [x] 3.1 Create `js/ui/MenuUI.js` and extract main menu functionality from ui.js (lines ~258-314, 1713-1766)
+  - [x] 3.2 Move character selection logic and class card interaction handling to MenuUI
+  - [x] 3.3 Implement menu navigation, new game flow, and load game functionality
+  - [x] 3.4 Add proper event attachment for menu buttons and character selection
+  - [x] 3.5 Test menu functionality works identically to original implementation
 
 - [ ] 4.0 Implement Game World and Exploration UI Modules
   - [ ] 4.1 Create `js/ui/GameWorldUI.js` and extract world map functionality (lines ~316-613, 1771-1793)
