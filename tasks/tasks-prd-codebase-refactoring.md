@@ -33,13 +33,13 @@
   - [x] 1.4 Set up module loading strategy compatible with existing script loading approach
   - [x] 1.5 Create base module template/class for consistent implementation across modules
 
-- [ ] 2.0 Implement Core UIManager and Helper Utilities
-  - [ ] 2.1 Create `js/ui/UIHelpers.js` with shared utilities (notifications, common DOM helpers, event handling)
-  - [ ] 2.2 Extract notification system, scene management utilities, and modal helpers from existing ui.js
-  - [ ] 2.3 Implement `js/ui/UIManager.js` as main coordinator with module registration and communication
-  - [ ] 2.4 Create module communication patterns (events vs direct calls) and error handling
-  - [ ] 2.5 Implement scene transition management and HUD visibility control
-  - [ ] 2.6 Add module lifecycle management (loading, initialization, cleanup)
+- [x] 2.0 Implement Core UIManager and Helper Utilities
+  - [x] 2.1 Create `js/ui/UIHelpers.js` with shared utilities (notifications, common DOM helpers, event handling)
+  - [x] 2.2 Extract notification system, scene management utilities, and modal helpers from existing ui.js
+  - [x] 2.3 Implement `js/ui/UIManager.js` as main coordinator with module registration and communication
+  - [x] 2.4 Create module communication patterns (events vs direct calls) and error handling
+  - [x] 2.5 Implement scene transition management and HUD visibility control
+  - [x] 2.6 Add module lifecycle management (loading, initialization, cleanup)
 
 - [ ] 3.0 Create Menu and Navigation UI Modules
   - [ ] 3.1 Create `js/ui/MenuUI.js` and extract main menu functionality from ui.js (lines ~258-314, 1713-1766)
