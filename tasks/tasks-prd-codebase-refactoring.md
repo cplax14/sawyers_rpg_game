@@ -4,7 +4,7 @@
 
 - `js/ui/UIManager.js` - Main UI coordinator and module management (created)
 - `js/ui/MenuUI.js` - Main menu, character selection, and navigation interfaces (created)
-- `js/ui/GameWorldUI.js` - World map, area selection, travel, and exploration UI (to be created)
+- `js/ui/GameWorldUI.js` - World map, area selection, travel, and exploration UI (created)
 - `js/ui/CombatUI.js` - Combat interface, actions, battle management, and targeting (to be created)
 - `js/ui/MonsterUI.js` - Monster management, breeding, storage, and party interfaces (to be created)
 - `js/ui/InventoryUI.js` - Inventory, equipment, item management, and trading (to be created)
@@ -48,13 +48,13 @@
   - [x] 3.4 Add proper event attachment for menu buttons and character selection
   - [x] 3.5 Test menu functionality works identically to original implementation
 
-- [ ] 4.0 Implement Game World and Exploration UI Modules
-  - [ ] 4.1 Create `js/ui/GameWorldUI.js` and extract world map functionality (lines ~316-613, 1771-1793)
-  - [ ] 4.2 Move world map overlay creation, area population, and travel functionality
-  - [ ] 4.3 Implement area selection, travel actions, and quick travel features
-  - [ ] 4.4 Add keyboard navigation for world map and area details display
-  - [ ] 4.5 Integrate story event triggers for area exploration
-  - [ ] 4.6 Test world map interactions and area transitions work correctly
+- [x] 4.0 Implement Game World and Exploration UI Modules
+  - [x] 4.1 Create `js/ui/GameWorldUI.js` and extract world map functionality (lines ~316-613, 1771-1793)
+  - [x] 4.2 Move world map overlay creation, area population, and travel functionality
+  - [x] 4.3 Implement area selection, travel actions, and quick travel features
+  - [x] 4.4 Add keyboard navigation for world map and area details display
+  - [x] 4.5 Integrate story event triggers for area exploration
+  - [x] 4.6 Test world map interactions and area transitions work correctly
 
 - [ ] 5.0 Create Combat and Battle UI Modules
   - [ ] 5.1 Create `js/ui/CombatUI.js` and extract combat interface logic (lines ~1889-2076)
