@@ -1,0 +1,13 @@
+{
+  "name": "sawyers-rpg-game",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sawyer's RPG Game - Headless test runner setup",
+  "type": "module",
+  "scripts": {
+    "test:headless": "node scripts/headless-test.js"
+  },
+  "devDependencies": {
+    "puppeteer": "^22.7.1"
+  }
+}

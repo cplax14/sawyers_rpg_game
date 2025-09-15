@@ -157,9 +157,20 @@ class GameState {
         if (!['weapon', 'armor', 'accessory'].includes(slot)) return { ok: false };
         const current = this.player.equipment[slot];
         if (!current) return { ok: false };
+        // Clear equipped slot
         this.player.equipment[slot] = null;
+        // Return item to inventory
+        this.player.inventory = this.player.inventory || {};
+        this.player.inventory.items = this.player.inventory.items || {};
+        this.player.inventory.items[current] = (this.player.inventory.items[current] || 0) + 1;
+        // Recalc stats and notify
         this.recalcPlayerStats();
-        this.addNotification('Unequipped', 'info');
+        try {
+            const name = (typeof ItemData !== 'undefined' && ItemData.getItem) ? (ItemData.getItem(current)?.name || current) : current;
+            this.addNotification(`Unequipped ${name}`, 'info');
+        } catch (_) {
+            this.addNotification('Unequipped', 'info');
+        }
         return { ok: true, itemId: current };
     }
 
@@ -171,7 +182,28 @@ class GameState {
         }
         // Apply equipment bonuses
         if (typeof ItemData !== 'undefined') {
-            const eqStats = ItemData.getEquipmentStats(this.player.equipment);
+            let eqStats = {};
+            try {
+                if (typeof ItemData.getEquipmentStats === 'function') {
+                    eqStats = ItemData.getEquipmentStats(this.player.equipment) || {};
+                } else if (typeof ItemData.getItem === 'function') {
+                    // Fallback: sum stats from equipped items directly
+                    const slots = ['weapon', 'armor', 'accessory'];
+                    slots.forEach(slot => {
+                        const itemId = this.player.equipment?.[slot];
+                        if (!itemId) return;
+                        const item = ItemData.getItem(itemId);
+                        if (item && item.stats) {
+                            for (const [k, v] of Object.entries(item.stats)) {
+                                eqStats[k] = (eqStats[k] || 0) + (v || 0);
+                            }
+                        }
+                    });
+                }
+            } catch (e) {
+                // In tests without ItemData helpers, ignore equipment bonuses
+                eqStats = {};
+            }
             for (const key of Object.keys(eqStats)) {
                 const base = this.player.stats[key] || 0;
                 this.player.stats[key] = base + (eqStats[key] || 0);

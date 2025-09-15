@@ -13,7 +13,7 @@
 - `js/monsterBreeding.js` - Monster breeding and evolution system
 - `js/combat.js` - Turn-based combat system
 - `js/worldMap.js` - World map and area unlocking system
-- `js/ui.js` - UI management and screen transitions
+- `js/ui/*.js` - Modular UI system (UIManager, UIHelpers, MenuUI, GameWorldUI, CombatUI, MonsterUI, InventoryUI, SettingsUI, StoryUI)
 - `js/saveSystem.js` - Local storage save/load functionality
 - `js/storySystem.js` - Narrative branching and endings
 - `data/characters.js` - Character class definitions and stats
@@ -113,7 +113,7 @@
 - [ ] 9.0 Story System and Multiple Endings
   - [x] 9.1 Create story event system with branching dialogue (MVP)
     - Implemented modal UI (`index.html`), minimal styles (`css/components.css`)
-    - `UIManager` methods in `js/ui.js`: `attachStoryUI`, `showStoryEvent`, `renderStoryLine`, `nextStoryLine`, `showStoryChoices`, `chooseStoryOutcome`, `closeStory`
+    - Implemented in modular UI: `js/ui/StoryUI.js` (dialogue/choices) and `js/ui/UIManager.js` (orchestration)
   - [x] 9.2 Implement story progress tracking and flag system (MVP)
     - Applies outcomes via `GameState.processStoryChoice()` (flags, unlocks, items)
     - Adds `<event>_completed` flag and filters re-triggers
