@@ -42,7 +42,7 @@ class UIManager extends EventTarget {
             enableKeyboardShortcuts: options.enableKeyboardShortcuts !== false,
             enableModuleCommunication: options.enableModuleCommunication !== false,
             autoLoadModules: options.autoLoadModules !== false,
-            debugMode: options.debugMode || false,
+            debugMode: options.debugMode || (typeof window !== 'undefined' && window.UI_DEBUG) || false,
             ...options
         };
         
@@ -793,9 +793,35 @@ handleWorldMapKeys(event) {
      * Legacy method compatibility for existing code
      */
     
-    // From original UIManager
+    // From original UIManager (hardened)
     attachButton(buttonId, callback) {
-        return window.uiHelpers?.attachButton(buttonId, callback);
+        // Prefer UIHelpers if present
+        try {
+            if (window.uiHelpers?.attachButton) {
+                return window.uiHelpers.attachButton(buttonId, callback);
+            }
+        } catch (e) {
+            if (this.config.debugMode) {
+                console.warn(`[UIManager] UIHelpers.attachButton failed for #${buttonId}:`, e);
+            }
+        }
+
+        // DOM fallback
+        const el = document.getElementById(buttonId);
+        if (el && typeof el.addEventListener === 'function') {
+            // Avoid duplicate bindings
+            const key = `__ui_bound_${buttonId}`;
+            if (!el[key]) {
+                el.addEventListener('click', callback);
+                el[key] = true;
+            }
+            return true;
+        }
+
+        if (this.config.debugMode) {
+            console.warn(`[UIManager] Button not found for attach: #${buttonId}`);
+        }
+        return false;
     }
     
     // Scene management passthrough

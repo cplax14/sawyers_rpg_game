@@ -314,6 +314,26 @@ During migration phase:
 - Keep original `ui.js` until all modules are complete
 - Test thoroughly before removing legacy code
 
+### Migration from `ui.js` (Quick Guide)
+
+The monolithic `js/ui.js` has been replaced by the modular UI under `js/ui/`.
+
+Follow these steps when migrating or adding new UI features:
+
+1. Create a new module extending `BaseUIModule` in `js/ui/` (for example, `SettingsUI.js`).
+2. Implement `init()`, `cacheElements()`, `attachEvents()`, and `setupState()`; add `onShow()`/`onHide()` as needed.
+3. Register modules via `UIModuleLoader` (already handled by `UIManager.init()`), and ensure scripts are preloaded in `index.html`.
+4. Replace any direct calls to legacy `UIManager` (from `ui.js`) with either:
+   - `UIManager` methods in `js/ui/UIManager.js`, or
+   - Direct module access: `uiManager.getModule('<name>')`.
+5. Update `index.html` to include the modular scripts and remove `js/ui.js`.
+6. Keep behavior parity: run headless tests (`npm run test:headless`) and update or add tests under `tests/` when extracting features.
+7. Once parity is verified, remove any remaining references to `js/ui.js` (the file has been deleted) and update docs/tasks.
+
+Notes:
+- For minimal DOM environments (tests), modules should guard against missing elements and create bare-bones nodes if necessary.
+- Use `UIHelpers` for common DOM and notification utilities rather than re-implementing them in each module.
+
 ## Common Patterns
 
 ### Modal Management
@@ -393,14 +413,26 @@ collectFormData(formId) {
 ### Available Helpers
 - `this.showNotification(message, type)` - Show user notifications
 - `this.getGameState()` - Access current game state
+- `this.getGameReference(property)` - Access a property from the game object (e.g., `gameState`)
+- `this.attachButton(buttonId, callback)` - Attach click with UIManager/UIHelpers fallback
 - `this.validateElements(ids)` - Validate DOM elements exist
 - `this.addEventListener(element, event, handler)` - Tracked event listeners
 - `this.emit(event, data)` - Emit module events
 - `this.on(event, handler)` - Listen for module events
 
 ### UIManager Methods
+- `uiManager.registerModule(name, instance)` - Register new module
 - `uiManager.getModule(name)` - Get module instance
+- `uiManager.getAllModules()` - Map of all modules
 - `uiManager.showScene(scene)` - Change current scene
-- `uiManager.registerModule(module)` - Register new module
+- `uiManager.getCurrentScene()` - Get current scene
+- `uiManager.returnToPrevious()` - Return to previous scene
+- `uiManager.render(ctx)` / `uiManager.renderCanvas(ctx)` - Render entrypoints
+- `uiManager.update(deltaTime)` - Update entrypoint
+- `uiManager.emit(event, data)` / `uiManager.on(event, handler)` - Event bus
+- `uiManager.showNotification(message, type)` - Notifications
+- World map overlay helpers used by tests and validators:
+  - `ensureWorldMapOverlay()`, `openWorldMapOverlay()`, `closeWorldMapOverlay()`, `showWorldMap()`
+  - `populateWorldMapAreas()`, `focusWorldMapIndex()`, `handleWorldMapKeys(event)`
 
 This document will be updated as the module system evolves and new patterns emerge.

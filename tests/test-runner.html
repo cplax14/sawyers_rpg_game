@@ -247,6 +247,22 @@ Loaded Modules:
     <script src="../js/combat.js"></script>
     <!-- Removed legacy ui.js to avoid global symbol redeclarations with modular UI -->
     
+    <!-- Enable UI debug logging via query param ?debug=1 -->
+    <script>
+        (function(){
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const dbg = params.get('debug');
+                if (dbg === '1' || dbg === 'true') {
+                    window.UI_DEBUG = true;
+                    console.log('🔧 UI_DEBUG enabled via query parameter');
+                }
+            } catch (e) {
+                // ignore in tests
+            }
+        })();
+    </script>
+
     <!-- UI Module System (dependencies first) -->
     <script src="../js/ui/BaseUIModule.js"></script>
     <script src="../js/ui/UIHelpers.js"></script>
@@ -259,6 +275,9 @@ Loaded Modules:
     <script src="../js/ui/GameWorldUI.js"></script>
     <script src="../js/ui/CombatUI.js"></script>
     <script src="../js/ui/MonsterUI.js"></script>
+    <script src="../js/ui/InventoryUI.js"></script>
+    <script src="../js/ui/SettingsUI.js"></script>
+    <script src="../js/ui/StoryUI.js"></script>
     
     <script src="../js/game.js"></script>
     
@@ -387,9 +406,14 @@ Loaded Modules:
     <script src="ui_world_map.test.js"></script>
     <script src="validate_world_map.js"></script>
     <script src="validate_inventory.js"></script>
+    <script src="ui_story_basic.test.js"></script>
     
     <!-- UI Module Tests -->
     <script src="ui_modules.test.js"></script>
+    <script src="ui_loader_fallback.test.js"></script>
+    <script src="ui_world_map_edge_cases.test.js"></script>
+    <script src="ui_settings_edge_cases.test.js"></script>
+    <script src="ui_inventory_edge_cases.test.js"></script>
     <script src="validate_ui_refactoring.js"></script>
     
     <script>

@@ -69,16 +69,10 @@ class MonsterUI extends BaseUIModule {
      * Attach button click handler with compatibility for validators
      */
     attachButton(buttonId, callback) {
-        // Prefer UIManager.attachButton if available
-        if (this.uiManager && typeof this.uiManager.attachButton === 'function') {
-            try {
-                this.uiManager.attachButton(buttonId, callback);
-                return;
-            } catch (_) { /* fall through to direct binding */ }
-        }
-        const el = document.getElementById(buttonId);
-        if (el && typeof el.addEventListener === 'function') {
-            el.addEventListener('click', callback);
+        // Delegate to BaseUIModule helper for unified behavior
+        const ok = super.attachButton(buttonId, callback);
+        if (!ok && this.uiManager?.config?.debugMode) {
+            console.warn(`[MonsterUI] attachButton fallback failed for #${buttonId}`);
         }
     }
 

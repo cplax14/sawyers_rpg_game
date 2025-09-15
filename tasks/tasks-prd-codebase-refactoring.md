@@ -6,16 +6,20 @@
 - `js/ui/MenuUI.js` - Main menu, character selection, and navigation interfaces (created)
 - `js/ui/GameWorldUI.js` - World map, area selection, travel, and exploration UI (created)
 - `js/ui/CombatUI.js` - Combat interface, actions, battle management, and targeting (created)
-- `js/ui/MonsterUI.js` - Monster management, breeding, storage, and party interfaces (to be created)
+- `js/ui/MonsterUI.js` - Monster management, breeding, storage, and party interfaces (created)
 - `js/ui/InventoryUI.js` - Inventory, equipment, item management, and trading (created)
 - `js/ui/SettingsUI.js` - Settings panels, controls, preferences, and configuration (to be created)
 - `js/ui/StoryUI.js` - Story modal, dialogue, narrative interfaces, and choices (to be created)
 - `js/ui/UIHelpers.js` - Shared utilities, notifications, common UI functions, and helpers (to be created)
 - `js/ui.js` - Current monolithic UI file (~4500 lines) to be refactored and eventually deprecated
-- `tests/ui_modules.test.js` - Integration tests for new modular UI system (to be created)
-- `tests/validate_ui_refactoring.js` - Validation tests to ensure functionality preservation (to be created)
+- `tests/ui_modules.test.js` - Integration tests for new modular UI system (created)
+- `tests/validate_ui_refactoring.js` - Validation tests to ensure functionality preservation (created)
+  - `tests/ui_loader_fallback.test.js` - Tests fallback loader behavior with partial preloads (created)
+  - `tests/ui_world_map_edge_cases.test.js` - World map overlay edge-case tests (created)
+  - `tests/ui_settings_edge_cases.test.js` - Settings UI guarded edge-case tests (created)
+  - `tests/ui_inventory_edge_cases.test.js` - Inventory UI operations and edge-case tests (created)
 - `index.html` - Main HTML file that will need script loading updates for new modules
-- `docs/ui-module-conventions.md` - Documentation for UI module patterns and conventions (to be created)
+- `docs/ui-module-conventions.md` - Documentation for UI module patterns and conventions (created)
 
 ### Notes
 
@@ -70,34 +74,34 @@
   - [x] 6.4 Add monster selection, stat display, and ability management
   - [x] 6.5 Integrate breeding prompts and monster interaction workflows
   - [x] 6.6 Test monster management, breeding, and storage operations
-
-- [ ] 7.0 Create Inventory and Equipment UI Modules
+ng 
+- [x] 7.0 Create Inventory and Equipment UI Modules
   - [x] 7.1 Create `js/ui/InventoryUI.js` and extract inventory functionality (lines ~2401-2800)
   - [x] 7.2 Move equipment management, item filtering, and tab switching logic
   - [x] 7.3 Implement item detail modals, equipment slots, and stat calculations
   - [x] 7.4 Add item usage, selling, and equipment changes functionality
-  - [ ] 7.5 Test inventory operations, equipment changes, and item interactions
+  - [x] 7.5 Test inventory operations, equipment changes, and item interactions
 
-- [ ] 8.0 Implement Settings and Story UI Modules
-  - [ ] 8.1 Create `js/ui/SettingsUI.js` and extract settings functionality (lines ~658-1427)
-  - [ ] 8.2 Move settings category switching, control updates, and data management
-  - [ ] 8.3 Implement key binding capture, settings validation, and import/export features
-  - [ ] 8.4 Create `js/ui/StoryUI.js` and extract story modal functionality (lines ~35-175)
-  - [ ] 8.5 Move story event display, dialogue progression, and choice handling
-  - [ ] 8.6 Test settings changes, key binding updates, and story progression
+- [x] 8.0 Implement Settings and Story UI Modules
+  - [x] 8.1 Create `js/ui/SettingsUI.js` and extract settings functionality (lines ~658-1427)
+  - [x] 8.2 Move settings category switching, control updates, and data management
+  - [x] 8.3 Implement key binding capture, settings validation, and import/export features
+  - [x] 8.4 Create `js/ui/StoryUI.js` and extract story modal functionality (lines ~35-175)
+  - [x] 8.5 Move story event display, dialogue progression, and choice handling
+  - [x] 8.6 Test settings changes, key binding updates, and story progression
 
-- [ ] 9.0 Update Testing and Validation Systems
-  - [ ] 9.1 Create `tests/ui_modules.test.js` for testing individual UI modules
-  - [ ] 9.2 Update existing validation tests to work with new module structure
-  - [ ] 9.3 Create `tests/validate_ui_refactoring.js` to ensure functionality preservation
-  - [ ] 9.4 Update test-runner.html to include new module test files
-  - [ ] 9.5 Run comprehensive testing to verify all UI functionality works identically
-  - [ ] 9.6 Test module loading, communication, and error handling scenarios
+- [x] 9.0 Update Testing and Validation Systems
+  - [x] 9.1 Create `tests/ui_modules.test.js` for testing individual UI modules
+  - [x] 9.2 Update existing validation tests to work with new module structure
+  - [x] 9.3 Create `tests/validate_ui_refactoring.js` to ensure functionality preservation
+  - [x] 9.4 Update test-runner.html to include new module test files
+  - [x] 9.5 Run comprehensive testing to verify all UI functionality works identically
+  - [x] 9.6 Test module loading, communication, and error handling scenarios
 
-- [ ] 10.0 Complete Integration and Legacy Cleanup
-  - [ ] 10.1 Update `index.html` to load new UI modules instead of monolithic ui.js
-  - [ ] 10.2 Implement fallback strategy and test module loading in different environments
-  - [ ] 10.3 Update game.js integration to use new UIManager instead of direct ui.js
-  - [ ] 10.4 Run final end-to-end testing of complete game functionality
-  - [ ] 10.5 Remove deprecated ui.js file and clean up unused code
-  - [ ] 10.6 Update documentation and create migration guide for future developers
+- [x] 10.0 Complete Integration and Legacy Cleanup
+  - [x] 10.1 Update `index.html` to load new UI modules instead of monolithic ui.js
+  - [x] 10.2 Implement fallback strategy and test module loading in different environments
+  - [x] 10.3 Update game.js integration to use new UIManager instead of direct ui.js
+  - [x] 10.4 Run final end-to-end testing of complete game functionality
+  - [x] 10.5 Remove deprecated ui.js file and clean up unused code
+  - [x] 10.6 Update documentation and create migration guide for future developers
