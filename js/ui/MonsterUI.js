@@ -2226,17 +2226,7 @@ class MonsterUI extends BaseUIModule {
         });
     }
 
-    /**
-     * Show a notification message
-     * Wrapper method for notification system
-     */
-    showNotification(message, type = 'info') {
-        if (this.notificationManager) {
-            this.notificationManager.show(message, { type });
-        } else {
-            console.log(`Notification [${type}]:`, message);
-        }
-    }
+    // Removed showNotification - now inherits working implementation from BaseUIModule
 
     /**
      * Return to previous scene
