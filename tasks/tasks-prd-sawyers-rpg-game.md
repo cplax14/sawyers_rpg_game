@@ -129,7 +129,7 @@
     - [x] 9.6.b Expand additional branches and areas with more events and outcomes
 
 - [ ] 10.0 Game Balance and Testing
-  - [ ] 10.1 Balance character class stats and abilities
+  - [x] 10.1 Balance character class stats and abilities
   - [ ] 10.2 Tune monster capture rates and combat difficulty
   - [ ] 10.3 Balance monster evolution requirements and breeding outcomes
   - [ ] 10.4 Test save/load functionality across different browsers

@@ -11,13 +11,13 @@ const MonsterData = {
             type: ["water", "basic"],
             rarity: "common",
             baseStats: {
-                hp: 40,
-                mp: 20,
-                attack: 30,
-                defense: 25,
-                magicAttack: 35,
-                magicDefense: 40,
-                speed: 45,
+                hp: 25,
+                mp: 15,
+                attack: 18,
+                defense: 15,
+                magicAttack: 20,
+                magicDefense: 25,
+                speed: 35,
                 accuracy: 70
             },
             statGrowth: {
@@ -38,8 +38,8 @@ const MonsterData = {
             type: ["earth", "humanoid"],
             rarity: "common",
             baseStats: {
-                hp: 50, mp: 15, attack: 45, defense: 35,
-                magicAttack: 25, magicDefense: 30, speed: 60, accuracy: 75
+                hp: 35, mp: 10, attack: 25, defense: 20,
+                magicAttack: 15, magicDefense: 18, speed: 45, accuracy: 75
             },
             statGrowth: {
                 hp: 4, mp: 1, attack: 4, defense: 3,

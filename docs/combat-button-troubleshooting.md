@@ -11,7 +11,8 @@
 1. **Scene-to-Module Communication**: Initially suspected that `CombatUI.show()` wasn't being called on second combat encounters
 2. **Combat State Initialization**: Found that `currentTurn` was being set to numeric `0` instead of string `'player'`
 3. **CSS Styling Conflicts**: Discovered CSS `:disabled` rules were overriding JavaScript styles
-4. **Method Execution Order**: **ROOT CAUSE** - Conflicting methods were overriding button states
+4. **Method Execution Order**: Conflicting methods were overriding button states
+5. **Scene-to-Module Registration**: **ACTUAL ROOT CAUSE** - `UIManager.getModulesForScene()` was looking for the wrong property
 
 ### Key Diagnostic Findings
 
@@ -27,62 +28,49 @@ this.combat.currentTurn = 0;
 this.combat.currentTurn = 'player'; // Set to 'player' instead of numeric 0
 ```
 
-#### 2. Scene-to-Module Communication (PARTIALLY IMPLEMENTED)
-**Problem**: `SceneManager` wasn't notifying UI modules when scenes changed
-**Location**: `/js/ui/SceneManager.js` and `/js/ui/UIManager.js`
-**Fix Applied**: Added `getModulesForScene()` method and scene notification system
-
-#### 3. Method Execution Order Conflict (ROOT CAUSE - FIXED)
-**Problem**: Two methods were conflicting in `updateCombatDisplay()`:
-1. `updateActionButtonStates(combat)` - Line 685 - Set buttons to `disabled=true` based on game logic
-2. `updateTurnDisplay(combat)` - Line 688 - Tried to enable buttons but was overridden
-
-**Execution Flow**:
-```
-updateCombatDisplay() calls:
-├── updateActionButtonStates() // Sets disabled=true for no enemies/spells/etc
-└── updateTurnDisplay()
-    └── updateTurnBasedUI() // Tries to set disabled=false but CSS :disabled overrides
-```
-
+#### 2. Scene-to-Module Registration (ACTUAL ROOT CAUSE - FIXED)
+**Problem**: `UIManager.getModulesForScene()` was checking for `module.config.scenes` but modules store configuration in `module.options.scenes`
+**Location**: `/js/ui/UIManager.js` line 232
 **Diagnostic Evidence**:
-- JavaScript logs showed `disabled=false` and `inline: opacity=1`
-- But `computed: opacity=0.5` revealed CSS `:disabled` rule was active
-- Pattern was alternating because timing made the conflict inconsistent
+- Console logs showed `🎯 Checking module CombatUI: config= undefined scenes= undefined`
+- All modules returned `config= undefined` despite having proper `options.scenes` configuration
+- This prevented `CombatUI.show()` from being called for subsequent encounters
 
-**Fix Applied**: Modified `updateActionButtonStates()` to respect turn-based logic:
+**Fix Applied**:
 ```javascript
-updateActionButtonStates(combat) {
-    const isPlayerTurn = combat.currentTurn === 'player';
-    const isProcessing = combat.currentTurn === 'processing';
+// Before (BROKEN)
+if (module.config && module.config.scenes && module.config.scenes.includes(sceneName)) {
 
-    // Skip if not player turn to avoid conflicts with turn-based logic
-    if (!isPlayerTurn || isProcessing) {
-        console.log('🔄 Skipping action button state update - not player turn');
-        return;
-    }
-
-    // Only then apply game logic-based disabling
-    // (existing enemy/spell/item checks)
-}
+// After (FIXED)
+if (module.options && module.options.scenes && module.options.scenes.includes(sceneName)) {
 ```
+
+#### 3. Player HP Reset Enhancement (FIXED)
+**Problem**: Player HP was not being reset between combat encounters
+**Location**: `/js/gameState.js` initializeCombat() method
+**Fix Applied**: Added `this.player.fullHeal()` to ensure player starts each combat with full HP
+
+#### 4. Scene Transition Loop (INTRODUCED & FIXED)
+**Problem**: MenuUI.show() was calling this.showScene() causing infinite loops
+**Location**: `/js/ui/MenuUI.js` line 88
+**Fix Applied**: Removed scene transition call from module show() method - modules should only update internal state, not trigger scene changes
 
 ## Files Modified
 
-### 1. `/js/gameState.js`
-- **Line 1063**: Changed `this.combat.currentTurn = 0;` to `this.combat.currentTurn = 'player';`
-- **Line 1077**: Changed `currentTurn: 0,` to `currentTurn: null,`
+### 1. `/js/ui/UIManager.js` (PRIMARY FIX)
+- **Line 232**: Fixed `getModulesForScene()` to check `module.options.scenes` instead of `module.config.scenes`
+- This was the root cause - scene-to-module registration was completely broken
 
-### 2. `/js/ui/SceneManager.js`
-- **Lines 64-82**: Added scene-to-module notification in `onShow()` method
+### 2. `/js/gameState.js`
+- **Line 1061-1063**: Added `this.player.fullHeal()` to `initializeCombat()` for HP reset between encounters
+- **Line 1068**: Ensured `this.combat.currentTurn = 'player'` (string, not numeric)
 
-### 3. `/js/ui/UIManager.js`
-- **Lines 226-237**: Added `getModulesForScene()` method
+### 3. `/js/ui/MenuUI.js`
+- **Line 87-88**: Removed `this.showScene(sceneName)` call from `show()` method to prevent infinite loops
 
 ### 4. `/js/ui/CombatUI.js`
-- **Lines 891-934**: Modified `updateActionButtonStates()` to respect turn-based logic
-- **Lines 1088-1094**: Added force removal of disabled attributes and !important styles
-- **Various**: Added extensive diagnostic logging throughout
+- **Lines 896-900**: Maintained `updateActionButtonStates()` logic to respect turn-based flow
+- **Lines 1105-1110**: Kept !important style overrides for button state management
 
 ## Testing and Validation
 
@@ -122,5 +110,4 @@ updateActionButtonStates(combat) {
 - Scene system and UI module system should eventually be fully integrated
 - Combat state uses string values ('player', 'processing', 'enemy') not numeric indices
 
-## Status: still in process
-Attack button confirmed to work only during the first encounter. During subsequent encounters, the button is still grayed out. Other buttons haven't been tested during combat yet. 
+## Status: Resolved

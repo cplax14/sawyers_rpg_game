@@ -401,6 +401,12 @@ class GameState {
                     maxHp: maxHp,
                     mana: maxMana, // Always start combat at full MP
                     maxMana: maxMana,
+                    attack: pStats.attack || 50, // Ensure reasonable attack power
+                    defense: pStats.defense || 30, // Ensure reasonable defense
+                    magicAttack: pStats.magicAttack || 40,
+                    magicDefense: pStats.magicDefense || 35,
+                    speed: pStats.speed || 60,
+                    accuracy: pStats.accuracy || 80,
                     spells: this.player.spells || [],
                     inventory: this.player.inventory?.items || {}
                 };
