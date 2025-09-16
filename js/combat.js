@@ -259,6 +259,11 @@ class CombatEngine {
         if (success) {
             // Add to storage
             const stats = tref.stats || null;
+            console.log(`🎯 Combat: About to call captureMonster(${species}, ${level})`);
+            console.log(`🎯 Combat: this.gameState exists:`, !!this.gameState);
+            console.log(`🎯 Combat: window.GameState exists:`, !!window.GameState);
+            console.log(`🎯 Combat: Same instance?`, this.gameState === window.GameState);
+
             this.gameState.captureMonster(species, level, stats);
             this.gameState.addNotification(`Captured ${species}!`, 'success');
         } else {
