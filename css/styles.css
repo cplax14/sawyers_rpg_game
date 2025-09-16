@@ -148,7 +148,9 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    pointer-events: none;
+    /* Allow interaction with UI screens and HUD */
+    pointer-events: auto;
+    z-index: 10; /* ensure UI sits above the canvas */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -179,11 +181,17 @@ body {
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: var(--secondary-gold) rgba(139, 115, 85, 0.3);
+    z-index: 11; /* sit above overlay container */
     
     /* Parchment texture effect */
     background-image: 
         radial-gradient(circle at 100% 50%, transparent 20%, rgba(139, 115, 85, 0.05) 21%, rgba(139, 115, 85, 0.05) 34%, transparent 35%, transparent),
         linear-gradient(0deg, rgba(139, 115, 85, 0.05) 50%, transparent 50%);
+}
+
+/* Ensure only the active screen is displayed to avoid overlay issues */
+.screen:not(.active) {
+    display: none !important;
 }
 
 /* Screen scrollbar styling for WebKit browsers */
@@ -554,6 +562,65 @@ p {
     font-family: var(--font-body);
     font-size: 0.9rem;
     opacity: 0.7;
+}
+
+/* ==================================================
+   WORLD MAP INLINE (game_world scene)
+   ================================================== */
+
+.world-map-container {
+    margin-top: var(--spacing-md);
+}
+
+.world-map {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: var(--spacing-sm);
+    color: #e5e7eb; /* ensure readable on dark bg */
+}
+
+.world-map .map-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: var(--spacing-sm);
+    border: 1px solid #4b5563; /* slate-600 */
+    border-radius: var(--border-radius);
+    background: rgba(31, 41, 55, 0.8); /* slate-800 */
+    color: #f3f4f6; /* slate-100 */
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.world-map .map-area:hover,
+.world-map .map-area:focus {
+    outline: none;
+    background: rgba(55, 65, 81, 0.9); /* slate-700 */
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+}
+
+.world-map .map-area.current {
+    border-color: var(--primary-gold);
+    box-shadow: 0 0 12px rgba(212, 175, 55, 0.35);
+}
+
+.world-map .map-area.visited:not(.current) {
+    opacity: 0.9;
+}
+
+.world-map .area-icon {
+    font-size: 1.4rem;
+}
+
+.world-map .area-name {
+    font-family: var(--font-ui);
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #f9fafb; /* high-contrast */
+    text-align: center;
 }
 
 .version-info, .credit {

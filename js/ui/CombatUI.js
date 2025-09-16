@@ -51,13 +51,36 @@ class CombatUI extends BaseUIModule {
      */
     show(sceneName = 'combat') {
         super.show();
-        
+
         // Reset combat UI state
         this.resetCombatState();
-        
+
+        // Ensure combat is properly initialized
+        const gameState = this.gameState || window.GameState;
+        if (gameState && gameState.combat) {
+            // If we're in combat scene but combat isn't active, something went wrong
+            if (!gameState.combat.active) {
+                console.warn('⚠️ Combat scene shown but combat not active, attempting to reinitialize');
+                // Try to trigger a new encounter if in forest_path
+                if (gameState.world && gameState.world.currentArea === 'forest_path') {
+                    setTimeout(() => {
+                        gameState.triggerRandomEncounter('forest_path');
+                    }, 100);
+                    return;
+                }
+            }
+
+            // If combat is active but currentTurn is not set, default to player
+            if (gameState.combat.active && (!gameState.combat.currentTurn || gameState.combat.currentTurn === 'unknown')) {
+                gameState.combat.currentTurn = 'player';
+                gameState.combat.turnCount = gameState.combat.turnCount || 1;
+                console.log('🔧 Force-set currentTurn to player in CombatUI.show()');
+            }
+        }
+
         // Update combat display
         this.updateCombatDisplay();
-        
+
         console.log(`⚔️ CombatUI showing scene: ${sceneName}`);
     }
 
@@ -111,7 +134,7 @@ class CombatUI extends BaseUIModule {
             
             switch(action) {
                 case 'attack':
-                    // Show target selection if multiple enemies
+                    // Show target selection (single or multiple enemies)
                     this.showTargetSelection('attack');
                     break;
                 case 'capture':
@@ -216,6 +239,38 @@ class CombatUI extends BaseUIModule {
         if (targetMenu) {
             targetMenu.classList.remove('hidden');
             this.populateTargetList(actionType, actionData);
+
+            // Add robust event delegation fallback once
+            if (!targetMenu.getAttribute('data-delegation-bound')) {
+                this.addEventListener(targetMenu, 'click', (e) => {
+                    const btn = e.target.closest('.target-btn');
+                    if (!btn) return;
+                    const idx = Array.from(targetMenu.querySelectorAll('.target-btn')).indexOf(btn);
+                    const gameState = this.gameState || window.GameState;
+                    const combat = gameState?.combat;
+                    if (!combat || !Array.isArray(combat.enemies)) return;
+                    const alive = combat.enemies.filter(en => (en.hp || 0) > 0);
+                    const target = alive[idx] || alive[0] || combat.enemies[0];
+                    if (!target) return;
+                    this.executeTargetedAction(actionType, target, actionData);
+                    this.hideSubMenu('target-selection');
+                });
+                targetMenu.setAttribute('data-delegation-bound', 'true');
+            }
+
+            // If there is only one valid enemy target, auto-select it for smoother UX
+            try {
+                const gameState = this.gameState || window.GameState;
+                const enemies = gameState?.combat?.enemies || [];
+                const alive = Array.isArray(enemies) ? enemies.filter(e => (e?.hp || 0) > 0) : [];
+                if (alive.length === 1) {
+                    // Defer to allow DOM to update target list
+                    setTimeout(() => {
+                        this.executeTargetedAction(actionType, alive[0], actionData);
+                        this.hideSubMenu('target-selection');
+                    }, 0);
+                }
+            } catch (_) {}
         }
         
         // Hide main menu
@@ -454,23 +509,52 @@ class CombatUI extends BaseUIModule {
             this.notifyError('Combat system not available');
             return;
         }
-        
+
         const combat = gameState.combat;
         this.selectedTarget = target;
         
         try {
             switch(actionType) {
                 case 'attack':
-                    const attackResult = combat.performAttack(combat.player, target);
-                    const attackMsg = `${combat.player.name || 'Player'} attacks ${target.name || 'enemy'}!`;
-                    this.addBattleLogEntry(attackMsg, 'attack');
-                    this.notifyInfo(attackMsg);
+                    if (typeof combat.performAttack === 'function') {
+                        const attackResult = combat.performAttack(combat.player, target);
+                        const attackMsg = `${combat.player.name || 'Player'} attacks ${target.name || 'enemy'}!`;
+                        this.addBattleLogEntry(attackMsg, 'attack');
+                        this.notifyInfo(attackMsg);
+                    } else {
+                        // Fallback simple damage calculation
+                        const baseAtk = combat.player?.attack || 10;
+                        const def = target.defense || 0;
+                        const dmg = Math.max(1, Math.round(baseAtk - def * 0.5));
+                        target.hp = Math.max(0, (target.hp || target.maxHp || 10) - dmg);
+                        const attackMsg = `${combat.player?.name || 'Player'} hits ${target.name || 'enemy'} for ${dmg} damage!`;
+                        this.addBattleLogEntry(attackMsg, 'attack');
+                        this.notifyInfo(attackMsg);
+                        if (target.hp === 0) {
+                            this.addBattleLogEntry(`${target.name || 'Enemy'} is defeated!`, 'success');
+                            this.notifySuccess(`${target.name || 'Enemy'} defeated!`);
+                        }
+                    }
                     break;
                 case 'capture':
-                    const captureResult = combat.attemptCapture(target);
-                    const captureMsg = `Attempting to capture ${target.name || 'enemy'}!`;
-                    this.addBattleLogEntry(captureMsg, 'capture');
-                    this.notifyInfo(captureMsg);
+                    if (typeof combat.attemptCapture === 'function') {
+                        const captureResult = combat.attemptCapture(target);
+                        const captureMsg = `Attempting to capture ${target.name || 'enemy'}!`;
+                        this.addBattleLogEntry(captureMsg, 'capture');
+                        this.notifyInfo(captureMsg);
+                    } else {
+                        // Fallback: simple capture chance based on target HP
+                        const hpRatio = target.maxHp > 0 ? (target.hp / target.maxHp) : 1;
+                        const chance = Math.max(0.1, 0.6 - hpRatio * 0.5); // 10% to 60%
+                        if (Math.random() < chance) {
+                            target.hp = 0;
+                            this.addBattleLogEntry(`Captured ${target.name || 'enemy'}!`, 'success');
+                            this.notifySuccess(`Captured ${target.name || 'enemy'}!`);
+                        } else {
+                            this.addBattleLogEntry(`Capture failed on ${target.name || 'enemy'}.`, 'info');
+                            this.notifyInfo('Capture failed. Try weakening the enemy.');
+                        }
+                    }
                     break;
                 case 'magic':
                     if (actionData) {
@@ -497,14 +581,80 @@ class CombatUI extends BaseUIModule {
             
             // Update combat display after action
             this.updateCombatDisplay();
+            // If we are using fallback (no engine), run a simple enemy turn then return to player
+            this.proceedToEnemyTurnIfFallback(combat);
             
         } catch (error) {
             console.error('Combat action failed:', error);
             this.addBattleLogEntry(`Action failed: ${error.message}`, 'error');
             this.notifyError(`Action failed: ${error.message}`);
         }
-        
+
+        console.log(`🔍 executeTargetedAction END: currentTurn=${combat.currentTurn} (${typeof combat.currentTurn})`);
         console.log(`⚔️ Executed ${actionType} on ${target.name || 'target'}`);
+    }
+
+    /**
+     * In fallback mode (no engine), simulate an enemy turn after the player's action
+     */
+    proceedToEnemyTurnIfFallback(combat) {
+        try {
+            if (!combat) return;
+            const usingEngine = typeof combat.performAttack === 'function' || typeof combat.nextTurn === 'function';
+            // If no engine and enemies remain, simulate a quick enemy attack
+            const aliveEnemies = (combat.enemies || []).filter(e => (e?.hp || 0) > 0);
+            if (usingEngine || aliveEnemies.length === 0) {
+                // Victory check
+                if (aliveEnemies.length === 0) {
+                    this.addBattleLogEntry('Victory! Returning to world...', 'success');
+                    this.notifySuccess('Victory!');
+                    // Reset combat state after victory
+                    combat.active = false;
+                    combat.currentTurn = null;
+                    // Return to world after brief delay
+                    setTimeout(() => {
+                        try { this.sendMessage('showScene', { sceneName: 'game_world' }); } catch(_){ }
+                    }, 500);
+                }
+                return;
+            }
+
+            // Set processing state and disable actions
+            combat.currentTurn = 'processing';
+            this.updateTurnDisplay(combat);
+
+            setTimeout(() => {
+                // Enemy chooses a target (player)
+                const enemy = aliveEnemies[0];
+                const atk = enemy.attack || 6;
+                const def = combat.player?.defense || 0;
+                const dmg = Math.max(1, Math.round(atk - def * 0.3));
+                combat.player.hp = Math.max(0, (combat.player.hp || combat.player.maxHp || 50) - dmg);
+                const msg = `${enemy.name || 'Enemy'} strikes back for ${dmg} damage!`;
+                this.addBattleLogEntry(msg, 'enemy');
+                this.notifyInfo(msg);
+
+                // Check defeat
+                if (combat.player.hp === 0) {
+                    this.addBattleLogEntry('You were defeated...', 'error');
+                    this.notifyError('Defeated...');
+                    // Reset combat state after defeat
+                    combat.active = false;
+                    combat.currentTurn = null;
+                    setTimeout(() => {
+                        try { this.sendMessage('showScene', { sceneName: 'game_world' }); } catch(_){ }
+                    }, 800);
+                    return;
+                }
+
+                // Back to player turn
+                combat.currentTurn = 'player';
+                combat.turnCount = (combat.turnCount || 1) + 1;
+                this.updateCombatDisplay();
+            }, 500);
+        } catch (e) {
+            console.warn('Fallback enemy turn failed:', e);
+        }
     }
 
     // ================================================
@@ -578,6 +728,28 @@ class CombatUI extends BaseUIModule {
      */
     updateEnemyDisplays(enemies) {
         if (!enemies || !Array.isArray(enemies)) return;
+        
+        // Ensure enemy slots exist in DOM
+        const container = document.querySelector('.enemy-combatants');
+        if (container) {
+            const existing = container.querySelectorAll('[data-enemy-index]');
+            if (existing.length < enemies.length) {
+                for (let i = existing.length; i < enemies.length; i++) {
+                    const slot = document.createElement('div');
+                    slot.className = 'combatant enemy';
+                    slot.setAttribute('data-enemy-index', String(i));
+                    slot.innerHTML = `
+                        <div class="enemy-name">Enemy ${i + 1}</div>
+                        <div class="health-bar enemy-hp-bar">
+                            <div class="hp-fill" style="width: 100%"></div>
+                            <span class="health-text enemy-hp">--/--</span>
+                        </div>
+                        <div class="status-effects"></div>
+                    `;
+                    container.appendChild(slot);
+                }
+            }
+        }
         
         enemies.forEach((enemy, index) => {
             const enemyElement = document.querySelector(`[data-enemy-index="${index}"]`);
@@ -717,34 +889,48 @@ class CombatUI extends BaseUIModule {
      * Update action button states based on combat situation
      */
     updateActionButtonStates(combat) {
+        // Check if it's player's turn - if not, don't override the turn-based disable logic
+        const isPlayerTurn = combat.currentTurn === 'player';
+        const isProcessing = combat.currentTurn === 'processing';
+
+        // If it's not player turn or processing, skip this method to avoid conflicts
+        if (!isPlayerTurn || isProcessing) {
+            console.log('🔄 Skipping action button state update - not player turn');
+            return;
+        }
+
         // Update attack button
         const attackBtn = document.getElementById('attack-btn');
         if (attackBtn) {
             const hasEnemies = combat.enemies.some(enemy => enemy.hp > 0);
             attackBtn.disabled = !hasEnemies;
+            if (!hasEnemies) console.log('🔒 Attack disabled - no enemies');
         }
-        
+
         // Update capture button
         const captureBtn = document.getElementById('capture-btn');
         if (captureBtn) {
             const canCapture = combat.enemies.some(enemy => enemy.hp > 0 && enemy.capturable !== false);
             captureBtn.disabled = !canCapture;
+            if (!canCapture) console.log('🔒 Capture disabled - no capturable enemies');
         }
-        
+
         // Update magic button
         const magicBtn = document.getElementById('magic-btn');
         if (magicBtn) {
             const hasSpells = combat.player.spells && combat.player.spells.length > 0;
             const hasMana = (combat.player.mana || combat.player.mp || 0) > 0;
             magicBtn.disabled = !hasSpells || !hasMana;
+            if (!hasSpells || !hasMana) console.log('🔒 Magic disabled - no spells or mana');
         }
-        
+
         // Update items button
         const itemsBtn = document.getElementById('items-btn');
         if (itemsBtn) {
             const hasUsableItems = Object.entries(combat.player.inventory || {})
                 .some(([item, qty]) => qty > 0 && this.isUsableInCombat(item));
             itemsBtn.disabled = !hasUsableItems;
+            if (!hasUsableItems) console.log('🔒 Items disabled - no usable items');
         }
     }
 
@@ -885,17 +1071,22 @@ class CombatUI extends BaseUIModule {
     updateTurnBasedUI(combat) {
         const isPlayerTurn = combat.currentTurn === 'player';
         const isProcessing = combat.currentTurn === 'processing';
-        
+
+        console.log(`🔍 updateTurnBasedUI: currentTurn=${combat.currentTurn}, isPlayerTurn=${isPlayerTurn}, isProcessing=${isProcessing}`);
+        console.log(`🔍 combat.active=${combat.active}, combat.turnCount=${combat.turnCount || 'undefined'}`);
+
         // Enable/disable main action menu based on turn
         const actionMenu = document.getElementById('main-action-menu');
         if (actionMenu) {
             if (isPlayerTurn && !isProcessing) {
                 actionMenu.classList.remove('disabled');
+                console.log('🔓 Enabled main action menu');
             } else {
                 actionMenu.classList.add('disabled');
+                console.log('🔒 Disabled main action menu');
             }
         }
-        
+
         // Update action buttons interactivity
         const actionButtons = ['attack-btn', 'magic-btn', 'items-btn', 'capture-btn', 'flee-btn'];
         actionButtons.forEach(buttonId => {
@@ -904,13 +1095,25 @@ class CombatUI extends BaseUIModule {
                 if (!isPlayerTurn || isProcessing) {
                     button.style.pointerEvents = 'none';
                     button.style.opacity = '0.5';
+                    button.setAttribute('disabled', 'true');
+                    button.disabled = true;
+                    console.log(`🔒 Disabled button: ${buttonId} - disabled=${button.disabled}`);
                 } else {
                     button.style.pointerEvents = 'auto';
                     button.style.opacity = '1';
+                    // Force styles with !important to override any CSS conflicts
+                    button.style.setProperty('opacity', '1', 'important');
+                    button.style.setProperty('pointer-events', 'auto', 'important');
+
+                    // Force remove disabled attribute that might be causing CSS conflicts
+                    button.removeAttribute('disabled');
+                    button.disabled = false;
                 }
+            } else {
+                console.warn(`⚠️ Button not found: ${buttonId}`);
             }
         });
-        
+
         // Show/hide turn-specific messages
         this.updateTurnMessages(combat);
     }

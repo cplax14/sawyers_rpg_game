@@ -62,7 +62,22 @@ class Scene {
      * Scene-specific show handler
      */
     onShow() {
-        // Override in subclasses
+        // Notify UI modules associated with this scene
+        try {
+            if (typeof window !== 'undefined' && window.SawyersRPG && window.SawyersRPG.getUI) {
+                const ui = window.SawyersRPG.getUI();
+                if (ui && typeof ui.getModulesForScene === 'function') {
+                    const modules = ui.getModulesForScene(this.name);
+                    modules.forEach(module => {
+                        if (module && typeof module.show === 'function') {
+                            module.show(this.name);
+                        }
+                    });
+                }
+            }
+        } catch (e) {
+            console.warn('Failed to notify UI modules for scene:', this.name, e);
+        }
     }
     
     /**
@@ -159,7 +174,8 @@ class SceneTransitionManager {
             elapsed: 0,
             type: options.type || this.transitionState.type || 'fade',
             targetScene: targetScene,
-            direction: options.direction || 'forward'
+            direction: options.direction || 'forward',
+            onComplete: options.onComplete || null
         };
         
         console.log(`🎬 Starting transition to ${targetScene} (${this.transitionState.type})`);
@@ -190,6 +206,9 @@ class SceneTransitionManager {
         this.transitionState.active = false;
         this.transitionState.elapsed = 0;
         this.transitionState.targetScene = null;
+        const type = this.transitionState.type;
+        // Clear onComplete after storing a reference to avoid stale calls
+        this.transitionState.onComplete = null;
         
         if (onComplete && typeof onComplete === 'function') {
             onComplete(targetScene);
@@ -409,6 +428,31 @@ class SceneManager {
         scene.show();
 
         console.log(`🎬 Switched to scene: ${scene.name}`);
+
+        // Minimal HUD visibility management to ensure gameplay HUD appears after async transitions
+        try {
+            const hud = document.getElementById('game-hud');
+            if (hud) {
+                const showHUD = (scene.config?.type === 'game') || (scene.name === 'game_world');
+                hud.classList.toggle('hidden', !showHUD);
+            }
+        } catch (e) {
+            // ignore
+        }
+
+        // Opportunistically render inline world map when entering game_world
+        try {
+            if (scene.name === 'game_world' && typeof window !== 'undefined') {
+                const uiMgr = window.SawyersRPG?.getUI?.();
+                const gw = uiMgr?.getModule ? uiMgr.getModule('GameWorldUI') : null;
+                if (gw?.ensureInlineWorldMap && gw?.renderInlineWorldMap) {
+                    gw.ensureInlineWorldMap();
+                    gw.renderInlineWorldMap();
+                }
+            }
+        } catch (e) {
+            // ignore
+        }
     }
 
     /**

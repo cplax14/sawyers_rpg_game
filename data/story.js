@@ -33,6 +33,100 @@ const StoryData = {
                 }
             }
         },
+
+        // 9.6.b Further branches and areas
+        grove_ritual: {
+            name: "Rite of the Grove",
+            description: "A quiet ritual binds your spirit to the wilds",
+            type: "ritual",
+            dialogue: [
+                { speaker: "Narrator", text: "Forest lights dance in a circle. A low hum rises as if the trees themselves are singing." }
+            ],
+            choices: [
+                { text: "Perform the ritual", outcome: "perform_ritual" },
+                { text: "Decline respectfully", outcome: "decline_ritual" }
+            ],
+            outcomes: {
+                perform_ritual: {
+                    storyFlags: ["peace_symbol", "nature_affinity"],
+                    unlockAreas: ["sacred_clearing"],
+                    items: ["grove_token"],
+                    dialogue: [
+                        { speaker: "Narrator", text: "Warmth spreads through your chest. You sense the forest will answer your call in times of need." }
+                    ]
+                },
+                decline_ritual: {
+                    storyFlags: ["respectful_decline"],
+                    unlockAreas: [],
+                    items: [],
+                    dialogue: [
+                        { speaker: "Narrator", text: "The lights dim, not offended but contemplative. You may return when ready." }
+                    ]
+                }
+            }
+        },
+
+        wolf_den_challenge: {
+            name: "Challenge at the Den",
+            description: "Prove yourself before the pack",
+            type: "trial",
+            dialogue: [
+                { speaker: "Narrator", text: "The wolves watch from ledges above as the alpha steps forward, scarred and regal." }
+            ],
+            choices: [
+                { text: "Face the alpha with honor", outcome: "face_alpha" },
+                { text: "Back down and observe", outcome: "back_down" }
+            ],
+            outcomes: {
+                face_alpha: {
+                    storyFlags: ["wolf_challenge_won", "warrior_path"],
+                    unlockAreas: ["mountain_pass"],
+                    items: ["fang_medal"],
+                    dialogue: [
+                        { speaker: "Alpha Wolf", text: "Strength tempered by respect. You may pass, pack-friend." }
+                    ]
+                },
+                back_down: {
+                    storyFlags: ["humility_lesson"],
+                    unlockAreas: [],
+                    items: [],
+                    dialogue: [
+                        { speaker: "Narrator", text: "You bow your head. Wisdom in knowing when not to fight." }
+                    ]
+                }
+            }
+        },
+
+        inner_ruins_lore: {
+            name: "Library of Echoes",
+            description: "Whispers of the ancients linger in stone",
+            type: "lore",
+            dialogue: [
+                { speaker: "Narrator", text: "Shelves carved into stone hold tablets that glow faintly as you approach." }
+            ],
+            choices: [
+                { text: "Study the tablet deeply", outcome: "study_tablet" },
+                { text: "Note the runes and move on", outcome: "move_on" }
+            ],
+            outcomes: {
+                study_tablet: {
+                    storyFlags: ["ancient_knowledge_plus", "scholar_path"],
+                    unlockAreas: ["library_of_echoes"],
+                    items: ["codex_fragment"],
+                    dialogue: [
+                        { speaker: "Narrator", text: "The meanings unfold like petals. New pathways of thought open within you." }
+                    ]
+                },
+                move_on: {
+                    storyFlags: ["missed_clue"],
+                    unlockAreas: [],
+                    items: [],
+                    dialogue: [
+                        { speaker: "Narrator", text: "You record what you can, but the deeper truth slips away for now." }
+                    ]
+                }
+            }
+        },
         
         tutorial_complete: {
             name: "First Steps",
@@ -230,7 +324,75 @@ const StoryData = {
                 }
             }
         },
-        
+
+        mystic_grove_discovery: {
+            name: "Whispers of the Grove",
+            description: "A hidden grove calls to those attuned to nature",
+            type: "exploration",
+            dialogue: [
+                {
+                    speaker: "Narrator",
+                    text: "You notice a faint shimmer between the trees. The air is thick with the scent of moss and magic."
+                }
+            ],
+            choices: [
+                { text: "Follow the whispers", outcome: "attune_nature" },
+                { text: "Mark the place for later", outcome: "cautious_note" }
+            ],
+            outcomes: {
+                attune_nature: {
+                    storyFlags: ["nature_attuned", "beast_speaker"],
+                    unlockAreas: ["mystic_grove"],
+                    items: ["nature_charm"],
+                    dialogue: [
+                        { speaker: "Narrator", text: "You step through the veil. The grove welcomes you; you feel the wild's heartbeat align with your own." }
+                    ]
+                },
+                cautious_note: {
+                    storyFlags: ["careful_scout"],
+                    unlockAreas: [],
+                    items: ["hand_drawn_map"],
+                    dialogue: [
+                        { speaker: "Narrator", text: "You sketch the landmarks and retreat. Wisdom sometimes lies in patience." }
+                    ]
+                }
+            }
+        },
+
+        ruins_puzzle: {
+            name: "Riddles of the Ruins",
+            description: "Ancient mechanisms guard forgotten knowledge",
+            type: "exploration",
+            dialogue: [
+                {
+                    speaker: "Narrator",
+                    text: "Within the ruins, stone tiles hum with dormant power. A riddle echoes: \"Only those who seek truly shall pass.\""
+                }
+            ],
+            choices: [
+                { text: "Attempt the riddle", outcome: "solve_riddle" },
+                { text: "Force the mechanism", outcome: "force_mechanism" }
+            ],
+            outcomes: {
+                solve_riddle: {
+                    storyFlags: ["ancient_knowledge", "scholar_path"],
+                    unlockAreas: ["ancient_ruins_inner"],
+                    items: ["inscribed_key"],
+                    dialogue: [
+                        { speaker: "Narrator", text: "With patience and insight, the pattern reveals itself. The gate opens with a resonant chime." }
+                    ]
+                },
+                force_mechanism: {
+                    storyFlags: ["reckless_approach"],
+                    unlockAreas: [],
+                    items: ["cracked_relic"],
+                    dialogue: [
+                        { speaker: "Narrator", text: "You pry at the tiles; something cracks. A hidden cache spills a damaged relic, but the gate remains shut." }
+                    ]
+                }
+            }
+        },
+
         final_trial: {
             name: "The Final Trial",
             description: "The ultimate test of your journey",
@@ -261,7 +423,7 @@ const StoryData = {
             ]
         }
     },
-    
+
     // Different possible endings
     endings: {
         guardian_ending: {

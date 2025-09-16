@@ -26,13 +26,15 @@
 - `tests/monster.test.js` - Unit tests for monster system
 - `tests/combat.test.js` - Unit tests for combat mechanics
 - `tests/saveSystem.test.js` - Unit tests for save/load functionality
+- `tests/test-runner.html` - In-browser test harness executed by automation
+- `scripts/headless-test.js` - Puppeteer script to run the test harness headlessly
 
 ### Notes
 
-- This is a web-based game using vanilla HTML5, CSS, and JavaScript
-- No testing framework is currently set up - tests will use basic JavaScript assertions
-- All game data will be stored in JavaScript modules for easy modification
-- Local storage will handle save data with JSON serialization
+- Web-based game using vanilla HTML5, CSS, and JavaScript
+- Tests run via a custom in-browser harness (`tests/test-runner.html`) and a Puppeteer headless script (`scripts/headless-test.js`).
+- All game data is stored in JavaScript modules for easy modification
+- Local storage handles save data with JSON serialization
 
 ## Tasks
 
@@ -57,7 +59,7 @@
   - [x] 3.4 Implement equipment system for weapons, armor, and accessories
   - [x] 3.5 Add spell learning system with class-specific magic abilities
 
-- [ ] 4.0 Monster System (Capture, Evolution, Breeding)
+- [x] 4.0 Monster System (Capture, Evolution, Breeding)
   - [x] 4.1 Create monster class with stats, abilities, and evolution data
   - [x] 4.2 Implement monster capture mechanics during combat encounters
   - [x] 4.3 Create monster storage system with unlimited capacity
@@ -77,7 +79,7 @@
     - [x] Add tests for teaching/forgetting logic
   - [x] 4.8 Create monster release functionality
 
-- [ ] 5.0 Combat System (Turn-based)
+- [x] 5.0 Combat System (Turn-based)
   - [x] 5.1 Implement turn-based combat engine with initiative order
   - [x] 5.2 Create combat actions (attack, magic, items, capture, flee)
   - [x] 5.3 Implement damage calculations and status effects
@@ -102,7 +104,7 @@
   - [x] 7.7 Add game settings and options menu
   - [ ] 7.8 Implement rich fantasy-themed styling throughout
 
-- [ ] 8.0 Save System and Data Persistence
+- [x] 8.0 Save System and Data Persistence
   - [x] 8.1 Implement local storage save system with JSON serialization
   - [x] 8.2 Create save game data structure covering all game state
   - [x] 8.3 Add auto-save functionality at key game events
@@ -121,8 +123,10 @@
     - Scaffolding: `GameState.world.currentStoryPath` computed via `StoryData.calculateStoryBranch(storyFlags)` on init, on flag changes, and after choices
   - [x] 9.4 Create story choice interface and consequence system (MVP)
     - Choices rendered as buttons; outcomes summarized via toast; auto-save on apply
-  - [ ] 9.5 Implement ending trigger conditions and cutscenes
+  - [x] 9.5 Implement ending trigger conditions and cutscenes
   - [ ] 9.6 Add story content for 2-4 hours of gameplay per playthrough
+    - [x] 9.6.a Add two mid-game events with flags and unlocks (mystic_grove_discovery, ruins_puzzle)
+    - [x] 9.6.b Expand additional branches and areas with more events and outcomes
 
 - [ ] 10.0 Game Balance and Testing
   - [ ] 10.1 Balance character class stats and abilities
