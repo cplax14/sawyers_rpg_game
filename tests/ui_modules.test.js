@@ -64,7 +64,7 @@ describe('MonsterUI Module Tests', () => {
 
     it('should have correct module name and dependencies', () => {
         assertEqual(monsterUI.name, 'MonsterUI', 'Module name should be MonsterUI');
-        assertTruthy(monsterUI.options.scenes.includes('monsters'), 'Should handle monsters scene');
+        assertTruthy(monsterUI.options.scenes.includes('monster_management'), 'Should handle monster_management scene');
         assertTruthy(monsterUI.options.dependencies.includes('UIHelpers'), 'Should depend on UIHelpers');
     });
 

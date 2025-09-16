@@ -645,7 +645,7 @@ class GameWorldUI extends BaseUIModule {
         this.attachButton('world-map-btn', () => this.showWorldMap());
 
         // Global navigation buttons
-        this.attachButton('monsters-btn', () => this.sendMessage('showScene', { sceneName: 'monsters' }));
+        this.attachButton('monsters-btn', () => this.sendMessage('showScene', { sceneName: 'monster_management' }));
         this.attachButton('inventory-btn', () => this.sendMessage('showScene', { sceneName: 'inventory' }));
         this.attachButton('save-game-btn', () => this.saveGame());
         

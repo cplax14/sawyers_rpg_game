@@ -7,7 +7,7 @@
 class MonsterUI extends BaseUIModule {
     constructor(uiManager, options = {}) {
         super('MonsterUI', uiManager, {
-            scenes: ['monsters'],
+            scenes: ['monster_management'],
             dependencies: ['UIHelpers'],
             ...options
         });
@@ -79,7 +79,7 @@ class MonsterUI extends BaseUIModule {
     /**
      * Show the monster UI
      */
-    show(sceneName = 'monsters') {
+    show(sceneName = 'monster_management') {
         super.show();
         
         // Initialize default tab
