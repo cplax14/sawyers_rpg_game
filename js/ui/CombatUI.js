@@ -537,12 +537,15 @@ class CombatUI extends BaseUIModule {
                     }
                     break;
                 case 'capture':
-                    if (typeof combat.attemptCapture === 'function') {
-                        const captureResult = combat.attemptCapture(target);
+                    // Use the proper CombatEngine instead of fallback logic
+                    if (gameState.combatEngine && typeof gameState.combatEngine.attemptCapture === 'function') {
+                        console.log(`🎯 Using CombatEngine.attemptCapture for ${target.name || 'enemy'}`);
+                        const captureResult = gameState.combatEngine.attemptCapture(target.id || 0);
                         const captureMsg = `Attempting to capture ${target.name || 'enemy'}!`;
                         this.addBattleLogEntry(captureMsg, 'capture');
                         this.notifyInfo(captureMsg);
                     } else {
+                        console.warn('🚨 CombatEngine.attemptCapture not available, using fallback');
                         // Fallback: simple capture chance based on target HP
                         const hpRatio = target.maxHp > 0 ? (target.hp / target.maxHp) : 1;
                         const chance = Math.max(0.1, 0.6 - hpRatio * 0.5); // 10% to 60%
