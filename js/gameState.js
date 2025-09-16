@@ -643,19 +643,22 @@ class GameState {
             species: species,
             level: level,
             experience: 0,
-            stats: stats || (typeof MonsterData !== 'undefined' ? 
+            stats: stats || (typeof MonsterData !== 'undefined' ?
                 MonsterData.getStatsAtLevel(species, level) : {}),
-            abilities: typeof MonsterData !== 'undefined' ? 
+            abilities: typeof MonsterData !== 'undefined' ?
                 MonsterData.getSpecies(species)?.abilities || [] : [],
+            speciesData: typeof MonsterData !== 'undefined' ?
+                MonsterData.getSpecies(species) : null,
             captureDate: new Date().toISOString(),
             nickname: null
         };
         
         this.monsters.storage.push(monster);
         this.stats.monstersCaptured++;
-        
+
         this.addNotification(`Captured ${species}!`, 'success');
-        console.log(`Monster captured: ${species} (Level ${level})`);
+        console.log(`✅ Monster captured: ${species} (Level ${level}) - ID: ${monster.id}`);
+        console.log(`📊 Total storage count: ${this.monsters.storage.length}`);
         
         return monster.id;
     }

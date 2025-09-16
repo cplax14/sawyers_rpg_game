@@ -321,16 +321,18 @@ class MonsterUI extends BaseUIModule {
     refreshStorageDisplay() {
         const storageGrid = document.getElementById('storage-grid');
         const totalMonstersEl = document.getElementById('total-monsters');
-        
+
         if (!storageGrid || !window.GameState) return;
-        
+
         const storage = window.GameState.monsters?.storage || [];
+        console.log(`🔍 MonsterUI: Refreshing storage display. Found ${storage.length} monsters in storage:`, storage);
         
         // Update total count
         if (totalMonstersEl) totalMonstersEl.textContent = storage.length;
         
         // Apply filters
         const filteredMonsters = this.getFilteredMonsters(storage);
+        console.log(`🔍 MonsterUI: After filtering, ${filteredMonsters.length} monsters remain`);
         
         // Clear and rebuild storage grid
         storageGrid.innerHTML = '';
