@@ -232,6 +232,12 @@ class UIHelpers {
     hideNotification(notification) {
         if (!notification || !notification.element) return;
 
+        // Remove from queue immediately to prevent infinite loops
+        const index = this.notifications.queue.indexOf(notification);
+        if (index > -1) {
+            this.notifications.queue.splice(index, 1);
+        }
+
         // Start exit animation
         notification.element.style.transform = 'translateX(100%)';
         notification.element.style.opacity = '0';
@@ -240,12 +246,6 @@ class UIHelpers {
         setTimeout(() => {
             if (notification.element && notification.element.parentNode) {
                 notification.element.parentNode.removeChild(notification.element);
-            }
-            
-            // Remove from queue
-            const index = this.notifications.queue.indexOf(notification);
-            if (index > -1) {
-                this.notifications.queue.splice(index, 1);
             }
         }, 300);
     }
