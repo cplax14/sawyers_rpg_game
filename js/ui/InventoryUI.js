@@ -5,7 +5,11 @@
  */
 class InventoryUI extends BaseUIModule {
     constructor(uiManager, options = {}) {
-        super('inventory', uiManager, options);
+        super('InventoryUI', uiManager, {
+            scenes: ['inventory'],
+            dependencies: ['UIHelpers'],
+            ...options
+        });
     }
 
     getDefaultOptions() {

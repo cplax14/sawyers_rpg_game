@@ -643,6 +643,11 @@ class GameWorldUI extends BaseUIModule {
         
         // Main world map button
         this.attachButton('world-map-btn', () => this.showWorldMap());
+
+        // Global navigation buttons
+        this.attachButton('monsters-btn', () => this.showScene('monsters'));
+        this.attachButton('inventory-btn', () => this.showScene('inventory'));
+        this.attachButton('save-game-btn', () => this.saveGame());
         
         // Navigation buttons
         this.attachButton('back-from-world', () => this.returnToPrevious());
@@ -1248,6 +1253,23 @@ class GameWorldUI extends BaseUIModule {
      */
     isWorldMapOpen() {
         return this.worldMapOverlay && this.worldMapOverlay.style.display !== 'none';
+    }
+
+    /**
+     * Save the game
+     */
+    saveGame() {
+        if (typeof SaveSystem !== 'undefined' && SaveSystem.saveGame) {
+            const success = SaveSystem.saveGame();
+            if (success) {
+                this.notifySuccess('Game saved successfully!');
+            } else {
+                this.notifyError('Failed to save game');
+            }
+        } else {
+            console.warn('SaveSystem not available');
+            this.notifyError('Save system unavailable');
+        }
     }
 
     /**
