@@ -95,9 +95,18 @@ class MonsterCaptureSystem {
         const classMultiplier = this.getClassCaptureBonus(monster);
         
         // Final capture rate calculation
-        let finalRate = baseRate * healthMultiplier * statusMultiplier * 
+        let finalRate = baseRate * healthMultiplier * statusMultiplier *
                        itemMultiplier * levelMultiplier * classMultiplier;
-        
+
+        // Testing override: boost capture rates for easier testing
+        if (window.TESTING_OVERRIDES?.easyCaptureMode) {
+            const originalRate = finalRate;
+            finalRate = Math.max(finalRate, 0.5); // Minimum 50% capture rate in testing mode
+            if (finalRate > originalRate) {
+                console.log(`🧪 Testing mode boosted capture rate: ${(originalRate * 100).toFixed(1)}% → ${(finalRate * 100).toFixed(1)}%`);
+            }
+        }
+
         // Cap at 95% to maintain some challenge
         finalRate = Math.min(0.95, Math.max(0.01, finalRate));
         

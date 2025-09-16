@@ -26,7 +26,10 @@ class SawyersRPG {
     async init() {
         try {
             console.log('🎮 Initializing Sawyer\'s RPG Game...');
-            
+
+            // Initialize testing overrides for easier development/testing
+            this.initTestingOverrides();
+
             // Get canvas and context
             this.canvas = document.getElementById('game-canvas');
             let hasCanvas = !!this.canvas;
@@ -499,6 +502,25 @@ class SawyersRPG {
      */
     isGameRunning() {
         return this.isRunning;
+    }
+
+    /**
+     * Initialize testing overrides for easier development
+     */
+    initTestingOverrides() {
+        // Create global testing overrides object
+        window.TESTING_OVERRIDES = {
+            // Easy capture mode: minimum 50% capture rate for testing
+            easyCaptureMode: true,
+
+            // Future testing overrides can be added here
+            // quickLevelUp: false,
+            // unlimitedGold: false,
+            // etc.
+        };
+
+        console.log('🧪 Testing overrides enabled:', window.TESTING_OVERRIDES);
+        console.log('📝 To disable easy captures: window.TESTING_OVERRIDES.easyCaptureMode = false');
     }
 }
 
