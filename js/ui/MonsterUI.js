@@ -2242,12 +2242,8 @@ class MonsterUI extends BaseUIModule {
      * Return to previous scene
      */
     returnToPrevious() {
-        if (this.uiManager && this.uiManager.state.previousModule) {
-            this.uiManager.switchToModule(this.uiManager.state.previousModule);
-        } else {
-            // Default fallback
-            this.uiManager.switchToModule('MenuUI');
-        }
+        // Use the same pattern as other modules
+        this.sendMessage('returnToPrevious');
     }
 }
 
