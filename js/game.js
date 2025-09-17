@@ -70,6 +70,11 @@ class SawyersRPG {
         // Initialize game state manager
         if (typeof GameState !== 'undefined') {
             this.gameState = new GameState();
+
+            // CRITICAL FIX: Establish single GameState instance globally
+            window.gameState = this.gameState; // Lowercase - the actual instance
+            window.GameState = this.gameState; // Uppercase - for backward compatibility
+
             console.log('✅ Game State initialized');
         } else {
             console.warn('⚠️ GameState not loaded');
@@ -510,7 +515,7 @@ class SawyersRPG {
     initTestingOverrides() {
         // Create global testing overrides object
         window.TESTING_OVERRIDES = {
-            // Easy capture mode: minimum 50% capture rate for testing
+            // Easy capture mode: minimum 90% per shake for testing (~73% overall success)
             easyCaptureMode: true,
 
             // Future testing overrides can be added here

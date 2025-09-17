@@ -101,9 +101,12 @@ class MonsterCaptureSystem {
         // Testing override: boost capture rates for easier testing
         if (window.TESTING_OVERRIDES?.easyCaptureMode) {
             const originalRate = finalRate;
-            finalRate = Math.max(finalRate, 0.5); // Minimum 50% capture rate in testing mode
+            // For testing, we want high success rate per shake, since 3 shakes need to succeed
+            // 90% per shake gives ~73% overall success rate (0.9^3)
+            finalRate = Math.max(finalRate, 0.9); // Minimum 90% per shake in testing mode
             if (finalRate > originalRate) {
-                console.log(`🧪 Testing mode boosted capture rate: ${(originalRate * 100).toFixed(1)}% → ${(finalRate * 100).toFixed(1)}%`);
+                const overallRate = Math.pow(finalRate, 3) * 100; // Calculate 3-shake success rate
+                console.log(`🧪 Testing mode boosted capture rate: ${(originalRate * 100).toFixed(1)}% → ${(finalRate * 100).toFixed(1)}% per shake (~${overallRate.toFixed(1)}% overall)`);
             }
         }
 
