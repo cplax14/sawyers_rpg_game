@@ -249,8 +249,10 @@ class SceneTransitionManager {
      * Render fade transition
      */
     renderFadeTransition(ctx) {
+        if (!ctx || !ctx.canvas) return;
+
         const progress = this.getTransitionProgress();
-        
+
         ctx.save();
         ctx.globalAlpha = 1 - progress;
         ctx.fillStyle = '#000000';

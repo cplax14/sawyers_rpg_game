@@ -37,6 +37,88 @@
 
 #story-choices { display: grid; gap: var(--spacing-sm); margin-top: var(--spacing-sm); }
 #story-choices .choice-btn { text-align: left; }
+
+/* ================================================== */
+/*                ENHANCED FANTASY PANELS            */
+/* ================================================== */
+
+/* General fantasy card enhancement */
+.card, .panel, .info-panel, .detail-panel {
+    background: var(--gradient-parchment);
+    border: var(--border-medieval);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-medium), var(--shadow-inset);
+    position: relative;
+    overflow: hidden;
+    transition: all var(--transition-normal);
+}
+
+.card::before, .panel::before, .info-panel::before, .detail-panel::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: var(--gradient-gold);
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+    z-index: -1;
+}
+
+.card:hover::before, .panel:hover::before {
+    opacity: 0.1;
+}
+
+/* Fantasy section headers */
+.section-header, .panel-header {
+    background: var(--gradient-leather);
+    color: var(--primary-gold);
+    text-shadow: var(--text-shadow-emboss);
+    border-bottom: 2px solid var(--aged-bronze);
+    font-family: var(--font-fantasy);
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+/* Enhanced input fields */
+input[type="text"], input[type="number"], select, textarea {
+    background: var(--gradient-parchment);
+    border: 2px solid var(--aged-bronze);
+    border-radius: var(--border-radius-sm);
+    color: var(--deep-brown);
+    font-family: var(--font-body);
+    padding: var(--spacing-sm);
+    transition: all var(--transition-normal);
+}
+
+input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus {
+    border-color: var(--primary-gold);
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+    outline: none;
+}
+
+/* Enhanced scrollbars for fantasy theme */
+.fantasy-scroll::-webkit-scrollbar {
+    width: 12px;
+}
+
+.fantasy-scroll::-webkit-scrollbar-track {
+    background: var(--gradient-leather);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--aged-bronze);
+}
+
+.fantasy-scroll::-webkit-scrollbar-thumb {
+    background: var(--gradient-gold);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--dark-gold);
+}
+
+.fantasy-scroll::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, var(--primary-gold), var(--aged-bronze));
+}
 /* ================================================== */
 /*               COMPONENT-SPECIFIC STYLES           */
 /* ================================================== */

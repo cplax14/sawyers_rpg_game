@@ -234,8 +234,8 @@ class CombatEngine {
         let chance = ((baseRate * 0.5) + hpBonus + itemBonus + flatBonus) * mult;
         chance = Math.max(5, Math.min(95, Math.floor(chance)));
 
-        // Apply testing overrides if enabled
-        if (window.TESTING_OVERRIDES?.easyCaptureMode) {
+        // Apply testing overrides if enabled (but only for manual testing, not unit tests)
+        if (window.TESTING_OVERRIDES?.easyCaptureMode && !window.TEST_FRAMEWORK_RUNNING) {
             const originalChance = chance;
             chance = Math.max(chance, 75); // Minimum 75% capture rate in testing mode
             if (chance > originalChance) {
@@ -299,28 +299,19 @@ class CombatEngine {
             }
         }
 
-        console.log(`🔍 CAPTURE DEBUG: About to call computeCaptureChance...`);
         const chance = this.computeCaptureChance(tref, { itemBonus });
-        console.log(`🔍 CAPTURE DEBUG: computeCaptureChance returned: ${chance}%`);
 
-        // TESTING OVERRIDE: Force 100% success in testing mode
-        let success = false;
-        if (window.TESTING_OVERRIDES?.easyCaptureMode) {
+        // Perform capture roll
+        const roll = Math.floor(Math.random() * 100) + 1;
+        let success = roll <= chance;
+
+        // TESTING OVERRIDE: Force success in testing mode (but preserve roll for tests)
+        if (window.TESTING_OVERRIDES?.easyCaptureMode && !window.TEST_FRAMEWORK_RUNNING && !success) {
             success = true;
-            console.log(`🧪 TESTING MODE: Forcing capture success (bypassing roll)`);
-        } else {
-            const roll = Math.floor(Math.random() * 100) + 1;
-            success = roll <= chance;
-            console.log(`🔍 CAPTURE DEBUG: Normal mode - rolled ${roll}, needed ≤${chance}, success: ${success}`);
         }
         if (success) {
             // Add to storage
             const stats = tref.stats || null;
-            console.log(`🎯 Combat: About to call captureMonster(${species}, ${level})`);
-            console.log(`🎯 Combat: this.gameState exists:`, !!this.gameState);
-            console.log(`🎯 Combat: window.GameState exists:`, !!window.GameState);
-            console.log(`🎯 Combat: Same instance?`, this.gameState === window.GameState);
-
             this.gameState.captureMonster(species, level, stats);
             this.gameState.addNotification(`Captured ${species}!`, 'success');
         } else {

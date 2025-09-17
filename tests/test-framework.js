@@ -13,6 +13,9 @@ class SimpleTestFramework {
             failed: 0,
             skipped: 0
         };
+
+        // Set global flag to indicate tests are running
+        window.TEST_FRAMEWORK_RUNNING = true;
         this.currentSuite = null;
         this.verbose = false;
     }
