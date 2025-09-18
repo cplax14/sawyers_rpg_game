@@ -373,33 +373,68 @@ const AreaData = {
     generateRandomEncounter: function(areaName, playerLevel) {
         const area = this.getArea(areaName);
         if (!area || area.encounterRate === 0) return null;
-        
+
         // Check if encounter should occur
         if (Math.random() * 100 > area.encounterRate) return null;
-        
+
         const monsters = area.monsters;
         if (monsters.length === 0) return null;
-        
+
+        // Enhanced level scaling based on area difficulty
+        const basePlayerLevel = playerLevel || 1;
+        let levelVariance, levelRange;
+
+        // Determine area difficulty and level scaling
+        if (areaName === 'starting_village') {
+            levelVariance = 0; // No variance in tutorial area
+            levelRange = [1, 1];
+        } else if (areaName === 'forest_path') {
+            levelVariance = 1; // ±1 level
+            levelRange = [1, 3];
+        } else if (['deep_forest', 'plains'].includes(areaName)) {
+            levelVariance = 2; // ±2 levels
+            levelRange = [Math.max(1, basePlayerLevel - 1), basePlayerLevel + 3];
+        } else if (['mountains', 'cave_entrance'].includes(areaName)) {
+            levelVariance = 2;
+            levelRange = [Math.max(1, basePlayerLevel), basePlayerLevel + 4];
+        } else if (['fire_temple', 'mystic_grove'].includes(areaName)) {
+            levelVariance = 3;
+            levelRange = [Math.max(1, basePlayerLevel + 1), basePlayerLevel + 6];
+        } else {
+            // End-game areas
+            levelVariance = 4;
+            levelRange = [Math.max(1, basePlayerLevel + 2), basePlayerLevel + 8];
+        }
+
+        // Calculate encounter level with strategic variance
+        let encounterLevel;
+        if (Math.random() < 0.1) {
+            // 10% chance for a significantly stronger enemy
+            encounterLevel = Math.min(levelRange[1], basePlayerLevel + levelVariance + 2);
+        } else if (Math.random() < 0.3) {
+            // 20% chance for slightly weaker enemy
+            encounterLevel = Math.max(levelRange[0], basePlayerLevel - Math.floor(levelVariance / 2));
+        } else {
+            // 70% chance for level appropriate enemy
+            const variance = Math.floor(Math.random() * (levelVariance * 2 + 1)) - levelVariance;
+            encounterLevel = Math.max(levelRange[0], Math.min(levelRange[1], basePlayerLevel + variance));
+        }
+
         // Prefer local weighted spawn table if present
         if (Array.isArray(area.spawnTable) && area.spawnTable.length > 0) {
             const species = this.chooseWeighted(area.spawnTable);
-            // Level near player level
-            const variance = Math.floor(Math.random() * 5) - 2; // -2..+2
-            const level = Math.max(1, (playerLevel || 1) + variance);
-            return { species, level };
+            return { species, level: encounterLevel };
         }
-        
+
         // Fallback to MonsterData
         if (typeof MonsterData !== 'undefined') {
-            return MonsterData.generateEncounter(areaName, playerLevel);
+            return MonsterData.generateEncounter(areaName, encounterLevel);
         }
-        
+
         // Final fallback: uniform random from area.monsters
         const idx = Math.floor(Math.random() * monsters.length);
         const species = monsters[idx];
-        const variance = Math.floor(Math.random() * 5) - 2;
-        const level = Math.max(1, (playerLevel || 1) + variance);
-        return { species, level };
+        return { species, level: encounterLevel };
     },
 
     /** Weighted choice from a spawn table [{species, weight}] */

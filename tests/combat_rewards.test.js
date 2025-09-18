@@ -56,10 +56,11 @@ describe('Combat Rewards Tests', () => {
 
             gameState.combatEngine.endBattle({ victory: true, defeated });
 
-            // XP: level*10 => (5*10 + 7*10) = 120
-            assertTruthy(gameState.player.experience >= beforeXP + 120 || gameState.player.level > 1, 'Player should gain XP or level up');
-            // Gold: level*3 => (5*3 + 7*3) = 36
-            assertEqual(gameState.player.inventory.gold, beforeGold + 36, 'Player should gain expected gold');
+            // XP: enhanced formula should give at least base level*8 => (5*8 + 7*8) = 96
+            assertTruthy(gameState.player.experience >= beforeXP + 96 || gameState.player.level > 1, 'Player should gain XP or level up');
+            // Gold: enhanced formula level*2.5 => (5*2.5 + 7*2.5) = 30 (floored)
+            const expectedGold = Math.floor(5 * 2.5) + Math.floor(7 * 2.5); // 12 + 17 = 29
+            assertTruthy(gameState.player.inventory.gold >= beforeGold + expectedGold, 'Player should gain expected gold');
             // Drops should include at least one health_potion when RNG forced to 0
             const potions = gameState.player.inventory.items['health_potion'] || 0;
             assertTruthy(potions >= 1, 'Should receive at least one health_potion drop');

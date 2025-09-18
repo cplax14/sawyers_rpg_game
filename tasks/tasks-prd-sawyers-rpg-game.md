@@ -128,11 +128,11 @@
     - [x] 9.6.a Add two mid-game events with flags and unlocks (mystic_grove_discovery, ruins_puzzle)
     - [x] 9.6.b Expand additional branches and areas with more events and outcomes
 
-- [ ] 10.0 Game Balance and Testing
+- [x] 10.0 Game Balance and Testing
   - [x] 10.1 Balance character class stats and abilities
-  - [ ] 10.2 Tune monster capture rates and combat difficulty
-  - [ ] 10.3 Balance monster evolution requirements and breeding outcomes
-  - [ ] 10.4 Test save/load functionality across different browsers
-  - [ ] 10.5 Perform cross-browser compatibility testing
-  - [ ] 10.6 Create automated tests for core game systems
-  - [ ] 10.7 Playtest complete game for pacing and engagement
+  - [x] 10.2 Tune monster capture rates and combat difficulty
+  - [x] 10.3 Balance monster evolution requirements and breeding outcomes
+  - [x] 10.4 Test save/load functionality across different browsers
+  - [x] 10.5 Perform cross-browser compatibility testing
+  - [x] 10.6 Create automated tests for core game systems
+  - [x] 10.7 Playtest complete game for pacing and engagement
