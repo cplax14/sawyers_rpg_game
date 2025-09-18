@@ -1002,7 +1002,7 @@ const AreaData = {
                 this.evaluateSingleCondition(condition, storyProgress, playerLevel, inventory, playerClass, defeatedBosses)
             );
             if (!anyMet) {
-                status.missing.push('One of: ' + requirements.or.map(this.getConditionDescription).join(' OR '));
+                status.missing.push('One of: ' + requirements.or.map(c => this.getConditionDescription(c)).join(' OR '));
             }
         }
     },
@@ -1059,10 +1059,13 @@ const AreaData = {
         if (condition.story) return `Story: ${condition.story}`;
         if (condition.level) return `Level ${condition.level}`;
         if (condition.item) return `Item: ${condition.item}`;
-        if (condition.character_class) return `Class: ${condition.character_class.join(' or ')}`;
+        if (condition.character_class) {
+            const classes = Array.isArray(condition.character_class) ? condition.character_class : [condition.character_class];
+            return `Class: ${classes.join(' or ')}`;
+        }
         if (condition.boss_defeated) return `Boss defeated: ${condition.boss_defeated}`;
-        if (condition.and) return `All of: (${condition.and.map(this.getConditionDescription).join(', ')})`;
-        if (condition.or) return `One of: (${condition.or.map(this.getConditionDescription).join(' OR ')})`;
+        if (condition.and) return `All of: (${condition.and.map(c => this.getConditionDescription(c)).join(', ')})`;
+        if (condition.or) return `One of: (${condition.or.map(c => this.getConditionDescription(c)).join(' OR ')})`;
         return 'Unknown requirement';
     }
 };
