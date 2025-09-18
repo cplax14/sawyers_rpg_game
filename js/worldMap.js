@@ -6,8 +6,8 @@
 class WorldMapSystem {
     constructor(game) {
         this.game = game;
-        this.currentArea = 'village';
-        this.visitedAreas = new Set(['village']);
+        this.currentArea = 'starting_village';
+        this.visitedAreas = new Set(['starting_village']);
         this.mapContainer = null;
         this.initialized = false;
     }
@@ -38,6 +38,11 @@ class WorldMapSystem {
                 <div class="area-icon">${area.icon || '🏔️'}</div>
                 <div class="area-name">${area.name}</div>
             `;
+
+            // Mark areas as focusable buttons; GameWorldUI wires the actual behavior
+            areaElement.tabIndex = 0;
+            areaElement.setAttribute('role', 'button');
+            areaElement.setAttribute('aria-label', `Select ${area.name}`);
             
             if (this.currentArea === areaId) {
                 areaElement.classList.add('current');
@@ -62,8 +67,12 @@ class WorldMapSystem {
         this.renderMap();
         
         // Update game state
-        if (this.game.gameState) {
-            this.game.gameState.currentArea = areaId;
+        if (this.game?.gameState) {
+            if (this.game.gameState.world) {
+                this.game.gameState.world.currentArea = areaId;
+            } else {
+                this.game.gameState.currentArea = areaId;
+            }
         }
         
         return true;

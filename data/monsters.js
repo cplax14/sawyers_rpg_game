@@ -11,13 +11,13 @@ const MonsterData = {
             type: ["water", "basic"],
             rarity: "common",
             baseStats: {
-                hp: 40,
-                mp: 20,
-                attack: 30,
-                defense: 25,
-                magicAttack: 35,
-                magicDefense: 40,
-                speed: 45,
+                hp: 25,
+                mp: 15,
+                attack: 18,
+                defense: 15,
+                magicAttack: 20,
+                magicDefense: 25,
+                speed: 35,
                 accuracy: 70
             },
             statGrowth: {
@@ -25,8 +25,8 @@ const MonsterData = {
                 magicAttack: 3, magicDefense: 3, speed: 3, accuracy: 2
             },
             abilities: ["bounce", "heal"],
-            captureRate: 85,
-            evolutionLevel: 15,
+            captureRate: 65,
+            evolutionLevel: 12,
             evolvesTo: ["king_slime"],
             evolutionItems: [],
             breedsWith: ["slime", "goblin"],
@@ -38,16 +38,16 @@ const MonsterData = {
             type: ["earth", "humanoid"],
             rarity: "common",
             baseStats: {
-                hp: 50, mp: 15, attack: 45, defense: 35,
-                magicAttack: 25, magicDefense: 30, speed: 60, accuracy: 75
+                hp: 35, mp: 10, attack: 25, defense: 20,
+                magicAttack: 15, magicDefense: 18, speed: 45, accuracy: 75
             },
             statGrowth: {
                 hp: 4, mp: 1, attack: 4, defense: 3,
                 magicAttack: 2, magicDefense: 2, speed: 4, accuracy: 3
             },
             abilities: ["scratch", "throw_rock"],
-            captureRate: 75,
-            evolutionLevel: 18,
+            captureRate: 55,
+            evolutionLevel: 14,
             evolvesTo: ["hobgoblin"],
             evolutionItems: [],
             breedsWith: ["goblin", "orc", "slime"],
@@ -67,8 +67,8 @@ const MonsterData = {
                 magicAttack: 2, magicDefense: 3, speed: 6, accuracy: 4
             },
             abilities: ["bite", "howl", "pack_hunt"],
-            captureRate: 60,
-            evolutionLevel: 20,
+            captureRate: 45,
+            evolutionLevel: 16,
             evolvesTo: ["dire_wolf"],
             evolutionItems: [],
             breedsWith: ["wolf", "bear", "fox"],
@@ -89,8 +89,8 @@ const MonsterData = {
                 magicAttack: 2, magicDefense: 3, speed: 3, accuracy: 3
             },
             abilities: ["club_smash", "roar", "intimidate"],
-            captureRate: 45,
-            evolutionLevel: 25,
+            captureRate: 30,
+            evolutionLevel: 20,
             evolvesTo: ["orc_warrior"],
             evolutionItems: [],
             breedsWith: ["orc", "goblin", "troll"],
@@ -759,38 +759,143 @@ const MonsterData = {
     },
     
     /**
-     * Get possible breeding outcomes
+     * Get possible breeding outcomes with enhanced balancing
      */
     getBreedingOutcomes: function(species1, species2) {
         if (!this.canBreed(species1, species2)) return [];
-        
+
         const outcomes = [];
-        
-        // Can produce either parent species
-        outcomes.push({ species: species1, chance: 35 });
-        outcomes.push({ species: species2, chance: 35 });
-        
+        const monster1 = this.getSpecies(species1);
+        const monster2 = this.getSpecies(species2);
+
+        // Same species breeding: 80% same species, 20% variant/evolution chance
+        if (species1 === species2) {
+            outcomes.push({ species: species1, chance: 80 });
+
+            // Small chance for evolution/variant
+            if (monster1.evolvesTo.length > 0 && Math.random() < 0.2) {
+                const evolution = monster1.evolvesTo[0];
+                outcomes.push({ species: evolution, chance: 20 });
+            }
+            return outcomes;
+        }
+
+        // Different species breeding: balanced based on rarity
+        const rarity1 = monster1.rarity;
+        const rarity2 = monster2.rarity;
+
+        // Calculate parent chances based on rarity (rarer species have lower inheritance chance)
+        let chance1 = this.getParentInheritanceChance(rarity1);
+        let chance2 = this.getParentInheritanceChance(rarity2);
+
+        // Adjust if one parent is much rarer
+        if (rarity1 !== rarity2) {
+            const rarityValues = { common: 1, uncommon: 2, rare: 3, epic: 4, legendary: 5 };
+            const diff = Math.abs(rarityValues[rarity1] - rarityValues[rarity2]);
+            if (diff >= 2) {
+                // Rarer parent has lower inheritance chance
+                if (rarityValues[rarity1] > rarityValues[rarity2]) {
+                    chance1 -= diff * 5;
+                    chance2 += diff * 3;
+                } else {
+                    chance2 -= diff * 5;
+                    chance1 += diff * 3;
+                }
+            }
+        }
+
+        // Ensure chances are valid
+        chance1 = Math.max(15, Math.min(50, chance1));
+        chance2 = Math.max(15, Math.min(50, chance2));
+
+        outcomes.push({ species: species1, chance: chance1 });
+        outcomes.push({ species: species2, chance: chance2 });
+
         // Check for special combinations
         const combinations = this.getSpecialBreedingCombinations();
-        const combo = combinations[`${species1}+${species2}`] || 
+        const combo = combinations[`${species1}+${species2}`] ||
                      combinations[`${species2}+${species1}`];
-        
+
         if (combo) {
-            outcomes.push({ species: combo.result, chance: combo.chance });
+            const specialChance = this.getSpecialBreedingChance(rarity1, rarity2, combo.baseChance || 15);
+            outcomes.push({ species: combo.result, chance: specialChance });
         }
-        
+
+        // Normalize chances to 100%
+        const totalChance = outcomes.reduce((sum, outcome) => sum + outcome.chance, 0);
+        if (totalChance !== 100) {
+            const factor = 100 / totalChance;
+            outcomes.forEach(outcome => {
+                outcome.chance = Math.round(outcome.chance * factor);
+            });
+        }
+
         return outcomes;
+    },
+
+    /**
+     * Get parent inheritance chance based on rarity
+     */
+    getParentInheritanceChance: function(rarity) {
+        switch (rarity) {
+            case 'common': return 40;
+            case 'uncommon': return 35;
+            case 'rare': return 30;
+            case 'epic': return 25;
+            case 'legendary': return 20;
+            default: return 35;
+        }
+    },
+
+    /**
+     * Calculate special breeding chance based on parent rarities
+     */
+    getSpecialBreedingChance: function(rarity1, rarity2, baseChance) {
+        const rarityValues = { common: 1, uncommon: 2, rare: 3, epic: 4, legendary: 5 };
+        const avgRarity = (rarityValues[rarity1] + rarityValues[rarity2]) / 2;
+
+        // Higher rarity parents have better chance of special outcomes
+        const rarityBonus = Math.floor((avgRarity - 1) * 3); // +3% per rarity level above common
+
+        return Math.min(30, baseChance + rarityBonus);
     },
     
     /**
-     * Special breeding combinations
+     * Special breeding combinations with enhanced balancing
      */
     getSpecialBreedingCombinations: function() {
         return {
-            "fire_sprite+ice_sprite": { result: "steam_elemental", chance: 15 },
-            "dragon_whelp+phoenix_chick": { result: "solar_dragon", chance: 5 },
-            "wolf+goblin": { result: "worg", chance: 20 },
-            "slime+fire_sprite": { result: "magma_slime", chance: 25 }
+            // Elemental combinations (rare results)
+            "fire_sprite+ice_sprite": { result: "steam_elemental", baseChance: 12 },
+            "fire_sprite+thunder_sprite": { result: "plasma_elemental", baseChance: 10 },
+            "ice_sprite+thunder_sprite": { result: "storm_elemental", baseChance: 10 },
+
+            // Dragon lineage (very rare results)
+            "dragon_whelp+phoenix_chick": { result: "solar_dragon", baseChance: 3 },
+            "dragon_whelp+ice_sprite": { result: "frost_dragon", baseChance: 5 },
+            "wyvern+dragon_whelp": { result: "ancient_wyrm", baseChance: 4 },
+
+            // Beast combinations (more common)
+            "wolf+goblin": { result: "worg", baseChance: 18 },
+            "wolf+orc": { result: "dire_worg", baseChance: 15 },
+            "bear+wolf": { result: "dire_bear", baseChance: 16 },
+
+            // Magical slime variants
+            "slime+fire_sprite": { result: "magma_slime", baseChance: 20 },
+            "slime+ice_sprite": { result: "crystal_slime", baseChance: 20 },
+            "slime+thunder_sprite": { result: "spark_slime", baseChance: 20 },
+
+            // Humanoid evolution paths
+            "goblin+orc": { result: "goblin_warrior", baseChance: 25 },
+            "hobgoblin+orc_warrior": { result: "orc_chieftain", baseChance: 8 },
+
+            // Nature combinations
+            "treant+dryad": { result: "world_tree", baseChance: 6 },
+            "unicorn+dryad": { result: "forest_spirit", baseChance: 7 },
+
+            // Undead combinations
+            "shadow_wraith+bone_knight": { result: "death_lord", baseChance: 5 },
+            "lich+phantom": { result: "arch_lich", baseChance: 3 }
         };
     },
     

@@ -82,17 +82,15 @@ class MenuUI extends BaseUIModule {
      */
     show(sceneName = 'main_menu') {
         super.show();
-        
-        // Ensure we're showing the correct scene
-        if (this.scenes.includes(sceneName)) {
-            this.showScene(sceneName);
-        }
-        
+
+        // Just update internal state - don't trigger scene transitions
+        // The scene system is already handling the scene change
+
         // Reset character selection if showing character select
         if (sceneName === 'character_select') {
             this.resetCharacterSelection();
         }
-        
+
         console.log(`🎭 MenuUI showing scene: ${sceneName}`);
     }
 

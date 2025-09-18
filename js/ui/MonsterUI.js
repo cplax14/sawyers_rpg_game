@@ -7,7 +7,7 @@
 class MonsterUI extends BaseUIModule {
     constructor(uiManager, options = {}) {
         super('MonsterUI', uiManager, {
-            scenes: ['monsters'],
+            scenes: ['monster_management'],
             dependencies: ['UIHelpers'],
             ...options
         });
@@ -79,7 +79,7 @@ class MonsterUI extends BaseUIModule {
     /**
      * Show the monster UI
      */
-    show(sceneName = 'monsters') {
+    show(sceneName = 'monster_management') {
         super.show();
         
         // Initialize default tab
@@ -321,10 +321,11 @@ class MonsterUI extends BaseUIModule {
     refreshStorageDisplay() {
         const storageGrid = document.getElementById('storage-grid');
         const totalMonstersEl = document.getElementById('total-monsters');
-        
+
         if (!storageGrid || !window.GameState) return;
-        
-        const storage = window.GameState.monsters?.storage || [];
+
+        // Use the single global GameState reference
+        const storage = window.GameState?.monsters?.storage || [];
         
         // Update total count
         if (totalMonstersEl) totalMonstersEl.textContent = storage.length;
@@ -2226,28 +2227,14 @@ class MonsterUI extends BaseUIModule {
         });
     }
 
-    /**
-     * Show a notification message
-     * Wrapper method for notification system
-     */
-    showNotification(message, type = 'info') {
-        if (this.notificationManager) {
-            this.notificationManager.show(message, { type });
-        } else {
-            console.log(`Notification [${type}]:`, message);
-        }
-    }
+    // Removed showNotification - now inherits working implementation from BaseUIModule
 
     /**
      * Return to previous scene
      */
     returnToPrevious() {
-        if (this.uiManager && this.uiManager.state.previousModule) {
-            this.uiManager.switchToModule(this.uiManager.state.previousModule);
-        } else {
-            // Default fallback
-            this.uiManager.switchToModule('MenuUI');
-        }
+        // Use the same pattern as other modules
+        this.sendMessage('returnToPrevious');
     }
 }
 

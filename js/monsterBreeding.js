@@ -74,14 +74,22 @@ class MonsterBreedingSystem {
             return { canBreed: false, reason: compatibility.reason };
         }
         
-        // Check level requirements (both should be at least level 10)
-        if (monster1.level < 10 || monster2.level < 10) {
-            return { canBreed: false, reason: 'Both monsters must be at least level 10' };
+        // Enhanced level requirements based on rarity
+        const minLevel1 = this.getMinBreedingLevel(monster1);
+        const minLevel2 = this.getMinBreedingLevel(monster2);
+
+        if (monster1.level < minLevel1 || monster2.level < minLevel2) {
+            const maxMinLevel = Math.max(minLevel1, minLevel2);
+            return { canBreed: false, reason: `Both monsters must be at least level ${maxMinLevel}` };
         }
-        
-        // Check friendship requirements (at least 50 friendship each)
-        if (monster1.friendship < 50 || monster2.friendship < 50) {
-            return { canBreed: false, reason: 'Monsters need higher friendship to breed' };
+
+        // Enhanced friendship requirements based on rarity
+        const minFriendship1 = this.getMinBreedingFriendship(monster1);
+        const minFriendship2 = this.getMinBreedingFriendship(monster2);
+
+        if (monster1.friendship < minFriendship1 || monster2.friendship < minFriendship2) {
+            const maxMinFriendship = Math.max(minFriendship1, minFriendship2);
+            return { canBreed: false, reason: `Monsters need at least ${maxMinFriendship} friendship to breed` };
         }
         
         return { canBreed: true, reason: 'Compatible for breeding' };
@@ -130,10 +138,97 @@ class MonsterBreedingSystem {
             };
         }
         
-        return { 
-            compatible: false, 
-            reason: 'No compatible types found' 
+        return {
+            compatible: false,
+            reason: 'No compatible types found'
         };
+    }
+
+    /**
+     * Get minimum breeding level based on monster rarity
+     */
+    getMinBreedingLevel(monster) {
+        const rarity = monster.speciesData?.rarity || 'common';
+        switch (rarity) {
+            case 'common': return 8;
+            case 'uncommon': return 12;
+            case 'rare': return 16;
+            case 'epic': return 22;
+            case 'legendary': return 30;
+            default: return 10;
+        }
+    }
+
+    /**
+     * Get minimum breeding friendship based on monster rarity
+     */
+    getMinBreedingFriendship(monster) {
+        const rarity = monster.speciesData?.rarity || 'common';
+        switch (rarity) {
+            case 'common': return 40;
+            case 'uncommon': return 55;
+            case 'rare': return 70;
+            case 'epic': return 85;
+            case 'legendary': return 95;
+            default: return 50;
+        }
+    }
+
+    /**
+     * Calculate breeding success chance based on compatibility and stats
+     */
+    getBreedingSuccessChance(monster1, monster2) {
+        let baseChance = 70; // Base 70% success rate
+
+        // Level bonus: higher level monsters breed more successfully
+        const avgLevel = (monster1.level + monster2.level) / 2;
+        const levelBonus = Math.min(20, Math.floor(avgLevel / 5) * 2); // +2% per 5 avg levels, max +20%
+
+        // Friendship bonus: higher friendship increases success
+        const avgFriendship = (monster1.friendship + monster2.friendship) / 2;
+        const friendshipBonus = Math.min(15, Math.floor(avgFriendship / 10)); // +1% per 10 avg friendship, max +15%
+
+        // Species compatibility bonus
+        let compatibilityBonus = 0;
+        if (monster1.species === monster2.species) {
+            compatibilityBonus = 10; // Same species breed easier
+        } else if (this.shareTypes(monster1, monster2)) {
+            compatibilityBonus = 5; // Shared types get small bonus
+        }
+
+        // Rarity penalty: rarer monsters are harder to breed
+        const rarity1 = monster1.speciesData?.rarity || 'common';
+        const rarity2 = monster2.speciesData?.rarity || 'common';
+        const rarityPenalty = this.getRarityPenalty(rarity1) + this.getRarityPenalty(rarity2);
+
+        const finalChance = Math.max(25, Math.min(95,
+            baseChance + levelBonus + friendshipBonus + compatibilityBonus - rarityPenalty
+        ));
+
+        return finalChance;
+    }
+
+    /**
+     * Get rarity penalty for breeding
+     */
+    getRarityPenalty(rarity) {
+        switch (rarity) {
+            case 'common': return 0;
+            case 'uncommon': return 5;
+            case 'rare': return 10;
+            case 'epic': return 15;
+            case 'legendary': return 20;
+            default: return 0;
+        }
+    }
+
+    /**
+     * Check if two monsters share any types
+     */
+    shareTypes(monster1, monster2) {
+        const types1 = monster1.speciesData?.type || [];
+        const types2 = monster2.speciesData?.type || [];
+        return types1.some(type => types2.includes(type));
     }
 }
 

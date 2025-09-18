@@ -68,6 +68,28 @@ class StoryUI extends BaseUIModule {
     this.render();
   }
 
+  // Build a linked node chain from a dialogue array [{speaker?, text}]
+  buildDialogueChain(dialogueArr) {
+    if (!Array.isArray(dialogueArr) || dialogueArr.length === 0) return null;
+    const nodes = dialogueArr.map(d => ({ text: d?.text || '' }));
+    for (let i = 0; i < nodes.length - 1; i++) nodes[i].next = nodes[i + 1];
+    return nodes[0];
+  }
+
+  // Render a full ending by key using StoryData.endings
+  playEnding(endingKey) {
+    try {
+      const ending = (typeof window !== 'undefined' && window.StoryData?.getEnding)
+        ? window.StoryData.getEnding(endingKey)
+        : null;
+      if (!ending) return false;
+      const first = this.buildDialogueChain(ending.dialogue || []);
+      if (!first) return false;
+      this.showDialogue(first);
+      return true;
+    } catch (_) { return false; }
+  }
+
   advance() {
     const node = this.state.node;
     if (!node) { this.close(); return true; }

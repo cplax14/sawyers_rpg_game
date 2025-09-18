@@ -227,6 +227,44 @@ class BaseUIModule {
         }
     }
 
+    /** Notification convenience wrappers used by modules */
+    notifySuccess(message) { this.showNotification(message, 'success'); }
+    notifyError(message) { this.showNotification(message, 'error'); }
+    notifyWarning(message) { this.showNotification(message, 'warning'); }
+    notifyInfo(message) { this.showNotification(message, 'info'); }
+
+    /**
+     * Lightweight message proxy to UIManager to preserve legacy call sites
+     * Example: this.sendMessage('showScene', { sceneName: 'character_select' })
+     */
+    sendMessage(method, payload = {}) {
+        if (!this.uiManager) return null;
+        try {
+            switch (method) {
+                case 'showScene':
+                    return this.uiManager.showScene(payload.sceneName, payload.transition);
+                case 'getPreviousScene':
+                    return this.uiManager.getPreviousScene ? this.uiManager.getPreviousScene() : null;
+                case 'getCurrentScene':
+                    return this.uiManager.getCurrentScene ? this.uiManager.getCurrentScene() : null;
+                case 'hasScene':
+                    if (this.uiManager.sceneManager && typeof this.uiManager.sceneManager.hasScene === 'function') {
+                        return this.uiManager.sceneManager.hasScene(payload.sceneName);
+                    }
+                    return typeof this.uiManager.hasScene === 'function' ? this.uiManager.hasScene(payload.sceneName) : false;
+                case 'showNotification':
+                    return this.uiManager.showNotification(payload.message, payload.type);
+                default:
+                    if (typeof this.uiManager[method] === 'function') {
+                        return this.uiManager[method](payload);
+                    }
+            }
+        } catch (e) {
+            console.warn(`[BaseUIModule] sendMessage failed for ${method}:`, e);
+        }
+        return null;
+    }
+
     /**
      * Get current game state
      */

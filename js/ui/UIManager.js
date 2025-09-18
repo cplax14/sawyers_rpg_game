@@ -224,6 +224,19 @@ class UIManager extends EventTarget {
     }
 
     /**
+     * Get all modules that are associated with a specific scene
+     */
+    getModulesForScene(sceneName) {
+        const associatedModules = [];
+        this.modules.forEach(module => {
+            if (module.options && module.options.scenes && module.options.scenes.includes(sceneName)) {
+                associatedModules.push(module);
+            }
+        });
+        return associatedModules;
+    }
+
+    /**
      * Check if module is registered
      */
     hasModule(name) {

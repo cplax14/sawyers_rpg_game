@@ -19,6 +19,7 @@ class GameWorldUI extends BaseUIModule {
         this.worldMapKeyHandler = null;
         this.selectedArea = null;
         this.currentPlayerArea = 'starting_village';
+        this.worldMap = null; // inline world map system (renders into #world-map)
         
         console.log('✅ GameWorldUI initialized');
     }
@@ -34,6 +35,8 @@ class GameWorldUI extends BaseUIModule {
         
         // Initialize world map overlay early for tests
         this.ensureWorldMapOverlay();
+        // Initialize inline world map (renders into #world-map container)
+        this.ensureInlineWorldMap();
         
         console.log('🌍 GameWorldUI initialization completed');
         return true;
@@ -63,12 +66,38 @@ class GameWorldUI extends BaseUIModule {
         }
         
         // Update current player area from game state
+        if (!this.gameState) {
+            this.gameState = this.getGameReference('gameState');
+        }
         if (this.gameState && this.gameState.world) {
             this.currentPlayerArea = this.gameState.world.currentArea || 'starting_village';
         }
         
         // Attach keyboard navigation for main world map
         this.attachWorldMapKeyboard();
+
+        // Ensure the inline world map is rendered for the current area
+        this.ensureInlineWorldMap();
+        this.renderInlineWorldMap();
+        // Update details panel to reflect current area
+        try {
+            if (window.AreaData && window.AreaData.getArea) {
+                const areaData = window.AreaData.getArea(this.currentPlayerArea);
+                if (areaData) {
+                    this.selectedArea = this.currentPlayerArea;
+                    this.displayAreaDetails(this.currentPlayerArea, areaData);
+                    // Ensure action buttons are properly updated for current area
+                    this.updateAreaActionButtons(this.currentPlayerArea, areaData);
+                    console.log(`🔧 Auto-selected current area: ${this.currentPlayerArea}`);
+                } else {
+                    console.warn(`Area data not found for: ${this.currentPlayerArea}`);
+                }
+            } else {
+                console.warn('AreaData not available or missing getArea method');
+            }
+        } catch (e) {
+            console.warn('Failed to auto-select current area:', e);
+        }
         
         console.log(`🗺️ GameWorldUI showing scene: ${sceneName}`);
     }
@@ -528,6 +557,10 @@ class GameWorldUI extends BaseUIModule {
         const exploreBtn = document.getElementById('explore-area');
 
         const gs = this.gameState || this.getGameReference('gameState');
+        // Sync currentPlayerArea with game state if available
+        if (gs && gs.world && gs.world.currentArea) {
+            this.currentPlayerArea = gs.world.currentArea;
+        }
         const isCurrentLocation = areaId === (gs?.world?.currentArea || this.currentPlayerArea);
         
         // Unlocked check
@@ -610,6 +643,11 @@ class GameWorldUI extends BaseUIModule {
         
         // Main world map button
         this.attachButton('world-map-btn', () => this.showWorldMap());
+
+        // Global navigation buttons
+        this.attachButton('monsters-btn', () => this.sendMessage('showScene', { sceneName: 'monster_management' }));
+        this.attachButton('inventory-btn', () => this.sendMessage('showScene', { sceneName: 'inventory' }));
+        this.attachButton('save-game-btn', () => this.saveGame());
         
         // Navigation buttons
         this.attachButton('back-from-world', () => this.returnToPrevious());
@@ -620,6 +658,90 @@ class GameWorldUI extends BaseUIModule {
         this.attachButton('explore-area', () => this.exploreSelectedArea());
         
         console.log('🗺️ World map interface attached');
+    }
+
+    /**
+     * Ensure the inline world map system instance exists and is initialized
+     */
+    ensureInlineWorldMap() {
+        try {
+            const gameRef = this.uiManager?.game || window.SawyersRPG || { getGameState: () => this.gameState };
+            if (window.WorldMapSystem) {
+                if (!this.worldMap) {
+                    this.worldMap = new window.WorldMapSystem(gameRef);
+                }
+                if (!this.worldMap.initialized) {
+                    this.worldMap.init();
+                }
+                // Sync current area from game state if available
+                if (this.gameState?.world?.currentArea) {
+                    this.worldMap.currentArea = this.gameState.world.currentArea;
+                }
+            }
+        } catch (e) {
+            console.warn('Inline world map init failed:', e);
+        }
+    }
+
+    /**
+     * Render the inline world map into #world-map if available
+     */
+    renderInlineWorldMap() {
+        try {
+            if (this.worldMap && typeof this.worldMap.renderMap === 'function') {
+                this.worldMap.renderMap();
+                // After rendering, wire up selection to the details pane and action buttons
+                const container = document.getElementById('world-map');
+                if (container) {
+                    const tiles = Array.from(container.querySelectorAll('.map-area'));
+                    tiles.forEach(tile => {
+                        const areaId = tile.dataset.area;
+                        // Click selects area (and double-click travels)
+                        this.addEventListener(tile, 'click', (e) => {
+                            // Select and update details
+                            this.handleInlineMapSelect(areaId);
+                        });
+                        this.addEventListener(tile, 'dblclick', (e) => {
+                            this.travelToArea(areaId);
+                        });
+                        // Keyboard support: Enter to select, Shift+Enter to travel
+                        this.addEventListener(tile, 'keydown', (e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                if (e.shiftKey) {
+                                    this.travelToArea(areaId);
+                                } else {
+                                    this.handleInlineMapSelect(areaId);
+                                }
+                            }
+                        });
+                    });
+                }
+            }
+        } catch (e) {
+            console.warn('Inline world map render failed:', e);
+        }
+    }
+
+    /**
+     * Handle selecting an area from the inline world map and update UI panels/buttons
+     */
+    handleInlineMapSelect(areaId) {
+        try {
+            if (!window.AreaData) return;
+            const areaData = window.AreaData.getArea(areaId);
+            if (!areaData) return;
+            this.selectedArea = areaId;
+            // highlight selection in map
+            document.querySelectorAll('#world-map .map-area').forEach(n => n.classList.remove('selected'));
+            const n = document.querySelector(`#world-map .map-area[data-area="${areaId}"]`);
+            if (n) n.classList.add('selected');
+            // update details and action buttons
+            this.displayAreaDetails(areaId, areaData);
+            this.updateAreaActionButtons(areaId, areaData);
+        } catch (err) {
+            console.warn('Failed to select inline map area:', err);
+        }
     }
 
     /**
@@ -747,9 +869,10 @@ class GameWorldUI extends BaseUIModule {
     exploreSelectedArea() {
         if (!this.selectedArea) return;
         
-        // Trigger exploration/encounter system
-        if (window.GameState && window.GameState.triggerRandomEncounter) {
-            window.GameState.triggerRandomEncounter(this.selectedArea);
+        // Trigger exploration/encounter system using the game instance's GameState
+        const gs = this.gameState || this.getGameReference('gameState');
+        if (gs && typeof gs.triggerRandomEncounter === 'function') {
+            gs.triggerRandomEncounter(this.selectedArea);
         } else {
             const area = window.AreaData?.areas?.[this.selectedArea];
             const areaName = area?.name || this.selectedArea;
@@ -1130,6 +1253,23 @@ class GameWorldUI extends BaseUIModule {
      */
     isWorldMapOpen() {
         return this.worldMapOverlay && this.worldMapOverlay.style.display !== 'none';
+    }
+
+    /**
+     * Save the game
+     */
+    saveGame() {
+        if (typeof SaveSystem !== 'undefined' && SaveSystem.saveGame) {
+            const success = SaveSystem.saveGame();
+            if (success) {
+                this.notifySuccess('Game saved successfully!');
+            } else {
+                this.notifyError('Failed to save game');
+            }
+        } else {
+            console.warn('SaveSystem not available');
+            this.notifyError('Save system unavailable');
+        }
     }
 
     /**

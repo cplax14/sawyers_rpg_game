@@ -341,6 +341,118 @@ class GameState {
             console.warn('⚠️ CombatEngine not loaded');
         }
     }
+
+    /**
+     * Trigger a random encounter based on area spawn tables and encounter rate
+     */
+    triggerRandomEncounter(areaId) {
+        try {
+            if (typeof AreaData === 'undefined' || typeof MonsterData === 'undefined') {
+                this.addNotification('World data unavailable', 'error');
+                return { started: false, reason: 'data_unavailable' };
+            }
+            const area = AreaData.getArea(areaId);
+            if (!area) {
+                this.addNotification('Unknown area', 'error');
+                return { started: false, reason: 'unknown_area' };
+            }
+            const encounter = AreaData.generateRandomEncounter(areaId, this.player.level);
+            if (!encounter) {
+                this.addNotification('No monsters encountered...', 'info');
+                return { started: false, reason: 'none' };
+            }
+            this.startEncounter(encounter);
+            return { started: true };
+        } catch (e) {
+            console.warn('Failed to trigger random encounter:', e);
+            return { started: false, reason: 'error' };
+        }
+    }
+
+    /**
+     * Start an encounter using the combat engine or a minimal fallback
+     */
+    startEncounter(encounter) {
+        // Ensure combat engine exists
+        if (!this.combatEngine) {
+            this.initializeCombatEngine();
+        }
+        try {
+            if (this.combatEngine && typeof this.combatEngine.startEncounter === 'function') {
+                this.combatEngine.startEncounter(encounter);
+            } else {
+                // Minimal fallback to set combat active and store enemy info
+                this.initializeCombat();
+                const species = encounter?.species || encounter?.monster || 'unknown';
+                const level = encounter?.level || Math.max(1, this.player.level);
+                const baseStats = (typeof MonsterData !== 'undefined' && MonsterData.getStatsAtLevel)
+                    ? MonsterData.getStatsAtLevel(species, level)
+                    : { hp: 20, attack: 5, defense: 3 };
+
+                // Ensure combat container shape expected by CombatUI
+                this.combat.active = true;
+                // Player stub - restore to full health for new combat
+                const pStats = this.player.stats || {};
+                const maxHp = Math.max(pStats.hp || 100, 100); // Ensure minimum 100 HP
+                const maxMana = Math.max(pStats.mana || pStats.mp || 10, 10); // Ensure minimum 10 MP
+                this.combat.player = {
+                    name: this.player.name || 'Player',
+                    hp: maxHp, // Always start combat at full HP
+                    maxHp: maxHp,
+                    mana: maxMana, // Always start combat at full MP
+                    maxMana: maxMana,
+                    attack: pStats.attack || 50, // Ensure reasonable attack power
+                    defense: pStats.defense || 30, // Ensure reasonable defense
+                    magicAttack: pStats.magicAttack || 40,
+                    magicDefense: pStats.magicDefense || 35,
+                    speed: pStats.speed || 60,
+                    accuracy: pStats.accuracy || 80,
+                    spells: this.player.spells || [],
+                    inventory: this.player.inventory?.items || {}
+                };
+
+                // Also restore player stats for consistency
+                if (!this.player.stats) this.player.stats = {};
+                this.player.stats.hp = maxHp;
+                this.player.stats.mana = maxMana;
+                this.player.stats.maxHp = maxHp;
+                this.player.stats.maxMana = maxMana;
+
+                // Enemy array expected by UI
+                const enemy = {
+                    name: species,
+                    species,
+                    level,
+                    hp: baseStats.hp || 20,
+                    maxHp: baseStats.hp || 20,
+                    attack: baseStats.attack || 5,
+                    defense: baseStats.defense || 3,
+                    capturable: true
+                };
+                this.combat.enemies = [enemy];
+                // Basic turn state
+                this.combat.currentTurn = 'player';
+                this.combat.turnCount = 1;
+            }
+            // Stats and notifications
+            this.stats.monstersEncountered++;
+            this.addNotification('A wild encounter appears!', 'success');
+
+            // Switch to combat scene via UI if available; also update internal scene
+            try {
+                if (typeof window !== 'undefined' && window.SawyersRPG && window.SawyersRPG.getUI) {
+                    const ui = window.SawyersRPG.getUI();
+                    if (ui && typeof ui.showScene === 'function') {
+                        ui.showScene('combat');
+                    }
+                }
+            } catch (_) {}
+            this.changeScene('combat');
+        } catch (e) {
+            console.error('Failed to start encounter:', e);
+            this.addNotification('Encounter failed to start', 'error');
+        }
+    }
     
     /**
      * Update game state (called every frame)
@@ -531,19 +643,22 @@ class GameState {
             species: species,
             level: level,
             experience: 0,
-            stats: stats || (typeof MonsterData !== 'undefined' ? 
+            stats: stats || (typeof MonsterData !== 'undefined' ?
                 MonsterData.getStatsAtLevel(species, level) : {}),
-            abilities: typeof MonsterData !== 'undefined' ? 
+            abilities: typeof MonsterData !== 'undefined' ?
                 MonsterData.getSpecies(species)?.abilities || [] : [],
+            speciesData: typeof MonsterData !== 'undefined' ?
+                MonsterData.getSpecies(species) : null,
             captureDate: new Date().toISOString(),
             nickname: null
         };
         
         this.monsters.storage.push(monster);
         this.stats.monstersCaptured++;
-        
+
         this.addNotification(`Captured ${species}!`, 'success');
-        console.log(`Monster captured: ${species} (Level ${level})`);
+        console.log(`✅ Monster captured: ${species} (Level ${level}) - ID: ${monster.id}`);
+        console.log(`📊 Total storage count: ${this.monsters.storage.length}`);
         
         return monster.id;
     }
@@ -894,6 +1009,21 @@ class GameState {
         
         return outcome;
     }
+
+    // --------------------------------
+    // Story endings (9.5)
+    // --------------------------------
+    checkForEnding() {
+        try {
+            const flags = this.world?.storyFlags || [];
+            if (typeof window.StoryData === 'undefined' || !window.StoryData.getAvailableEndings) return null;
+            const available = window.StoryData.getAvailableEndings(flags);
+            if (available && available.length > 0) {
+                return available[0];
+            }
+        } catch (_) {}
+        return null;
+    }
     
     // ================================================
     // SCENE MANAGEMENT
@@ -936,10 +1066,15 @@ class GameState {
      * Initialize combat state
      */
     initializeCombat() {
+        // Reset player HP to full for new combat encounter
+        if (this.player && typeof this.player.fullHeal === 'function') {
+            this.player.fullHeal();
+        }
+
         this.combat.active = true;
         this.combat.turn = 0;
         this.combat.turnOrder = [];
-        this.combat.currentTurn = 0;
+        this.combat.currentTurn = 'player'; // Set to 'player' instead of numeric 0
         this.combat.actions = [];
         this.combat.battleResult = null;
     }
@@ -953,7 +1088,7 @@ class GameState {
             enemy: null,
             turn: 0,
             turnOrder: [],
-            currentTurn: 0,
+            currentTurn: null, // Set to null when combat is inactive
             actions: [],
             battleResult: null
         };
