@@ -16,7 +16,32 @@ const AreaData = {
             connections: ["forest_path"],
             storyEvents: ["game_start", "tutorial_complete"],
             services: ["shop", "inn", "save_point"],
-            backgroundMusic: "village_theme"
+            backgroundMusic: "village_theme",
+            lootTable: {
+                recommendedLevel: 1,
+                explorationType: "safe_zone",
+                drops: [
+                    {
+                        itemType: "tutorial_items",
+                        dropChance: 0.8,
+                        rarityWeights: { common: 1.0 },
+                        quantityRange: [1, 1],
+                        explorationTypes: ["thorough"]
+                    },
+                    {
+                        itemType: "village_supplies",
+                        dropChance: 0.4,
+                        rarityWeights: { common: 0.9, uncommon: 0.1 },
+                        quantityRange: [1, 2],
+                        items: ["bread", "water", "basic_tools"]
+                    }
+                ],
+                areaBonus: {
+                    goldMultiplier: 0.5, // Towns have less gold lying around
+                    safetyBonus: true,
+                    shopAccess: true
+                }
+            }
         },
         
         forest_path: {
@@ -35,7 +60,45 @@ const AreaData = {
             connections: ["starting_village", "deep_forest", "plains"],
             storyEvents: ["first_monster_encounter"],
             services: [],
-            backgroundMusic: "forest_theme"
+            backgroundMusic: "forest_theme",
+            lootTable: {
+                recommendedLevel: 3,
+                explorationType: "wilderness",
+                drops: [
+                    {
+                        itemType: "forest_herbs",
+                        dropChance: 0.7,
+                        rarityWeights: { common: 0.8, uncommon: 0.2 },
+                        quantityRange: [1, 3],
+                        items: ["healing_herb", "mana_flower", "forest_berry"]
+                    },
+                    {
+                        itemType: "wood_materials",
+                        dropChance: 0.5,
+                        rarityWeights: { common: 0.9, uncommon: 0.1 },
+                        quantityRange: [2, 4],
+                        items: ["oak_branch", "pine_sap", "bark_strip"]
+                    },
+                    {
+                        itemType: "nature_equipment",
+                        dropChance: 0.15,
+                        rarityWeights: { common: 0.7, uncommon: 0.25, rare: 0.05 },
+                        equipmentTypes: ["wooden_staff", "leaf_armor", "nature_ring"]
+                    },
+                    {
+                        itemType: "forest_crystals",
+                        dropChance: 0.1,
+                        rarityWeights: { uncommon: 0.7, rare: 0.25, epic: 0.05 },
+                        quantityRange: [1, 1],
+                        items: ["forest_crystal", "nature_gem"]
+                    }
+                ],
+                areaBonus: {
+                    goldMultiplier: 0.8,
+                    experienceBonus: 0.1, // 10% experience bonus
+                    environmentType: "forest"
+                }
+            }
         },
         
         deep_forest: {
@@ -140,7 +203,52 @@ const AreaData = {
             connections: ["mountain_base", "underground_lake"],
             storyEvents: ["crystal_discovery", "cave_collapse"],
             services: [],
-            backgroundMusic: "cave_theme"
+            backgroundMusic: "cave_theme",
+            lootTable: {
+                recommendedLevel: 12,
+                explorationType: "dungeon",
+                drops: [
+                    {
+                        itemType: "crystal_ore",
+                        dropChance: 0.8,
+                        rarityWeights: { common: 0.5, uncommon: 0.3, rare: 0.15, epic: 0.05 },
+                        quantityRange: [2, 6],
+                        items: ["quartz_crystal", "amethyst_shard", "crystal_core"]
+                    },
+                    {
+                        itemType: "rare_gems",
+                        dropChance: 0.4,
+                        rarityWeights: { uncommon: 0.6, rare: 0.3, epic: 0.1 },
+                        quantityRange: [1, 3],
+                        items: ["sapphire", "ruby", "diamond_shard"]
+                    },
+                    {
+                        itemType: "crystal_equipment",
+                        dropChance: 0.25,
+                        rarityWeights: { uncommon: 0.4, rare: 0.4, epic: 0.18, legendary: 0.02 },
+                        equipmentTypes: ["crystal_sword", "gem_armor", "power_amulet"]
+                    },
+                    {
+                        itemType: "magical_essence",
+                        dropChance: 0.3,
+                        rarityWeights: { rare: 0.6, epic: 0.35, legendary: 0.05 },
+                        quantityRange: [1, 2],
+                        items: ["mana_essence", "crystal_essence", "power_core"]
+                    },
+                    {
+                        itemType: "cave_artifacts",
+                        dropChance: 0.1,
+                        rarityWeights: { epic: 0.7, legendary: 0.3 },
+                        quantityRange: [1, 1],
+                        items: ["ancient_crystal", "power_rune"]
+                    }
+                ],
+                areaBonus: {
+                    goldMultiplier: 1.5, // Rich mineral deposits
+                    magicItemBonus: 0.2, // 20% bonus to magical item drops
+                    environmentType: "crystal_cave"
+                }
+            }
         },
         
         volcanic_region: {
@@ -190,10 +298,56 @@ const AreaData = {
                 name: "Ancient Red Dragon",
                 species: "ancient_dragon",
                 level: 35,
-                reward: { 
-                    exp: 2000, 
-                    gold: 1000, 
-                    items: ["dragon_sword", "fire_immunity_ring", "ancient_treasure"] 
+                reward: {
+                    exp: 2000,
+                    gold: 1000,
+                    items: ["dragon_sword", "fire_immunity_ring", "ancient_treasure"]
+                }
+            },
+            lootTable: {
+                recommendedLevel: 30,
+                explorationType: "legendary_dungeon",
+                drops: [
+                    {
+                        itemType: "dragon_treasures",
+                        dropChance: 0.9,
+                        rarityWeights: { rare: 0.3, epic: 0.5, legendary: 0.2 },
+                        quantityRange: [3, 8],
+                        items: ["dragon_scale", "dragon_bone", "flame_crystal", "ancient_gold"]
+                    },
+                    {
+                        itemType: "legendary_equipment",
+                        dropChance: 0.6,
+                        rarityWeights: { epic: 0.4, legendary: 0.6 },
+                        equipmentTypes: ["dragonslayer_weapons", "dragon_armor", "fire_artifacts"]
+                    },
+                    {
+                        itemType: "ancient_magic",
+                        dropChance: 0.5,
+                        rarityWeights: { epic: 0.3, legendary: 0.7 },
+                        quantityRange: [1, 3],
+                        spellTypes: ["dragon_magic", "fire_mastery", "ancient_arts"]
+                    },
+                    {
+                        itemType: "priceless_gems",
+                        dropChance: 0.4,
+                        rarityWeights: { legendary: 1.0 },
+                        quantityRange: [1, 2],
+                        items: ["fire_ruby", "dragon_eye", "phoenix_tear"]
+                    },
+                    {
+                        itemType: "realm_artifacts",
+                        dropChance: 0.15,
+                        rarityWeights: { legendary: 1.0 },
+                        quantityRange: [1, 1],
+                        items: ["time_relic", "world_shard", "creation_essence"]
+                    }
+                ],
+                areaBonus: {
+                    goldMultiplier: 5.0, // Dragon hoards
+                    legendaryBonus: 0.5, // 50% bonus to legendary drops
+                    environmentType: "dragon_lair",
+                    bossArea: true
                 }
             }
         },

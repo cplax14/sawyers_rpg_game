@@ -25,7 +25,9 @@ class GameState {
             },
             inventory: {
                 items: {},
-                gold: 100
+                gold: 100,
+                maxSlots: 50, // Maximum number of different item types
+                overflowPolicy: 'prompt' // 'auto-discard', 'prompt', 'store'
             }
         };
         
@@ -611,15 +613,233 @@ class GameState {
     }
     
     /**
-     * Add item to inventory
+     * Add item to inventory with overflow handling
      */
-    addItem(itemId, quantity = 1) {
+    addItem(itemId, quantity = 1, rarity = 'common') {
+        if (!itemId || quantity <= 0) return false;
+
+        // Check if inventory is at capacity for new item types
+        const currentSlots = Object.keys(this.player.inventory.items).length;
+        const isNewItem = !this.player.inventory.items[itemId];
+        const maxSlots = this.player.inventory.maxSlots || 50;
+
+        if (isNewItem && currentSlots >= maxSlots) {
+            return this.handleInventoryOverflow(itemId, quantity, rarity);
+        }
+
+        // Add to existing or create new slot
         if (!this.player.inventory.items[itemId]) {
             this.player.inventory.items[itemId] = 0;
         }
         this.player.inventory.items[itemId] += quantity;
-        
-        this.addNotification(`+${quantity} ${itemId}`, 'item');
+
+        // Enhanced notification with rarity indicator
+        const rarityText = rarity !== 'common' ? ` (${rarity})` : '';
+        this.addNotification(`+${quantity} ${itemId}${rarityText}`, 'item');
+        return true;
+    }
+
+    /**
+     * Handle inventory overflow when adding new items
+     */
+    handleInventoryOverflow(itemId, quantity, rarity = 'common') {
+        const policy = this.player.inventory.overflowPolicy || 'prompt';
+
+        switch (policy) {
+            case 'auto-discard':
+                // Automatically discard common items, keep rare+
+                if (['common', 'uncommon'].includes(rarity)) {
+                    this.addNotification(`Inventory full! Discarded ${quantity} ${itemId}`, 'warning');
+                    return false;
+                } else {
+                    // For rare items, try to make space by discarding common items
+                    return this.makeSpaceForRareItem(itemId, quantity, rarity);
+                }
+
+            case 'store':
+                // Store overflow items in a separate overflow inventory
+                return this.addToOverflowStorage(itemId, quantity, rarity);
+
+            case 'prompt':
+            default:
+                // Queue the item for player choice
+                return this.promptPlayerForOverflow(itemId, quantity, rarity);
+        }
+    }
+
+    /**
+     * Make space for rare items by discarding common ones
+     */
+    makeSpaceForRareItem(itemId, quantity, rarity) {
+        const items = this.player.inventory.items;
+
+        // Find common items to discard (prefer lowest quantity)
+        const discardCandidates = Object.entries(items)
+            .filter(([id, count]) => {
+                const itemRarity = this.getItemRarity(id);
+                return itemRarity === 'common' && count > 0;
+            })
+            .sort((a, b) => a[1] - b[1]); // Sort by quantity (ascending)
+
+        if (discardCandidates.length > 0) {
+            const [discardId] = discardCandidates[0];
+            delete items[discardId];
+
+            // Now add the rare item
+            items[itemId] = quantity;
+            const rarityText = rarity !== 'common' ? ` (${rarity})` : '';
+            this.addNotification(`Made space by discarding ${discardId}. +${quantity} ${itemId}${rarityText}`, 'item');
+            return true;
+        }
+
+        // If no common items to discard, fall back to discard notification
+        this.addNotification(`Inventory full! Cannot fit ${quantity} ${itemId} (${rarity})`, 'warning');
+        return false;
+    }
+
+    /**
+     * Add item to overflow storage
+     */
+    addToOverflowStorage(itemId, quantity, rarity) {
+        if (!this.player.inventory.overflow) {
+            this.player.inventory.overflow = {};
+        }
+
+        if (!this.player.inventory.overflow[itemId]) {
+            this.player.inventory.overflow[itemId] = 0;
+        }
+        this.player.inventory.overflow[itemId] += quantity;
+
+        const rarityText = rarity !== 'common' ? ` (${rarity})` : '';
+        this.addNotification(`Inventory full! Stored ${quantity} ${itemId}${rarityText} in overflow`, 'info');
+        return true;
+    }
+
+    /**
+     * Prompt player for overflow decision
+     */
+    promptPlayerForOverflow(itemId, quantity, rarity) {
+        // Queue the overflow decision for UI handling
+        if (!this.ui.pendingOverflowDecisions) {
+            this.ui.pendingOverflowDecisions = [];
+        }
+
+        this.ui.pendingOverflowDecisions.push({
+            itemId,
+            quantity,
+            rarity,
+            timestamp: Date.now()
+        });
+
+        const rarityText = rarity !== 'common' ? ` (${rarity})` : '';
+        this.addNotification(`Inventory full! ${itemId}${rarityText} x${quantity} awaiting your decision`, 'warning');
+        return false; // Item not added yet, awaiting player decision
+    }
+
+    /**
+     * Get item rarity for overflow decisions
+     */
+    getItemRarity(itemId) {
+        if (typeof ItemData !== 'undefined') {
+            const item = ItemData.getItem(itemId);
+            return item?.rarity || 'common';
+        }
+
+        // Fallback rarity detection based on item name patterns
+        if (itemId.includes('legendary') || itemId.includes('ancient')) return 'legendary';
+        if (itemId.includes('epic') || itemId.includes('supreme')) return 'epic';
+        if (itemId.includes('rare') || itemId.includes('enchanted')) return 'rare';
+        if (itemId.includes('magic') || itemId.includes('enhanced')) return 'uncommon';
+        return 'common';
+    }
+
+    /**
+     * Process pending overflow decisions
+     */
+    processOverflowDecision(decision) {
+        if (!this.ui.pendingOverflowDecisions) return false;
+
+        const pending = this.ui.pendingOverflowDecisions.shift();
+        if (!pending) return false;
+
+        const { itemId, quantity, rarity } = pending;
+
+        switch (decision.action) {
+            case 'keep':
+                // Make space by discarding selected item or oldest common item
+                if (decision.discardItem) {
+                    delete this.player.inventory.items[decision.discardItem];
+                    this.addNotification(`Discarded ${decision.discardItem} to make space`, 'info');
+                } else {
+                    // Auto-discard oldest common item
+                    const commonItems = Object.keys(this.player.inventory.items)
+                        .filter(id => this.getItemRarity(id) === 'common');
+                    if (commonItems.length > 0) {
+                        const discardItem = commonItems[0];
+                        delete this.player.inventory.items[discardItem];
+                        this.addNotification(`Auto-discarded ${discardItem} to make space`, 'info');
+                    }
+                }
+                return this.addItem(itemId, quantity, rarity);
+
+            case 'discard':
+                this.addNotification(`Discarded ${quantity} ${itemId}`, 'info');
+                return false;
+
+            case 'store':
+                return this.addToOverflowStorage(itemId, quantity, rarity);
+
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Get overflow storage items
+     */
+    getOverflowItems() {
+        return this.player.inventory.overflow || {};
+    }
+
+    /**
+     * Move item from overflow to main inventory
+     */
+    retrieveFromOverflow(itemId, quantity = null) {
+        const overflow = this.player.inventory.overflow;
+        if (!overflow || !overflow[itemId] || overflow[itemId] <= 0) {
+            return { success: false, reason: 'Item not in overflow storage' };
+        }
+
+        const availableQuantity = overflow[itemId];
+        const retrieveQuantity = quantity || availableQuantity;
+
+        if (retrieveQuantity > availableQuantity) {
+            return { success: false, reason: 'Not enough items in overflow' };
+        }
+
+        // Check if main inventory has space
+        const currentSlots = Object.keys(this.player.inventory.items).length;
+        const hasItem = !!this.player.inventory.items[itemId];
+        const maxSlots = this.player.inventory.maxSlots || 50;
+
+        if (!hasItem && currentSlots >= maxSlots) {
+            return { success: false, reason: 'Main inventory is full' };
+        }
+
+        // Move item from overflow to main inventory
+        if (!this.player.inventory.items[itemId]) {
+            this.player.inventory.items[itemId] = 0;
+        }
+        this.player.inventory.items[itemId] += retrieveQuantity;
+
+        // Update overflow storage
+        overflow[itemId] -= retrieveQuantity;
+        if (overflow[itemId] <= 0) {
+            delete overflow[itemId];
+        }
+
+        this.addNotification(`Retrieved ${retrieveQuantity} ${itemId} from overflow storage`, 'success');
+        return { success: true, quantity: retrieveQuantity };
     }
     
     /**

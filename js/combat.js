@@ -74,7 +74,7 @@ class CombatEngine {
 
         let totalXP = 0;
         let totalGold = 0;
-        const drops = [];
+        const allDrops = [];
         const playerLevel = this.gameState?.player?.level || 1;
 
         for (const e of enemies) {
@@ -107,39 +107,72 @@ class CombatEngine {
 
             totalXP += baseXP;
 
-            // Enhanced gold calculation
-            let baseGold = Math.floor(enemyLevel * 2.5);
-            if (levelDiff > 0) {
-                baseGold = Math.floor(baseGold * (1 + levelDiff * 0.08));
-            }
-            totalGold += baseGold;
-
-            // Improved drop system with level-appropriate items
-            const dropChance = 0.15 + (enemyLevel * 0.005); // Slightly higher drop chance for higher level enemies
-            if (Math.random() < dropChance) {
-                if (enemyLevel >= 15 && Math.random() < 0.3) {
-                    drops.push('mana_potion');
-                } else {
-                    drops.push('health_potion');
+            // Enhanced loot generation with tiered system
+            if (typeof LootSystem !== 'undefined') {
+                const monsterLoot = LootSystem.generateMonsterLoot(species, enemyLevel, playerLevel);
+                if (monsterLoot) {
+                    totalGold += monsterLoot.gold || 0;
+                    if (monsterLoot.items && monsterLoot.items.length > 0) {
+                        allDrops.push(...monsterLoot.items);
+                    }
                 }
-            }
+            } else {
+                // Fallback to old loot system if LootSystem not available
+                let baseGold = Math.floor(enemyLevel * 2.5);
+                if (levelDiff > 0) {
+                    baseGold = Math.floor(baseGold * (1 + levelDiff * 0.08));
+                }
+                totalGold += baseGold;
 
-            // Rare drops for higher level enemies
-            if (enemyLevel >= 20 && Math.random() < 0.05) {
-                drops.push('capture_orb'); // Better capture item
+                // Improved drop system with level-appropriate items
+                const dropChance = 0.15 + (enemyLevel * 0.005);
+                if (Math.random() < dropChance) {
+                    if (enemyLevel >= 15 && Math.random() < 0.3) {
+                        allDrops.push({ itemId: 'mana_potion', quantity: 1, rarity: 'common' });
+                    } else {
+                        allDrops.push({ itemId: 'health_potion', quantity: 1, rarity: 'common' });
+                    }
+                }
+
+                // Rare drops for higher level enemies
+                if (enemyLevel >= 20 && Math.random() < 0.05) {
+                    allDrops.push({ itemId: 'capture_orb', quantity: 1, rarity: 'uncommon' });
+                }
             }
         }
 
+        // Generate area-specific loot if available
+        if (typeof LootSystem !== 'undefined' && this.gameState.world?.currentArea) {
+            const areaLoot = LootSystem.generateAreaLoot(this.gameState.world.currentArea, playerLevel);
+            if (areaLoot && areaLoot.items && areaLoot.items.length > 0) {
+                allDrops.push(...areaLoot.items);
+            }
+        }
+
+        // Grant rewards
         if (totalXP > 0) {
             this.gameState.addExperience(totalXP);
         }
         if (totalGold > 0) {
             this.gameState.addGold(totalGold);
         }
-        for (const item of drops) {
-            this.gameState.addItem(item, 1);
+
+        // Add items to inventory with overflow handling
+        const itemSummary = [];
+        for (const drop of allDrops) {
+            const itemId = drop.itemId || drop;
+            const quantity = drop.quantity || 1;
+            const rarity = drop.rarity || 'common';
+
+            const added = this.gameState.addItem(itemId, quantity, rarity);
+            if (added) {
+                itemSummary.push(`${itemId}${quantity > 1 ? ` x${quantity}` : ''}${rarity !== 'common' ? ` (${rarity})` : ''}`);
+            }
         }
-        this.gameState.addNotification(`Battle Rewards: +${totalXP} EXP, +${totalGold} gold${drops.length?`, items: ${drops.join(', ')}`:''}`, 'success');
+
+        // Display notification
+        const itemText = itemSummary.length > 0 ? `, items: ${itemSummary.join(', ')}` : '';
+        this.gameState.addNotification(`Battle Rewards: +${totalXP} EXP, +${totalGold} gold${itemText}`, 'success');
     }
 
     isBattleActive() {
