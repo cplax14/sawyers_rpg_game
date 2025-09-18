@@ -393,6 +393,931 @@ const StoryData = {
             }
         },
 
+        // ================================================
+        // MID-GAME EXPANSION EVENTS
+        // ================================================
+
+        crystal_cave_mystery: {
+            name: "The Singing Crystals",
+            description: "Strange melodies echo through the crystal caves",
+            type: "exploration",
+            dialogue: [
+                {
+                    speaker: "Narrator",
+                    text: "Deep in the crystal caves, you hear an ethereal melody. The crystals themselves seem to be singing in harmony."
+                },
+                {
+                    speaker: "Crystal Spirit",
+                    text: "Who dares disturb our eternal song? Are you friend or foe to the ancient harmonies?"
+                }
+            ],
+            choices: [
+                {
+                    text: "Listen and try to join the song",
+                    outcome: "join_harmony"
+                },
+                {
+                    text: "Ask about the crystal's power",
+                    outcome: "seek_knowledge"
+                },
+                {
+                    text: "Offer to protect the crystals",
+                    outcome: "offer_protection"
+                },
+                {
+                    text: "Study the magical resonance",
+                    outcome: "magical_study",
+                    classRequirement: ["wizard", "paladin"]
+                }
+            ],
+            outcomes: {
+                join_harmony: {
+                    storyFlags: ["crystal_harmony", "music_affinity", "peaceful_nature"],
+                    unlockAreas: ["harmonic_sanctum"],
+                    items: ["resonance_crystal", "harmony_stone"],
+                    dialogue: [
+                        {
+                            speaker: "Crystal Spirit",
+                            text: "Your voice blends beautifully with our eternal chorus. You are welcome in our sacred chambers."
+                        }
+                    ]
+                },
+                seek_knowledge: {
+                    storyFlags: ["crystal_lore", "scholar_path"],
+                    unlockAreas: ["crystal_library"],
+                    items: ["crystal_codex", "knowledge_gem"],
+                    dialogue: [
+                        {
+                            speaker: "Crystal Spirit",
+                            text: "Knowledge seekers are rare. The crystals hold memories of ages past. Learn well."
+                        }
+                    ]
+                },
+                offer_protection: {
+                    storyFlags: ["crystal_guardian", "protector_oath", "guardian_path"],
+                    unlockAreas: ["crystal_vault"],
+                    items: ["guardian_crystal", "protection_ward"],
+                    dialogue: [
+                        {
+                            speaker: "Crystal Spirit",
+                            text: "A noble offer! We accept your protection. Guard our song from those who would silence it."
+                        }
+                    ]
+                },
+                magical_study: {
+                    storyFlags: ["crystal_mastery", "arcane_knowledge", "mage_path"],
+                    unlockAreas: ["crystal_laboratory"],
+                    items: ["crystal_wand", "arcane_focus", "spell_amplifier"],
+                    dialogue: [
+                        {
+                            speaker: "Crystal Spirit",
+                            text: "You understand the deeper magics! Use this knowledge to weave wonders, not destruction."
+                        }
+                    ]
+                }
+            }
+        },
+
+        abandoned_village: {
+            name: "Echoes of the Past",
+            description: "You discover a village lost to time",
+            type: "exploration",
+            dialogue: [
+                {
+                    speaker: "Narrator",
+                    text: "Overgrown buildings rise from the forest floor. This was once a thriving village, but something drove everyone away."
+                },
+                {
+                    speaker: "Ghost of the Village Elder",
+                    text: "A living soul... it has been so long. Please, help us find peace at last."
+                }
+            ],
+            choices: [
+                {
+                    text: "Investigate what happened here",
+                    outcome: "investigate_mystery"
+                },
+                {
+                    text: "Try to help the spirits",
+                    outcome: "help_spirits"
+                },
+                {
+                    text: "Search for valuable items",
+                    outcome: "search_loot"
+                },
+                {
+                    text: "Perform a cleansing ritual",
+                    outcome: "cleansing_ritual",
+                    classRequirement: ["paladin", "wizard"]
+                }
+            ],
+            outcomes: {
+                investigate_mystery: {
+                    storyFlags: ["village_mystery_solved", "detective_skills", "truth_seeker"],
+                    unlockAreas: ["hidden_shrine"],
+                    items: ["ancient_diary", "mystery_key"],
+                    dialogue: [
+                        {
+                            speaker: "Ghost of the Village Elder",
+                            text: "You have uncovered our tragic tale. The knowledge you seek lies in the shrine beyond."
+                        }
+                    ]
+                },
+                help_spirits: {
+                    storyFlags: ["spirit_helper", "compassionate_heart", "guardian_nature"],
+                    unlockAreas: ["spirit_realm"],
+                    items: ["spirit_charm", "blessing_of_peace"],
+                    dialogue: [
+                        {
+                            speaker: "Ghost of the Village Elder",
+                            text: "Your kindness has freed us from our earthly bonds. Take our blessing, compassionate one."
+                        }
+                    ]
+                },
+                search_loot: {
+                    storyFlags: ["treasure_hunter", "practical_minded"],
+                    unlockAreas: [],
+                    items: ["ancient_gold", "forgotten_equipment", "rare_materials"],
+                    dialogue: [
+                        {
+                            speaker: "Narrator",
+                            text: "You find valuable items, but the spirits grow restless at your mercenary approach."
+                        }
+                    ]
+                },
+                cleansing_ritual: {
+                    storyFlags: ["holy_cleanser", "divine_power", "spiritual_mastery"],
+                    unlockAreas: ["sanctified_grove"],
+                    items: ["holy_relic", "purification_crystal", "divine_blessing"],
+                    dialogue: [
+                        {
+                            speaker: "Ghost of the Village Elder",
+                            text: "The divine light cleanses all shadows. You wield holy power with wisdom and grace."
+                        }
+                    ]
+                }
+            }
+        },
+
+        rival_tamer_encounter: {
+            name: "The Rival's Challenge",
+            description: "Another monster tamer blocks your path",
+            type: "rival_encounter",
+            dialogue: [
+                {
+                    speaker: "Rival Tamer",
+                    text: "So you're the famous tamer I've been hearing about. I doubt you're as skilled as they say."
+                },
+                {
+                    speaker: "Rival Tamer",
+                    text: "Let's settle this with a proper monster battle! Winner takes the loser's rarest creature!"
+                }
+            ],
+            choices: [
+                {
+                    text: "Accept the challenge",
+                    outcome: "accept_duel"
+                },
+                {
+                    text: "Suggest we work together instead",
+                    outcome: "suggest_cooperation"
+                },
+                {
+                    text: "Decline and try to walk away",
+                    outcome: "decline_challenge"
+                },
+                {
+                    text: "Challenge them to a knowledge contest",
+                    outcome: "knowledge_contest",
+                    classRequirement: ["wizard"]
+                }
+            ],
+            outcomes: {
+                accept_duel: {
+                    storyFlags: ["rival_defeated", "competitive_nature", "combat_proven"],
+                    unlockAreas: ["rival_hideout"],
+                    items: ["victory_trophy", "rare_monster"],
+                    dialogue: [
+                        {
+                            speaker: "Rival Tamer",
+                            text: "Impressive... You've earned my respect. Keep that creature - you've proven yourself worthy."
+                        }
+                    ]
+                },
+                suggest_cooperation: {
+                    storyFlags: ["rival_ally", "diplomatic_success", "team_player"],
+                    unlockAreas: ["shared_camp", "team_routes"],
+                    items: ["friendship_bond", "cooperation_reward"],
+                    dialogue: [
+                        {
+                            speaker: "Rival Tamer",
+                            text: "Cooperation? I... hadn't considered that. Yes, together we could achieve much more!"
+                        }
+                    ]
+                },
+                decline_challenge: {
+                    storyFlags: ["conflict_avoider", "peaceful_resolution"],
+                    unlockAreas: [],
+                    items: [],
+                    dialogue: [
+                        {
+                            speaker: "Rival Tamer",
+                            text: "Running away? Coward! But... perhaps there's wisdom in avoiding needless conflict."
+                        }
+                    ]
+                },
+                knowledge_contest: {
+                    storyFlags: ["intellectual_victory", "scholar_respect", "wisdom_proven"],
+                    unlockAreas: ["academy_entrance"],
+                    items: ["knowledge_crown", "scholarly_recognition"],
+                    dialogue: [
+                        {
+                            speaker: "Rival Tamer",
+                            text: "Your knowledge surpasses even your battle skills. I concede - teach me your ways!"
+                        }
+                    ]
+                }
+            }
+        },
+
+        merchant_caravan: {
+            name: "The Traveling Merchants",
+            description: "A caravan seeks safe passage through dangerous territory",
+            type: "encounter",
+            dialogue: [
+                {
+                    speaker: "Caravan Leader",
+                    text: "Ah, a skilled tamer! We're carrying precious cargo but the road ahead is treacherous. Would you escort us?"
+                },
+                {
+                    speaker: "Merchant",
+                    text: "We can offer rare items as payment, or share information about hidden treasures!"
+                }
+            ],
+            choices: [
+                {
+                    text: "Agree to escort them for payment",
+                    outcome: "paid_escort"
+                },
+                {
+                    text: "Offer to help for free",
+                    outcome: "charitable_help"
+                },
+                {
+                    text: "Ask about the information instead",
+                    outcome: "seek_information"
+                },
+                {
+                    text: "Negotiate a trade agreement",
+                    outcome: "trade_deal",
+                    classRequirement: ["rogue"]
+                }
+            ],
+            outcomes: {
+                paid_escort: {
+                    storyFlags: ["merchant_escort", "business_minded"],
+                    unlockAreas: ["trading_post"],
+                    items: ["merchant_gold", "rare_goods", "trade_connections"],
+                    dialogue: [
+                        {
+                            speaker: "Caravan Leader",
+                            text: "Your protection was worth every coin. Take this as agreed payment, plus a bonus for excellence!"
+                        }
+                    ]
+                },
+                charitable_help: {
+                    storyFlags: ["generous_heart", "merchant_friend", "karma_bonus"],
+                    unlockAreas: ["merchant_network"],
+                    items: ["gratitude_gift", "merchant_favor", "good_reputation"],
+                    dialogue: [
+                        {
+                            speaker: "Caravan Leader",
+                            text: "Your kindness will not be forgotten. Merchants across the land will know of your generosity!"
+                        }
+                    ]
+                },
+                seek_information: {
+                    storyFlags: ["treasure_seeker", "information_gatherer"],
+                    unlockAreas: ["secret_cache", "hidden_route"],
+                    items: ["treasure_map", "secret_knowledge"],
+                    dialogue: [
+                        {
+                            speaker: "Merchant",
+                            text: "Knowledge is indeed valuable! This map shows caches we've discovered in our travels."
+                        }
+                    ]
+                },
+                trade_deal: {
+                    storyFlags: ["master_negotiator", "business_network", "trade_connections"],
+                    unlockAreas: ["merchant_guild"],
+                    items: ["trade_contract", "exclusive_goods", "merchant_badge"],
+                    dialogue: [
+                        {
+                            speaker: "Caravan Leader",
+                            text: "A shrewd negotiator! This deal benefits us both. Welcome to our trading network!"
+                        }
+                    ]
+                }
+            }
+        },
+
+        ancient_temple_trial: {
+            name: "Trial of the Ancient Temple",
+            description: "A forgotten temple tests the worthy",
+            type: "trial",
+            dialogue: [
+                {
+                    speaker: "Temple Guardian",
+                    text: "Only those pure of purpose may enter the inner sanctum. Face the three trials: Body, Mind, and Spirit."
+                },
+                {
+                    speaker: "Temple Guardian",
+                    text: "Which trial do you choose to face first? Choose wisely - each path shapes your destiny."
+                }
+            ],
+            choices: [
+                {
+                    text: "Face the Trial of Body (Combat)",
+                    outcome: "trial_body"
+                },
+                {
+                    text: "Face the Trial of Mind (Puzzle)",
+                    outcome: "trial_mind"
+                },
+                {
+                    text: "Face the Trial of Spirit (Meditation)",
+                    outcome: "trial_spirit"
+                },
+                {
+                    text: "Ask to understand the temple's history first",
+                    outcome: "seek_wisdom"
+                }
+            ],
+            outcomes: {
+                trial_body: {
+                    storyFlags: ["trial_warrior", "physical_mastery", "strength_proven"],
+                    unlockAreas: ["warrior_sanctum"],
+                    items: ["strength_relic", "combat_blessing", "warrior_mark"],
+                    dialogue: [
+                        {
+                            speaker: "Temple Guardian",
+                            text: "Your strength is matched by your resolve. The warrior's path is yours to walk."
+                        }
+                    ]
+                },
+                trial_mind: {
+                    storyFlags: ["trial_scholar", "mental_mastery", "wisdom_proven"],
+                    unlockAreas: ["scholar_sanctum"],
+                    items: ["wisdom_relic", "mental_blessing", "scholar_mark"],
+                    dialogue: [
+                        {
+                            speaker: "Temple Guardian",
+                            text: "Your mind pierces through illusion to truth. The scholar's path opens before you."
+                        }
+                    ]
+                },
+                trial_spirit: {
+                    storyFlags: ["trial_mystic", "spiritual_mastery", "soul_proven"],
+                    unlockAreas: ["mystic_sanctum"],
+                    items: ["spirit_relic", "soul_blessing", "mystic_mark"],
+                    dialogue: [
+                        {
+                            speaker: "Temple Guardian",
+                            text: "Your spirit shines with pure intention. The mystic's path calls to your soul."
+                        }
+                    ]
+                },
+                seek_wisdom: {
+                    storyFlags: ["temple_historian", "ancient_knowledge", "lore_master"],
+                    unlockAreas: ["temple_archives"],
+                    items: ["temple_chronicles", "ancient_wisdom", "historian_mark"],
+                    dialogue: [
+                        {
+                            speaker: "Temple Guardian",
+                            text: "Knowledge before action - wise indeed. The chronicles reveal much to the patient seeker."
+                        }
+                    ]
+                }
+            }
+        },
+
+        final_trial: {
+            name: "The Final Trial",
+            description: "The ultimate test of your journey",
+            type: "ending_event",
+            dialogue: [
+                {
+                    speaker: "Ancient Guardian",
+                    text: "You have traveled far, young tamer. But one final trial remains. What is your ultimate goal?"
+                }
+            ],
+            choices: [
+                {
+                    text: "To protect all creatures, great and small",
+                    outcome: "guardian_ending"
+                },
+                {
+                    text: "To become the greatest monster master",
+                    outcome: "master_ending"
+                },
+                {
+                    text: "To bring peace between humans and monsters",
+                    outcome: "peace_ending"
+                },
+                {
+                    text: "To uncover all the world's mysteries",
+                    outcome: "explorer_ending"
+                }
+            ]
+        },
+
+        // ================================================
+        // CHARACTER CLASS-SPECIFIC STORY BRANCHES
+        // ================================================
+
+        knight_honor_test: {
+            name: "The Knight's Honor",
+            description: "A test of chivalric values",
+            type: "class_trial",
+            classRequirement: ["knight"],
+            dialogue: [
+                {
+                    speaker: "Fallen Knight",
+                    text: "I once wore armor like yours, served the same ideals. But honor is a burden too heavy for some."
+                },
+                {
+                    speaker: "Fallen Knight",
+                    text: "Will you help a disgraced knight find redemption, or cast judgment upon my failures?"
+                }
+            ],
+            choices: [
+                {
+                    text: "Offer to help restore his honor",
+                    outcome: "redeem_knight"
+                },
+                {
+                    text: "Challenge him to prove his worth",
+                    outcome: "honor_duel"
+                },
+                {
+                    text: "Seek to understand his fall",
+                    outcome: "understand_failure"
+                }
+            ],
+            outcomes: {
+                redeem_knight: {
+                    storyFlags: ["knight_redeemer", "mercy_shown", "honor_restored"],
+                    unlockAreas: ["hall_of_honor"],
+                    items: ["redemption_blade", "mercy_shield", "chivalric_seal"],
+                    dialogue: [
+                        {
+                            speaker: "Fallen Knight",
+                            text: "Your compassion has restored what I thought lost forever. Honor can be rebuilt, one righteous act at a time."
+                        }
+                    ]
+                },
+                honor_duel: {
+                    storyFlags: ["honor_defender", "justice_upheld", "trial_by_combat"],
+                    unlockAreas: ["champions_arena"],
+                    items: ["justice_sword", "honor_crown", "victory_standard"],
+                    dialogue: [
+                        {
+                            speaker: "Fallen Knight",
+                            text: "Your blade speaks truth! I accept defeat and the chance to earn back what I've lost."
+                        }
+                    ]
+                },
+                understand_failure: {
+                    storyFlags: ["wisdom_seeker", "empathetic_knight", "deeper_understanding"],
+                    unlockAreas: ["chamber_of_reflection"],
+                    items: ["understanding_helm", "empathy_gauntlets", "wisdom_scroll"],
+                    dialogue: [
+                        {
+                            speaker: "Fallen Knight",
+                            text: "Few knights would listen to my story. Your wisdom goes beyond simple concepts of right and wrong."
+                        }
+                    ]
+                }
+            }
+        },
+
+        wizard_arcane_mystery: {
+            name: "The Arcane Paradox",
+            description: "A magical puzzle that defies understanding",
+            type: "class_trial",
+            classRequirement: ["wizard"],
+            dialogue: [
+                {
+                    speaker: "Ancient Mage",
+                    text: "Young wizard, you face a paradox that has puzzled mages for centuries. Magic flows backward here, effects precede causes."
+                },
+                {
+                    speaker: "Ancient Mage",
+                    text: "How will you unravel this mystery? Your approach will determine your mastery of the arcane arts."
+                }
+            ],
+            choices: [
+                {
+                    text: "Study the paradox systematically",
+                    outcome: "systematic_study"
+                },
+                {
+                    text: "Embrace the chaos and adapt",
+                    outcome: "chaos_adaptation"
+                },
+                {
+                    text: "Seek the fundamental cause",
+                    outcome: "root_cause_analysis"
+                }
+            ],
+            outcomes: {
+                systematic_study: {
+                    storyFlags: ["methodical_mage", "systematic_magic", "arcane_scholar"],
+                    unlockAreas: ["library_infinite"],
+                    items: ["codex_methodicus", "systematic_staff", "scholars_robe"],
+                    dialogue: [
+                        {
+                            speaker: "Ancient Mage",
+                            text: "Method in madness! Your systematic approach reveals patterns others missed. True mastery lies in understanding."
+                        }
+                    ]
+                },
+                chaos_adaptation: {
+                    storyFlags: ["chaos_mage", "adaptive_magic", "wild_mastery"],
+                    unlockAreas: ["chaos_laboratory"],
+                    items: ["chaos_orb", "adaptive_wand", "wild_magic_tome"],
+                    dialogue: [
+                        {
+                            speaker: "Ancient Mage",
+                            text: "To dance with chaos is the highest art! Your flexibility where others see only confusion is remarkable."
+                        }
+                    ]
+                },
+                root_cause_analysis: {
+                    storyFlags: ["truth_seeker_mage", "fundamental_understanding", "core_wisdom"],
+                    unlockAreas: ["source_chamber"],
+                    items: ["truth_crystal", "fundamental_focus", "source_knowledge"],
+                    dialogue: [
+                        {
+                            speaker: "Ancient Mage",
+                            text: "To seek the source is to touch the foundation of all magic. Few dare look so deep into the fundamental forces."
+                        }
+                    ]
+                }
+            }
+        },
+
+        rogue_heist_opportunity: {
+            name: "The Perfect Heist",
+            description: "An opportunity that tests skill and ethics",
+            type: "class_trial",
+            classRequirement: ["rogue"],
+            dialogue: [
+                {
+                    speaker: "Master Thief",
+                    text: "A corrupt noble hoards wealth while people starve. Their treasure vault has one weakness - you."
+                },
+                {
+                    speaker: "Master Thief",
+                    text: "Will you take this chance to redistribute their ill-gotten gains, or find another way to serve justice?"
+                }
+            ],
+            choices: [
+                {
+                    text: "Execute the heist flawlessly",
+                    outcome: "perfect_heist"
+                },
+                {
+                    text: "Expose the noble's corruption instead",
+                    outcome: "expose_corruption"
+                },
+                {
+                    text: "Steal only what's needed for the poor",
+                    outcome: "robin_hood_approach"
+                }
+            ],
+            outcomes: {
+                perfect_heist: {
+                    storyFlags: ["master_thief", "flawless_execution", "heist_expert"],
+                    unlockAreas: ["thieves_guild"],
+                    items: ["master_lockpicks", "shadow_cloak", "thieves_crown"],
+                    dialogue: [
+                        {
+                            speaker: "Master Thief",
+                            text: "Perfection! Not a trace left behind. You've mastered the art of the invisible hand."
+                        }
+                    ]
+                },
+                expose_corruption: {
+                    storyFlags: ["noble_rogue", "justice_seeker", "corruption_fighter"],
+                    unlockAreas: ["justice_network"],
+                    items: ["evidence_collection", "truth_serum", "justice_badge"],
+                    dialogue: [
+                        {
+                            speaker: "Master Thief",
+                            text: "Using shadows to bring light to darkness - a noble use of our skills. The people will remember this."
+                        }
+                    ]
+                },
+                robin_hood_approach: {
+                    storyFlags: ["peoples_champion", "righteous_thief", "balanced_justice"],
+                    unlockAreas: ["hidden_sanctuary"],
+                    items: ["peoples_favor", "balanced_scales", "champions_blessing"],
+                    dialogue: [
+                        {
+                            speaker: "Master Thief",
+                            text: "Taking only what's needed shows wisdom beyond mere skill. You understand the true purpose of our craft."
+                        }
+                    ]
+                }
+            }
+        },
+
+        paladin_faith_crisis: {
+            name: "Crisis of Faith",
+            description: "When divine guidance seems absent",
+            type: "class_trial",
+            classRequirement: ["paladin"],
+            dialogue: [
+                {
+                    speaker: "Tormented Paladin",
+                    text: "My prayers go unanswered, my holy powers dim. Have I been abandoned by the divine, or have I lost my way?"
+                },
+                {
+                    speaker: "Tormented Paladin",
+                    text: "How does one restore faith when the very foundations seem to crumble?"
+                }
+            ],
+            choices: [
+                {
+                    text: "Help them find inner strength",
+                    outcome: "inner_strength"
+                },
+                {
+                    text: "Seek divine guidance together",
+                    outcome: "divine_guidance"
+                },
+                {
+                    text: "Question the nature of faith itself",
+                    outcome: "philosophical_approach"
+                }
+            ],
+            outcomes: {
+                inner_strength: {
+                    storyFlags: ["inner_light_paladin", "self_reliant_faith", "personal_divinity"],
+                    unlockAreas: ["inner_sanctum"],
+                    items: ["inner_light_mace", "self_blessed_armor", "personal_prayer_book"],
+                    dialogue: [
+                        {
+                            speaker: "Tormented Paladin",
+                            text: "The divine was within me all along! Your guidance has shown me that faith begins in the heart."
+                        }
+                    ]
+                },
+                divine_guidance: {
+                    storyFlags: ["divine_messenger", "faithful_servant", "blessed_guidance"],
+                    unlockAreas: ["celestial_chamber"],
+                    items: ["divine_artifact", "blessed_symbol", "celestial_blessing"],
+                    dialogue: [
+                        {
+                            speaker: "Tormented Paladin",
+                            text: "Through your faith, mine is restored! The divine speaks through acts of compassion like yours."
+                        }
+                    ]
+                },
+                philosophical_approach: {
+                    storyFlags: ["questioning_paladin", "philosophical_faith", "deeper_understanding"],
+                    unlockAreas: ["hall_of_contemplation"],
+                    items: ["philosophers_mace", "contemplative_shield", "wisdom_prayer_book"],
+                    dialogue: [
+                        {
+                            speaker: "Tormented Paladin",
+                            text: "Questions lead to deeper truths! Your willingness to examine faith itself has strengthened mine."
+                        }
+                    ]
+                }
+            }
+        },
+
+        ranger_nature_call: {
+            name: "The Wild's Calling",
+            description: "When nature itself asks for help",
+            type: "class_trial",
+            classRequirement: ["ranger"],
+            dialogue: [
+                {
+                    speaker: "Spirit of the Wild",
+                    text: "Ranger, the balance is threatened. Civilization encroaches, ancient groves fall. What path will you choose?"
+                },
+                {
+                    speaker: "Spirit of the Wild",
+                    text: "Will you fight to preserve the old ways, or seek harmony between progress and preservation?"
+                }
+            ],
+            choices: [
+                {
+                    text: "Defend the wilderness at all costs",
+                    outcome: "wild_defender"
+                },
+                {
+                    text: "Seek balance between nature and civilization",
+                    outcome: "balance_seeker"
+                },
+                {
+                    text: "Become a bridge between both worlds",
+                    outcome: "bridge_builder"
+                }
+            ],
+            outcomes: {
+                wild_defender: {
+                    storyFlags: ["nature_guardian", "wild_protector", "primal_alliance"],
+                    unlockAreas: ["primal_stronghold"],
+                    items: ["guardian_bow", "primal_armor", "nature_blessing"],
+                    dialogue: [
+                        {
+                            speaker: "Spirit of the Wild",
+                            text: "Your dedication to the untamed world is absolute. The wild claims you as its champion."
+                        }
+                    ]
+                },
+                balance_seeker: {
+                    storyFlags: ["balance_keeper", "harmonious_ranger", "dual_understanding"],
+                    unlockAreas: ["harmony_grove"],
+                    items: ["balance_bow", "harmony_cloak", "dual_blessing"],
+                    dialogue: [
+                        {
+                            speaker: "Spirit of the Wild",
+                            text: "Wisdom in seeking middle ground. Both worlds can thrive when guided by understanding hearts."
+                        }
+                    ]
+                },
+                bridge_builder: {
+                    storyFlags: ["world_bridge", "diplomatic_ranger", "unity_champion"],
+                    unlockAreas: ["unity_outpost"],
+                    items: ["unity_bow", "diplomatic_gear", "bridge_blessing"],
+                    dialogue: [
+                        {
+                            speaker: "Spirit of the Wild",
+                            text: "To stand between worlds and bring them together - this is the highest calling of a ranger."
+                        }
+                    ]
+                }
+            }
+        },
+
+        warrior_ultimate_test: {
+            name: "The Final Battle",
+            description: "Face the ultimate test of a warrior's strength",
+            type: "class_trial",
+            classRequirement: ["warrior"],
+            dialogue: [
+                {
+                    speaker: "Legendary Champion",
+                    text: "You've proven yourself against many foes, but do you have what it takes to face a true legend?"
+                },
+                {
+                    speaker: "Legendary Champion",
+                    text: "This is not just about strength - it's about the warrior spirit that drives you forward."
+                }
+            ],
+            choices: [
+                {
+                    text: "Face them with pure strength",
+                    outcome: "pure_strength"
+                },
+                {
+                    text: "Fight with tactical brilliance",
+                    outcome: "tactical_genius"
+                },
+                {
+                    text: "Channel your warrior's spirit",
+                    outcome: "spirit_warrior"
+                }
+            ],
+            outcomes: {
+                pure_strength: {
+                    storyFlags: ["strength_legend", "pure_warrior", "unstoppable_force"],
+                    unlockAreas: ["champions_hall"],
+                    items: ["legendary_weapon", "strength_crown", "power_gauntlets"],
+                    dialogue: [
+                        {
+                            speaker: "Legendary Champion",
+                            text: "Raw power perfected! You have achieved the pinnacle of physical mastery. Few can match your strength."
+                        }
+                    ]
+                },
+                tactical_genius: {
+                    storyFlags: ["tactical_master", "strategic_warrior", "battle_genius"],
+                    unlockAreas: ["war_college"],
+                    items: ["tactical_blade", "strategic_armor", "battle_manual"],
+                    dialogue: [
+                        {
+                            speaker: "Legendary Champion",
+                            text: "Brilliance in battle! Your mind is as sharp as your blade. True warriors think as well as fight."
+                        }
+                    ]
+                },
+                spirit_warrior: {
+                    storyFlags: ["spiritual_warrior", "indomitable_will", "warrior_soul"],
+                    unlockAreas: ["spirit_dojo"],
+                    items: ["soul_weapon", "spirit_armor", "warriors_heart"],
+                    dialogue: [
+                        {
+                            speaker: "Legendary Champion",
+                            text: "The warrior's spirit burns bright within you! This inner fire will never be extinguished."
+                        }
+                    ]
+                }
+            }
+        },
+
+        // ================================================
+        // ENDGAME AND FINALE EVENTS
+        // ================================================
+
+        convergence_point: {
+            name: "The Great Convergence",
+            description: "All paths lead to this moment of decision",
+            type: "major_event",
+            dialogue: [
+                {
+                    speaker: "Narrator",
+                    text: "The threads of fate converge here. Your choices throughout your journey have shaped this moment."
+                },
+                {
+                    speaker: "Cosmic Entity",
+                    text: "Mortal tamer, you have walked many paths and faced countless trials. Now you must choose your legacy."
+                }
+            ],
+            choices: [
+                {
+                    text: "Unite all the paths you've walked",
+                    outcome: "unity_path",
+                    requirement: ["multiple_paths_completed"]
+                },
+                {
+                    text: "Embrace your strongest conviction",
+                    outcome: "conviction_path"
+                },
+                {
+                    text: "Transcend all previous limitations",
+                    outcome: "transcendence_path",
+                    requirement: ["master_level_achieved"]
+                },
+                {
+                    text: "Create an entirely new path",
+                    outcome: "innovation_path",
+                    requirement: ["creative_solutions_used"]
+                }
+            ],
+            outcomes: {
+                unity_path: {
+                    storyFlags: ["path_unifier", "balanced_master", "harmony_achieved"],
+                    unlockAreas: ["unity_nexus"],
+                    items: ["convergence_artifact", "unity_crown", "harmony_staff"],
+                    dialogue: [
+                        {
+                            speaker: "Cosmic Entity",
+                            text: "To unite seemingly opposing forces - this is wisdom beyond measure. You have achieved true balance."
+                        }
+                    ]
+                },
+                conviction_path: {
+                    storyFlags: ["unwavering_conviction", "path_master", "true_believer"],
+                    unlockAreas: ["conviction_shrine"],
+                    items: ["conviction_relic", "believers_crown", "faith_artifact"],
+                    dialogue: [
+                        {
+                            speaker: "Cosmic Entity",
+                            text: "Unwavering dedication to your chosen path shows the strength of your character. Your conviction inspires others."
+                        }
+                    ]
+                },
+                transcendence_path: {
+                    storyFlags: ["transcendent_being", "limitation_breaker", "evolved_consciousness"],
+                    unlockAreas: ["transcendent_realm"],
+                    items: ["transcendence_orb", "evolution_crown", "cosmic_artifact"],
+                    dialogue: [
+                        {
+                            speaker: "Cosmic Entity",
+                            text: "You have broken through the barriers that limit others. Your consciousness has evolved beyond mortal bounds."
+                        }
+                    ]
+                },
+                innovation_path: {
+                    storyFlags: ["path_creator", "innovative_spirit", "reality_shaper"],
+                    unlockAreas: ["creation_workshop"],
+                    items: ["innovation_tool", "creators_crown", "reality_gem"],
+                    dialogue: [
+                        {
+                            speaker: "Cosmic Entity",
+                            text: "To forge entirely new possibilities where none existed - you have become a creator of realities."
+                        }
+                    ]
+                }
+            }
+        },
+
         final_trial: {
             name: "The Final Trial",
             description: "The ultimate test of your journey",

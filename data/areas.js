@@ -58,7 +58,7 @@ const AreaData = {
                 { species: "goblin", weight: 30 }
             ],
             connections: ["starting_village", "deep_forest", "plains"],
-            storyEvents: ["first_monster_encounter"],
+            storyEvents: ["first_monster_encounter", "merchant_caravan", "abandoned_village"],
             services: [],
             backgroundMusic: "forest_theme",
             lootTable: {
@@ -201,7 +201,7 @@ const AreaData = {
                 { species: "cave_troll", weight: 10 }
             ],
             connections: ["mountain_base", "underground_lake"],
-            storyEvents: ["crystal_discovery", "cave_collapse"],
+            storyEvents: ["crystal_discovery", "cave_collapse", "crystal_cave_mystery"],
             services: [],
             backgroundMusic: "cave_theme",
             lootTable: {
@@ -351,7 +351,227 @@ const AreaData = {
                 }
             }
         },
-        
+
+        // ================================================
+        // NEW STORY-ENHANCED AREAS
+        // ================================================
+
+        ancient_temple: {
+            name: "Ancient Temple",
+            description: "A forgotten temple that tests the worthy",
+            type: "temple",
+            difficulty: 15,
+            spawnTable: [
+                { species: "temple_guardian", weight: 40 },
+                { species: "stone_golem", weight: 35 },
+                { species: "spirit_shade", weight: 25 }
+            ],
+            connections: ["crystal_caves", "mountain_peak"],
+            storyEvents: ["ancient_temple_trial", "convergence_point"],
+            services: ["sanctuary"],
+            backgroundMusic: "temple_theme",
+            lootTable: {
+                recommendedLevel: 15,
+                explorationType: "sacred_site",
+                drops: [
+                    {
+                        itemType: "sacred_artifacts",
+                        dropChance: 0.6,
+                        rarityWeights: { rare: 0.4, epic: 0.4, legendary: 0.2 },
+                        quantityRange: [1, 3],
+                        items: ["holy_relic", "ancient_blessing", "temple_key"]
+                    },
+                    {
+                        itemType: "trial_rewards",
+                        dropChance: 0.8,
+                        rarityWeights: { uncommon: 0.3, rare: 0.5, epic: 0.2 },
+                        quantityRange: [1, 2],
+                        items: ["wisdom_scroll", "strength_potion", "spirit_gem"]
+                    }
+                ],
+                areaBonus: {
+                    goldMultiplier: 1.2,
+                    spiritualBonus: 0.3, // 30% bonus to spirit-related items
+                    environmentType: "sacred_temple"
+                }
+            }
+        },
+
+        rival_territory: {
+            name: "Rival's Territory",
+            description: "The domain of a skilled monster tamer rival",
+            type: "rival_area",
+            difficulty: 12,
+            spawnTable: [
+                { species: "trained_monster", weight: 50 },
+                { species: "elite_creature", weight: 30 },
+                { species: "rare_beast", weight: 20 }
+            ],
+            connections: ["plains", "deep_forest"],
+            storyEvents: ["rival_tamer_encounter"],
+            services: ["challenge_arena"],
+            backgroundMusic: "rival_theme",
+            lootTable: {
+                recommendedLevel: 12,
+                explorationType: "competitive_zone",
+                drops: [
+                    {
+                        itemType: "competitive_rewards",
+                        dropChance: 0.7,
+                        rarityWeights: { uncommon: 0.4, rare: 0.4, epic: 0.2 },
+                        quantityRange: [1, 2],
+                        items: ["victory_trophy", "skill_manual", "training_gear"]
+                    },
+                    {
+                        itemType: "rare_monsters",
+                        dropChance: 0.3,
+                        rarityWeights: { rare: 0.6, epic: 0.3, legendary: 0.1 },
+                        quantityRange: [1, 1],
+                        items: ["rare_capture", "elite_egg", "legendary_seed"]
+                    }
+                ],
+                areaBonus: {
+                    goldMultiplier: 1.3,
+                    competitiveBonus: 0.25, // 25% bonus to skill-based rewards
+                    environmentType: "rival_domain"
+                }
+            }
+        },
+
+        mystic_convergence: {
+            name: "Mystic Convergence",
+            description: "Where all paths meet at the end of the journey",
+            type: "convergence_point",
+            difficulty: 20,
+            spawnTable: [
+                { species: "cosmic_entity", weight: 30 },
+                { species: "fate_weaver", weight: 30 },
+                { species: "reality_guardian", weight: 25 },
+                { species: "transcendent_being", weight: 15 }
+            ],
+            connections: ["dragon_peak", "ancient_temple", "spirit_realm"],
+            storyEvents: ["convergence_point", "final_trial"],
+            services: ["cosmic_altar"],
+            backgroundMusic: "convergence_theme",
+            lootTable: {
+                recommendedLevel: 20,
+                explorationType: "cosmic_nexus",
+                drops: [
+                    {
+                        itemType: "cosmic_artifacts",
+                        dropChance: 0.9,
+                        rarityWeights: { epic: 0.4, legendary: 0.6 },
+                        quantityRange: [2, 4],
+                        items: ["cosmic_shard", "reality_fragment", "fate_thread"]
+                    },
+                    {
+                        itemType: "transcendent_items",
+                        dropChance: 0.5,
+                        rarityWeights: { legendary: 1.0 },
+                        quantityRange: [1, 2],
+                        items: ["transcendence_core", "evolution_catalyst", "infinity_gem"]
+                    }
+                ],
+                areaBonus: {
+                    goldMultiplier: 3.0,
+                    transcendentBonus: 1.0, // Double chance for transcendent items
+                    environmentType: "cosmic_nexus",
+                    finalArea: true
+                }
+            }
+        },
+
+        class_trial_grounds: {
+            name: "Trial Grounds",
+            description: "Sacred grounds where classes prove their worth",
+            type: "class_trials",
+            difficulty: 10,
+            spawnTable: [
+                { species: "trial_guardian", weight: 40 },
+                { species: "test_creature", weight: 35 },
+                { species: "mentor_spirit", weight: 25 }
+            ],
+            connections: ["starting_village", "ancient_temple"],
+            storyEvents: [
+                "knight_honor_test",
+                "wizard_arcane_mystery",
+                "rogue_heist_opportunity",
+                "paladin_faith_crisis",
+                "ranger_nature_call",
+                "warrior_ultimate_test"
+            ],
+            services: ["class_mentor", "trial_preparation"],
+            backgroundMusic: "trial_theme",
+            lootTable: {
+                recommendedLevel: 10,
+                explorationType: "class_specialization",
+                drops: [
+                    {
+                        itemType: "class_artifacts",
+                        dropChance: 0.8,
+                        rarityWeights: { uncommon: 0.3, rare: 0.5, epic: 0.2 },
+                        quantityRange: [1, 3],
+                        items: ["class_relic", "specialization_tool", "mastery_token"]
+                    },
+                    {
+                        itemType: "training_materials",
+                        dropChance: 0.6,
+                        rarityWeights: { common: 0.4, uncommon: 0.4, rare: 0.2 },
+                        quantityRange: [2, 4],
+                        items: ["skill_manual", "practice_weapon", "training_dummy"]
+                    }
+                ],
+                areaBonus: {
+                    goldMultiplier: 1.1,
+                    classBonus: 0.4, // 40% bonus to class-specific items
+                    environmentType: "trial_grounds"
+                }
+            }
+        },
+
+        spirit_realm: {
+            name: "Spirit Realm",
+            description: "A realm between worlds where spirits dwell",
+            type: "spiritual_plane",
+            difficulty: 18,
+            spawnTable: [
+                { species: "spirit_guardian", weight: 40 },
+                { species: "ethereal_beast", weight: 30 },
+                { species: "phantom_creature", weight: 20 },
+                { species: "soul_entity", weight: 10 }
+            ],
+            connections: ["abandoned_village", "mystic_convergence"],
+            storyEvents: ["spirit_communion", "soul_trial"],
+            services: ["spirit_guide", "ethereal_shop"],
+            backgroundMusic: "spirit_theme",
+            lootTable: {
+                recommendedLevel: 18,
+                explorationType: "spiritual_plane",
+                drops: [
+                    {
+                        itemType: "spirit_essence",
+                        dropChance: 0.8,
+                        rarityWeights: { rare: 0.4, epic: 0.4, legendary: 0.2 },
+                        quantityRange: [1, 3],
+                        items: ["soul_crystal", "spirit_essence", "ethereal_shard"]
+                    },
+                    {
+                        itemType: "spectral_equipment",
+                        dropChance: 0.4,
+                        rarityWeights: { epic: 0.6, legendary: 0.4 },
+                        quantityRange: [1, 1],
+                        items: ["spirit_blade", "ethereal_armor", "soul_amulet"]
+                    }
+                ],
+                areaBonus: {
+                    goldMultiplier: 0.5, // Spirits don't value gold
+                    spiritualBonus: 1.0, // Double spiritual item drops
+                    environmentType: "spirit_realm",
+                    mysticalArea: true
+                }
+            }
+        },
+
         mystic_grove: {
             name: "Mystic Grove",
             description: "A magical place where nature spirits gather.",
