@@ -168,10 +168,12 @@ const AreaData = {
             description: "The highest mountain, where legends say dragons nest.",
             type: "dungeon",
             unlocked: false,
-            unlockRequirements: { 
-                story: "fire_temple_cleared", 
-                level: 25,
-                item: "dragon_scale"
+            unlockRequirements: {
+                and: [
+                    { story: "fire_temple_cleared" },
+                    { level: 25 },
+                    { item: "dragon_scale" }
+                ]
             },
             encounterRate: 90,
             monsters: ["dragon_whelp", "wyvern", "fire_drake"],
@@ -224,10 +226,12 @@ const AreaData = {
             description: "Mysterious structures from a forgotten civilization.",
             type: "dungeon",
             unlocked: false,
-            unlockRequirements: { 
-                story: "all_temples_cleared", 
-                level: 30,
-                item: "ancient_key" 
+            unlockRequirements: {
+                and: [
+                    { story: "all_temples_cleared" },
+                    { level: 30 },
+                    { item: "ancient_key" }
+                ]
             },
             encounterRate: 70,
             monsters: ["guardian_golem", "shadow_wraith", "ancient_spirit"],
@@ -248,6 +252,116 @@ const AreaData = {
                     exp: 5000, 
                     gold: 2000, 
                     items: ["legendary_weapon", "master_crystal"] 
+                }
+            }
+        },
+
+        // Branching Story Areas
+        scholar_library: {
+            name: "Scholar's Library",
+            description: "A vast repository of ancient knowledge and magical tomes.",
+            type: "special",
+            unlocked: false,
+            unlockRequirements: {
+                and: [
+                    { or: [
+                        { story: "mystic_grove_discovery" },
+                        { story: "ruins_puzzle" }
+                    ]},
+                    { or: [
+                        { character_class: ["wizard", "paladin"] },
+                        { item: "scholar_recommendation" }
+                    ]}
+                ]
+            },
+            encounterRate: 10,
+            monsters: ["knowledge_spirit", "ancient_tome", "guardian_book"],
+            spawnTable: [
+                { species: "knowledge_spirit", weight: 60 },
+                { species: "guardian_book", weight: 30 },
+                { species: "ancient_tome", weight: 10 }
+            ],
+            connections: ["mystic_grove", "ancient_ruins"],
+            storyEvents: ["forbidden_knowledge", "library_master"],
+            services: ["spell_research", "knowledge_exchange"],
+            backgroundMusic: "library_theme",
+            storyBranch: "scholar_path"
+        },
+
+        warrior_training_ground: {
+            name: "Warrior Training Ground",
+            description: "A place where the strongest fighters test their mettle.",
+            type: "special",
+            unlocked: false,
+            unlockRequirements: {
+                and: [
+                    { or: [
+                        { boss_defeated: "alpha_wolf" },
+                        { boss_defeated: "cave_troll" }
+                    ]},
+                    { or: [
+                        { character_class: ["knight", "warrior", "ranger"] },
+                        { level: 15 }
+                    ]}
+                ]
+            },
+            encounterRate: 40,
+            monsters: ["training_dummy", "sparring_partner", "weapon_master"],
+            spawnTable: [
+                { species: "sparring_partner", weight: 50 },
+                { species: "weapon_master", weight: 30 },
+                { species: "training_dummy", weight: 20 }
+            ],
+            connections: ["wolf_den", "cave_entrance"],
+            storyEvents: ["warrior_trial", "master_challenge"],
+            services: ["weapon_training", "combat_lessons"],
+            backgroundMusic: "training_theme",
+            storyBranch: "warrior_path"
+        },
+
+        shadow_realm: {
+            name: "Shadow Realm",
+            description: "A dark dimension where evil forces gather strength.",
+            type: "secret",
+            unlocked: false,
+            unlockRequirements: {
+                or: [
+                    {
+                        and: [
+                            { story: "darkness_awakened" },
+                            { item: "shadow_key" },
+                            { level: 20 }
+                        ]
+                    },
+                    {
+                        and: [
+                            { character_class: ["rogue", "assassin"] },
+                            { story: "shadow_guild_contact" },
+                            { item: "darkness_artifact" }
+                        ]
+                    }
+                ]
+            },
+            encounterRate: 90,
+            monsters: ["shadow_fiend", "void_walker", "darkness_incarnate"],
+            spawnTable: [
+                { species: "shadow_fiend", weight: 50 },
+                { species: "void_walker", weight: 35 },
+                { species: "darkness_incarnate", weight: 15 }
+            ],
+            connections: ["ancient_ruins"],
+            storyEvents: ["shadow_corruption", "light_vs_dark"],
+            services: [],
+            backgroundMusic: "shadow_theme",
+            storyBranch: "shadow_path",
+            boss: {
+                name: "Shadow Lord",
+                species: "shadow_lord",
+                level: 45,
+                reward: {
+                    exp: 8000,
+                    gold: 3000,
+                    items: ["shadow_blade", "darkness_crown", "void_crystal"]
                 }
             }
         }
@@ -278,47 +392,392 @@ const AreaData = {
     /**
      * Get all unlocked areas
      */
-    getUnlockedAreas: function(storyProgress, playerLevel, inventory, playerClass = null) {
+    getUnlockedAreas: function(storyProgress, playerLevel, inventory, playerClass = null, defeatedBosses = []) {
         return Object.keys(this.areas).filter(areaName => {
-            return this.isAreaUnlocked(areaName, storyProgress, playerLevel, inventory, playerClass);
+            return this.isAreaUnlocked(areaName, storyProgress, playerLevel, inventory, playerClass, defeatedBosses);
         });
     },
     
     /**
      * Check if an area is unlocked
      */
-    isAreaUnlocked: function(areaName, storyProgress, playerLevel, inventory, playerClass = null) {
+    isAreaUnlocked: function(areaName, storyProgress, playerLevel, inventory, playerClass = null, defeatedBosses = []) {
         const area = this.getArea(areaName);
-        if (!area) return false;
-        
+        if (!area) {
+            console.warn(`Area not found: ${areaName}`);
+            return false;
+        }
+
+        // Always unlocked areas
         if (area.unlocked) return true;
-        
+
+        // Areas with no unlock requirements are available by default
         const requirements = area.unlockRequirements;
-        
+        if (!requirements || Object.keys(requirements).length === 0) {
+            return true;
+        }
+
+        try {
+            // Normalize input parameters to prevent errors
+            const normalizedParams = this.normalizeUnlockParameters(
+                storyProgress, playerLevel, inventory, playerClass, defeatedBosses
+            );
+
+            // Handle complex unlock conditions with AND/OR logic
+            if (requirements.and || requirements.or) {
+                return this.evaluateUnlockConditions(
+                    requirements,
+                    normalizedParams.storyProgress,
+                    normalizedParams.playerLevel,
+                    normalizedParams.inventory,
+                    normalizedParams.playerClass,
+                    normalizedParams.defeatedBosses
+                );
+            }
+
+            // Legacy simple requirements (backward compatibility)
+            return this.evaluateLegacyRequirements(
+                requirements,
+                normalizedParams.storyProgress,
+                normalizedParams.playerLevel,
+                normalizedParams.inventory,
+                normalizedParams.playerClass,
+                normalizedParams.defeatedBosses
+            );
+
+        } catch (error) {
+            console.error(`Error evaluating unlock conditions for ${areaName}:`, error);
+            return false;
+        }
+    },
+
+    /**
+     * Normalize unlock parameters to handle various input types safely
+     */
+    normalizeUnlockParameters: function(storyProgress, playerLevel, inventory, playerClass, defeatedBosses) {
+        return {
+            storyProgress: Array.isArray(storyProgress) ? storyProgress : [],
+            playerLevel: typeof playerLevel === 'number' ? Math.max(0, playerLevel) : 1,
+            inventory: Array.isArray(inventory) ? inventory : [],
+            playerClass: playerClass || null,
+            defeatedBosses: Array.isArray(defeatedBosses) ? defeatedBosses : []
+        };
+    },
+
+    /**
+     * Evaluate legacy simple requirements for backward compatibility
+     */
+    evaluateLegacyRequirements: function(requirements, storyProgress, playerLevel, inventory, playerClass, defeatedBosses) {
         // Check story requirements
         if (requirements.story && !storyProgress.includes(requirements.story)) {
             return false;
         }
-        
+
         // Check level requirements
         if (requirements.level && playerLevel < requirements.level) {
             return false;
         }
-        
+
         // Check item requirements
         if (requirements.item && !inventory.includes(requirements.item)) {
             return false;
         }
-        
+
         // Check character class requirements
-        if (requirements.character_class && 
-            !requirements.character_class.includes(playerClass)) {
+        if (requirements.character_class) {
+            const allowedClasses = Array.isArray(requirements.character_class)
+                ? requirements.character_class
+                : [requirements.character_class];
+            if (!allowedClasses.includes(playerClass)) {
+                return false;
+            }
+        }
+
+        // Check boss defeated requirements
+        if (requirements.boss_defeated && !defeatedBosses.includes(requirements.boss_defeated)) {
             return false;
         }
-        
+
         return true;
     },
-    
+
+    /**
+     * Evaluate complex unlock conditions with AND/OR logic
+     */
+    evaluateUnlockConditions: function(requirements, storyProgress, playerLevel, inventory, playerClass, defeatedBosses) {
+        // Handle empty or invalid requirements
+        if (!requirements || typeof requirements !== 'object') {
+            return true;
+        }
+
+        if (requirements.and) {
+            // All conditions in AND array must be true
+            if (!Array.isArray(requirements.and) || requirements.and.length === 0) {
+                return true;
+            }
+            return requirements.and.every(condition =>
+                this.evaluateSingleCondition(condition, storyProgress, playerLevel, inventory, playerClass, defeatedBosses)
+            );
+        }
+
+        if (requirements.or) {
+            // At least one condition in OR array must be true
+            if (!Array.isArray(requirements.or) || requirements.or.length === 0) {
+                return true;
+            }
+            return requirements.or.some(condition =>
+                this.evaluateSingleCondition(condition, storyProgress, playerLevel, inventory, playerClass, defeatedBosses)
+            );
+        }
+
+        // Single condition
+        return this.evaluateSingleCondition(requirements, storyProgress, playerLevel, inventory, playerClass, defeatedBosses);
+    },
+
+    /**
+     * Evaluate a single unlock condition
+     */
+    evaluateSingleCondition: function(condition, storyProgress, playerLevel, inventory, playerClass, defeatedBosses) {
+        // Handle empty or invalid conditions
+        if (!condition || typeof condition !== 'object') {
+            return true;
+        }
+
+        // Handle nested AND/OR conditions recursively
+        if (condition.and || condition.or) {
+            return this.evaluateUnlockConditions(condition, storyProgress, playerLevel, inventory, playerClass, defeatedBosses);
+        }
+
+        try {
+            // Story flag requirement
+            if (condition.story) {
+                const storyFlag = typeof condition.story === 'string' ? condition.story : String(condition.story);
+                return storyProgress.includes(storyFlag);
+            }
+
+            // Level requirement
+            if (condition.level !== undefined) {
+                const requiredLevel = typeof condition.level === 'number' ? condition.level : parseInt(condition.level, 10);
+                return !isNaN(requiredLevel) && playerLevel >= requiredLevel;
+            }
+
+            // Item requirement
+            if (condition.item) {
+                const requiredItem = typeof condition.item === 'string' ? condition.item : String(condition.item);
+                return inventory.includes(requiredItem);
+            }
+
+            // Character class requirement
+            if (condition.character_class) {
+                const allowedClasses = Array.isArray(condition.character_class)
+                    ? condition.character_class
+                    : [condition.character_class];
+                return allowedClasses.includes(playerClass);
+            }
+
+            // Boss defeated requirement (supports both 'boss_defeated' and 'defeated_boss' keys)
+            if (condition.boss_defeated || condition.defeated_boss) {
+                const requiredBoss = condition.boss_defeated || condition.defeated_boss;
+                const bossName = typeof requiredBoss === 'string' ? requiredBoss : String(requiredBoss);
+                return defeatedBosses.includes(bossName);
+            }
+
+            // Multiple story flags requirement (any one must be met)
+            if (condition.story_flags && Array.isArray(condition.story_flags)) {
+                return condition.story_flags.some(flag => storyProgress.includes(flag));
+            }
+
+            // Multiple items requirement (all must be present)
+            if (condition.items && Array.isArray(condition.items)) {
+                return condition.items.every(item => inventory.includes(item));
+            }
+
+            // Multiple bosses defeated requirement (all must be defeated)
+            if (condition.bosses_defeated && Array.isArray(condition.bosses_defeated)) {
+                return condition.bosses_defeated.every(boss => defeatedBosses.includes(boss));
+            }
+
+            // Level range requirement
+            if (condition.level_min !== undefined || condition.level_max !== undefined) {
+                const minLevel = condition.level_min !== undefined ? condition.level_min : 0;
+                const maxLevel = condition.level_max !== undefined ? condition.level_max : Infinity;
+                return playerLevel >= minLevel && playerLevel <= maxLevel;
+            }
+
+        } catch (error) {
+            console.warn('Error evaluating single condition:', condition, error);
+            return false;
+        }
+
+        // Unknown condition type - log warning and default to false for safety
+        const conditionKeys = Object.keys(condition);
+        if (conditionKeys.length > 0) {
+            console.warn('Unknown unlock condition type:', conditionKeys[0], 'in condition:', condition);
+        }
+        return false;
+    },
+
+    /**
+     * Validate unlock requirements structure for debugging
+     */
+    validateUnlockRequirements: function(areaName, requirements) {
+        if (!requirements) return { valid: true, issues: [] };
+
+        const issues = [];
+        const validConditionTypes = [
+            'story', 'level', 'item', 'character_class', 'boss_defeated', 'defeated_boss',
+            'story_flags', 'items', 'bosses_defeated', 'level_min', 'level_max', 'and', 'or'
+        ];
+
+        const validateCondition = (condition, path = '') => {
+            if (!condition || typeof condition !== 'object') {
+                issues.push(`${path}: Invalid condition structure`);
+                return;
+            }
+
+            const conditionKeys = Object.keys(condition);
+
+            // Check for unknown condition types
+            for (const key of conditionKeys) {
+                if (!validConditionTypes.includes(key)) {
+                    issues.push(`${path}: Unknown condition type '${key}'`);
+                }
+            }
+
+            // Validate nested conditions
+            if (condition.and) {
+                if (!Array.isArray(condition.and)) {
+                    issues.push(`${path}.and: Should be an array`);
+                } else {
+                    condition.and.forEach((subCondition, index) => {
+                        validateCondition(subCondition, `${path}.and[${index}]`);
+                    });
+                }
+            }
+
+            if (condition.or) {
+                if (!Array.isArray(condition.or)) {
+                    issues.push(`${path}.or: Should be an array`);
+                } else {
+                    condition.or.forEach((subCondition, index) => {
+                        validateCondition(subCondition, `${path}.or[${index}]`);
+                    });
+                }
+            }
+
+            // Validate specific condition values
+            if (condition.level !== undefined && typeof condition.level !== 'number') {
+                issues.push(`${path}.level: Should be a number`);
+            }
+
+            if (condition.character_class && !Array.isArray(condition.character_class) && typeof condition.character_class !== 'string') {
+                issues.push(`${path}.character_class: Should be a string or array of strings`);
+            }
+
+            if (condition.level_min !== undefined && typeof condition.level_min !== 'number') {
+                issues.push(`${path}.level_min: Should be a number`);
+            }
+
+            if (condition.level_max !== undefined && typeof condition.level_max !== 'number') {
+                issues.push(`${path}.level_max: Should be a number`);
+            }
+        };
+
+        validateCondition(requirements, `${areaName}.unlockRequirements`);
+
+        return {
+            valid: issues.length === 0,
+            issues
+        };
+    },
+
+    /**
+     * Get performance metrics for unlock condition evaluation
+     */
+    getUnlockConditionComplexity: function(requirements) {
+        if (!requirements) return { depth: 0, conditions: 0 };
+
+        let maxDepth = 0;
+        let totalConditions = 0;
+
+        const analyzeCondition = (condition, depth = 0) => {
+            if (!condition || typeof condition !== 'object') return;
+
+            maxDepth = Math.max(maxDepth, depth);
+
+            if (condition.and) {
+                condition.and.forEach(subCondition => analyzeCondition(subCondition, depth + 1));
+            } else if (condition.or) {
+                condition.or.forEach(subCondition => analyzeCondition(subCondition, depth + 1));
+            } else {
+                totalConditions++;
+            }
+        };
+
+        analyzeCondition(requirements);
+
+        return {
+            depth: maxDepth,
+            conditions: totalConditions,
+            complexity: maxDepth * totalConditions // Simple complexity metric
+        };
+    },
+
+    /**
+     * Optimize unlock condition evaluation with caching for complex areas
+     */
+    isAreaUnlockedOptimized: function(areaName, storyProgress, playerLevel, inventory, playerClass = null, defeatedBosses = []) {
+        const area = this.getArea(areaName);
+        if (!area) return false;
+
+        // Cache key for this specific combination
+        const cacheKey = this.generateUnlockCacheKey(areaName, storyProgress, playerLevel, inventory, playerClass, defeatedBosses);
+
+        // Check cache for recent evaluations (implement simple cache if needed)
+        if (this.unlockCache && this.unlockCache[cacheKey]) {
+            const cached = this.unlockCache[cacheKey];
+            const cacheAge = Date.now() - cached.timestamp;
+
+            // Use cached result if less than 5 seconds old
+            if (cacheAge < 5000) {
+                return cached.result;
+            }
+        }
+
+        // Evaluate normally
+        const result = this.isAreaUnlocked(areaName, storyProgress, playerLevel, inventory, playerClass, defeatedBosses);
+
+        // Cache the result for complex areas
+        const requirements = area.unlockRequirements;
+        if (requirements && (requirements.and || requirements.or)) {
+            if (!this.unlockCache) this.unlockCache = {};
+            this.unlockCache[cacheKey] = {
+                result,
+                timestamp: Date.now()
+            };
+        }
+
+        return result;
+    },
+
+    /**
+     * Generate cache key for unlock evaluation
+     */
+    generateUnlockCacheKey: function(areaName, storyProgress, playerLevel, inventory, playerClass, defeatedBosses) {
+        const sortedStory = [...storyProgress].sort();
+        const sortedInventory = [...inventory].sort();
+        const sortedBosses = [...defeatedBosses].sort();
+
+        return `${areaName}:${sortedStory.join(',')}:${playerLevel}:${sortedInventory.join(',')}:${playerClass}:${sortedBosses.join(',')}`;
+    },
+
+    /**
+     * Clear unlock evaluation cache
+     */
+    clearUnlockCache: function() {
+        this.unlockCache = {};
+    },
+
     /**
      * Get connected areas from current area
      */
@@ -471,9 +930,140 @@ const AreaData = {
      * Get all areas of a specific type
      */
     getAreasByType: function(type) {
-        return Object.keys(this.areas).filter(areaName => 
+        return Object.keys(this.areas).filter(areaName =>
             this.areas[areaName].type === type
         );
+    },
+
+    /**
+     * Get detailed unlock status for an area (for progression indicators)
+     */
+    getAreaUnlockStatus: function(areaName, storyProgress, playerLevel, inventory, playerClass = null, defeatedBosses = []) {
+        const area = this.getArea(areaName);
+        if (!area) return { unlocked: false, requirements: [], missing: [] };
+
+        if (area.unlocked) {
+            return { unlocked: true, requirements: [], missing: [] };
+        }
+
+        const requirements = area.unlockRequirements;
+        const status = {
+            unlocked: this.isAreaUnlocked(areaName, storyProgress, playerLevel, inventory, playerClass, defeatedBosses),
+            requirements: [],
+            missing: []
+        };
+
+        // Analyze requirements for detailed status
+        if (requirements.and || requirements.or) {
+            this.analyzeComplexRequirements(requirements, storyProgress, playerLevel, inventory, playerClass, defeatedBosses, status);
+        } else {
+            // Legacy simple requirements
+            this.analyzeSimpleRequirements(requirements, storyProgress, playerLevel, inventory, playerClass, defeatedBosses, status);
+        }
+
+        return status;
+    },
+
+    /**
+     * Analyze complex unlock requirements for detailed status
+     */
+    analyzeComplexRequirements: function(requirements, storyProgress, playerLevel, inventory, playerClass, defeatedBosses, status) {
+        if (requirements.and) {
+            requirements.and.forEach((condition, index) => {
+                const conditionMet = this.evaluateSingleCondition(condition, storyProgress, playerLevel, inventory, playerClass, defeatedBosses);
+                const description = this.getConditionDescription(condition);
+
+                status.requirements.push({
+                    type: 'and',
+                    index: index,
+                    description: description,
+                    met: conditionMet
+                });
+
+                if (!conditionMet) {
+                    status.missing.push(description);
+                }
+            });
+        } else if (requirements.or) {
+            requirements.or.forEach((condition, index) => {
+                const conditionMet = this.evaluateSingleCondition(condition, storyProgress, playerLevel, inventory, playerClass, defeatedBosses);
+                const description = this.getConditionDescription(condition);
+
+                status.requirements.push({
+                    type: 'or',
+                    index: index,
+                    description: description,
+                    met: conditionMet
+                });
+            });
+
+            // For OR conditions, add to missing only if ALL conditions are false
+            const anyMet = requirements.or.some(condition =>
+                this.evaluateSingleCondition(condition, storyProgress, playerLevel, inventory, playerClass, defeatedBosses)
+            );
+            if (!anyMet) {
+                status.missing.push('One of: ' + requirements.or.map(this.getConditionDescription).join(' OR '));
+            }
+        }
+    },
+
+    /**
+     * Analyze simple unlock requirements for detailed status
+     */
+    analyzeSimpleRequirements: function(requirements, storyProgress, playerLevel, inventory, playerClass, defeatedBosses, status) {
+        if (requirements.story) {
+            const met = storyProgress.includes(requirements.story);
+            status.requirements.push({
+                type: 'story',
+                description: `Story progress: ${requirements.story}`,
+                met: met
+            });
+            if (!met) status.missing.push(`Story progress: ${requirements.story}`);
+        }
+
+        if (requirements.level) {
+            const met = playerLevel >= requirements.level;
+            status.requirements.push({
+                type: 'level',
+                description: `Level ${requirements.level}`,
+                met: met
+            });
+            if (!met) status.missing.push(`Level ${requirements.level} (current: ${playerLevel})`);
+        }
+
+        if (requirements.item) {
+            const met = inventory.includes(requirements.item);
+            status.requirements.push({
+                type: 'item',
+                description: `Item: ${requirements.item}`,
+                met: met
+            });
+            if (!met) status.missing.push(`Item: ${requirements.item}`);
+        }
+
+        if (requirements.character_class) {
+            const met = requirements.character_class.includes(playerClass);
+            status.requirements.push({
+                type: 'class',
+                description: `Class: ${requirements.character_class.join(' or ')}`,
+                met: met
+            });
+            if (!met) status.missing.push(`Class: ${requirements.character_class.join(' or ')} (current: ${playerClass})`);
+        }
+    },
+
+    /**
+     * Get human-readable description of a condition
+     */
+    getConditionDescription: function(condition) {
+        if (condition.story) return `Story: ${condition.story}`;
+        if (condition.level) return `Level ${condition.level}`;
+        if (condition.item) return `Item: ${condition.item}`;
+        if (condition.character_class) return `Class: ${condition.character_class.join(' or ')}`;
+        if (condition.boss_defeated) return `Boss defeated: ${condition.boss_defeated}`;
+        if (condition.and) return `All of: (${condition.and.map(this.getConditionDescription).join(', ')})`;
+        if (condition.or) return `One of: (${condition.or.map(this.getConditionDescription).join(' OR ')})`;
+        return 'Unknown requirement';
     }
 };
 

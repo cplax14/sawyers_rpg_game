@@ -42,7 +42,13 @@ class GameState {
             unlockedAreas: ['starting_village'],
             storyFlags: [],
             completedEvents: [],
-            currentStoryPath: null
+            currentStoryPath: null,
+            defeatedBosses: [],
+            storyBranches: {
+                currentBranch: null,
+                availableBranches: [],
+                branchHistory: []
+            }
         };
         
         // Game settings
@@ -280,7 +286,13 @@ class GameState {
             unlockedAreas: ['starting_village'],
             storyFlags: ['game_start'],
             completedEvents: [],
-            currentStoryPath: null
+            currentStoryPath: null,
+            defeatedBosses: [],
+            storyBranches: {
+                currentBranch: null,
+                availableBranches: [],
+                branchHistory: []
+            }
         };
         // Establish initial story path based on starting flags
         try {
@@ -474,6 +486,11 @@ class GameState {
         // Auto-save periodically
         if (this.settings.autoSave && this.stats.playtime % 30 < deltaTime) {
             this.triggerAutoSave();
+        }
+
+        // Clean up old notifications periodically (every 30 seconds)
+        if (this.stats.playtime % 30 < deltaTime) {
+            this.cleanupNotifications();
         }
     }
     
@@ -941,32 +958,1850 @@ class GameState {
     }
     
     /**
-     * Check for newly unlocked areas
+     * Check for newly unlocked areas with performance optimization
      */
     checkUnlockedAreas() {
         if (typeof AreaData === 'undefined') return;
-        
-        const allAreas = Object.keys(AreaData.areas);
-        
-        for (const areaName of allAreas) {
-            if (!this.world.unlockedAreas.includes(areaName)) {
-                const isUnlocked = AreaData.isAreaUnlocked(
+
+        // Performance optimization: cache expensive computations
+        const startTime = performance.now();
+        const playerData = {
+            storyFlags: this.world.storyFlags,
+            level: this.player.level,
+            inventory: Object.keys(this.player.inventory.items),
+            class: this.player.class,
+            defeatedBosses: this.world.defeatedBosses || []
+        };
+
+        // Get all areas that are not yet unlocked for efficiency
+        const lockedAreas = Object.keys(AreaData.areas).filter(areaName =>
+            !this.world.unlockedAreas.includes(areaName)
+        );
+
+        let newlyUnlockedCount = 0;
+        const maxCheckTime = 50; // 50ms performance budget per PRD requirement
+
+        for (const areaName of lockedAreas) {
+            // Check performance budget - exit early if we're taking too long
+            if (performance.now() - startTime > maxCheckTime) {
+                console.warn(`Area unlock check exceeded performance budget, processed ${newlyUnlockedCount} areas`);
+                break;
+            }
+
+            const isUnlocked = AreaData.isAreaUnlocked(
+                areaName,
+                playerData.storyFlags,
+                playerData.level,
+                playerData.inventory,
+                playerData.class,
+                playerData.defeatedBosses
+            );
+
+            if (isUnlocked) {
+                this.unlockArea(areaName);
+                newlyUnlockedCount++;
+            } else {
+                // Check for requirement progress notifications (only for areas making progress)
+                const unlockStatus = AreaData.getAreaUnlockStatus(
                     areaName,
-                    this.world.storyFlags,
-                    this.player.level,
-                    Object.keys(this.player.inventory.items),
-                    this.player.class
+                    playerData.storyFlags,
+                    playerData.level,
+                    playerData.inventory,
+                    playerData.class,
+                    playerData.defeatedBosses
                 );
-                
-                if (isUnlocked) {
-                    this.world.unlockedAreas.push(areaName);
-                    // Keep stats consistent with travelToArea when discovering new areas
-                    this.stats.areasExplored++;
-                    const area = AreaData.getArea(areaName);
-                    this.addNotification(`New area available: ${area?.name || areaName}`, 'info');
+
+                // Only notify if there's meaningful progress and we haven't recently notified
+                if (unlockStatus.progressPercentage && unlockStatus.progressPercentage >= 50) {
+                    const lastNotificationKey = `progress_${areaName}`;
+                    const lastNotification = this.getLastNotificationTime(lastNotificationKey);
+                    const timeSinceLastNotification = Date.now() - (lastNotification || 0);
+
+                    // Only notify every 5 minutes for the same area to avoid spam
+                    if (timeSinceLastNotification > 5 * 60 * 1000) {
+                        this.addRequirementProgressNotification(areaName, unlockStatus);
+                        this.setLastNotificationTime(lastNotificationKey, Date.now());
+                    }
                 }
             }
         }
+
+        // Log performance metrics for monitoring
+        const endTime = performance.now();
+        if (newlyUnlockedCount > 0) {
+            console.log(`✨ Unlocked ${newlyUnlockedCount} new areas in ${(endTime - startTime).toFixed(2)}ms`);
+        }
+    }
+
+    /**
+     * Unlock a specific area and handle all related logic
+     */
+    unlockArea(areaName) {
+        if (this.world.unlockedAreas.includes(areaName)) return false;
+
+        this.world.unlockedAreas.push(areaName);
+        this.stats.areasExplored++;
+
+        const area = AreaData.getArea(areaName);
+        if (area) {
+            // Check if this area belongs to a story branch
+            if (area.storyBranch) {
+                this.updateStoryBranches(area.storyBranch, areaName);
+            }
+
+            // Send detailed area unlock notification
+            this.addAreaUnlockNotification(areaName, area);
+
+            // Log for debugging and analytics
+            console.log(`🗺️ Area unlocked: ${area.name} (${areaName})`);
+        }
+
+        return true;
+    }
+
+    /**
+     * Update story branches when areas are unlocked
+     */
+    updateStoryBranches(branchName, areaName) {
+        const branches = this.world.storyBranches;
+
+        // Add to available branches if not already present
+        if (!branches.availableBranches.includes(branchName)) {
+            branches.availableBranches.push(branchName);
+            console.log(`Story branch "${branchName}" is now available`);
+        }
+
+        // Track branch history for narrative consistency
+        const branchEntry = {
+            branchName,
+            areaName,
+            timestamp: Date.now(),
+            storyFlags: [...this.world.storyFlags],
+            playerLevel: this.player.level
+        };
+
+        // Add to history if not already recorded for this area
+        const existingEntry = branches.branchHistory.find(
+            entry => entry.branchName === branchName && entry.areaName === areaName
+        );
+        if (!existingEntry) {
+            branches.branchHistory.push(branchEntry);
+        }
+
+        // Set as current branch if none is set or if this is a progression
+        if (!branches.currentBranch || this.shouldChangeBranch(branchName)) {
+            const previousBranch = branches.currentBranch;
+            branches.currentBranch = branchName;
+
+            if (previousBranch && previousBranch !== branchName) {
+                console.log(`Story branch changed from "${previousBranch}" to "${branchName}"`);
+                this.addNotification(`Following ${branchName.replace('_', ' ')} path`, 'info');
+            } else if (!previousBranch) {
+                console.log(`🌟 Story branch available: ${branchName}`);
+                this.addNotification(`New story path discovered: ${branchName}`, 'story');
+            }
+        }
+    }
+
+    /**
+     * Determine if story branch should change based on narrative consistency
+     */
+    shouldChangeBranch(newBranch) {
+        const current = this.world.storyBranches.currentBranch;
+        if (!current) return true;
+
+        // Don't change if already on this branch
+        if (current === newBranch) return false;
+
+        // Calculate story alignment to determine if branch change is narratively consistent
+        try {
+            if (typeof StoryData !== 'undefined' && typeof StoryData.calculateStoryBranch === 'function') {
+                const calculatedBranch = StoryData.calculateStoryBranch(this.world.storyFlags);
+                return calculatedBranch === newBranch;
+            }
+        } catch (e) {
+            console.warn('Failed to calculate story branch alignment:', e);
+        }
+
+        return false;
+    }
+
+    /**
+     * Comprehensive story branch validation for narrative coherence
+     */
+    validateStoryBranch(proposedBranch, storyFlags = null) {
+        const flags = storyFlags || this.world.storyFlags;
+        const branches = this.world.storyBranches;
+
+        // Get branch requirements and conflicts
+        const branchRequirements = this.getBranchRequirements(proposedBranch);
+        const branchConflicts = this.getBranchConflicts(proposedBranch);
+
+        // Basic requirement and conflict validation
+        const requirementsMet = branchRequirements.every(req => flags.includes(req));
+        const hasConflicts = branchConflicts.some(conflict => flags.includes(conflict));
+        const historyConsistent = this.isBranchHistoryConsistent(proposedBranch);
+
+        // Advanced narrative coherence checks
+        const narrativeChecks = this.performNarrativeCoherenceChecks(proposedBranch, flags);
+        const sequenceValidation = this.validateStorySequence(proposedBranch, flags);
+        const choiceConsistency = this.validateChoiceConsistency(proposedBranch, flags);
+
+        // Character arc validation
+        const characterValidation = this.validateCharacterArcConsistency(proposedBranch, flags);
+
+        // Timeline consistency
+        const timelineValidation = this.validateStoryTimeline(proposedBranch, flags);
+
+        const overallValid = requirementsMet &&
+                           !hasConflicts &&
+                           historyConsistent &&
+                           narrativeChecks.valid &&
+                           sequenceValidation.valid &&
+                           choiceConsistency.valid &&
+                           characterValidation.valid &&
+                           timelineValidation.valid;
+
+        return {
+            valid: overallValid,
+            requirementsMet,
+            hasConflicts,
+            historyConsistent,
+            missingRequirements: branchRequirements.filter(req => !flags.includes(req)),
+            conflictingFlags: branchConflicts.filter(conflict => flags.includes(conflict)),
+            narrativeChecks,
+            sequenceValidation,
+            choiceConsistency,
+            characterValidation,
+            timelineValidation,
+            score: this.calculateNarrativeCoherenceScore(proposedBranch, flags),
+            recommendations: this.generateCoherenceRecommendations(proposedBranch, flags)
+        };
+    }
+
+    /**
+     * Perform comprehensive narrative coherence checks
+     */
+    performNarrativeCoherenceChecks(proposedBranch, flags) {
+        const checks = {
+            valid: true,
+            issues: [],
+            warnings: []
+        };
+
+        // Check for mutually exclusive story paths
+        const exclusiveChecks = this.checkMutuallyExclusivePaths(proposedBranch, flags);
+        if (!exclusiveChecks.valid) {
+            checks.valid = false;
+            checks.issues.push(...exclusiveChecks.issues);
+        }
+
+        // Check for prerequisite story events
+        const prerequisiteChecks = this.checkStoryPrerequisites(proposedBranch, flags);
+        if (!prerequisiteChecks.valid) {
+            checks.valid = false;
+            checks.issues.push(...prerequisiteChecks.issues);
+        }
+
+        // Check for thematic consistency
+        const thematicChecks = this.checkThematicConsistency(proposedBranch, flags);
+        if (!thematicChecks.valid) {
+            checks.warnings.push(...thematicChecks.warnings);
+        }
+
+        return checks;
+    }
+
+    /**
+     * Check for mutually exclusive story paths
+     */
+    checkMutuallyExclusivePaths(proposedBranch, flags) {
+        const exclusiveGroups = {
+            'warrior_path': {
+                incompatible: ['peaceful_path'],
+                flagConflicts: ['peace_treaty', 'diplomatic_solution', 'non_violence_oath']
+            },
+            'peaceful_path': {
+                incompatible: ['warrior_path'],
+                flagConflicts: ['aggressive_action', 'violence_chosen', 'war_declaration']
+            },
+            'scholar_path': {
+                incompatible: ['nature_path'],
+                flagConflicts: ['rejected_knowledge', 'anti_intellectual']
+            },
+            'nature_path': {
+                incompatible: ['scholar_path'],
+                flagConflicts: ['nature_rejected', 'civilization_over_nature']
+            }
+        };
+
+        const result = { valid: true, issues: [] };
+        const branchConfig = exclusiveGroups[proposedBranch];
+
+        if (branchConfig) {
+            // Check for incompatible branches in history
+            const incompatibleBranches = this.world.storyBranches.branchHistory
+                .filter(entry => branchConfig.incompatible.includes(entry.branchName))
+                .map(entry => entry.branchName);
+
+            if (incompatibleBranches.length > 0) {
+                result.valid = false;
+                result.issues.push(`Branch ${proposedBranch} is incompatible with previously chosen branches: ${incompatibleBranches.join(', ')}`);
+            }
+
+            // Check for conflicting flags
+            const conflictingFlags = branchConfig.flagConflicts.filter(flag => flags.includes(flag));
+            if (conflictingFlags.length > 0) {
+                result.valid = false;
+                result.issues.push(`Branch ${proposedBranch} conflicts with story flags: ${conflictingFlags.join(', ')}`);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Check story prerequisites and dependencies
+     */
+    checkStoryPrerequisites(proposedBranch, flags) {
+        const prerequisites = {
+            'warrior_path': {
+                required: ['combat_introduction'],
+                recommended: ['weapon_training', 'first_battle']
+            },
+            'peaceful_path': {
+                required: ['diplomacy_introduction'],
+                recommended: ['negotiation_success', 'peaceful_resolution']
+            },
+            'scholar_path': {
+                required: ['knowledge_introduction'],
+                recommended: ['first_research', 'ancient_text_found']
+            },
+            'nature_path': {
+                required: ['nature_introduction'],
+                recommended: ['animal_communication', 'forest_blessing']
+            }
+        };
+
+        const result = { valid: true, issues: [], warnings: [] };
+        const branchPrereqs = prerequisites[proposedBranch];
+
+        if (branchPrereqs) {
+            // Check required prerequisites
+            const missingRequired = branchPrereqs.required.filter(req => !flags.includes(req));
+            if (missingRequired.length > 0) {
+                result.valid = false;
+                result.issues.push(`Missing required prerequisites for ${proposedBranch}: ${missingRequired.join(', ')}`);
+            }
+
+            // Check recommended prerequisites
+            const missingRecommended = branchPrereqs.recommended.filter(req => !flags.includes(req));
+            if (missingRecommended.length > 0) {
+                result.warnings.push(`Missing recommended setup for ${proposedBranch}: ${missingRecommended.join(', ')}`);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Check thematic consistency
+     */
+    checkThematicConsistency(proposedBranch, flags) {
+        const themes = {
+            'warrior_path': {
+                supportive: ['honor', 'courage', 'strength', 'justice'],
+                conflicting: ['cowardice', 'dishonor', 'weakness']
+            },
+            'peaceful_path': {
+                supportive: ['wisdom', 'compassion', 'understanding', 'harmony'],
+                conflicting: ['cruelty', 'intolerance', 'hatred']
+            },
+            'scholar_path': {
+                supportive: ['curiosity', 'knowledge', 'discovery', 'learning'],
+                conflicting: ['ignorance', 'anti_learning', 'superstition']
+            },
+            'nature_path': {
+                supportive: ['balance', 'nature_harmony', 'environmental_care'],
+                conflicting: ['environmental_destruction', 'nature_exploitation']
+            }
+        };
+
+        const result = { valid: true, warnings: [] };
+        const branchThemes = themes[proposedBranch];
+
+        if (branchThemes) {
+            // Check for conflicting themes
+            const thematicConflicts = branchThemes.conflicting.filter(theme => flags.includes(theme));
+            if (thematicConflicts.length > 0) {
+                result.valid = false;
+                result.warnings.push(`Thematic conflicts detected for ${proposedBranch}: ${thematicConflicts.join(', ')}`);
+            }
+
+            // Check for supportive themes (positive indicator)
+            const supportiveThemes = branchThemes.supportive.filter(theme => flags.includes(theme));
+            if (supportiveThemes.length === 0) {
+                result.warnings.push(`No supportive themes found for ${proposedBranch}. Consider adding relevant character development.`);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Validate story sequence and pacing
+     */
+    validateStorySequence(proposedBranch, flags) {
+        const sequences = {
+            'warrior_path': ['combat_introduction', 'first_battle', 'weapon_mastery', 'leadership_role'],
+            'peaceful_path': ['diplomacy_introduction', 'first_negotiation', 'conflict_resolution', 'peace_maker'],
+            'scholar_path': ['knowledge_introduction', 'first_research', 'major_discovery', 'wisdom_gained'],
+            'nature_path': ['nature_introduction', 'animal_bond', 'forest_guardian', 'nature_mastery']
+        };
+
+        const result = { valid: true, issues: [], warnings: [] };
+        const expectedSequence = sequences[proposedBranch];
+
+        if (expectedSequence) {
+            // Check if story events are happening in logical order
+            const flagIndices = expectedSequence
+                .map(flag => ({ flag, index: flags.indexOf(flag) }))
+                .filter(item => item.index !== -1)
+                .sort((a, b) => a.index - b.index);
+
+            const expectedOrder = expectedSequence.filter(flag => flags.includes(flag));
+
+            // Validate sequence order
+            for (let i = 0; i < flagIndices.length - 1; i++) {
+                const currentFlag = flagIndices[i].flag;
+                const nextFlag = flagIndices[i + 1].flag;
+                const currentExpectedIndex = expectedSequence.indexOf(currentFlag);
+                const nextExpectedIndex = expectedSequence.indexOf(nextFlag);
+
+                if (currentExpectedIndex > nextExpectedIndex) {
+                    result.issues.push(`Story sequence violation: ${nextFlag} should come before ${currentFlag} in ${proposedBranch}`);
+                }
+            }
+
+            // Check for gaps in the sequence
+            const hasEarlyFlag = flags.includes(expectedSequence[0]);
+            const hasLateFlag = expectedSequence.slice(-2).some(flag => flags.includes(flag));
+
+            if (hasLateFlag && !hasEarlyFlag) {
+                result.warnings.push(`Story sequence gap: Advanced ${proposedBranch} events without foundation`);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Validate choice consistency across the story
+     */
+    validateChoiceConsistency(proposedBranch, flags) {
+        const result = { valid: true, issues: [], warnings: [] };
+
+        // Check for contradictory choices
+        const contradictoryPairs = [
+            ['help_villagers', 'ignore_villagers'],
+            ['save_forest', 'burn_forest'],
+            ['trust_stranger', 'distrust_stranger'],
+            ['share_knowledge', 'hoard_knowledge']
+        ];
+
+        for (const [choice1, choice2] of contradictoryPairs) {
+            if (flags.includes(choice1) && flags.includes(choice2)) {
+                result.valid = false;
+                result.issues.push(`Contradictory choices detected: ${choice1} and ${choice2}`);
+            }
+        }
+
+        // Branch-specific choice validation
+        const branchSpecificChecks = this.validateBranchSpecificChoices(proposedBranch, flags);
+        if (!branchSpecificChecks.valid) {
+            result.valid = false;
+            result.issues.push(...branchSpecificChecks.issues);
+        }
+
+        return result;
+    }
+
+    /**
+     * Validate branch-specific choice patterns
+     */
+    validateBranchSpecificChoices(proposedBranch, flags) {
+        const result = { valid: true, issues: [] };
+
+        switch (proposedBranch) {
+            case 'warrior_path':
+                if (flags.includes('refused_combat') && flags.includes('combat_mastery')) {
+                    result.valid = false;
+                    result.issues.push('Warrior path: Cannot refuse combat and achieve combat mastery');
+                }
+                break;
+
+            case 'peaceful_path':
+                if (flags.includes('violence_first_resort') && flags.includes('master_diplomat')) {
+                    result.valid = false;
+                    result.issues.push('Peaceful path: Violence-first approach conflicts with diplomacy mastery');
+                }
+                break;
+
+            case 'scholar_path':
+                if (flags.includes('rejected_learning') && flags.includes('scholar_achievement')) {
+                    result.valid = false;
+                    result.issues.push('Scholar path: Cannot reject learning and achieve scholarly recognition');
+                }
+                break;
+
+            case 'nature_path':
+                if (flags.includes('nature_destruction') && flags.includes('nature_guardian')) {
+                    result.valid = false;
+                    result.issues.push('Nature path: Environmental destruction conflicts with guardian role');
+                }
+                break;
+        }
+
+        return result;
+    }
+
+    /**
+     * Validate character arc consistency
+     */
+    validateCharacterArcConsistency(proposedBranch, flags) {
+        const result = { valid: true, issues: [], warnings: [] };
+
+        // Check for character development progression
+        const characterTraits = this.analyzeCharacterTraits(flags);
+        const branchAlignment = this.checkBranchCharacterAlignment(proposedBranch, characterTraits);
+
+        if (branchAlignment.conflicts.length > 0) {
+            result.warnings.push(`Character arc conflicts with ${proposedBranch}: ${branchAlignment.conflicts.join(', ')}`);
+        }
+
+        if (branchAlignment.support.length === 0) {
+            result.warnings.push(`No character development supports ${proposedBranch} path`);
+        }
+
+        return result;
+    }
+
+    /**
+     * Analyze character traits from story flags
+     */
+    analyzeCharacterTraits(flags) {
+        const traits = {
+            brave: flags.includes('faced_danger') || flags.includes('heroic_action'),
+            wise: flags.includes('good_advice') || flags.includes('solved_puzzle'),
+            kind: flags.includes('helped_others') || flags.includes('showed_mercy'),
+            aggressive: flags.includes('chose_violence') || flags.includes('threatened_enemy'),
+            scholarly: flags.includes('studied_lore') || flags.includes('research_success'),
+            naturalist: flags.includes('communed_nature') || flags.includes('animal_friend')
+        };
+
+        return traits;
+    }
+
+    /**
+     * Check branch alignment with character traits
+     */
+    checkBranchCharacterAlignment(proposedBranch, traits) {
+        const alignments = {
+            'warrior_path': {
+                support: ['brave', 'aggressive'],
+                neutral: ['wise'],
+                conflict: ['scholarly', 'naturalist']
+            },
+            'peaceful_path': {
+                support: ['kind', 'wise'],
+                neutral: ['scholarly'],
+                conflict: ['aggressive']
+            },
+            'scholar_path': {
+                support: ['wise', 'scholarly'],
+                neutral: ['kind'],
+                conflict: ['aggressive']
+            },
+            'nature_path': {
+                support: ['kind', 'naturalist'],
+                neutral: ['wise'],
+                conflict: ['aggressive']
+            }
+        };
+
+        const branchAlignment = alignments[proposedBranch] || { support: [], neutral: [], conflict: [] };
+
+        return {
+            support: branchAlignment.support.filter(trait => traits[trait]),
+            conflict: branchAlignment.conflict.filter(trait => traits[trait])
+        };
+    }
+
+    /**
+     * Validate story timeline consistency
+     */
+    validateStoryTimeline(proposedBranch, flags) {
+        const result = { valid: true, issues: [], warnings: [] };
+
+        // Check for temporal inconsistencies
+        const timelineEvents = this.getTimelineEvents(flags);
+        const inconsistencies = this.detectTimelineInconsistencies(timelineEvents);
+
+        if (inconsistencies.length > 0) {
+            result.valid = false;
+            result.issues.push(...inconsistencies);
+        }
+
+        return result;
+    }
+
+    /**
+     * Get timeline events from story flags
+     */
+    getTimelineEvents(flags) {
+        const timelineMarkers = {
+            'game_start': 0,
+            'tutorial_complete': 1,
+            'first_area_explored': 2,
+            'met_mentor': 3,
+            'first_challenge': 4,
+            'midgame_crisis': 10,
+            'final_preparation': 18,
+            'endgame_approach': 20
+        };
+
+        return flags
+            .filter(flag => timelineMarkers.hasOwnProperty(flag))
+            .map(flag => ({ flag, time: timelineMarkers[flag] }))
+            .sort((a, b) => a.time - b.time);
+    }
+
+    /**
+     * Detect timeline inconsistencies
+     */
+    detectTimelineInconsistencies(timelineEvents) {
+        const inconsistencies = [];
+
+        for (let i = 0; i < timelineEvents.length - 1; i++) {
+            const current = timelineEvents[i];
+            const next = timelineEvents[i + 1];
+
+            if (current.time >= next.time) {
+                inconsistencies.push(`Timeline inconsistency: ${next.flag} should occur after ${current.flag}`);
+            }
+        }
+
+        return inconsistencies;
+    }
+
+    /**
+     * Calculate overall narrative coherence score (0-100)
+     */
+    calculateNarrativeCoherenceScore(proposedBranch, flags) {
+        let score = 100;
+
+        const validation = this.validateStoryBranch(proposedBranch, flags);
+
+        // Deduct points for various issues
+        if (!validation.requirementsMet) score -= 20;
+        if (validation.hasConflicts) score -= 30;
+        if (!validation.historyConsistent) score -= 25;
+        if (!validation.narrativeChecks.valid) score -= 15;
+        if (!validation.sequenceValidation.valid) score -= 10;
+        if (!validation.choiceConsistency.valid) score -= 20;
+
+        // Deduct points for warnings (less severe)
+        score -= validation.narrativeChecks.warnings.length * 3;
+        score -= validation.characterValidation.warnings.length * 2;
+        score -= validation.timelineValidation.warnings.length * 2;
+
+        return Math.max(0, Math.round(score));
+    }
+
+    /**
+     * Generate recommendations for improving narrative coherence
+     */
+    generateCoherenceRecommendations(proposedBranch, flags) {
+        const recommendations = [];
+        const validation = this.validateStoryBranch(proposedBranch, flags);
+
+        if (!validation.requirementsMet) {
+            recommendations.push({
+                type: 'requirements',
+                priority: 'high',
+                description: `Complete missing requirements: ${validation.missingRequirements.join(', ')}`,
+                actionable: true
+            });
+        }
+
+        if (validation.hasConflicts) {
+            recommendations.push({
+                type: 'conflicts',
+                priority: 'critical',
+                description: `Resolve conflicting story elements: ${validation.conflictingFlags.join(', ')}`,
+                actionable: true
+            });
+        }
+
+        if (validation.narrativeChecks.warnings.length > 0) {
+            recommendations.push({
+                type: 'thematic',
+                priority: 'medium',
+                description: 'Consider adding thematic consistency through character actions',
+                actionable: true
+            });
+        }
+
+        if (validation.characterValidation.warnings.length > 0) {
+            recommendations.push({
+                type: 'character',
+                priority: 'low',
+                description: 'Develop character traits that support your chosen path',
+                actionable: true
+            });
+        }
+
+        return recommendations.sort((a, b) => {
+            const priorities = { critical: 4, high: 3, medium: 2, low: 1 };
+            return priorities[b.priority] - priorities[a.priority];
+        });
+    }
+
+    /**
+     * Get story branch requirements based on narrative logic
+     */
+    getBranchRequirements(branchName) {
+        const requirements = {
+            'warrior_path': ['wolf_challenge_won', 'dragon_challenge'],
+            'peaceful_path': ['wolf_respect_earned', 'peace_symbol'],
+            'scholar_path': ['ancient_knowledge', 'ruins_puzzle'],
+            'nature_path': ['beast_speaker', 'nature_affinity']
+        };
+
+        return requirements[branchName] || [];
+    }
+
+    /**
+     * Get story branch conflicts (mutually exclusive flags)
+     */
+    getBranchConflicts(branchName) {
+        const conflicts = {
+            'warrior_path': ['respectful_decline', 'humility_lesson'],
+            'peaceful_path': ['dragon_challenge', 'wolf_challenge_won'],
+            'scholar_path': ['beast_speaker', 'nature_affinity'],
+            'nature_path': ['ancient_knowledge', 'ruins_puzzle']
+        };
+
+        return conflicts[branchName] || [];
+    }
+
+    /**
+     * Check if branch change is consistent with previous choices
+     */
+    isBranchHistoryConsistent(proposedBranch) {
+        const history = this.world.storyBranches.branchHistory;
+
+        // If no history, any branch is valid
+        if (history.length === 0) return true;
+
+        // Check for direct conflicts in branch history
+        const conflictingBranches = this.getBranchConflicts(proposedBranch);
+        const hasConflictingHistory = history.some(entry =>
+            conflictingBranches.includes(entry.branchName)
+        );
+
+        return !hasConflictingHistory;
+    }
+
+    /**
+     * Get detailed story branch status for UI display
+     */
+    getStoryBranchStatus() {
+        const branches = this.world.storyBranches;
+        const currentBranchValidation = branches.currentBranch
+            ? this.validateStoryBranch(branches.currentBranch)
+            : { valid: true };
+
+        return {
+            currentBranch: branches.currentBranch,
+            availableBranches: branches.availableBranches,
+            branchHistory: branches.branchHistory,
+            isCurrentBranchValid: currentBranchValidation.valid,
+            validationDetails: currentBranchValidation,
+            progressSummary: this.getStoryProgressSummary()
+        };
+    }
+
+    /**
+     * Get story progress summary for each branch
+     */
+    getStoryProgressSummary() {
+        const flags = this.world.storyFlags;
+        const summary = {};
+
+        ['warrior_path', 'peaceful_path', 'scholar_path', 'nature_path'].forEach(branch => {
+            const requirements = this.getBranchRequirements(branch);
+            const conflicts = this.getBranchConflicts(branch);
+            const metRequirements = requirements.filter(req => flags.includes(req));
+            const hasConflicts = conflicts.some(conflict => flags.includes(conflict));
+
+            summary[branch] = {
+                progress: requirements.length > 0 ? metRequirements.length / requirements.length : 0,
+                metRequirements,
+                totalRequirements: requirements.length,
+                hasConflicts,
+                available: metRequirements.length === requirements.length && !hasConflicts
+            };
+        });
+
+        return summary;
+    }
+
+    /**
+     * Manually set story branch with validation (for player choice scenarios)
+     */
+    setStoryBranch(branchName, forceChange = false) {
+        const validation = this.validateStoryBranch(branchName);
+
+        if (!validation.valid && !forceChange) {
+            console.warn(`Cannot set story branch "${branchName}":`, validation);
+            return {
+                success: false,
+                reason: 'validation_failed',
+                validation
+            };
+        }
+
+        // Check if this creates narrative inconsistency
+        if (!forceChange && !this.shouldChangeBranch(branchName)) {
+            return {
+                success: false,
+                reason: 'narrative_inconsistency',
+                currentBranch: this.world.storyBranches.currentBranch,
+                proposedBranch: branchName
+            };
+        }
+
+        const previousBranch = this.world.storyBranches.currentBranch;
+        this.updateStoryBranches(branchName, 'manual_selection');
+
+        console.log(`Story branch manually set to: ${branchName}`);
+        this.addNotification(`Now following the ${branchName.replace('_', ' ')}`, 'story');
+
+        return {
+            success: true,
+            previousBranch,
+            newBranch: branchName,
+            validation
+        };
+    }
+
+    /**
+     * Add defeated boss to tracking system
+     */
+    addDefeatedBoss(bossName) {
+        if (!this.world.defeatedBosses.includes(bossName)) {
+            this.world.defeatedBosses.push(bossName);
+            console.log(`👑 Boss defeated: ${bossName}`);
+
+            // Check for newly unlocked areas after boss defeat
+            this.checkUnlockedAreas();
+
+            // Update progression stats
+            if (!this.stats.bossesDefeated) this.stats.bossesDefeated = 0;
+            this.stats.bossesDefeated++;
+        }
+    }
+
+    /**
+     * Comprehensive progression indicator system
+     */
+    getProgressionIndicators() {
+        const indicators = {
+            areas: this.getAreaProgressionIndicators(),
+            story: this.getStoryProgressionIndicators(),
+            player: this.getPlayerProgressionIndicators(),
+            completion: this.getCompletionIndicators(),
+            unlockStatus: this.getUnlockStatusIndicators()
+        };
+
+        return indicators;
+    }
+
+    /**
+     * Get area progression indicators with detailed unlock status
+     */
+    getAreaProgressionIndicators() {
+        const allAreas = Object.keys(AreaData.areas);
+        const indicators = {
+            totalAreas: allAreas.length,
+            unlockedAreas: this.world.unlockedAreas.length,
+            progressPercentage: Math.round((this.world.unlockedAreas.length / allAreas.length) * 100),
+            areas: [],
+            byBranch: {},
+            nextUnlockable: []
+        };
+
+        const playerData = {
+            storyFlags: this.world.storyFlags,
+            level: this.player.level,
+            inventory: Object.keys(this.player.inventory.items || {}),
+            class: this.player.class,
+            defeatedBosses: this.world.defeatedBosses
+        };
+
+        // Analyze each area
+        for (const areaName of allAreas) {
+            const area = AreaData.getArea(areaName);
+            const isUnlocked = this.world.unlockedAreas.includes(areaName);
+
+            let progressInfo = {
+                name: areaName,
+                displayName: area?.name || areaName,
+                type: area?.type || 'unknown',
+                storyBranch: area?.storyBranch || null,
+                isUnlocked,
+                unlockProgress: null
+            };
+
+            if (!isUnlocked) {
+                const unlockStatus = AreaData.getAreaUnlockStatus(
+                    areaName,
+                    playerData.storyFlags,
+                    playerData.level,
+                    playerData.inventory,
+                    playerData.class,
+                    playerData.defeatedBosses
+                );
+
+                progressInfo.unlockProgress = {
+                    canUnlock: unlockStatus.canUnlock,
+                    progress: unlockStatus.progressPercentage || 0,
+                    requirements: unlockStatus.requirements || [],
+                    missingRequirements: unlockStatus.missingRequirements || [],
+                    nextSteps: this.getNextStepsForArea(areaName, unlockStatus)
+                };
+
+                // Track areas that are close to being unlockable
+                if (unlockStatus.progressPercentage && unlockStatus.progressPercentage >= 50) {
+                    indicators.nextUnlockable.push({
+                        ...progressInfo,
+                        priority: unlockStatus.progressPercentage
+                    });
+                }
+            }
+
+            indicators.areas.push(progressInfo);
+
+            // Group by story branch
+            const branch = area?.storyBranch || 'main';
+            if (!indicators.byBranch[branch]) {
+                indicators.byBranch[branch] = { total: 0, unlocked: 0, areas: [] };
+            }
+            indicators.byBranch[branch].total++;
+            if (isUnlocked) indicators.byBranch[branch].unlocked++;
+            indicators.byBranch[branch].areas.push(progressInfo);
+        }
+
+        // Sort next unlockable by priority
+        indicators.nextUnlockable.sort((a, b) => b.priority - a.priority);
+
+        return indicators;
+    }
+
+    /**
+     * Get story progression indicators
+     */
+    getStoryProgressionIndicators() {
+        const storyBranchStatus = this.getStoryBranchStatus();
+        const progressSummary = storyBranchStatus.progressSummary;
+
+        const indicators = {
+            currentBranch: storyBranchStatus.currentBranch,
+            availableBranches: storyBranchStatus.availableBranches,
+            branchProgress: {},
+            overallStoryProgress: 0,
+            completedEvents: this.world.completedEvents.length,
+            storyFlags: this.world.storyFlags.length,
+            choicesMade: this.stats.storyChoicesMade || 0,
+            nextStoryOpportunities: []
+        };
+
+        // Calculate detailed branch progress
+        let totalProgress = 0;
+        let availableBranchCount = 0;
+
+        Object.entries(progressSummary).forEach(([branch, data]) => {
+            indicators.branchProgress[branch] = {
+                progress: Math.round(data.progress * 100),
+                requirements: {
+                    met: data.metRequirements,
+                    total: data.totalRequirements,
+                    remaining: data.totalRequirements - data.metRequirements.length
+                },
+                hasConflicts: data.hasConflicts,
+                isAvailable: data.available,
+                canProgress: data.totalRequirements > data.metRequirements.length && !data.hasConflicts
+            };
+
+            if (data.available) availableBranchCount++;
+            totalProgress += data.progress;
+        });
+
+        indicators.overallStoryProgress = Math.round((totalProgress / Object.keys(progressSummary).length) * 100);
+        indicators.availableBranchProgress = Math.round((availableBranchCount / Object.keys(progressSummary).length) * 100);
+
+        // Identify next story opportunities
+        indicators.nextStoryOpportunities = this.getNextStoryOpportunities();
+
+        return indicators;
+    }
+
+    /**
+     * Get player progression indicators
+     */
+    getPlayerProgressionIndicators() {
+        const maxLevel = 50; // Could be made configurable
+        const indicators = {
+            level: {
+                current: this.player.level,
+                progress: Math.round((this.player.level / maxLevel) * 100),
+                experience: this.player.experience,
+                experienceToNext: this.player.experienceToNext,
+                experienceProgress: Math.round((this.player.experience / (this.player.experience + this.player.experienceToNext)) * 100)
+            },
+            equipment: {
+                totalSlots: 3, // weapon, armor, accessory
+                equippedSlots: Object.values(this.player.equipment).filter(item => item !== null).length
+            },
+            inventory: {
+                totalItems: Object.keys(this.player.inventory.items || {}).length,
+                gold: this.player.inventory.gold || 0
+            },
+            spells: {
+                known: (this.player.spells || []).length,
+                maxKnown: this.calculateMaxSpells()
+            },
+            stats: this.player.stats || {}
+        };
+
+        // Calculate equipment progress percentage
+        indicators.equipment.progress = Math.round((indicators.equipment.equippedSlots / indicators.equipment.totalSlots) * 100);
+
+        return indicators;
+    }
+
+    /**
+     * Get overall completion indicators
+     */
+    getCompletionIndicators() {
+        const areaIndicators = this.getAreaProgressionIndicators();
+        const storyIndicators = this.getStoryProgressionIndicators();
+
+        const indicators = {
+            overall: 0,
+            categories: {
+                exploration: {
+                    name: 'Exploration',
+                    progress: areaIndicators.progressPercentage,
+                    weight: 0.3
+                },
+                story: {
+                    name: 'Story Progress',
+                    progress: storyIndicators.overallStoryProgress,
+                    weight: 0.4
+                },
+                character: {
+                    name: 'Character Development',
+                    progress: this.getPlayerProgressionIndicators().level.progress,
+                    weight: 0.2
+                },
+                collection: {
+                    name: 'Collection & Combat',
+                    progress: this.getCollectionProgress(),
+                    weight: 0.1
+                }
+            },
+            milestones: this.getProgressionMilestones(),
+            achievements: this.getRecentAchievements()
+        };
+
+        // Calculate weighted overall completion
+        indicators.overall = Math.round(
+            Object.values(indicators.categories).reduce(
+                (sum, category) => sum + (category.progress * category.weight),
+                0
+            )
+        );
+
+        return indicators;
+    }
+
+    /**
+     * Get unlock status indicators for immediate player guidance
+     */
+    getUnlockStatusIndicators() {
+        const indicators = {
+            immediateUnlocks: [],
+            nearUnlocks: [],
+            blockedUnlocks: [],
+            recommendations: []
+        };
+
+        const playerData = {
+            storyFlags: this.world.storyFlags,
+            level: this.player.level,
+            inventory: Object.keys(this.player.inventory.items || {}),
+            class: this.player.class,
+            defeatedBosses: this.world.defeatedBosses
+        };
+
+        const allAreas = Object.keys(AreaData.areas);
+
+        for (const areaName of allAreas) {
+            if (this.world.unlockedAreas.includes(areaName)) continue;
+
+            const unlockStatus = AreaData.getAreaUnlockStatus(
+                areaName,
+                playerData.storyFlags,
+                playerData.level,
+                playerData.inventory,
+                playerData.class,
+                playerData.defeatedBosses
+            );
+
+            const area = AreaData.getArea(areaName);
+            const areaInfo = {
+                name: areaName,
+                displayName: area?.name || areaName,
+                type: area?.type || 'unknown',
+                storyBranch: area?.storyBranch || null
+            };
+
+            if (unlockStatus.canUnlock) {
+                indicators.immediateUnlocks.push(areaInfo);
+            } else if (unlockStatus.progressPercentage && unlockStatus.progressPercentage >= 75) {
+                indicators.nearUnlocks.push({
+                    ...areaInfo,
+                    progress: unlockStatus.progressPercentage,
+                    missing: unlockStatus.missingRequirements || []
+                });
+            } else if (unlockStatus.progressPercentage && unlockStatus.progressPercentage < 25) {
+                indicators.blockedUnlocks.push({
+                    ...areaInfo,
+                    progress: unlockStatus.progressPercentage,
+                    requirements: unlockStatus.requirements || []
+                });
+            }
+        }
+
+        // Generate personalized recommendations
+        indicators.recommendations = this.generateProgressionRecommendations(indicators);
+
+        return indicators;
+    }
+
+    /**
+     * Get next steps for unlocking a specific area
+     */
+    getNextStepsForArea(areaName, unlockStatus) {
+        const steps = [];
+        const missing = unlockStatus.missingRequirements || [];
+
+        for (const requirement of missing) {
+            if (requirement.type === 'story') {
+                steps.push({
+                    type: 'story',
+                    description: `Complete story event: ${requirement.value}`,
+                    priority: 'high',
+                    actionable: true
+                });
+            } else if (requirement.type === 'level') {
+                const needed = requirement.value - this.player.level;
+                steps.push({
+                    type: 'level',
+                    description: `Gain ${needed} more level${needed > 1 ? 's' : ''} (need level ${requirement.value})`,
+                    priority: 'medium',
+                    actionable: true
+                });
+            } else if (requirement.type === 'item') {
+                steps.push({
+                    type: 'item',
+                    description: `Obtain item: ${requirement.value}`,
+                    priority: 'high',
+                    actionable: true
+                });
+            } else if (requirement.type === 'boss') {
+                steps.push({
+                    type: 'boss',
+                    description: `Defeat boss: ${requirement.value}`,
+                    priority: 'high',
+                    actionable: true
+                });
+            }
+        }
+
+        // Sort by priority and actionability
+        steps.sort((a, b) => {
+            const priorityOrder = { high: 3, medium: 2, low: 1 };
+            return priorityOrder[b.priority] - priorityOrder[a.priority];
+        });
+
+        return steps;
+    }
+
+    /**
+     * Get next story opportunities based on current progress
+     */
+    getNextStoryOpportunities() {
+        const opportunities = [];
+        const flags = this.world.storyFlags;
+
+        // Check for incomplete story branches that can be progressed
+        const branchRequirements = {
+            'warrior_path': ['wolf_challenge_won', 'dragon_challenge'],
+            'peaceful_path': ['wolf_respect_earned', 'peace_symbol'],
+            'scholar_path': ['ancient_knowledge', 'ruins_puzzle'],
+            'nature_path': ['beast_speaker', 'nature_affinity']
+        };
+
+        Object.entries(branchRequirements).forEach(([branch, requirements]) => {
+            const metRequirements = requirements.filter(req => flags.includes(req));
+            const unmetRequirements = requirements.filter(req => !flags.includes(req));
+
+            if (metRequirements.length > 0 && unmetRequirements.length > 0) {
+                opportunities.push({
+                    type: 'story_branch',
+                    branch,
+                    description: `Continue ${branch.replace('_', ' ')} progression`,
+                    progress: Math.round((metRequirements.length / requirements.length) * 100),
+                    nextRequirements: unmetRequirements.slice(0, 2) // Show up to 2 next requirements
+                });
+            }
+        });
+
+        return opportunities;
+    }
+
+    /**
+     * Calculate maximum spells player can know based on level/class
+     */
+    calculateMaxSpells() {
+        const baseSpells = 4;
+        const bonusPerLevel = Math.floor(this.player.level / 5);
+        return baseSpells + bonusPerLevel;
+    }
+
+    /**
+     * Get collection progress (monsters, items, etc.)
+     */
+    getCollectionProgress() {
+        const totalItems = this.getTotalItemCount();
+        const collectedItems = Object.keys(this.player.inventory.items || {}).length;
+        const monstersKnown = (this.monsters?.storage?.length || 0);
+        const totalMonsters = this.getTotalMonsterCount();
+
+        const itemProgress = totalItems > 0 ? Math.round((collectedItems / totalItems) * 100) : 0;
+        const monsterProgress = totalMonsters > 0 ? Math.round((monstersKnown / totalMonsters) * 100) : 0;
+
+        return Math.round((itemProgress + monsterProgress) / 2);
+    }
+
+    /**
+     * Get progression milestones
+     */
+    getProgressionMilestones() {
+        const milestones = [];
+        const areaCount = this.world.unlockedAreas.length;
+        const level = this.player.level;
+        const storyFlags = this.world.storyFlags.length;
+
+        // Area milestones
+        if (areaCount >= 5) milestones.push({ type: 'exploration', name: 'Explorer', achieved: true });
+        if (areaCount >= 10) milestones.push({ type: 'exploration', name: 'Wanderer', achieved: true });
+
+        // Level milestones
+        if (level >= 10) milestones.push({ type: 'character', name: 'Experienced', achieved: true });
+        if (level >= 25) milestones.push({ type: 'character', name: 'Veteran', achieved: true });
+
+        // Story milestones
+        if (storyFlags >= 10) milestones.push({ type: 'story', name: 'Story Seeker', achieved: true });
+        if (this.world.storyBranches.availableBranches.length >= 2) {
+            milestones.push({ type: 'story', name: 'Path Finder', achieved: true });
+        }
+
+        return milestones;
+    }
+
+    /**
+     * Get recent achievements
+     */
+    getRecentAchievements() {
+        // This could be expanded to track actual achievements over time
+        const achievements = [];
+        const recentTime = Date.now() - (24 * 60 * 60 * 1000); // 24 hours
+
+        // Check recent boss defeats
+        if (this.stats.bossesDefeated > 0) {
+            achievements.push({
+                type: 'boss',
+                name: 'Boss Defeated',
+                description: `Defeated ${this.stats.bossesDefeated} boss${this.stats.bossesDefeated > 1 ? 'es' : ''}`,
+                recent: true
+            });
+        }
+
+        return achievements;
+    }
+
+    /**
+     * Generate personalized progression recommendations
+     */
+    generateProgressionRecommendations(unlockIndicators) {
+        const recommendations = [];
+
+        // Recommend immediate unlocks
+        if (unlockIndicators.immediateUnlocks.length > 0) {
+            recommendations.push({
+                type: 'immediate',
+                priority: 'high',
+                description: `${unlockIndicators.immediateUnlocks.length} area${unlockIndicators.immediateUnlocks.length > 1 ? 's' : ''} ready to explore!`,
+                actionable: true,
+                details: unlockIndicators.immediateUnlocks.slice(0, 3).map(area => area.displayName)
+            });
+        }
+
+        // Recommend near unlocks
+        if (unlockIndicators.nearUnlocks.length > 0) {
+            const topNear = unlockIndicators.nearUnlocks[0];
+            recommendations.push({
+                type: 'near',
+                priority: 'medium',
+                description: `Almost ready to unlock ${topNear.displayName}`,
+                actionable: true,
+                details: topNear.missing.slice(0, 2)
+            });
+        }
+
+        // Level up recommendation
+        const playerIndicators = this.getPlayerProgressionIndicators();
+        if (playerIndicators.level.experienceProgress >= 80) {
+            recommendations.push({
+                type: 'level',
+                priority: 'medium',
+                description: 'Close to leveling up! Gain more experience',
+                actionable: true,
+                details: [`${playerIndicators.level.experienceToNext - playerIndicators.level.experience} EXP needed`]
+            });
+        }
+
+        // Story progression recommendation
+        const storyIndicators = this.getStoryProgressionIndicators();
+        const availableOpportunities = storyIndicators.nextStoryOpportunities.filter(op => op.progress > 0);
+        if (availableOpportunities.length > 0) {
+            const topOpportunity = availableOpportunities[0];
+            recommendations.push({
+                type: 'story',
+                priority: 'high',
+                description: `Progress your ${topOpportunity.branch.replace('_', ' ')} story`,
+                actionable: true,
+                details: topOpportunity.nextRequirements
+            });
+        }
+
+        return recommendations.slice(0, 5); // Limit to top 5 recommendations
+    }
+
+    /**
+     * Helper methods for collection calculations
+     */
+    getTotalItemCount() {
+        try {
+            return typeof ItemData !== 'undefined' ? Object.keys(ItemData.items || {}).length : 50;
+        } catch (e) {
+            return 50; // Fallback estimate
+        }
+    }
+
+    getTotalMonsterCount() {
+        try {
+            return typeof MonsterData !== 'undefined' ? Object.keys(MonsterData.monsters || {}).length : 20;
+        } catch (e) {
+            return 20; // Fallback estimate
+        }
+    }
+
+    /**
+     * Add detailed area unlock notification with requirement information
+     */
+    addAreaUnlockNotification(areaName, area) {
+        // Create detailed unlock notification
+        const notification = {
+            type: 'area_unlock',
+            title: `🗺️ New Area Unlocked!`,
+            area: {
+                name: area.name || areaName,
+                displayName: area.name || areaName,
+                type: area.type || 'unknown',
+                description: area.description || 'A new area to explore',
+                storyBranch: area.storyBranch || null
+            },
+            timestamp: Date.now(),
+            requirements: this.getAreaUnlockRequirements(areaName),
+            nextAreas: this.getNextUnlockableAreas(areaName)
+        };
+
+        // Add to notification system with enhanced details
+        this.addNotification(notification.title, 'success', notification);
+
+        // Check for chain unlocks and notify about new opportunities
+        this.checkForChainUnlockOpportunities(areaName);
+
+        // Send detailed console log with unlock context
+        console.log(`🗺️ Area "${area.name}" unlocked:`, {
+            type: area.type,
+            branch: area.storyBranch,
+            description: area.description
+        });
+    }
+
+    /**
+     * Get the requirements that were just satisfied to unlock this area
+     */
+    getAreaUnlockRequirements(areaName) {
+        try {
+            const area = AreaData.getArea(areaName);
+            if (!area?.unlockRequirements) return { summary: 'Always available', details: [] };
+
+            const playerData = {
+                storyFlags: this.world.storyFlags,
+                level: this.player.level,
+                inventory: Object.keys(this.player.inventory.items || {}),
+                class: this.player.class,
+                defeatedBosses: this.world.defeatedBosses
+            };
+
+            const satisfiedRequirements = this.analyzeSatisfiedRequirements(area.unlockRequirements, playerData);
+
+            return {
+                summary: this.generateUnlockSummary(satisfiedRequirements),
+                details: satisfiedRequirements,
+                totalCriteria: this.countTotalCriteria(area.unlockRequirements)
+            };
+        } catch (e) {
+            console.warn(`Failed to analyze unlock requirements for ${areaName}:`, e);
+            return { summary: 'Requirements met', details: [] };
+        }
+    }
+
+    /**
+     * Analyze which requirements were satisfied for the unlock
+     */
+    analyzeSatisfiedRequirements(requirements, playerData) {
+        const satisfied = [];
+
+        const analyzeConditions = (conditions, isAndGroup = true) => {
+            if (conditions.and) {
+                conditions.and.forEach(condition => analyzeConditions(condition, true));
+            } else if (conditions.or) {
+                conditions.or.forEach(condition => analyzeConditions(condition, false));
+            } else {
+                // Single condition
+                Object.entries(conditions).forEach(([type, value]) => {
+                    let isSatisfied = false;
+                    let displayValue = value;
+
+                    switch (type) {
+                        case 'story':
+                            isSatisfied = playerData.storyFlags.includes(value);
+                            displayValue = `Story: ${value.replace(/_/g, ' ')}`;
+                            break;
+                        case 'level':
+                            isSatisfied = playerData.level >= value;
+                            displayValue = `Level ${value}`;
+                            break;
+                        case 'item':
+                            isSatisfied = playerData.inventory.includes(value);
+                            displayValue = `Item: ${value.replace(/_/g, ' ')}`;
+                            break;
+                        case 'character_class':
+                            isSatisfied = Array.isArray(value) ? value.includes(playerData.class) : playerData.class === value;
+                            displayValue = `Class: ${Array.isArray(value) ? value.join(' or ') : value}`;
+                            break;
+                        case 'defeated_boss':
+                            isSatisfied = playerData.defeatedBosses.includes(value);
+                            displayValue = `Defeated: ${value.replace(/_/g, ' ')}`;
+                            break;
+                    }
+
+                    if (isSatisfied) {
+                        satisfied.push({
+                            type,
+                            value,
+                            displayValue,
+                            groupType: isAndGroup ? 'and' : 'or'
+                        });
+                    }
+                });
+            }
+        };
+
+        analyzeConditions(requirements);
+        return satisfied;
+    }
+
+    /**
+     * Generate human-readable unlock summary
+     */
+    generateUnlockSummary(satisfiedRequirements) {
+        if (satisfiedRequirements.length === 0) return 'No specific requirements';
+
+        const groups = {
+            story: satisfiedRequirements.filter(r => r.type === 'story'),
+            level: satisfiedRequirements.filter(r => r.type === 'level'),
+            item: satisfiedRequirements.filter(r => r.type === 'item'),
+            character_class: satisfiedRequirements.filter(r => r.type === 'character_class'),
+            defeated_boss: satisfiedRequirements.filter(r => r.type === 'defeated_boss')
+        };
+
+        const summaryParts = [];
+
+        if (groups.story.length > 0) {
+            summaryParts.push(`Story progress (${groups.story.length} events)`);
+        }
+        if (groups.level.length > 0) {
+            summaryParts.push(`Level requirement (${groups.level[0].displayValue})`);
+        }
+        if (groups.item.length > 0) {
+            summaryParts.push(`Items obtained (${groups.item.length})`);
+        }
+        if (groups.character_class.length > 0) {
+            summaryParts.push(`Class requirement (${groups.character_class[0].displayValue})`);
+        }
+        if (groups.defeated_boss.length > 0) {
+            summaryParts.push(`Boss defeats (${groups.defeated_boss.length})`);
+        }
+
+        return `Unlocked by: ${summaryParts.join(', ')}`;
+    }
+
+    /**
+     * Count total criteria in unlock requirements
+     */
+    countTotalCriteria(requirements) {
+        let count = 0;
+
+        const countInConditions = (conditions) => {
+            if (conditions.and) {
+                conditions.and.forEach(condition => countInConditions(condition));
+            } else if (conditions.or) {
+                conditions.or.forEach(condition => countInConditions(condition));
+            } else {
+                count += Object.keys(conditions).length;
+            }
+        };
+
+        countInConditions(requirements);
+        return count;
+    }
+
+    /**
+     * Get areas that might be unlockable after this unlock
+     */
+    getNextUnlockableAreas(justUnlockedArea) {
+        const nextAreas = [];
+
+        try {
+            const allAreas = Object.keys(AreaData.areas);
+            const playerData = {
+                storyFlags: this.world.storyFlags,
+                level: this.player.level,
+                inventory: Object.keys(this.player.inventory.items || {}),
+                class: this.player.class,
+                defeatedBosses: this.world.defeatedBosses
+            };
+
+            for (const areaName of allAreas) {
+                if (this.world.unlockedAreas.includes(areaName)) continue;
+
+                const unlockStatus = AreaData.getAreaUnlockStatus(
+                    areaName,
+                    playerData.storyFlags,
+                    playerData.level,
+                    playerData.inventory,
+                    playerData.class,
+                    playerData.defeatedBosses
+                );
+
+                // Check if this area is now very close to being unlocked
+                if (unlockStatus.progressPercentage && unlockStatus.progressPercentage >= 75) {
+                    const area = AreaData.getArea(areaName);
+                    nextAreas.push({
+                        name: areaName,
+                        displayName: area?.name || areaName,
+                        progress: unlockStatus.progressPercentage,
+                        missing: unlockStatus.missingRequirements?.length || 0
+                    });
+                }
+            }
+
+            // Sort by progress and return top 3
+            nextAreas.sort((a, b) => b.progress - a.progress);
+            return nextAreas.slice(0, 3);
+        } catch (e) {
+            console.warn('Failed to get next unlockable areas:', e);
+            return [];
+        }
+    }
+
+    /**
+     * Check for chain unlock opportunities after unlocking an area
+     */
+    checkForChainUnlockOpportunities(unlockedArea) {
+        // Get next potentially unlockable areas
+        const nextAreas = this.getNextUnlockableAreas(unlockedArea);
+
+        if (nextAreas.length > 0) {
+            // Notify about areas that are now close to unlock
+            const closeAreas = nextAreas.filter(area => area.progress >= 90);
+            if (closeAreas.length > 0) {
+                const areaNames = closeAreas.map(area => area.displayName).join(', ');
+                this.addNotification(`🔍 Almost ready to unlock: ${areaNames}`, 'info');
+            }
+
+            // If any areas can now be immediately unlocked, check them
+            setTimeout(() => {
+                this.checkUnlockedAreas();
+            }, 100); // Small delay to avoid recursive issues
+        }
+
+        // Check for story branch progression opportunities
+        this.checkForStoryProgressionOpportunities(unlockedArea);
+    }
+
+    /**
+     * Check for story progression opportunities after area unlock
+     */
+    checkForStoryProgressionOpportunities(unlockedArea) {
+        try {
+            const area = AreaData.getArea(unlockedArea);
+            if (!area?.storyBranch) return;
+
+            // Check if this unlocks new story opportunities
+            const branchProgress = this.getStoryProgressSummary()[area.storyBranch];
+            if (branchProgress && !branchProgress.available && branchProgress.progress > 0.5) {
+                const missingCount = branchProgress.totalRequirements - branchProgress.metRequirements.length;
+                this.addNotification(
+                    `📖 Story path progressing: ${area.storyBranch.replace('_', ' ')} (${missingCount} requirement${missingCount > 1 ? 's' : ''} remaining)`,
+                    'story'
+                );
+            }
+        } catch (e) {
+            console.warn('Failed to check story progression opportunities:', e);
+        }
+    }
+
+    /**
+     * Add requirement progress notifications for areas that are partially unlockable
+     */
+    addRequirementProgressNotification(areaName, progressData) {
+        const area = AreaData.getArea(areaName);
+        const displayName = area?.name || areaName;
+
+        // Only notify for significant progress milestones
+        const progress = progressData.progressPercentage || 0;
+        if (progress < 25) return; // Too early to be interesting
+
+        let message = '';
+        let notificationType = 'info';
+
+        if (progress >= 90) {
+            message = `🎯 Almost ready to unlock ${displayName}!`;
+            notificationType = 'success';
+        } else if (progress >= 75) {
+            message = `⭐ Getting close to unlocking ${displayName}`;
+            notificationType = 'info';
+        } else if (progress >= 50) {
+            message = `🔄 Making progress toward ${displayName}`;
+            notificationType = 'info';
+        }
+
+        if (message) {
+            const notification = {
+                type: 'requirement_progress',
+                area: {
+                    name: areaName,
+                    displayName,
+                    progress: Math.round(progress)
+                },
+                missing: progressData.missingRequirements || [],
+                nextSteps: this.getNextStepsForArea(areaName, progressData)
+            };
+
+            this.addNotification(message, notificationType, notification);
+        }
+    }
+
+    /**
+     * Notification timing helpers to prevent spam
+     */
+    getLastNotificationTime(key) {
+        if (!this.notificationTimestamps) {
+            this.notificationTimestamps = {};
+        }
+        return this.notificationTimestamps[key];
+    }
+
+    setLastNotificationTime(key, timestamp) {
+        if (!this.notificationTimestamps) {
+            this.notificationTimestamps = {};
+        }
+        this.notificationTimestamps[key] = timestamp;
+    }
+
+    /**
+     * Enhanced notification method that supports detailed notification data
+     */
+    addNotificationWithDetails(message, type = 'info', detailsData = null) {
+        // Enhanced notification with structured data for UI consumption
+        const notification = {
+            id: Date.now() + Math.random(), // Unique identifier
+            message,
+            type,
+            timestamp: Date.now(),
+            details: detailsData,
+            duration: this.getNotificationDuration(type),
+            priority: this.getNotificationPriority(type)
+        };
+
+        // Add to notification system
+        if (!this.ui.notifications) {
+            this.ui.notifications = [];
+        }
+
+        this.ui.notifications.push(notification);
+
+        // Also use the existing notification system for backward compatibility
+        this.addNotification(message, type);
+
+        return notification.id;
+    }
+
+    /**
+     * Get notification duration based on type
+     */
+    getNotificationDuration(type) {
+        const durations = {
+            'error': 8000,      // 8 seconds for errors
+            'success': 5000,    // 5 seconds for successes
+            'story': 6000,      // 6 seconds for story events
+            'area_unlock': 7000, // 7 seconds for area unlocks
+            'info': 4000        // 4 seconds for general info
+        };
+        return durations[type] || 4000;
+    }
+
+    /**
+     * Get notification priority for display ordering
+     */
+    getNotificationPriority(type) {
+        const priorities = {
+            'error': 5,         // Highest priority
+            'area_unlock': 4,   // High priority
+            'story': 3,         // Medium-high priority
+            'success': 2,       // Medium priority
+            'info': 1          // Normal priority
+        };
+        return priorities[type] || 1;
+    }
+
+    /**
+     * Clear old notifications to prevent memory buildup
+     */
+    cleanupNotifications() {
+        if (!this.ui.notifications) return;
+
+        const now = Date.now();
+        const maxAge = 60 * 1000; // Keep notifications for 1 minute
+
+        this.ui.notifications = this.ui.notifications.filter(notification => {
+            return (now - notification.timestamp) < maxAge;
+        });
+
+        // Also cleanup notification timestamps
+        if (this.notificationTimestamps) {
+            const maxTimestampAge = 30 * 60 * 1000; // Keep timestamps for 30 minutes
+            Object.keys(this.notificationTimestamps).forEach(key => {
+                if ((now - this.notificationTimestamps[key]) > maxTimestampAge) {
+                    delete this.notificationTimestamps[key];
+                }
+            });
+        }
+    }
+
+    /**
+     * Get detailed progression status for all areas
+     */
+    getAreaProgressionStatus() {
+        if (typeof AreaData === 'undefined') return { unlocked: [], locked: [], progression: {} };
+
+        const playerData = {
+            storyFlags: this.world.storyFlags,
+            level: this.player.level,
+            inventory: Object.keys(this.player.inventory.items),
+            class: this.player.class,
+            defeatedBosses: this.world.defeatedBosses || []
+        };
+
+        const allAreas = Object.keys(AreaData.areas);
+        const status = {
+            unlocked: [],
+            locked: [],
+            progression: {}
+        };
+
+        for (const areaName of allAreas) {
+            const area = AreaData.getArea(areaName);
+            const isUnlocked = this.world.unlockedAreas.includes(areaName);
+
+            if (isUnlocked) {
+                status.unlocked.push({
+                    name: areaName,
+                    displayName: area?.name || areaName,
+                    type: area?.type || 'unknown',
+                    storyBranch: area?.storyBranch || null
+                });
+            } else {
+                const unlockStatus = AreaData.getAreaUnlockStatus(
+                    areaName,
+                    playerData.storyFlags,
+                    playerData.level,
+                    playerData.inventory,
+                    playerData.class,
+                    playerData.defeatedBosses
+                );
+
+                status.locked.push({
+                    name: areaName,
+                    displayName: area?.name || areaName,
+                    type: area?.type || 'unknown',
+                    storyBranch: area?.storyBranch || null,
+                    status: unlockStatus
+                });
+            }
+        }
+
+        // Add progression summary
+        status.progression = {
+            totalAreas: allAreas.length,
+            unlockedCount: status.unlocked.length,
+            lockedCount: status.locked.length,
+            progressPercentage: Math.round((status.unlocked.length / allAreas.length) * 100),
+            availableBranches: this.world.storyBranches.availableBranches,
+            currentBranch: this.world.storyBranches.currentBranch
+        };
+
+        return status;
     }
     
     /**
@@ -1000,13 +2835,34 @@ class GameState {
         this.world.completedEvents.push(eventName);
         // Mark as completed via flag for UI convenience
         this.addStoryFlag(`${eventName}_completed`);
-        // Ensure story path reflects any new flags
+
+        // Update story branch tracking based on new flags
         try {
             if (typeof StoryData !== 'undefined' && typeof StoryData.calculateStoryBranch === 'function') {
-                this.world.currentStoryPath = StoryData.calculateStoryBranch(this.world.storyFlags);
+                const calculatedBranch = StoryData.calculateStoryBranch(this.world.storyFlags);
+                this.world.currentStoryPath = calculatedBranch;
+
+                // Validate and update story branch if it has changed
+                if (calculatedBranch && calculatedBranch !== this.world.storyBranches.currentBranch) {
+                    const validation = this.validateStoryBranch(calculatedBranch);
+
+                    if (validation.valid) {
+                        this.updateStoryBranches(calculatedBranch, 'story_choice_' + eventName);
+                        console.log(`Story choice "${eventName}" led to branch: ${calculatedBranch}`);
+                    } else {
+                        console.warn(`Story branch "${calculatedBranch}" validation failed:`, validation);
+                        // Still update the path but log the inconsistency
+                        this.world.currentStoryPath = calculatedBranch;
+                    }
+                }
             }
-        } catch (e) { console.warn('Story path recalc after choice failed:', e); }
-        
+        } catch (e) {
+            console.warn('Story path recalc after choice failed:', e);
+        }
+
+        // Check for new area unlocks after story choice
+        this.checkUnlockedAreas();
+
         return outcome;
     }
 
