@@ -297,7 +297,54 @@ class CombatEngine {
         this.performAction({ type: 'magic', moveId, targetId });
         return { success: true, damage: dealt };
     }
-    
+
+    /**
+     * Cast a spell using the spell system
+     */
+    castSpell(casterId, spellId, targetId = null) {
+        if (!this.gameState.spellSystem) {
+            return { success: false, reason: 'Spell system not available' };
+        }
+
+        const caster = this.getParticipantById(casterId);
+        if (!caster) {
+            return { success: false, reason: 'Invalid caster' };
+        }
+
+        // Use spell system to cast the spell
+        const result = this.gameState.spellSystem.castSpell(spellId, casterId, targetId);
+
+        if (result.success) {
+            // Record the action in combat
+            this.performAction({
+                type: 'spell',
+                spellId: spellId,
+                targetId: targetId,
+                mpCost: result.spell.mpCost,
+                effects: result.results
+            });
+
+            // Add combat notification
+            this.gameState.addNotification(
+                `${result.caster.name || 'Caster'} cast ${result.spell.name}!`,
+                'spell'
+            );
+
+            // Check if spell caused any KOs
+            const koTargets = result.results.filter(r => r.result && r.result.isKo);
+            if (koTargets.length > 0) {
+                koTargets.forEach(ko => {
+                    this.gameState.addNotification(
+                        `${ko.target.name || 'Target'} was defeated!`,
+                        'warning'
+                    );
+                });
+            }
+        }
+
+        return result;
+    }
+
     useItem(userId, itemId = 'health_potion') {
         const u = this.getParticipantById(userId);
         if (!u) return { success: false, reason: 'Invalid participant' };
@@ -556,6 +603,11 @@ class CombatEngine {
                 // Treat as magic for now
                 const targetId = this.findTurnIdForRef(action.target) || (targets[0]?.id ?? null);
                 return this.magic(participantId, targetId, action.ability || 'ability', 5);
+            }
+            case 'spell': {
+                // Cast a specific spell
+                const targetId = this.findTurnIdForRef(action.target) || (targets[0]?.id ?? null);
+                return this.castSpell(participantId, action.spellId, targetId);
             }
             case 'attack': {
                 const targetId = this.findTurnIdForRef(action.target) || (targets[0]?.id ?? null);

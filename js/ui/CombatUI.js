@@ -374,6 +374,32 @@ class CombatUI extends BaseUIModule {
             console.warn('Spell list element not found');
             return;
         }
+
+        // Debug spell list container
+        console.log('🔍 Spell list container:', spellList);
+        console.log('🔍 Container styles:', {
+            display: getComputedStyle(spellList).display,
+            pointerEvents: getComputedStyle(spellList).pointerEvents,
+            zIndex: getComputedStyle(spellList).zIndex,
+            position: getComputedStyle(spellList).position
+        });
+
+        // Force container to be clickable with maximum z-index
+        spellList.style.pointerEvents = 'auto';
+        spellList.style.position = 'fixed';
+        spellList.style.zIndex = '999999';
+        spellList.style.left = '50%';
+        spellList.style.top = '50%';
+        spellList.style.transform = 'translate(-50%, -50%)';
+        spellList.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+        spellList.style.padding = '20px';
+        spellList.style.borderRadius = '8px';
+        spellList.style.border = '2px solid #ffd700';
+
+        // Add click debug to container
+        spellList.addEventListener('click', (e) => {
+            console.log('🎯 Click on spell list container, target:', e.target);
+        });
         
         const gameState = this.gameState || window.GameState;
         if (!gameState || !gameState.player) {
@@ -384,9 +410,11 @@ class CombatUI extends BaseUIModule {
         spellList.innerHTML = '';
         const player = gameState.player;
         
-        // Get player's available spells
+        // Get player's available spells using SpellSystem
         let spells = [];
-        if (player.spells) {
+        if (gameState.spellSystem && typeof gameState.spellSystem.getAvailableSpells === 'function') {
+            spells = gameState.spellSystem.getAvailableSpells();
+        } else if (player.spells) {
             spells = player.spells;
         } else if (player.knownSpells) {
             spells = player.knownSpells;
@@ -406,23 +434,89 @@ class CombatUI extends BaseUIModule {
         spells.forEach(spell => {
             const spellBtn = document.createElement('button');
             spellBtn.className = 'spell-btn';
-            
-            let spellName = typeof spell === 'string' ? spell : spell.name;
-            let manaCost = typeof spell === 'object' ? spell.manaCost : 0;
-            
-            spellBtn.textContent = `${spellName}${manaCost > 0 ? ` (${manaCost} MP)` : ''}`;
-            
-            // Disable if not enough mana
-            if (manaCost > 0 && player.mana < manaCost) {
-                spellBtn.disabled = true;
-                spellBtn.classList.add('insufficient-mana');
+            spellBtn.type = 'button'; // Ensure it's a proper button
+
+            // Handle different spell formats
+            let spellName, manaCost, spellId, canCast;
+
+            if (typeof spell === 'string') {
+                // Legacy format - spell is just a string ID
+                spellName = spell;
+                manaCost = 0;
+                spellId = spell;
+                canCast = true;
+            } else if (spell.data) {
+                // New SpellSystem format - { id, data, canCast, cooldown }
+                spellName = spell.data.name;
+                manaCost = spell.data.mpCost || 0;
+                spellId = spell.id;
+                canCast = spell.canCast && spell.canCast.canCast;
+            } else {
+                // Legacy object format - spell has direct properties
+                spellName = spell.name;
+                manaCost = spell.manaCost || spell.mpCost || 0;
+                spellId = spell.id || spell.name;
+                canCast = true;
             }
-            
-            this.addEventListener(spellBtn, 'click', () => {
-                this.hideSubMenu('magic-submenu');
-                this.showTargetSelection('magic', spell);
+
+            // Show cooldown if applicable
+            let cooldownText = '';
+            if (spell.cooldown && spell.cooldown > 0) {
+                cooldownText = ` (${Math.ceil(spell.cooldown)}s)`;
+            }
+
+            spellBtn.textContent = `${spellName}${manaCost > 0 ? ` (${manaCost} MP)` : ''}${cooldownText}`;
+
+            // Disable if cannot cast
+            if (!canCast) {
+                spellBtn.disabled = true;
+                spellBtn.classList.add('cannot-cast');
+                if (spell.canCast && spell.canCast.reason) {
+                    spellBtn.title = spell.canCast.reason;
+                }
+                console.log(`🚫 Spell ${spellName} disabled: ${spell.canCast ? spell.canCast.reason : 'unknown reason'}`);
+            } else {
+                console.log(`✅ Spell ${spellName} can be cast`);
+            }
+
+            // Add click handler
+            const clickHandler = () => {
+                if (canCast) {
+                    this.hideSubMenu('magic-submenu');
+                    this.showTargetSelection('magic', { id: spellId, name: spellName });
+                } else {
+                    console.log(`🚫 Cannot cast ${spellName}`);
+                }
+            };
+
+            this.addEventListener(spellBtn, 'click', clickHandler);
+
+            // Add visual feedback with maximum z-index
+            spellBtn.style.cursor = 'pointer';
+            spellBtn.style.pointerEvents = 'auto';
+            spellBtn.style.display = 'block';
+            spellBtn.style.margin = '10px 0';
+            spellBtn.style.padding = '12px 20px';
+            spellBtn.style.backgroundColor = '#4a5568';
+            spellBtn.style.color = 'white';
+            spellBtn.style.border = '2px solid #718096';
+            spellBtn.style.borderRadius = '6px';
+            spellBtn.style.position = 'relative';
+            spellBtn.style.zIndex = '999999';
+            spellBtn.style.width = '200px';
+            spellBtn.style.minHeight = '50px';
+            spellBtn.style.fontSize = '16px';
+            spellBtn.style.fontWeight = 'bold';
+
+            // Add hover effect
+            spellBtn.addEventListener('mouseenter', () => {
+                spellBtn.style.backgroundColor = '#2d3748';
             });
-            
+
+            spellBtn.addEventListener('mouseleave', () => {
+                spellBtn.style.backgroundColor = '#4a5568';
+            });
+
             spellList.appendChild(spellBtn);
         });
         
@@ -561,11 +655,79 @@ class CombatUI extends BaseUIModule {
                     break;
                 case 'magic':
                     if (actionData) {
-                        const spellResult = combat.castSpell(combat.player, actionData, target);
-                        const spellName = typeof actionData === 'string' ? actionData : actionData.name;
-                        const magicMsg = `${combat.player.name || 'Player'} casts ${spellName} on ${target.name || 'target'}!`;
-                        this.addBattleLogEntry(magicMsg, 'magic');
-                        this.notifyInfo(magicMsg);
+                        // Get spell ID (actionData might be spell object or ID)
+                        const spellId = typeof actionData === 'string' ? actionData : actionData.id;
+
+                        // Get target ID - try multiple approaches
+                        let targetId = target.id || target.monsterId || target.name;
+
+                        // If still no ID, try to find the target in combat enemies by name
+                        if (!targetId && gameState.combat && gameState.combat.enemies) {
+                            const enemy = gameState.combat.enemies.find(e => e.name === target.name);
+                            if (enemy) {
+                                targetId = enemy.id || enemy.monsterId || enemy.name;
+                            }
+                        }
+
+                        // Debug targeting
+                        console.log('🎯 Spell targeting debug:', {
+                            spellId,
+                            target: target,
+                            targetId: targetId,
+                            targetName: target.name || 'Unknown',
+                            combatEnemies: gameState.combat?.enemies?.map(e => ({ name: e.name, id: e.id, monsterId: e.monsterId }))
+                        });
+
+                        // Use the combat engine's castSpell method (which uses SpellSystem)
+                        let spellResult = null;
+
+                        // Try GameState spell casting first (direct SpellSystem access)
+                        if (gameState.castSpell && typeof gameState.castSpell === 'function') {
+                            console.log('🎯 Using GameState.castSpell');
+                            spellResult = gameState.castSpell(spellId, targetId);
+                        } else if (gameState.spellSystem && typeof gameState.spellSystem.castSpell === 'function') {
+                            // Direct spell system access
+                            console.log('🎯 Using SpellSystem.castSpell directly');
+                            spellResult = gameState.spellSystem.castSpell(spellId, 'player', targetId);
+                        } else if (gameState.combatEngine && typeof gameState.combatEngine.castSpell === 'function') {
+                            // Fallback to combat engine (though turnOrder is empty)
+                            console.log('🎯 Using CombatEngine.castSpell (fallback)');
+                            spellResult = gameState.combatEngine.castSpell('player', spellId, targetId);
+                        } else {
+                            console.error('No spell casting system available');
+                            this.addBattleLogEntry('Spell casting system not available', 'error');
+                            this.notifyError('Cannot cast spells - system not initialized');
+                            break;
+                        }
+
+                        if (spellResult && spellResult.success) {
+                            const spell = spellResult.spell;
+                            const magicMsg = `${spellResult.caster.name || 'Player'} casts ${spell.name}!`;
+                            this.addBattleLogEntry(magicMsg, 'magic');
+                            this.notifyInfo(magicMsg);
+
+                            // Debug spell results
+                            console.log('🔍 Spell result:', spellResult);
+
+                            // Show spell results
+                            if (spellResult.results && spellResult.results.length > 0) {
+                                console.log('📊 Processing spell results:', spellResult.results);
+                                spellResult.results.forEach(result => {
+                                    console.log('📊 Individual result:', result);
+                                    if (result.result.type === 'damage' && result.result.amount > 0) {
+                                        this.addBattleLogEntry(`${result.target.name || 'Target'} takes ${result.result.amount} damage!`, 'damage');
+                                    } else if (result.result.type === 'healing' && result.result.amount > 0) {
+                                        this.addBattleLogEntry(`${result.target.name || 'Target'} recovers ${result.result.amount} HP!`, 'healing');
+                                    }
+                                });
+                            } else {
+                                console.log('⚠️ No spell results to display:', spellResult.results);
+                            }
+                        } else {
+                            const reason = spellResult ? spellResult.reason : 'Spell failed';
+                            this.addBattleLogEntry(`Spell failed: ${reason}`, 'error');
+                            this.notifyError(`Cannot cast spell: ${reason}`);
+                        }
                     }
                     break;
                 case 'item':

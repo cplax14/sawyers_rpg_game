@@ -40,15 +40,15 @@
   - [x] 1.6 Update `AreaData.isAreaUnlocked()` to support complex boolean logic for unlock conditions
   - [x] 1.7 Implement story branch validation to ensure player choices maintain narrative coherence
 
-- [ ] 2.0 Create Tiered Loot Collection and Distribution System
-  - [ ] 2.1 Create `js/lootSystem.js` with rarity tiers (common, uncommon, rare, epic, legendary) and base drop rate calculations
-  - [ ] 2.2 Enhance `data/monsters.js` with monster-specific loot tables including rarity weights and level scaling
-  - [ ] 2.3 Add area-specific loot tables to `data/areas.js` that define region-exclusive items and materials
-  - [ ] 2.4 Implement level-scaled loot generation that adjusts item stats and drop rates based on player/monster levels
-  - [ ] 2.5 Create new item types in `data/items.js`: spell scrolls, crafting materials, and consumable enhancements
-  - [ ] 2.6 Extend `GameState.player.inventory` to handle loot overflow scenarios with auto-discard or choice prompts
-  - [ ] 2.7 Integrate loot generation into `CombatEngine.endBattle()` with performance-optimized drop calculations
-  - [ ] 2.8 Add rarity-based visual indicators and sorting capabilities to inventory system
+- [x] 2.0 Create Tiered Loot Collection and Distribution System
+  - [x] 2.1 Create `js/lootSystem.js` with rarity tiers (common, uncommon, rare, epic, legendary) and base drop rate calculations
+  - [x] 2.2 Enhance `data/monsters.js` with monster-specific loot tables including rarity weights and level scaling
+  - [x] 2.3 Add area-specific loot tables to `data/areas.js` that define region-exclusive items and materials
+  - [x] 2.4 Implement level-scaled loot generation that adjusts item stats and drop rates based on player/monster levels
+  - [x] 2.5 Create new item types in `data/items.js`: spell scrolls, crafting materials, and consumable enhancements
+  - [x] 2.6 Extend `GameState.player.inventory` to handle loot overflow scenarios with auto-discard or choice prompts
+  - [x] 2.7 Integrate loot generation into `CombatEngine.endBattle()` with performance-optimized drop calculations
+  - [x] 2.8 Add rarity-based visual indicators and sorting capabilities to inventory system
 
 - [ ] 3.0 Integrate Mana-Based Spell Casting into Combat System
   - [ ] 3.1 Create `js/spellSystem.js` with MP management, spell learning tracking, and cast validation

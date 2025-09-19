@@ -18,6 +18,7 @@ class GameState {
             experienceToNext: 100,
             stats: {},
             spells: [],
+            learnedSpells: [],
             equipment: {
                 weapon: null,
                 armor: null,
@@ -234,7 +235,9 @@ class GameState {
             this.initializeBreedingSystem();
             // Initialize combat engine if available
             this.initializeCombatEngine();
-            
+            // Initialize spell system if available
+            this.initializeSpellSystem();
+
             this.initialized = true;
             console.log('✅ GameState initialized');
             
@@ -322,6 +325,103 @@ class GameState {
             areasExplored: 1, // Starting village
             storyChoicesMade: 0
         };
+    }
+
+    /**
+     * Initialize spell system
+     */
+    initializeSpellSystem() {
+        this.spellSystem = null;
+        if (typeof SpellSystem !== 'undefined') {
+            try {
+                this.spellSystem = new SpellSystem(this);
+                this.spellSystem.initialize();
+            } catch (e) {
+                console.warn('⚠️ Failed to initialize SpellSystem:', e);
+            }
+        } else {
+            console.warn('⚠️ SpellSystem not loaded');
+        }
+    }
+
+    /**
+     * Check for new spells available at current level
+     */
+    checkForNewSpells() {
+        if (!this.spellSystem) return;
+
+        const learnableSpells = this.spellSystem.getLearnableSpells();
+        let learnedCount = 0;
+
+        learnableSpells.forEach(spellEntry => {
+            if (this.spellSystem.learnSpell(spellEntry.id)) {
+                learnedCount++;
+            }
+        });
+
+        if (learnedCount > 0) {
+            this.addNotification(`Learned ${learnedCount} new spell${learnedCount > 1 ? 's' : ''}!`, 'spell');
+        }
+    }
+
+    /**
+     * Learn a specific spell (for story events, items, etc.)
+     */
+    learnSpell(spellId) {
+        if (!this.spellSystem) {
+            console.warn('SpellSystem not initialized');
+            return false;
+        }
+
+        return this.spellSystem.learnSpell(spellId);
+    }
+
+    /**
+     * Get available spells for casting
+     */
+    getAvailableSpells() {
+        if (!this.spellSystem) return [];
+        return this.spellSystem.getAvailableSpells();
+    }
+
+    /**
+     * Cast a spell
+     */
+    castSpell(spellId, targetId = null) {
+        if (!this.spellSystem) {
+            console.warn('SpellSystem not initialized');
+            return { success: false, reason: 'Spell system not available' };
+        }
+
+        return this.spellSystem.castSpell(spellId, 'player', targetId);
+    }
+
+    /**
+     * Synchronize MP values between different naming conventions
+     * Ensures compatibility between stats.mp and direct mana/mp properties
+     */
+    synchronizeMpValues() {
+        // Sync player MP
+        if (this.player.stats.mp !== undefined) {
+            this.player.mp = this.player.stats.mp;
+            this.player.mana = this.player.stats.mp;
+        }
+        if (this.player.stats.maxMp !== undefined) {
+            this.player.maxMp = this.player.stats.maxMp;
+            this.player.maxMana = this.player.stats.maxMp;
+        }
+
+        // Sync party monsters MP
+        this.monsters.party.forEach(monster => {
+            if (monster.stats.mp !== undefined) {
+                monster.mp = monster.stats.mp;
+                monster.mana = monster.stats.mp;
+            }
+            if (monster.stats.maxMp !== undefined) {
+                monster.maxMp = monster.stats.maxMp;
+                monster.maxMana = monster.stats.maxMp;
+            }
+        });
     }
 
     /**
@@ -566,7 +666,17 @@ class GameState {
         this.player.class = className;
         this.player.stats = CharacterData.getStatsAtLevel(className, this.player.level);
         this.player.spells = [...classData.startingSpells];
-        
+
+        // Initialize learnedSpells array if not present
+        if (!this.player.learnedSpells) {
+            this.player.learnedSpells = [];
+        }
+
+        // Re-initialize spell system to learn starting spells for the class
+        if (this.spellSystem && typeof this.spellSystem.initializeStartingSpells === 'function') {
+            this.spellSystem.initializeStartingSpells();
+        }
+
         console.log(`Player class set to: ${classData.name}`);
         return true;
     }
@@ -591,16 +701,19 @@ class GameState {
     levelUp() {
         this.player.experience -= this.player.experienceToNext;
         this.player.level++;
-        
+
         // Calculate new stats
         if (this.player.class && typeof CharacterData !== 'undefined') {
             this.player.stats = CharacterData.getStatsAtLevel(this.player.class, this.player.level);
             this.player.spells = CharacterData.getSpellsAtLevel(this.player.class, this.player.level);
         }
-        
+
+        // Learn new spells available at this level
+        this.checkForNewSpells();
+
         // Calculate next level experience requirement
         this.player.experienceToNext = this.calculateExperienceRequired(this.player.level + 1);
-        
+
         this.addNotification(`Level Up! Now level ${this.player.level}`, 'success');
         console.log(`Player leveled up to ${this.player.level}`);
     }
