@@ -1700,7 +1700,25 @@ class GameWorldUI extends BaseUIModule {
             console.warn('StoryData not available for story event');
             return;
         }
-        
+
+        // Check if this is an immediate encounter event
+        const eventData = window.StoryData.getEvent(eventName);
+        if (eventData && eventData.encounter && eventData.encounter.immediate) {
+            console.log(`🎭 Immediate encounter event detected: ${eventName}`);
+            const gs = this.gameState || this.getGameReference('gameState');
+            if (gs && typeof gs.startEncounter === 'function') {
+                const encounter = {
+                    species: eventData.encounter.species || 'slime',
+                    level: eventData.encounter.level || 1,
+                    source: 'story_event',
+                    eventName: eventName
+                };
+                console.log(`🎭 Starting immediate encounter:`, encounter);
+                gs.startEncounter(encounter);
+                return; // Skip showing the story event modal
+            }
+        }
+
         try {
             // Try to delegate to StoryUI module if available
             this.sendMessage('showStoryEvent', { eventName });

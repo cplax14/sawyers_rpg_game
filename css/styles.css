@@ -4123,3 +4123,203 @@ input[type="checkbox"]:checked + .toggle-slider:before {
         font-size: 0.7rem;
     }
 }
+
+/* Enhanced Spell Interface Styles */
+.spell-category-header {
+    background: linear-gradient(135deg,
+        rgba(212, 175, 55, 0.15) 0%,
+        rgba(139, 115, 85, 0.1) 100%);
+    border: 2px solid var(--dark-gold);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-sm) var(--spacing-md);
+    margin: var(--spacing-sm) 0;
+    font-family: var(--font-ui);
+    font-weight: 600;
+    color: var(--deep-brown);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-align: center;
+    position: relative;
+}
+
+.spell-category-header::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: var(--spacing-md);
+    right: var(--spacing-md);
+    height: 1px;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        var(--primary-gold) 50%,
+        transparent 100%);
+    z-index: 0;
+}
+
+.spell-category-header span {
+    background: var(--parchment);
+    padding: 0 var(--spacing-sm);
+    position: relative;
+    z-index: 1;
+}
+
+.spell-card {
+    background: linear-gradient(135deg,
+        rgba(139, 115, 85, 0.1) 0%,
+        rgba(212, 175, 55, 0.05) 100%);
+    border: 2px solid var(--light-brown);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-sm);
+    margin: var(--spacing-xs) 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.spell-card:hover {
+    background: linear-gradient(135deg,
+        rgba(212, 175, 55, 0.2) 0%,
+        rgba(139, 115, 85, 0.15) 100%);
+    border-color: var(--primary-gold);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.spell-card:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: rgba(139, 115, 85, 0.05);
+}
+
+.spell-card:disabled:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: var(--light-brown);
+}
+
+.spell-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-xs);
+}
+
+.spell-name {
+    font-family: var(--font-ui);
+    font-weight: 600;
+    color: var(--deep-brown);
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.spell-element-icon {
+    font-size: 1.1rem;
+    opacity: 0.8;
+}
+
+.spell-mp-cost {
+    background: linear-gradient(135deg, var(--primary-gold), var(--secondary-gold));
+    color: var(--deep-brown);
+    padding: 2px var(--spacing-xs);
+    border-radius: calc(var(--border-radius) / 2);
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: 1px solid var(--dark-gold);
+}
+
+.spell-description {
+    color: var(--light-brown);
+    font-size: 0.85rem;
+    line-height: 1.3;
+    margin: var(--spacing-xs) 0;
+}
+
+.spell-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+    color: var(--medium-brown);
+    margin-top: var(--spacing-xs);
+    padding-top: var(--spacing-xs);
+    border-top: 1px solid rgba(139, 115, 85, 0.2);
+}
+
+.spell-damage-range, .spell-effect-info {
+    background: rgba(139, 115, 85, 0.1);
+    padding: 1px var(--spacing-xs);
+    border-radius: calc(var(--border-radius) / 2);
+    border: 1px solid rgba(139, 115, 85, 0.3);
+}
+
+.spell-insufficient-mp {
+    border-color: var(--error-color) !important;
+    background: rgba(139, 69, 19, 0.1);
+}
+
+.spell-insufficient-mp .spell-mp-cost {
+    background: linear-gradient(135deg, var(--error-color), #8B4513);
+    color: white;
+}
+
+/* MP Display Enhancement */
+.mp-display {
+    background: linear-gradient(135deg,
+        rgba(70, 130, 180, 0.2) 0%,
+        rgba(100, 149, 237, 0.1) 100%);
+    border: 2px solid #4682B4;
+    border-radius: var(--border-radius);
+    padding: var(--spacing-sm);
+    margin: var(--spacing-sm) 0;
+    text-align: center;
+    font-family: var(--font-ui);
+}
+
+.mp-bar {
+    background: rgba(70, 130, 180, 0.2);
+    border-radius: var(--border-radius);
+    height: 12px;
+    margin: var(--spacing-xs) 0;
+    overflow: hidden;
+    border: 1px solid #4682B4;
+}
+
+.mp-fill {
+    background: linear-gradient(90deg, #4682B4, #6495ED);
+    height: 100%;
+    transition: width 0.3s ease;
+    border-radius: var(--border-radius);
+}
+
+.mp-text {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--deep-brown);
+}
+
+/* Responsive Spell Interface */
+@media (max-width: 768px) {
+    .spell-card {
+        padding: var(--spacing-xs);
+    }
+
+    .spell-name {
+        font-size: 0.9rem;
+    }
+
+    .spell-description {
+        font-size: 0.8rem;
+    }
+
+    .spell-details {
+        font-size: 0.7rem;
+    }
+
+    .spell-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-xs);
+    }
+}

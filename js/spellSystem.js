@@ -1504,6 +1504,8 @@ class SpellSystem {
         return {
             success: true,
             spell: spell,
+            caster: caster,
+            target: target,
             effects: effects,
             mpConsumed: spell.mpCost
         };
@@ -1519,19 +1521,32 @@ class SpellSystem {
     applySpellEffects(caster, spell, target) {
         const appliedEffects = [];
 
+        console.log('🔍 applySpellEffects called with:', {
+            caster: caster?.name || 'Unknown',
+            spell: spell?.name || 'Unknown',
+            spellEffects: spell?.effects,
+            target: target?.name || 'Unknown'
+        });
+
         // Pre-process effects for synergies and combinations
         const processedEffects = this.preprocessSpellEffects(caster, spell, spell.effects);
+        console.log('🔍 Preprocessed effects:', processedEffects);
 
         for (const effect of processedEffects) {
+            console.log('🔍 Processing effect:', effect);
             const result = this.applySpellEffect(caster, spell, effect, target);
+            console.log('🔍 applySpellEffect result:', result);
             if (result) {
                 appliedEffects.push(result);
+                console.log('🔍 Added effect to appliedEffects, total:', appliedEffects.length);
 
                 // Check for effect synergies and chains
                 const chainEffects = this.checkEffectChains(caster, spell, effect, target, result);
                 if (chainEffects.length > 0) {
                     appliedEffects.push(...chainEffects);
                 }
+            } else {
+                console.log('⚠️ applySpellEffect returned null/falsy for effect:', effect);
             }
         }
 
@@ -1541,6 +1556,7 @@ class SpellSystem {
             appliedEffects.push(...comboEffects);
         }
 
+        console.log('🔍 Final appliedEffects:', appliedEffects);
         return appliedEffects;
     }
 
@@ -1724,7 +1740,11 @@ class SpellSystem {
      * Enhanced damage effect with comprehensive scaling
      */
     applyDamageEffect(caster, spell, effect, target) {
-        if (!target) return null;
+        console.log('🔍 applyDamageEffect called with target:', target);
+        if (!target) {
+            console.log('⚠️ applyDamageEffect: target is null/undefined');
+            return null;
+        }
 
         // Calculate base damage using enhanced scaling
         let damage = effect.scaledPower || effect.power || 0;
@@ -1754,25 +1774,36 @@ class SpellSystem {
         const variance = 0.9 + (Math.random() * 0.2);
         damage *= variance;
 
-        // Apply to target
-        if (target.stats) {
-            const actualDamage = Math.max(1, Math.floor(damage));
-            const previousHP = target.stats.hp || 0;
+        // Apply to target - handle both stats wrapper and direct properties
+        const actualDamage = Math.max(1, Math.floor(damage));
+        let previousHP = 0;
+
+        if (target.stats && target.stats.hp !== undefined) {
+            // Target uses stats wrapper (like player/monsters)
+            previousHP = target.stats.hp || 0;
             target.stats.hp = Math.max(0, previousHP - actualDamage);
-
-            // Check for damage over time effects
-            this.applyDamageOverTime(caster, spell, effect, target);
-
-            return {
-                type: 'damage',
-                target: target.name || 'Enemy',
-                amount: actualDamage,
-                isCritical: critInfo.isCritical,
-                element: spell.element,
-                damageType: spell.type,
-                overkill: Math.max(0, actualDamage - previousHP)
-            };
+        } else if (target.hp !== undefined) {
+            // Target has direct hp property (like combat enemies)
+            previousHP = target.hp || 0;
+            target.hp = Math.max(0, previousHP - actualDamage);
+        } else {
+            console.log('⚠️ Target has no HP property, cannot apply damage');
+            return null;
         }
+
+        // Check for damage over time effects
+        this.applyDamageOverTime(caster, spell, effect, target);
+
+        console.log('🔍 Damage applied successfully:', actualDamage, 'HP:', previousHP, '->', target.hp || target.stats?.hp);
+        return {
+            type: 'damage',
+            target: target.name || 'Enemy',
+            amount: actualDamage,
+            isCritical: critInfo.isCritical,
+            element: spell.element,
+            damageType: spell.type,
+            overkill: Math.max(0, actualDamage - previousHP)
+        };
 
         return null;
     }
@@ -2384,11 +2415,6 @@ class SpellSystem {
         }
 
         caster.spellUsage[spellId] = (caster.spellUsage[spellId] || 0) + 1;
-                count: removedCount
-            };
-        }
-
-        return null;
     }
 
     // ================================================
@@ -2539,6 +2565,14 @@ class SpellSystem {
      * Helper method to get monster by ID (may need implementation based on GameState structure)
      */
     getMonsterById(monsterId) {
+        // Check combat enemies first (during combat)
+        if (this.gameState.combat && this.gameState.combat.enemies) {
+            const enemy = this.gameState.combat.enemies.find(e =>
+                e.id === monsterId || e.monsterId === monsterId || e.name === monsterId
+            );
+            if (enemy) return enemy;
+        }
+
         if (!this.gameState.monsters) return null;
 
         // Check party monsters

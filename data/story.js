@@ -152,6 +152,11 @@ const StoryData = {
             name: "Wild Encounter",
             description: "Your first battle with a wild monster",
             type: "encounter",
+            encounter: {
+                species: "slime",
+                level: 1,
+                immediate: true
+            },
             dialogue: [
                 {
                     speaker: "Narrator",
@@ -184,7 +189,7 @@ const StoryData = {
                     unlockAreas: ["plains"],
                     dialogue: [
                         {
-                            speaker: "Narrator", 
+                            speaker: "Narrator",
                             text: "You fight carefully, learning the creature's patterns. Knowledge gained through observation serves you well."
                         }
                     ]

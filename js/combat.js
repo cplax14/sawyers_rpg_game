@@ -25,6 +25,38 @@ class CombatEngine {
         combat.currentTurn = 0;
         combat.actions = [];
         combat.battleResult = null;
+
+        // Populate combat.enemies array for CombatUI compatibility
+        combat.enemies = participants
+            .filter(p => p.side === 'enemy')
+            .map(p => ({
+                name: p.ref?.species || 'Unknown',
+                species: p.ref?.species || 'unknown',
+                level: p.ref?.level || 1,
+                hp: p.ref?.currentStats?.hp || p.ref?.stats?.hp || 20,
+                maxHp: p.ref?.stats?.hp || 20,
+                attack: p.ref?.stats?.attack || 10,
+                defense: p.ref?.stats?.defense || 5,
+                capturable: true,
+                id: p.id,
+                ref: p.ref
+            }));
+
+        // Populate combat.player for CombatUI compatibility
+        const playerParticipant = participants.find(p => p.side === 'player');
+        if (playerParticipant && playerParticipant.ref) {
+            combat.player = {
+                name: playerParticipant.ref.name || 'Player',
+                hp: playerParticipant.ref.stats?.hp || 100,
+                maxHp: playerParticipant.ref.stats?.maxHp || 100,
+                mana: playerParticipant.ref.stats?.mana || playerParticipant.ref.stats?.mp || 10,
+                maxMana: playerParticipant.ref.stats?.maxMana || playerParticipant.ref.stats?.maxMp || 10,
+                spells: playerParticipant.ref.spells || [],
+                inventory: playerParticipant.ref.inventory?.items || {}
+            };
+        }
+
+
         return ordered;
     }
 

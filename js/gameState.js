@@ -92,6 +92,9 @@ class GameState {
         this.combat = {
             active: false,
             enemy: null,
+            enemies: [], // Include enemies array to prevent undefined errors
+            player: null,
+            playerMonsters: [],
             turn: 0,
             turnOrder: [],
             currentTurn: 0,
@@ -389,8 +392,13 @@ class GameState {
      */
     castSpell(spellId, targetId = null) {
         if (!this.spellSystem) {
-            console.warn('SpellSystem not initialized');
-            return { success: false, reason: 'Spell system not available' };
+            console.warn('SpellSystem not initialized, attempting to reinitialize...');
+            this.initializeSpellSystem();
+
+            if (!this.spellSystem) {
+                console.warn('SpellSystem still not available after reinitialize attempt');
+                return { success: false, reason: 'Spell system not available' };
+            }
         }
 
         return this.spellSystem.castSpell(spellId, 'player', targetId);
@@ -497,7 +505,7 @@ class GameState {
             } else {
                 // Minimal fallback to set combat active and store enemy info
                 this.initializeCombat();
-                const species = encounter?.species || encounter?.monster || 'unknown';
+                const species = encounter?.species || encounter?.monster || 'slime';
                 const level = encounter?.level || Math.max(1, this.player.level);
                 const baseStats = (typeof MonsterData !== 'undefined' && MonsterData.getStatsAtLevel)
                     ? MonsterData.getStatsAtLevel(species, level)
@@ -3491,7 +3499,7 @@ class GameState {
      */
     processStoryChoice(eventName, choiceOutcome) {
         if (typeof StoryData === 'undefined') return null;
-        
+
         const outcome = StoryData.processChoice(eventName, choiceOutcome);
         if (!outcome) return null;
         
@@ -3517,6 +3525,36 @@ class GameState {
         this.world.completedEvents.push(eventName);
         // Mark as completed via flag for UI convenience
         this.addStoryFlag(`${eventName}_completed`);
+
+        // Check if this is an encounter-type story event that should trigger combat
+        const eventData = StoryData.getEvent(eventName);
+        if (eventData && (eventData.type === 'encounter' || eventData.type === 'major_encounter' || eventData.type === 'boss_encounter')) {
+            console.log(`🎭 Story event ${eventName} is type ${eventData.type}, triggering encounter`);
+
+            // Check if the event has encounter data
+            let encounter;
+            if (eventData.encounter) {
+                encounter = {
+                    species: eventData.encounter.species || 'slime',
+                    level: eventData.encounter.level || Math.max(1, this.player?.level || 1),
+                    source: 'story_event',
+                    eventName: eventName
+                };
+            } else {
+                // Create a basic encounter for story-based combat
+                encounter = {
+                    species: 'slime',
+                    level: Math.max(1, this.player?.level || 1),
+                    source: 'story_event',
+                    eventName: eventName
+                };
+            }
+
+            // Delay the encounter slightly to allow story UI to complete
+            setTimeout(() => {
+                this.startEncounter(encounter);
+            }, 100);
+        }
 
         // Update story branch tracking based on new flags
         try {
@@ -3573,9 +3611,9 @@ class GameState {
     changeScene(newScene) {
         this.previousScene = this.currentScene;
         this.currentScene = newScene;
-        
+
         console.log(`Scene changed: ${this.previousScene} -> ${newScene}`);
-        
+
         // Scene-specific initialization
         switch (newScene) {
             case 'combat':
@@ -3604,6 +3642,12 @@ class GameState {
      * Initialize combat state
      */
     initializeCombat() {
+        // If combat is already active and has enemies, don't reset
+        if (this.combat.active && this.combat.enemies && this.combat.enemies.length > 0) {
+            console.log('🔄 Combat already initialized with enemies, skipping reset');
+            return;
+        }
+
         // Reset player HP to full for new combat encounter
         if (this.player && typeof this.player.fullHeal === 'function') {
             this.player.fullHeal();
@@ -3615,6 +3659,40 @@ class GameState {
         this.combat.currentTurn = 'player'; // Set to 'player' instead of numeric 0
         this.combat.actions = [];
         this.combat.battleResult = null;
+
+        // Ensure enemies array exists (will be populated by encounter)
+        if (!this.combat.enemies) {
+            this.combat.enemies = [];
+        }
+
+        // Ensure other arrays exist
+        if (!this.combat.playerMonsters) {
+            this.combat.playerMonsters = [];
+        }
+
+        // Ensure player combat object exists with basic structure
+        if (!this.combat.player) {
+            // Create basic combat player object if not already set
+            const pStats = this.player?.stats || {};
+            const maxHp = Math.max(pStats.hp || 100, 100);
+            const maxMana = Math.max(pStats.mana || pStats.mp || 10, 10);
+
+            this.combat.player = {
+                name: this.player?.name || 'Player',
+                hp: maxHp,
+                maxHp: maxHp,
+                mana: maxMana,
+                maxMana: maxMana,
+                attack: pStats.attack || 50,
+                defense: pStats.defense || 30,
+                magicAttack: pStats.magicAttack || 40,
+                magicDefense: pStats.magicDefense || 35,
+                speed: pStats.speed || 60,
+                accuracy: pStats.accuracy || 80,
+                spells: this.player?.spells || [],
+                inventory: this.player?.inventory?.items || {}
+            };
+        }
     }
     
     /**
@@ -3624,6 +3702,9 @@ class GameState {
         this.combat = {
             active: false,
             enemy: null,
+            enemies: [], // Include enemies array to prevent undefined errors
+            player: null,
+            playerMonsters: [],
             turn: 0,
             turnOrder: [],
             currentTurn: null, // Set to null when combat is inactive
