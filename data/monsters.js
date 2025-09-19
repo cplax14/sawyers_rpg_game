@@ -1116,6 +1116,246 @@ const MonsterData = {
         }
         
         return null;
+    },
+
+    /**
+     * Create an AI-enabled monster instance for combat
+     */
+    createAIMonster: function(species, level, stats = null) {
+        const speciesData = this.getSpecies(species);
+        if (!speciesData) return null;
+
+        const monster = {
+            species: species,
+            level: level,
+            stats: stats || this.getStatsAtLevel(species, level),
+            currentStats: null, // Will be set by combat system
+            abilities: [...(speciesData.abilities || [])],
+            speciesData: speciesData,
+            type: speciesData.type || ['unknown'],
+
+            // AI decision making method
+            chooseAIAction: function(targets) {
+                return MonsterData.chooseMonsterAction(this, targets);
+            }
+        };
+
+        // Initialize current stats for combat
+        monster.currentStats = { ...monster.stats };
+
+        return monster;
+    },
+
+    /**
+     * AI action selection for monsters
+     */
+    chooseMonsterAction: function(monster, targets) {
+        if (!targets || targets.length === 0) {
+            return { type: 'defend' };
+        }
+
+        // Get monster's available actions
+        const actions = this.getAvailableActions(monster, targets);
+
+        if (actions.length === 0) {
+            return { type: 'attack', target: targets[0] };
+        }
+
+        // Choose action based on AI personality and situation
+        return this.selectBestAction(monster, targets, actions);
+    },
+
+    /**
+     * Get available actions for a monster
+     */
+    getAvailableActions: function(monster, targets) {
+        const actions = [];
+
+        // Always can attack
+        actions.push({ type: 'attack', priority: 50 });
+
+        // Check for spell/ability actions
+        if (monster.abilities && monster.abilities.length > 0) {
+            for (const ability of monster.abilities) {
+                const spellAction = this.getSpellAction(monster, ability, targets);
+                if (spellAction) {
+                    actions.push(spellAction);
+                }
+            }
+        }
+
+        // Defensive actions based on health
+        const healthPercent = (monster.currentStats?.hp || 0) / (monster.stats?.hp || 1);
+        if (healthPercent < 0.3) {
+            actions.push({ type: 'defend', priority: 70 });
+        }
+
+        return actions;
+    },
+
+    /**
+     * Convert monster ability to spell action
+     */
+    getSpellAction: function(monster, ability, targets) {
+        // Map common abilities to spell-like actions
+        const spellMappings = {
+            'fireball': { type: 'spell', spellId: 'fireball', mpCost: 8, priority: 80, targetType: 'enemy' },
+            'heal': { type: 'spell', spellId: 'heal', mpCost: 6, priority: 90, targetType: 'self' },
+            'ice_shard': { type: 'spell', spellId: 'ice_shard', mpCost: 6, priority: 75, targetType: 'enemy' },
+            'lightning_bolt': { type: 'spell', spellId: 'lightning_bolt', mpCost: 10, priority: 85, targetType: 'enemy' },
+            'flame_burst': { type: 'ability', ability: 'flame_burst', mpCost: 5, priority: 70, targetType: 'enemy' },
+            'dragon_breath': { type: 'ability', ability: 'dragon_breath', mpCost: 12, priority: 90, targetType: 'enemy' },
+            'fire_shield': { type: 'ability', ability: 'fire_shield', mpCost: 8, priority: 60, targetType: 'self' },
+            'roar': { type: 'ability', ability: 'roar', mpCost: 4, priority: 50, targetType: 'all' },
+            'claw_attack': { type: 'attack', priority: 60 }, // Enhanced attack
+            'bounce': { type: 'ability', ability: 'bounce', mpCost: 3, priority: 40, targetType: 'enemy' }
+        };
+
+        const mapping = spellMappings[ability];
+        if (!mapping) {
+            // Default to ability action
+            return { type: 'ability', ability: ability, mpCost: 5, priority: 50, targetType: 'enemy' };
+        }
+
+        // Check if monster has enough MP
+        const currentMP = monster.currentStats?.mp || 0;
+        if (currentMP < mapping.mpCost) {
+            return null; // Can't cast
+        }
+
+        // Select appropriate target based on action type
+        let target = null;
+        switch (mapping.targetType) {
+            case 'enemy':
+                target = targets[0]; // For now, target first available enemy
+                break;
+            case 'self':
+                target = monster; // Self-targeting
+                break;
+            case 'all':
+                target = targets[0]; // Will affect all, but need a primary target
+                break;
+        }
+
+        return {
+            ...mapping,
+            target: target
+        };
+    },
+
+    /**
+     * Select the best action based on AI logic
+     */
+    selectBestAction: function(monster, targets, actions) {
+        if (actions.length === 0) {
+            return { type: 'attack', target: targets[0] };
+        }
+
+        // Calculate situation modifiers
+        const healthPercent = (monster.currentStats?.hp || 0) / (monster.stats?.hp || 1);
+        const mpPercent = (monster.currentStats?.mp || 0) / (monster.stats?.mp || 1);
+
+        // Adjust action priorities based on situation
+        const adjustedActions = actions.map(action => {
+            let priority = action.priority || 50;
+
+            // Boost healing when low on health
+            if (action.type === 'spell' && action.spellId === 'heal' && healthPercent < 0.5) {
+                priority += 40;
+            }
+
+            // Prefer attacks when low on MP
+            if (action.type === 'attack' && mpPercent < 0.3) {
+                priority += 30;
+            }
+
+            // High-damage spells when enemy is low on health
+            const targetHealthPercent = this.getTargetHealthPercent(action.target);
+            if (action.type === 'spell' && targetHealthPercent < 0.3) {
+                priority += 20;
+            }
+
+            // Monster personality adjustments
+            const personality = this.getMonsterPersonality(monster);
+            priority = this.applyPersonalityModifier(action, priority, personality);
+
+            return { ...action, adjustedPriority: priority };
+        });
+
+        // Select action with highest adjusted priority (with some randomness)
+        adjustedActions.sort((a, b) => (b.adjustedPriority || 0) - (a.adjustedPriority || 0));
+
+        // Add some randomness: 70% chance to pick best, 30% chance to pick from top 3
+        const randomRoll = Math.random();
+        if (randomRoll < 0.7 || adjustedActions.length === 1) {
+            return adjustedActions[0];
+        } else {
+            const topActions = adjustedActions.slice(0, Math.min(3, adjustedActions.length));
+            const randomIndex = Math.floor(Math.random() * topActions.length);
+            return topActions[randomIndex];
+        }
+    },
+
+    /**
+     * Get target's health percentage
+     */
+    getTargetHealthPercent: function(target) {
+        if (!target || !target.currentStats || !target.stats) return 1.0;
+        return (target.currentStats.hp || 0) / (target.stats.hp || 1);
+    },
+
+    /**
+     * Get monster personality based on species type
+     */
+    getMonsterPersonality: function(monster) {
+        const types = monster.type || [];
+
+        if (types.includes('aggressive')) return 'aggressive';
+        if (types.includes('magical')) return 'magical';
+        if (types.includes('defensive')) return 'defensive';
+        if (types.includes('cunning')) return 'cunning';
+
+        // Default personalities based on element
+        if (types.includes('fire')) return 'aggressive';
+        if (types.includes('water') || types.includes('ice')) return 'balanced';
+        if (types.includes('nature')) return 'defensive';
+        if (types.includes('dark')) return 'cunning';
+
+        return 'balanced';
+    },
+
+    /**
+     * Apply personality modifiers to action priorities
+     */
+    applyPersonalityModifier: function(action, priority, personality) {
+        switch (personality) {
+            case 'aggressive':
+                if (action.type === 'attack') priority += 20;
+                if (action.type === 'spell' && action.spellId && action.spellId.includes('fire')) priority += 15;
+                break;
+
+            case 'magical':
+                if (action.type === 'spell' || action.type === 'ability') priority += 25;
+                if (action.type === 'attack') priority -= 10;
+                break;
+
+            case 'defensive':
+                if (action.type === 'defend') priority += 20;
+                if (action.type === 'spell' && action.spellId === 'heal') priority += 30;
+                break;
+
+            case 'cunning':
+                if (action.type === 'ability') priority += 15;
+                // Prefer status effects and tricks
+                break;
+
+            case 'balanced':
+            default:
+                // No significant modifiers
+                break;
+        }
+
+        return priority;
     }
 };
 

@@ -6,16 +6,20 @@
 - `data/monsters.js` - Extended with loot drop tables and rarity-based drop rates
 - `data/items.js` - Expanded with new item types, rarity classifications, and spell materials
 - `data/spells.js` - Already exists, needs integration with combat system and learning mechanics
+- `data/characters.js` - Enhanced with spell learning progression, class-specific spell sets, and spell capacity management (COMPLETED: Task 3.3)
 - `data/equipment.js` - Enhanced with rarity tiers and level scaling
 - `js/gameState.js` - Extended with area progression logic and loot management
-- `js/combat.js` - Enhanced with spell casting, MP management, and loot generation
+- `js/combat.js` - Enhanced with spell casting, MP management, loot generation, and spell effect processing (COMPLETED: Task 3.2)
 - `js/worldMap.js` - Updated with branching path visualization and progression indicators
 - `js/ui/GameWorldUI.js` - Enhanced with area progression indicators and unlock status
 - `js/ui/CombatUI.js` - Extended with spell casting interface and MP display
 - `js/ui/InventoryUI.js` - Enhanced with loot rarity display and equipment management
 - `js/ui/StoryUI.js` - Enhanced with branching path choices and progression tracking
 - `js/lootSystem.js` - New system for managing loot generation and distribution
-- `js/spellSystem.js` - New system for spell learning, casting, and MP management
+- `js/spellSystem.js` - New system for spell learning, casting, and MP management (COMPLETED: Task 3.1)
+- `js/game.js` - Updated to properly initialize SpellSystem in game startup sequence
+- `index.html` - Updated script loading order to ensure SpellSystem loads before GameState
+- `tests/test-runner.html` - Updated to include SpellSystem in test environment
 - `tests/area_progression.test.js` - Unit tests for branching area unlock logic
 - `tests/loot_system.test.js` - Unit tests for loot generation and distribution
 - `tests/spell_system.test.js` - Unit tests for spell casting and learning mechanics
@@ -51,11 +55,11 @@
   - [x] 2.8 Add rarity-based visual indicators and sorting capabilities to inventory system
 
 - [ ] 3.0 Integrate Mana-Based Spell Casting into Combat System
-  - [ ] 3.1 Create `js/spellSystem.js` with MP management, spell learning tracking, and cast validation
-  - [ ] 3.2 Enhance `CombatEngine` with spell action processing, MP cost validation, and spell effect application
-  - [ ] 3.3 Extend `CharacterData` classes with spell learning progression and class-specific spell sets
-  - [ ] 3.4 Implement MP regeneration system with balanced recovery rates for strategic resource management
-  - [ ] 3.5 Add spell learning mechanics supporting level-up acquisition, loot drops, NPC purchases, and quest rewards
+  - [x] 3.1 Create `js/spellSystem.js` with MP management, spell learning tracking, and cast validation
+  - [x] 3.2 Enhance `CombatEngine` with spell action processing, MP cost validation, and spell effect application
+  - [x] 3.3 Extend `CharacterData` classes with spell learning progression and class-specific spell sets
+  - [x] 3.4 Implement MP regeneration system with balanced recovery rates for strategic resource management
+  - [x] 3.5 Add spell learning mechanics supporting level-up acquisition, loot drops, NPC purchases, and quest rewards
   - [ ] 3.6 Create spell effect system supporting damage, healing, buffs, debuffs, and utility effects with scaling calculations
   - [ ] 3.7 Integrate spell scrolls and learning materials from loot system into spell acquisition workflow
   - [ ] 3.8 Add basic monster spell casting capabilities for enhanced combat variety

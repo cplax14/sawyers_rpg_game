@@ -37,7 +37,10 @@ class GameWorldUI extends BaseUIModule {
         this.ensureWorldMapOverlay();
         // Initialize inline world map (renders into #world-map container)
         this.ensureInlineWorldMap();
-        
+
+        // Inject progression indicator styles
+        this.injectProgressionStyles();
+
         console.log('🌍 GameWorldUI initialization completed');
         return true;
     }
@@ -442,6 +445,9 @@ class GameWorldUI extends BaseUIModule {
             list.appendChild(btn);
             this.worldMapButtons.push(btn);
         });
+
+        // Update progression indicators on the world map
+        setTimeout(() => this.updateWorldMapProgressionIndicators(), 0);
     }
 
     // ================================================
@@ -516,6 +522,9 @@ class GameWorldUI extends BaseUIModule {
             // Update stats
             this.updateAreaStats(areaData);
 
+            // Update progression indicators
+            this.updateAreaProgressionIndicators(areaId, areaData);
+
             // Update action buttons
             this.updateAreaActionButtons(areaId, areaData);
         }
@@ -546,6 +555,576 @@ class GameWorldUI extends BaseUIModule {
             const difficulty = areaData.difficulty || 1;
             difficultyEl.textContent = '★'.repeat(difficulty) + '☆'.repeat(5 - difficulty);
         }
+    }
+
+    /**
+     * Update area progression indicators showing unlock requirements and current progress
+     */
+    updateAreaProgressionIndicators(areaId, areaData) {
+        // Get or create progression indicators container
+        let progressContainer = document.getElementById('area-progression');
+        if (!progressContainer) {
+            progressContainer = this.createProgressionContainer();
+        }
+
+        if (!progressContainer) return; // Failed to create or find container
+
+        // Clear previous content
+        progressContainer.innerHTML = '';
+
+        const gs = this.gameState || this.getGameReference('gameState');
+        if (!gs || typeof window.AreaData === 'undefined') {
+            progressContainer.style.display = 'none';
+            return;
+        }
+
+        // Get unlock status and requirements
+        const unlockStatus = this.getAreaUnlockStatus(areaId, areaData);
+
+        if (unlockStatus.unlocked) {
+            this.displayUnlockedStatus(progressContainer, areaId, areaData);
+        } else {
+            this.displayUnlockRequirements(progressContainer, unlockStatus);
+        }
+
+        progressContainer.style.display = 'block';
+    }
+
+    /**
+     * Create progression indicators container if it doesn't exist
+     */
+    createProgressionContainer() {
+        const areaInfo = document.getElementById('area-info');
+        if (!areaInfo) return null;
+
+        const container = document.createElement('div');
+        container.id = 'area-progression';
+        container.className = 'area-progression';
+
+        // Insert after area stats or at the end
+        const statsContainer = areaInfo.querySelector('.area-stats') || areaInfo.querySelector('#area-difficulty')?.parentElement;
+        if (statsContainer && statsContainer.nextSibling) {
+            areaInfo.insertBefore(container, statsContainer.nextSibling);
+        } else {
+            areaInfo.appendChild(container);
+        }
+
+        return container;
+    }
+
+    /**
+     * Get detailed unlock status for an area
+     */
+    getAreaUnlockStatus(areaId, areaData) {
+        if (typeof window.AreaData === 'undefined') {
+            return { unlocked: true, requirements: [], missing: [] };
+        }
+
+        const gs = this.gameState || this.getGameReference('gameState');
+        if (!gs) {
+            return { unlocked: true, requirements: [], missing: [] };
+        }
+
+        // Use AreaData's getUnlockStatus if available, otherwise fallback
+        if (typeof window.AreaData.getUnlockStatus === 'function') {
+            return window.AreaData.getUnlockStatus(
+                areaId,
+                gs.world.storyFlags || [],
+                gs.player.level || 1,
+                Object.keys(gs.player.inventory?.items || {}),
+                gs.player.class || 'warrior',
+                gs.world.defeatedBosses || []
+            );
+        }
+
+        // Fallback to basic unlock check
+        const isUnlocked = this.isAreaUnlocked(areaId, areaData);
+        return {
+            unlocked: isUnlocked,
+            requirements: this.parseUnlockRequirements(areaData.unlockRequirements || {}),
+            missing: isUnlocked ? [] : this.parseUnlockRequirements(areaData.unlockRequirements || {})
+        };
+    }
+
+    /**
+     * Parse unlock requirements into a readable format
+     */
+    parseUnlockRequirements(requirements) {
+        const parsed = [];
+
+        if (!requirements || typeof requirements !== 'object') {
+            return parsed;
+        }
+
+        // Handle logical operators
+        if (requirements.and) {
+            parsed.push({
+                type: 'group',
+                operator: 'and',
+                requirements: requirements.and.map(req => this.parseUnlockRequirements(req)).flat()
+            });
+        }
+
+        if (requirements.or) {
+            parsed.push({
+                type: 'group',
+                operator: 'or',
+                requirements: requirements.or.map(req => this.parseUnlockRequirements(req)).flat()
+            });
+        }
+
+        // Handle direct requirements
+        Object.entries(requirements).forEach(([key, value]) => {
+            if (key === 'and' || key === 'or') return; // Already handled
+
+            switch (key) {
+                case 'story':
+                    parsed.push({
+                        type: 'story',
+                        flag: value,
+                        description: `Complete: ${this.formatStoryFlag(value)}`
+                    });
+                    break;
+
+                case 'level':
+                    parsed.push({
+                        type: 'level',
+                        required: value,
+                        description: `Reach level ${value}`
+                    });
+                    break;
+
+                case 'item':
+                    parsed.push({
+                        type: 'item',
+                        item: value,
+                        description: `Obtain: ${this.formatItemName(value)}`
+                    });
+                    break;
+
+                case 'character_class':
+                    const classes = Array.isArray(value) ? value : [value];
+                    parsed.push({
+                        type: 'class',
+                        classes: classes,
+                        description: `Be a ${classes.join(' or ')}`
+                    });
+                    break;
+
+                case 'boss_defeated':
+                    parsed.push({
+                        type: 'boss',
+                        boss: value,
+                        description: `Defeat: ${this.formatBossName(value)}`
+                    });
+                    break;
+
+                default:
+                    parsed.push({
+                        type: 'custom',
+                        key: key,
+                        value: value,
+                        description: `${key}: ${value}`
+                    });
+            }
+        });
+
+        return parsed;
+    }
+
+    /**
+     * Display status for unlocked areas
+     */
+    displayUnlockedStatus(container, areaId, areaData) {
+        const unlockedDiv = document.createElement('div');
+        unlockedDiv.className = 'progression-status unlocked';
+        unlockedDiv.innerHTML = `
+            <div class="status-header">
+                <span class="status-icon">✓</span>
+                <span class="status-text">Area Unlocked</span>
+            </div>
+        `;
+
+        // Add exploration progress if applicable
+        if (areaData.encounterRate > 0) {
+            const explorationProgress = this.getExplorationProgress(areaId);
+            if (explorationProgress) {
+                const progressDiv = document.createElement('div');
+                progressDiv.className = 'exploration-progress';
+                progressDiv.innerHTML = `
+                    <div class="progress-label">Exploration Progress</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${explorationProgress.percentage}%"></div>
+                    </div>
+                    <div class="progress-text">${explorationProgress.percentage}% Complete</div>
+                `;
+                unlockedDiv.appendChild(progressDiv);
+            }
+        }
+
+        container.appendChild(unlockedDiv);
+    }
+
+    /**
+     * Display unlock requirements for locked areas
+     */
+    displayUnlockRequirements(container, unlockStatus) {
+        const requirementsDiv = document.createElement('div');
+        requirementsDiv.className = 'progression-status locked';
+
+        const header = document.createElement('div');
+        header.className = 'status-header';
+        header.innerHTML = `
+            <span class="status-icon">🔒</span>
+            <span class="status-text">Unlock Requirements</span>
+        `;
+        requirementsDiv.appendChild(header);
+
+        if (unlockStatus.requirements.length === 0) {
+            const noReqs = document.createElement('div');
+            noReqs.className = 'requirement-item completed';
+            noReqs.textContent = 'No specific requirements';
+            requirementsDiv.appendChild(noReqs);
+        } else {
+            this.displayRequirementsList(requirementsDiv, unlockStatus.requirements, unlockStatus.missing);
+        }
+
+        container.appendChild(requirementsDiv);
+    }
+
+    /**
+     * Display a list of requirements with completion status
+     */
+    displayRequirementsList(container, requirements, missing) {
+        const gs = this.gameState || this.getGameReference('gameState');
+
+        requirements.forEach(req => {
+            if (req.type === 'group') {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'requirement-group';
+
+                const groupLabel = document.createElement('div');
+                groupLabel.className = 'group-label';
+                groupLabel.textContent = req.operator === 'and' ? 'All of the following:' : 'Any of the following:';
+                groupDiv.appendChild(groupLabel);
+
+                this.displayRequirementsList(groupDiv, req.requirements, missing);
+                container.appendChild(groupDiv);
+                return;
+            }
+
+            const reqDiv = document.createElement('div');
+            reqDiv.className = 'requirement-item';
+
+            const isCompleted = this.checkRequirementCompletion(req, gs);
+            reqDiv.classList.add(isCompleted ? 'completed' : 'incomplete');
+
+            const icon = document.createElement('span');
+            icon.className = 'requirement-icon';
+            icon.textContent = isCompleted ? '✓' : '○';
+
+            const text = document.createElement('span');
+            text.className = 'requirement-text';
+            text.textContent = req.description;
+
+            // Add current progress for level requirements
+            if (req.type === 'level' && !isCompleted) {
+                const currentLevel = gs?.player?.level || 1;
+                const progressText = document.createElement('span');
+                progressText.className = 'progress-indicator';
+                progressText.textContent = ` (Currently ${currentLevel})`;
+                text.appendChild(progressText);
+            }
+
+            reqDiv.appendChild(icon);
+            reqDiv.appendChild(text);
+            container.appendChild(reqDiv);
+        });
+    }
+
+    /**
+     * Check if a specific requirement is completed
+     */
+    checkRequirementCompletion(requirement, gameState) {
+        if (!gameState) return false;
+
+        switch (requirement.type) {
+            case 'story':
+                const storyFlags = gameState.world?.storyFlags || [];
+                return storyFlags.includes(requirement.flag) ||
+                       storyFlags.includes(`${requirement.flag}_completed`);
+
+            case 'level':
+                return (gameState.player?.level || 1) >= requirement.required;
+
+            case 'item':
+                const inventory = gameState.player?.inventory?.items || {};
+                return !!inventory[requirement.item];
+
+            case 'class':
+                return requirement.classes.includes(gameState.player?.class);
+
+            case 'boss':
+                const defeatedBosses = gameState.world?.defeatedBosses || [];
+                return defeatedBosses.includes(requirement.boss);
+
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Get exploration progress for an area
+     */
+    getExplorationProgress(areaId) {
+        const gs = this.gameState || this.getGameReference('gameState');
+        if (!gs || !gs.world?.explorationProgress) {
+            return null;
+        }
+
+        const progress = gs.world.explorationProgress[areaId];
+        if (!progress) {
+            return { percentage: 0, encounters: 0, totalEncounters: 10 };
+        }
+
+        return {
+            percentage: Math.min(100, Math.floor((progress.encounters || 0) / (progress.totalEncounters || 10) * 100)),
+            encounters: progress.encounters || 0,
+            totalEncounters: progress.totalEncounters || 10
+        };
+    }
+
+    /**
+     * Format story flag names for display
+     */
+    formatStoryFlag(flag) {
+        return flag.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    }
+
+    /**
+     * Format item names for display
+     */
+    formatItemName(item) {
+        return item.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    }
+
+    /**
+     * Format boss names for display
+     */
+    formatBossName(boss) {
+        return boss.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    }
+
+    /**
+     * Update world map area nodes with progression indicators
+     */
+    updateWorldMapProgressionIndicators() {
+        const areaNodes = document.querySelectorAll('.area-node');
+
+        areaNodes.forEach(node => {
+            const areaId = node.dataset.areaId;
+            if (!areaId || typeof window.AreaData === 'undefined') return;
+
+            const areaData = window.AreaData.getArea(areaId);
+            if (!areaData) return;
+
+            // Remove existing progression indicators
+            const existingIndicator = node.querySelector('.progression-indicator');
+            if (existingIndicator) {
+                existingIndicator.remove();
+            }
+
+            // Get unlock status
+            const unlockStatus = this.getAreaUnlockStatus(areaId, areaData);
+
+            // Create progression indicator
+            const indicator = document.createElement('div');
+            indicator.className = 'progression-indicator';
+
+            if (unlockStatus.unlocked) {
+                indicator.classList.add('unlocked');
+                indicator.title = 'Area Unlocked';
+
+                // Add exploration progress for unlocked areas
+                if (areaData.encounterRate > 0) {
+                    const explorationProgress = this.getExplorationProgress(areaId);
+                    if (explorationProgress && explorationProgress.percentage > 0) {
+                        indicator.classList.add('explored');
+                        indicator.style.setProperty('--progress', `${explorationProgress.percentage}%`);
+                        indicator.title = `${explorationProgress.percentage}% Explored`;
+                    }
+                }
+            } else {
+                indicator.classList.add('locked');
+                indicator.title = 'Area Locked';
+
+                // Show partial progress if some requirements are met
+                const completedReqs = unlockStatus.requirements.filter(req =>
+                    this.checkRequirementCompletion(req, this.gameState || this.getGameReference('gameState'))
+                );
+
+                if (completedReqs.length > 0 && unlockStatus.requirements.length > 0) {
+                    const progressPercent = Math.floor((completedReqs.length / unlockStatus.requirements.length) * 100);
+                    indicator.classList.add('partial');
+                    indicator.style.setProperty('--progress', `${progressPercent}%`);
+                    indicator.title = `${completedReqs.length}/${unlockStatus.requirements.length} requirements met`;
+                }
+            }
+
+            node.appendChild(indicator);
+        });
+    }
+
+    /**
+     * Add CSS styles for progression indicators (inject once)
+     */
+    injectProgressionStyles() {
+        if (document.getElementById('progression-indicator-styles')) return;
+
+        const styles = document.createElement('style');
+        styles.id = 'progression-indicator-styles';
+        styles.textContent = `
+            .area-progression {
+                margin: 10px 0;
+                padding: 10px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                background: #f9f9f9;
+            }
+
+            .progression-status {
+                margin-bottom: 8px;
+            }
+
+            .status-header {
+                display: flex;
+                align-items: center;
+                font-weight: bold;
+                margin-bottom: 8px;
+            }
+
+            .status-icon {
+                margin-right: 8px;
+                font-size: 1.2em;
+            }
+
+            .progression-status.unlocked {
+                border-left: 4px solid #4CAF50;
+                background: #f1f8e9;
+            }
+
+            .progression-status.locked {
+                border-left: 4px solid #f44336;
+                background: #fce4ec;
+            }
+
+            .exploration-progress {
+                margin: 8px 0;
+            }
+
+            .progress-label {
+                font-size: 0.9em;
+                color: #666;
+                margin-bottom: 4px;
+            }
+
+            .progress-bar {
+                width: 100%;
+                height: 6px;
+                background: #e0e0e0;
+                border-radius: 3px;
+                overflow: hidden;
+            }
+
+            .progress-fill {
+                height: 100%;
+                background: linear-gradient(90deg, #4CAF50, #81C784);
+                transition: width 0.3s ease;
+            }
+
+            .progress-text {
+                font-size: 0.8em;
+                color: #666;
+                text-align: right;
+                margin-top: 2px;
+            }
+
+            .requirement-item {
+                display: flex;
+                align-items: center;
+                margin: 4px 0;
+                padding: 2px 0;
+            }
+
+            .requirement-icon {
+                margin-right: 8px;
+                width: 16px;
+                text-align: center;
+            }
+
+            .requirement-item.completed {
+                color: #4CAF50;
+            }
+
+            .requirement-item.incomplete {
+                color: #666;
+            }
+
+            .requirement-group {
+                margin: 8px 0;
+                padding-left: 16px;
+                border-left: 2px solid #ddd;
+            }
+
+            .group-label {
+                font-weight: bold;
+                margin-bottom: 4px;
+                color: #333;
+            }
+
+            .progress-indicator {
+                font-size: 0.8em;
+                color: #888;
+                font-style: italic;
+            }
+
+            /* World map progression indicators */
+            .area-node {
+                position: relative;
+            }
+
+            .progression-indicator {
+                position: absolute;
+                top: -2px;
+                right: -2px;
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                border: 1px solid #fff;
+                font-size: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .progression-indicator.unlocked {
+                background: #4CAF50;
+            }
+
+            .progression-indicator.locked {
+                background: #f44336;
+            }
+
+            .progression-indicator.partial {
+                background: conic-gradient(#ff9800 var(--progress, 0%), #ddd var(--progress, 0%));
+            }
+
+            .progression-indicator.explored {
+                background: conic-gradient(#2196F3 var(--progress, 0%), #4CAF50 var(--progress, 0%));
+            }
+        `;
+
+        document.head.appendChild(styles);
     }
 
     /**
@@ -860,6 +1439,9 @@ class GameWorldUI extends BaseUIModule {
         
         // Refresh world map overlay if open
         this.refreshWorldMapDisplay();
+
+        // Update progression indicators on world map
+        this.updateWorldMapProgressionIndicators();
     }
 
     /**

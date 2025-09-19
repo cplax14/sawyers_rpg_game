@@ -573,18 +573,21 @@ class GameState {
      */
     update(deltaTime) {
         if (!this.initialized) return;
-        
+
         // Update playtime
         this.stats.playtime += deltaTime;
-        
+
+        // Update MP regeneration system
+        this.updateMPRegeneration(deltaTime);
+
         // Update UI notifications
         this.updateNotifications(deltaTime);
-        
+
         // Update combat state if active
         if (this.combat.active) {
             this.updateCombat(deltaTime);
         }
-        
+
         // Auto-save periodically
         if (this.settings.autoSave && this.stats.playtime % 30 < deltaTime) {
             this.triggerAutoSave();
@@ -594,6 +597,73 @@ class GameState {
         if (this.stats.playtime % 30 < deltaTime) {
             this.cleanupNotifications();
         }
+    }
+
+    /**
+     * Update MP regeneration for all characters
+     */
+    updateMPRegeneration(deltaTime) {
+        if (this.spellSystem) {
+            this.spellSystem.updateMPRegeneration(deltaTime * 1000); // Convert to milliseconds
+        }
+    }
+
+    /**
+     * Start resting to enhance MP recovery
+     */
+    startResting(duration = 10000) {
+        if (this.spellSystem) {
+            this.spellSystem.startResting(this.player, duration);
+        }
+    }
+
+    /**
+     * Start meditation for maximum MP recovery
+     */
+    startMeditation(duration = 5000) {
+        if (this.spellSystem) {
+            this.spellSystem.startMeditation(this.player, duration);
+        }
+    }
+
+    /**
+     * Get current MP regeneration status for player
+     */
+    getMPRegenerationStatus() {
+        if (this.spellSystem) {
+            return this.spellSystem.getMPRegenerationInfo(this.player);
+        }
+        return null;
+    }
+
+    /**
+     * Check if player can benefit from resting
+     */
+    canPlayerRest() {
+        // Can't rest during combat
+        if (this.combat.active) return false;
+
+        // Can rest if MP is not full
+        return this.player.stats.mp < this.player.stats.maxMp;
+    }
+
+    /**
+     * Get MP regeneration efficiency for current location
+     */
+    getLocationMPBonus() {
+        if (this.world.currentArea) {
+            const areaBonuses = {
+                'temple': 0.02,      // +2% MP regen
+                'sanctuary': 0.015,  // +1.5% MP regen
+                'inn': 0.01,         // +1% MP regen
+                'camp': 0.005,       // +0.5% MP regen
+                'library': 0.01,     // +1% MP regen
+                'mage_tower': 0.02   // +2% MP regen
+            };
+
+            return areaBonuses[this.world.currentArea] || 0;
+        }
+        return 0;
     }
     
     /**
@@ -728,7 +798,7 @@ class GameState {
     /**
      * Add item to inventory with overflow handling
      */
-    addItem(itemId, quantity = 1, rarity = 'common') {
+    addItem(itemId, quantity = 1, rarity = 'common', itemData = null) {
         if (!itemId || quantity <= 0) return false;
 
         // Check if inventory is at capacity for new item types
@@ -737,7 +807,12 @@ class GameState {
         const maxSlots = this.player.inventory.maxSlots || 50;
 
         if (isNewItem && currentSlots >= maxSlots) {
-            return this.handleInventoryOverflow(itemId, quantity, rarity);
+            return this.handleInventoryOverflow(itemId, quantity, rarity, itemData);
+        }
+
+        // Store item data if provided (for loot-generated items)
+        if (itemData) {
+            this.storeItemData(itemId, itemData);
         }
 
         // Add to existing or create new slot
@@ -746,9 +821,10 @@ class GameState {
         }
         this.player.inventory.items[itemId] += quantity;
 
-        // Enhanced notification with rarity indicator
+        // Enhanced notification with rarity indicator and item name
+        const displayName = itemData?.name || itemId;
         const rarityText = rarity !== 'common' ? ` (${rarity})` : '';
-        this.addNotification(`+${quantity} ${itemId}${rarityText}`, 'item');
+        this.addNotification(`+${quantity} ${displayName}${rarityText}`, 'item');
         return true;
     }
 
@@ -971,13 +1047,286 @@ class GameState {
         
         return false;
     }
-    
+
+    /**
+     * Use an item from inventory
+     */
+    useItem(itemId) {
+        // Check if player has the item
+        if (!this.player.inventory.items[itemId] || this.player.inventory.items[itemId] <= 0) {
+            this.addNotification('Item not in inventory', 'error');
+            return { success: false, reason: 'Item not in inventory' };
+        }
+
+        // Get item data
+        const itemData = this.getItemData(itemId);
+        if (!itemData) {
+            this.addNotification('Unknown item', 'error');
+            return { success: false, reason: 'Unknown item' };
+        }
+
+        // Handle different usage types
+        switch (itemData.usageType) {
+            case 'spell_learning':
+                return this.useSpellLearningItem(itemId, itemData);
+
+            case 'healing':
+                return this.useHealingItem(itemId, itemData);
+
+            case 'mana':
+                return this.useManaItem(itemId, itemData);
+
+            case 'buff':
+                return this.useBuffItem(itemId, itemData);
+
+            default:
+                this.addNotification('Item cannot be used', 'error');
+                return { success: false, reason: 'Item cannot be used' };
+        }
+    }
+
+    /**
+     * Use spell learning item (scroll, book, tome)
+     */
+    useSpellLearningItem(itemId, itemData) {
+        // Check if SpellSystem is available
+        if (typeof window.spellSystem === 'undefined' || !window.spellSystem) {
+            this.addNotification('Spell system not available', 'error');
+            return { success: false, reason: 'Spell system not available' };
+        }
+
+        // Check item requirements
+        const requirementCheck = this.checkItemRequirements(itemData);
+        if (!requirementCheck.valid) {
+            this.addNotification(requirementCheck.reason, 'error');
+            return { success: false, reason: requirementCheck.reason };
+        }
+
+        // Get spell ID from item
+        const spellId = itemData.effect?.spell || itemData.spellId;
+        if (!spellId) {
+            this.addNotification('Invalid spell item', 'error');
+            return { success: false, reason: 'Invalid spell item' };
+        }
+
+        // Try to learn the spell
+        const learnResult = window.spellSystem.learnSpellFromItem(itemId, itemData.category);
+
+        if (learnResult.success) {
+            // Remove item from inventory (spell scrolls are consumed)
+            this.removeItem(itemId, 1);
+
+            const spellData = window.spellSystem.getSpellData(spellId);
+            const spellName = spellData?.name || spellId;
+
+            this.addNotification(`✨ Learned spell: ${spellName}!`, 'spell_learned');
+
+            // Track learning statistics
+            this.stats.spellsLearned = (this.stats.spellsLearned || 0) + 1;
+
+            return {
+                success: true,
+                spellId: spellId,
+                spellName: spellName,
+                source: itemData.category
+            };
+        } else {
+            this.addNotification(learnResult.reason || 'Failed to learn spell', 'error');
+            return { success: false, reason: learnResult.reason };
+        }
+    }
+
+    /**
+     * Use healing item
+     */
+    useHealingItem(itemId, itemData) {
+        if (this.player.stats.hp >= this.player.stats.maxHp) {
+            this.addNotification('Already at full health', 'info');
+            return { success: false, reason: 'Already at full health' };
+        }
+
+        const healAmount = itemData.effect?.healing || itemData.effect?.power || 20;
+        const previousHP = this.player.stats.hp;
+
+        this.player.stats.hp = Math.min(this.player.stats.maxHp, this.player.stats.hp + healAmount);
+        const actualHealing = this.player.stats.hp - previousHP;
+
+        // Remove item from inventory
+        this.removeItem(itemId, 1);
+
+        this.addNotification(`+${actualHealing} HP restored`, 'success');
+
+        return {
+            success: true,
+            healAmount: actualHealing,
+            itemUsed: itemData.name
+        };
+    }
+
+    /**
+     * Use mana item
+     */
+    useManaItem(itemId, itemData) {
+        if (this.player.stats.mp >= this.player.stats.maxMp) {
+            this.addNotification('Already at full mana', 'info');
+            return { success: false, reason: 'Already at full mana' };
+        }
+
+        const manaAmount = itemData.effect?.mana || itemData.effect?.power || 10;
+        const previousMP = this.player.stats.mp;
+
+        this.player.stats.mp = Math.min(this.player.stats.maxMp, this.player.stats.mp + manaAmount);
+        const actualRestore = this.player.stats.mp - previousMP;
+
+        // Remove item from inventory
+        this.removeItem(itemId, 1);
+
+        this.addNotification(`+${actualRestore} MP restored`, 'success');
+
+        return {
+            success: true,
+            manaAmount: actualRestore,
+            itemUsed: itemData.name
+        };
+    }
+
+    /**
+     * Use buff item
+     */
+    useBuffItem(itemId, itemData) {
+        // Apply temporary stat boost
+        const effect = itemData.effect;
+        if (!effect || !effect.stat || !effect.amount) {
+            this.addNotification('Invalid buff item', 'error');
+            return { success: false, reason: 'Invalid buff item' };
+        }
+
+        // Initialize temporary effects if needed
+        if (!this.player.temporaryEffects) {
+            this.player.temporaryEffects = [];
+        }
+
+        // Add buff effect
+        const buffEffect = {
+            type: 'stat_boost',
+            stat: effect.stat,
+            amount: effect.amount,
+            duration: effect.duration || 300, // 5 minutes default
+            source: itemData.name,
+            timestamp: Date.now()
+        };
+
+        this.player.temporaryEffects.push(buffEffect);
+
+        // Remove item from inventory
+        this.removeItem(itemId, 1);
+
+        this.addNotification(`${effect.stat} boosted by ${effect.amount}!`, 'buff');
+
+        return {
+            success: true,
+            effect: buffEffect,
+            itemUsed: itemData.name
+        };
+    }
+
+    /**
+     * Check if player meets item requirements
+     */
+    checkItemRequirements(itemData) {
+        if (!itemData.requirements) {
+            return { valid: true };
+        }
+
+        const req = itemData.requirements;
+
+        // Level requirement
+        if (req.level && this.player.level < req.level) {
+            return {
+                valid: false,
+                reason: `Requires level ${req.level} (current: ${this.player.level})`
+            };
+        }
+
+        // Class requirement
+        if (req.classes && !req.classes.includes(this.player.class)) {
+            return {
+                valid: false,
+                reason: `Requires class: ${req.classes.join(' or ')}`
+            };
+        }
+
+        // Intelligence requirement
+        if (req.minIntelligence && this.player.stats.intelligence < req.minIntelligence) {
+            return {
+                valid: false,
+                reason: `Requires ${req.minIntelligence} intelligence`
+            };
+        }
+
+        // Story requirement
+        if (req.story && !this.hasStoryFlag(req.story)) {
+            return {
+                valid: false,
+                reason: 'Missing required story progress'
+            };
+        }
+
+        return { valid: true };
+    }
+
+    /**
+     * Get item data from various sources
+     */
+    getItemData(itemId) {
+        // First try ItemData
+        if (typeof ItemData !== 'undefined' && ItemData.getItem) {
+            const itemData = ItemData.getItem(itemId);
+            if (itemData) return itemData;
+        }
+
+        // Try to find in loot-generated items (stored with inventory)
+        if (this.player.inventory.itemData && this.player.inventory.itemData[itemId]) {
+            return this.player.inventory.itemData[itemId];
+        }
+
+        return null;
+    }
+
+    /**
+     * Store item data for loot-generated items
+     */
+    storeItemData(itemId, itemData) {
+        if (!this.player.inventory.itemData) {
+            this.player.inventory.itemData = {};
+        }
+        this.player.inventory.itemData[itemId] = itemData;
+    }
+
+    /**
+     * Check if player has a specific item
+     */
+    hasItem(itemId) {
+        return !!(this.player.inventory.items[itemId] && this.player.inventory.items[itemId] > 0);
+    }
+
     /**
      * Add gold to player
      */
     addGold(amount) {
         this.player.inventory.gold += amount;
         this.addNotification(`+${amount} gold`, 'success');
+    }
+
+    /**
+     * Remove gold from player
+     */
+    removeGold(amount) {
+        if (this.player.inventory.gold >= amount) {
+            this.player.inventory.gold -= amount;
+            return true;
+        }
+        return false;
     }
 
     // ================================================

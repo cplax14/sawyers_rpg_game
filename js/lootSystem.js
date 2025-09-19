@@ -348,12 +348,317 @@ const LootSystem = {
                 this.applyAreaSpecificBonuses(item, areaName);
             }
 
+            // Special handling for spell scrolls and learning materials
+            if (itemType === 'spell_scroll' || itemType === 'spell_book' || itemType === 'spell_tome') {
+                this.generateSpellLearningItem(item, itemType, rarity, playerLevel, contentLevel, areaName);
+            }
+
             return item;
 
         } catch (error) {
             console.error('❌ Error generating loot item:', error);
             return null;
         }
+    },
+
+    /**
+     * Generate spell learning item (scroll, book, or tome)
+     */
+    generateSpellLearningItem: function(item, itemType, rarity, playerLevel, contentLevel, areaName) {
+        // Get available spells for generation
+        const availableSpells = this.getGeneratableSpells(playerLevel, contentLevel, areaName, itemType);
+
+        if (availableSpells.length === 0) {
+            // Fallback to a basic spell if no spells available
+            item.spellId = 'heal';
+            item.name = 'Heal Scroll';
+            item.description = 'A basic healing spell scroll.';
+            item.icon = '📜✨';
+            return;
+        }
+
+        // Select random spell weighted by rarity and level appropriateness
+        const selectedSpell = this.selectSpellForItem(availableSpells, rarity, playerLevel);
+
+        if (!selectedSpell) {
+            console.warn('Failed to select spell for spell item generation');
+            return;
+        }
+
+        // Apply spell-specific properties to item
+        this.applySpellItemProperties(item, selectedSpell, itemType, rarity);
+    },
+
+    /**
+     * Get spells that can be generated as loot items
+     */
+    getGeneratableSpells: function(playerLevel, contentLevel, areaName, itemType) {
+        const spells = [];
+
+        if (typeof SpellData === 'undefined' || !SpellData.spells) {
+            return this.getFallbackSpells(itemType);
+        }
+
+        // Get all available spells
+        for (const [spellId, spell] of Object.entries(SpellData.spells)) {
+            // Check if spell is appropriate for the level and area
+            if (this.isSpellAppropriateForGeneration(spell, playerLevel, contentLevel, areaName, itemType)) {
+                spells.push({ id: spellId, ...spell });
+            }
+        }
+
+        return spells;
+    },
+
+    /**
+     * Check if spell is appropriate for generation in current context
+     */
+    isSpellAppropriateForGeneration: function(spell, playerLevel, contentLevel, areaName, itemType) {
+        // Level appropriateness check
+        const maxSpellLevel = contentLevel + 3; // Allow spells up to 3 levels above content
+        const minSpellLevel = Math.max(1, contentLevel - 2); // Allow spells down to 2 levels below content
+
+        if (spell.learnLevel > maxSpellLevel || spell.learnLevel < minSpellLevel) {
+            return false;
+        }
+
+        // Scroll type restrictions
+        if (itemType === 'spell_scroll' && spell.learnLevel > 10) {
+            return false; // Basic scrolls don't contain high-level spells
+        }
+
+        if (itemType === 'spell_book' && (spell.learnLevel < 5 || spell.learnLevel > 15)) {
+            return false; // Books contain mid-level spells
+        }
+
+        if (itemType === 'spell_tome' && spell.learnLevel < 10) {
+            return false; // Tomes contain high-level spells
+        }
+
+        // Area-specific spell filtering
+        if (areaName && spell.element) {
+            const areaSpellAffinities = {
+                'fire_temple': ['fire'],
+                'ice_cavern': ['ice', 'water'],
+                'lightning_tower': ['thunder', 'electric'],
+                'nature_grove': ['nature', 'healing'],
+                'cursed_ruins': ['dark', 'death'],
+                'holy_sanctuary': ['holy', 'light', 'healing']
+            };
+
+            const areaAffinities = areaSpellAffinities[areaName];
+            if (areaAffinities && !areaAffinities.includes(spell.element)) {
+                // Allow non-matching spells but with reduced probability
+                return Math.random() < 0.3;
+            }
+        }
+
+        return true;
+    },
+
+    /**
+     * Select appropriate spell for item generation
+     */
+    selectSpellForItem: function(availableSpells, rarity, playerLevel) {
+        if (availableSpells.length === 0) return null;
+
+        // Weight spells by rarity and appropriateness
+        const weightedSpells = availableSpells.map(spell => {
+            let weight = 1.0;
+
+            // Rarity weighting
+            const rarityWeights = {
+                'common': { low: 2.0, mid: 1.0, high: 0.3 },
+                'uncommon': { low: 1.5, mid: 2.0, high: 0.8 },
+                'rare': { low: 0.8, mid: 1.5, high: 2.0 },
+                'epic': { low: 0.3, mid: 1.0, high: 2.5 },
+                'legendary': { low: 0.1, mid: 0.5, high: 3.0 }
+            };
+
+            // Categorize spell level
+            let levelCategory = 'mid';
+            if (spell.learnLevel <= 5) levelCategory = 'low';
+            else if (spell.learnLevel >= 15) levelCategory = 'high';
+
+            weight *= rarityWeights[rarity]?.[levelCategory] || 1.0;
+
+            // Prefer spells close to player level
+            const levelDistance = Math.abs(spell.learnLevel - playerLevel);
+            weight *= Math.max(0.2, 1.0 - (levelDistance * 0.1));
+
+            return { spell, weight };
+        });
+
+        // Weighted random selection
+        const totalWeight = weightedSpells.reduce((sum, item) => sum + item.weight, 0);
+        let randomWeight = Math.random() * totalWeight;
+
+        for (const item of weightedSpells) {
+            randomWeight -= item.weight;
+            if (randomWeight <= 0) {
+                return item.spell;
+            }
+        }
+
+        // Fallback to random selection
+        return availableSpells[Math.floor(Math.random() * availableSpells.length)];
+    },
+
+    /**
+     * Apply spell-specific properties to the generated item
+     */
+    applySpellItemProperties: function(item, spell, itemType, rarity) {
+        item.spellId = spell.id;
+        item.type = 'consumable';
+        item.usageType = 'spell_learning';
+
+        // Set item name and description
+        const typeNames = {
+            'spell_scroll': 'Scroll',
+            'spell_book': 'Book',
+            'spell_tome': 'Tome'
+        };
+
+        item.name = `${spell.name} ${typeNames[itemType]}`;
+        item.description = this.generateSpellItemDescription(spell, itemType);
+
+        // Set appropriate icon
+        item.icon = this.getSpellItemIcon(spell, itemType);
+
+        // Set spell learning effect
+        item.effect = {
+            type: 'learn_spell',
+            spell: spell.id
+        };
+
+        // Set requirements based on spell
+        item.requirements = this.generateSpellItemRequirements(spell, itemType);
+
+        // Adjust value based on spell level and type
+        item.value = this.calculateSpellItemValue(spell, itemType, rarity);
+    },
+
+    /**
+     * Generate description for spell learning item
+     */
+    generateSpellItemDescription: function(spell, itemType) {
+        const typeDescriptions = {
+            'spell_scroll': 'A magical scroll containing',
+            'spell_book': 'An ancient book teaching',
+            'spell_tome': 'A powerful tome inscribed with'
+        };
+
+        const baseDesc = typeDescriptions[itemType] || 'Contains';
+        return `${baseDesc} the ${spell.name} spell. ${spell.description || 'A useful magical ability.'}`;
+    },
+
+    /**
+     * Get appropriate icon for spell learning item
+     */
+    getSpellItemIcon: function(spell, itemType) {
+        const elementIcons = {
+            'fire': '🔥',
+            'ice': '❄️',
+            'water': '💧',
+            'thunder': '⚡',
+            'electric': '⚡',
+            'earth': '🌍',
+            'nature': '🌿',
+            'healing': '✨',
+            'holy': '☀️',
+            'light': '💡',
+            'dark': '🌑',
+            'death': '💀'
+        };
+
+        const typeBase = {
+            'spell_scroll': '📜',
+            'spell_book': '📚',
+            'spell_tome': '📖'
+        };
+
+        const base = typeBase[itemType] || '📜';
+        const element = elementIcons[spell.element] || '✨';
+
+        return base + element;
+    },
+
+    /**
+     * Generate requirements for spell learning item
+     */
+    generateSpellItemRequirements: function(spell, itemType) {
+        const requirements = {};
+
+        // Level requirements
+        if (spell.learnLevel > 1) {
+            requirements.level = Math.max(1, spell.learnLevel - 1);
+        }
+
+        // Class requirements
+        if (spell.availableClasses && spell.availableClasses.length > 0) {
+            requirements.classes = [...spell.availableClasses];
+        }
+
+        // Intelligence requirements for books and tomes
+        if (itemType === 'spell_book') {
+            requirements.minIntelligence = Math.max(10, spell.learnLevel + 5);
+        } else if (itemType === 'spell_tome') {
+            requirements.minIntelligence = Math.max(15, spell.learnLevel + 8);
+        }
+
+        // Story requirements for rare spells
+        if (spell.requirements && spell.requirements.story) {
+            requirements.story = spell.requirements.story;
+        }
+
+        return requirements;
+    },
+
+    /**
+     * Calculate value for spell learning item
+     */
+    calculateSpellItemValue: function(spell, itemType, rarity) {
+        let baseValue = spell.learnLevel * 20; // Base value scales with spell level
+
+        // Type multipliers
+        const typeMultipliers = {
+            'spell_scroll': 1.0,
+            'spell_book': 2.0,
+            'spell_tome': 4.0
+        };
+
+        baseValue *= typeMultipliers[itemType] || 1.0;
+
+        // Rarity multipliers
+        const rarityMultipliers = {
+            'common': 1.0,
+            'uncommon': 1.5,
+            'rare': 2.5,
+            'epic': 4.0,
+            'legendary': 8.0
+        };
+
+        baseValue *= rarityMultipliers[rarity] || 1.0;
+
+        return Math.round(baseValue);
+    },
+
+    /**
+     * Get fallback spells when SpellData is not available
+     */
+    getFallbackSpells: function(itemType) {
+        const fallbackSpells = [
+            { id: 'heal', name: 'Heal', learnLevel: 1, element: 'healing', availableClasses: ['wizard', 'paladin'] },
+            { id: 'fireball', name: 'Fireball', learnLevel: 3, element: 'fire', availableClasses: ['wizard'] },
+            { id: 'ice_shard', name: 'Ice Shard', learnLevel: 2, element: 'ice', availableClasses: ['wizard'] }
+        ];
+
+        return fallbackSpells.filter(spell => {
+            if (itemType === 'spell_scroll') return spell.learnLevel <= 10;
+            if (itemType === 'spell_book') return spell.learnLevel >= 5 && spell.learnLevel <= 15;
+            if (itemType === 'spell_tome') return spell.learnLevel >= 10;
+            return true;
+        });
     },
 
     /**
@@ -472,7 +777,10 @@ const LootSystem = {
             armor: { name: 'Armor', category: 'equipment', slot: 'armor', baseValue: 40 },
             accessory: { name: 'Accessory', category: 'equipment', slot: 'accessory', baseValue: 30 },
             potion: { name: 'Potion', category: 'consumable', stackable: true, baseValue: 10 },
-            material: { name: 'Material', category: 'material', stackable: true, baseValue: 5 }
+            material: { name: 'Material', category: 'material', stackable: true, baseValue: 5 },
+            spell_scroll: { name: 'Spell Scroll', category: 'spell_scroll', stackable: false, baseValue: 100 },
+            spell_book: { name: 'Spell Book', category: 'spell_book', stackable: false, baseValue: 200 },
+            spell_tome: { name: 'Spell Tome', category: 'spell_tome', stackable: false, baseValue: 500 }
         };
 
         return templates[itemType] ? { ...templates[itemType] } : null;
