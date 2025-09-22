@@ -364,6 +364,145 @@ class CombatEngine {
         return !!this.gameState.combat.active;
     }
 
+    /**
+     * Use an item during combat
+     * @param {string} itemId - The ID of the item to use
+     * @param {Object} target - The target to use the item on (optional for self-targeting items)
+     * @returns {Object} Result of item usage
+     */
+    useItem(itemId, target = null) {
+        console.log(`🎒 Combat useItem called: ${itemId} on ${target?.name || 'no target'}`);
+
+        // Check if player has the item first
+        if (!this.gameState.player.inventory.items[itemId] || this.gameState.player.inventory.items[itemId] <= 0) {
+            console.log(`🎒 Item ${itemId} not in inventory`);
+            return { success: false, reason: 'Item not in inventory' };
+        }
+
+        // Get item data to understand its effects
+        const itemData = this.gameState.getItemData(itemId);
+        if (!itemData) {
+            console.log(`🎒 Item ${itemId} data not found`);
+            return { success: false, reason: 'Unknown item' };
+        }
+
+        // For healing items in combat, handle targeting manually
+        if (itemData.usageType === 'healing' && target) {
+            return this.useHealingItemInCombat(itemId, itemData, target);
+        } else if (itemData.usageType === 'mana' && target) {
+            return this.useManaItemInCombat(itemId, itemData, target);
+        } else {
+            // For other items, delegate to game state
+            const result = this.gameState.useItem(itemId);
+            console.log(`🎒 Item ${itemId} used via GameState:`, result);
+            return result;
+        }
+    }
+
+    /**
+     * Handle healing item usage in combat with proper targeting
+     */
+    useHealingItemInCombat(itemId, itemData, target) {
+        const targetRef = this.getRef(target);
+        if (!targetRef) {
+            return { success: false, reason: 'Invalid target' };
+        }
+
+        const healAmount = itemData.effect?.healing || itemData.effect?.power || 20;
+        const currentHp = this.getStat(targetRef, 'hp', targetRef.maxHP || 100);
+        const maxHp = targetRef.maxHP || 100;
+
+        if (currentHp >= maxHp) {
+            return { success: false, reason: 'Target already at full health' };
+        }
+
+        // Apply healing
+        const newHp = Math.min(maxHp, currentHp + healAmount);
+        const actualHealing = newHp - currentHp;
+        targetRef.hp = newHp;
+
+        // Remove item from inventory
+        const removeResult = this.gameState.removeItem(itemId, 1);
+        console.log(`🎒 Remove item result for ${itemId}:`, removeResult);
+
+        console.log(`🎒 Healed ${target.name || 'target'} for ${actualHealing} HP`);
+
+        return {
+            success: true,
+            effect: { heal: actualHealing },
+            message: `Restored ${actualHealing} HP to ${target.name || 'target'}`
+        };
+    }
+
+    /**
+     * Handle mana item usage in combat with proper targeting
+     */
+    useManaItemInCombat(itemId, itemData, target) {
+        const targetRef = this.getRef(target);
+        if (!targetRef) {
+            return { success: false, reason: 'Invalid target' };
+        }
+
+        const manaAmount = itemData.effect?.mana || itemData.effect?.power || 10;
+        const currentMp = this.getStat(targetRef, 'mp', targetRef.maxMP || 50);
+        const maxMp = targetRef.maxMP || 50;
+
+        if (currentMp >= maxMp) {
+            return { success: false, reason: 'Target already at full mana' };
+        }
+
+        // Apply mana restoration
+        const newMp = Math.min(maxMp, currentMp + manaAmount);
+        const actualMana = newMp - currentMp;
+        targetRef.mp = newMp;
+
+        // Remove item from inventory
+        const removeResult = this.gameState.removeItem(itemId, 1);
+        console.log(`🎒 Remove item result for ${itemId}:`, removeResult);
+
+        console.log(`🎒 Restored ${actualMana} MP to ${target.name || 'target'}`);
+
+        return {
+            success: true,
+            effect: { mana: actualMana },
+            message: `Restored ${actualMana} MP to ${target.name || 'target'}`
+        };
+    }
+
+    /**
+     * Apply item effect to a target in combat
+     * @param {Object} effect - The effect to apply
+     * @param {Object} target - The target to apply effect to
+     */
+    applyItemEffectToTarget(effect, target) {
+        const targetRef = this.getRef(target);
+        if (!targetRef) return;
+
+        // Apply healing effects
+        if (effect.heal && effect.heal > 0) {
+            const currentHp = this.getStat(targetRef, 'hp', targetRef.maxHP || 100);
+            const maxHp = targetRef.maxHP || 100;
+            const newHp = Math.min(maxHp, currentHp + effect.heal);
+            targetRef.hp = newHp;
+            console.log(`🎒 Healed ${target.name || 'target'} for ${effect.heal} HP`);
+        }
+
+        // Apply mana restoration
+        if (effect.mana && effect.mana > 0) {
+            const currentMp = this.getStat(targetRef, 'mp', targetRef.maxMP || 50);
+            const maxMp = targetRef.maxMP || 50;
+            const newMp = Math.min(maxMp, currentMp + effect.mana);
+            targetRef.mp = newMp;
+            console.log(`🎒 Restored ${target.name || 'target'} ${effect.mana} MP`);
+        }
+
+        // Apply status effects (buffs/debuffs)
+        if (effect.statusEffect) {
+            // Add status effect logic here if needed
+            console.log(`🎒 Applied status effect to ${target.name || 'target'}`);
+        }
+    }
+
     // ================================================
     // CORE ACTIONS (5.2)
     // ================================================
@@ -402,10 +541,29 @@ class CombatEngine {
     healTarget(ref, amount) {
         this.ensureCurrentStats(ref);
         if (!ref || !ref.currentStats) return 0;
-        const maxHP = this.getStat(ref, 'hp', ref.currentStats.hp || 0);
+
+        // Get max HP from stats, with a reasonable fallback (100 for players, current HP for others)
+        let maxHP = this.getStat(ref, 'hp', 0);
+        if (maxHP <= 0) {
+            // If no max HP in stats, use a reasonable default based on what we know
+            if (ref.maxHP) {
+                maxHP = ref.maxHP;
+            } else if (ref.stats && ref.stats.maxHP) {
+                maxHP = ref.stats.maxHP;
+            } else {
+                // Default to 100 for player-like entities, or current HP + healing amount for others
+                maxHP = Math.max(100, (ref.currentStats.hp || 0) + amount);
+            }
+        }
+
+        console.log(`🎒 healTarget debug: maxHP=${maxHP}, currentHP=${ref.currentStats.hp}, healAmount=${amount}`);
+
         const before = ref.currentStats.hp || 0;
         ref.currentStats.hp = Math.min(maxHP, before + Math.max(1, Math.floor(amount)));
-        return ref.currentStats.hp - before;
+        const healed = ref.currentStats.hp - before;
+
+        console.log(`🎒 healTarget result: healed ${healed} HP (${before} -> ${ref.currentStats.hp})`);
+        return healed;
     }
     
     computeDamage(attackerRef, defenderRef, type = 'physical') {
@@ -703,14 +861,49 @@ class CombatEngine {
     }
 
     useItem(userId, itemId = 'health_potion') {
+        console.log(`🎒 CombatEngine.useItem called: userId=${userId}, itemId=${itemId}`);
+
         const u = this.getParticipantById(userId);
+        console.log(`🎒 Found participant:`, u);
+
         if (!u) return { success: false, reason: 'Invalid participant' };
+
+        const uRef = this.getRef(u);
+        console.log(`🎒 Player ref:`, uRef);
+
+        // CRITICAL FIX: Sync HP from UI player object to combat engine participant
+        const uiPlayer = this.gameState.combat?.player;
+        if (uiPlayer && uiPlayer.hp !== undefined) {
+            console.log(`🎒 Syncing HP from UI player (${uiPlayer.hp}) to combat participant (${uRef?.currentStats?.hp})`);
+            this.ensureCurrentStats(uRef);
+            if (uRef.currentStats) {
+                uRef.currentStats.hp = uiPlayer.hp;
+                console.log(`🎒 HP synced: combat participant now has ${uRef.currentStats.hp} HP`);
+            }
+        }
+
+        console.log(`🎒 Player ref HP sources:`, {
+            'ref.hp': uRef?.hp,
+            'ref.stats.hp': uRef?.stats?.hp,
+            'ref.maxHP': uRef?.maxHP,
+            'ref.stats.maxHP': uRef?.stats?.maxHP,
+            'ref.currentStats.hp': uRef?.currentStats?.hp
+        });
+
         const inv = this.gameState.player.inventory.items;
         if (!inv[itemId] || inv[itemId] <= 0) return { success: false, reason: 'No item' };
         // Currently only support a simple heal potion
         const healAmount = itemId === 'health_potion' ? 30 : 0;
         if (healAmount <= 0) return { success: false, reason: 'Unsupported item' };
-        const healed = this.healTarget(this.getRef(u), healAmount);
+        const healed = this.healTarget(uRef, healAmount);
+
+        // CRITICAL FIX: Sync healed HP back to UI player object
+        if (uiPlayer && healed > 0) {
+            const newHP = Math.min(uiPlayer.maxHp || 100, uiPlayer.hp + healed);
+            console.log(`🎒 Syncing healed HP back to UI player: ${uiPlayer.hp} -> ${newHP}`);
+            uiPlayer.hp = newHP;
+        }
+
         this.gameState.removeItem(itemId, 1);
         this.gameState.addNotification(`Used ${itemId}, healed ${healed}`, 'item');
         this.performAction({ type: 'item', itemId });

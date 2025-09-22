@@ -173,7 +173,14 @@ class CombatUI extends BaseUIModule {
         const submenu = document.getElementById(submenuId);
         if (submenu) {
             submenu.classList.remove('hidden');
-            
+
+            // Ensure submenu can receive clicks
+            if (submenuId === 'items-submenu') {
+                submenu.style.position = 'relative';
+                submenu.style.zIndex = '998';
+                submenu.style.pointerEvents = 'auto';
+            }
+
             // Populate submenu content based on type
             if (submenuId === 'magic-submenu') {
                 this.populateSpellList();
@@ -310,13 +317,36 @@ class CombatUI extends BaseUIModule {
 
         if (actionType === 'attack' || actionType === 'capture') {
             targets = enemies.filter(enemy => enemy.hp > 0);
-        } else if (actionType === 'magic' || actionType === 'item') {
-            // Could target enemies or allies depending on spell/item
+        } else if (actionType === 'magic') {
+            // Could target enemies or allies depending on spell
             targets = enemies.filter(enemy => enemy.hp > 0);
             // Add player and monsters as potential targets for healing/buffs
             if (combat.player) targets.push(combat.player);
             if (combat.playerMonsters) {
                 targets.push(...combat.playerMonsters.filter(m => m.hp > 0));
+            }
+        } else if (actionType === 'item') {
+            // For items, determine targets based on item type
+            const isHealingItem = actionData && (
+                actionData.includes('potion') ||
+                actionData.includes('heal') ||
+                actionData.includes('health') ||
+                actionData.includes('mana')
+            );
+
+            if (isHealingItem) {
+                // Healing items target allies only
+                if (combat.player) targets.push(combat.player);
+                if (combat.playerMonsters) {
+                    targets.push(...combat.playerMonsters.filter(m => m.hp > 0));
+                }
+            } else {
+                // Other items could target enemies or allies
+                targets = enemies.filter(enemy => enemy.hp > 0);
+                if (combat.player) targets.push(combat.player);
+                if (combat.playerMonsters) {
+                    targets.push(...combat.playerMonsters.filter(m => m.hp > 0));
+                }
             }
         }
         
@@ -722,12 +752,31 @@ class CombatUI extends BaseUIModule {
         }
         
         itemList.innerHTML = '';
+
+        // Ensure the item list container can receive clicks
+        itemList.style.position = 'relative';
+        itemList.style.zIndex = '999';
+        itemList.style.pointerEvents = 'auto';
+
         const inventory = gameState.player.inventory || {};
-        
+        const items = inventory.items || {};
+
+        // Debug: log all inventory items
+        console.log('🎒 All inventory items:', Object.entries(items).filter(([name, qty]) => qty > 0));
+
         // Get usable items in combat
-        const usableItems = Object.entries(inventory)
-            .filter(([itemName, quantity]) => quantity > 0 && this.isUsableInCombat(itemName))
+        const usableItems = Object.entries(items)
+            .filter(([itemName, quantity]) => {
+                const hasQuantity = quantity > 0;
+                const isUsable = this.isUsableInCombat(itemName);
+                if (hasQuantity && !isUsable) {
+                    console.log(`🎒 Item "${itemName}" not usable in combat`);
+                }
+                return hasQuantity && isUsable;
+            })
             .map(([itemName, quantity]) => ({ name: itemName, quantity }));
+
+        console.log('⚔️ Usable combat items:', usableItems);
         
         if (usableItems.length === 0) {
             const noItems = document.createElement('div');
@@ -737,6 +786,40 @@ class CombatUI extends BaseUIModule {
             noItems.style.textAlign = 'center';
             noItems.style.padding = '10px';
             itemList.appendChild(noItems);
+
+            // Add a back button when no items are available
+            const backBtn = document.createElement('button');
+            backBtn.className = 'item-btn back-btn';
+            backBtn.textContent = 'Back to Combat';
+
+            // Style the back button
+            backBtn.style.display = 'block';
+            backBtn.style.width = '100%';
+            backBtn.style.padding = '8px 12px';
+            backBtn.style.margin = '10px 0 4px 0';
+            backBtn.style.backgroundColor = '#e53e3e';
+            backBtn.style.color = '#ffffff';
+            backBtn.style.border = '1px solid #c53030';
+            backBtn.style.borderRadius = '4px';
+            backBtn.style.cursor = 'pointer';
+            backBtn.style.fontSize = '14px';
+            backBtn.style.position = 'relative';
+            backBtn.style.zIndex = '1000';
+            backBtn.style.pointerEvents = 'auto';
+
+            // Hover effects for back button
+            backBtn.addEventListener('mouseenter', () => {
+                backBtn.style.backgroundColor = '#fc8181';
+            });
+            backBtn.addEventListener('mouseleave', () => {
+                backBtn.style.backgroundColor = '#e53e3e';
+            });
+
+            this.addEventListener(backBtn, 'click', () => {
+                this.hideSubMenu('items-submenu');
+            });
+
+            itemList.appendChild(backBtn);
             return;
         }
         
@@ -744,30 +827,109 @@ class CombatUI extends BaseUIModule {
             const itemBtn = document.createElement('button');
             itemBtn.className = 'item-btn';
             itemBtn.textContent = `${item.name} (${item.quantity})`;
-            
-            this.addEventListener(itemBtn, 'click', () => {
-                this.hideSubMenu('items-submenu');
-                this.showTargetSelection('item', item.name);
+
+            // Ensure button is styled and clickable
+            itemBtn.style.display = 'block';
+            itemBtn.style.width = '100%';
+            itemBtn.style.padding = '8px 12px';
+            itemBtn.style.margin = '4px 0';
+            itemBtn.style.backgroundColor = '#4a5568';
+            itemBtn.style.color = '#e2e8f0';
+            itemBtn.style.border = '1px solid #718096';
+            itemBtn.style.borderRadius = '4px';
+            itemBtn.style.cursor = 'pointer';
+            itemBtn.style.fontSize = '14px';
+            itemBtn.style.position = 'relative';
+            itemBtn.style.zIndex = '1000';
+            itemBtn.style.pointerEvents = 'auto';
+
+            // Hover effects
+            itemBtn.addEventListener('mouseenter', () => {
+                itemBtn.style.backgroundColor = '#68d391';
+                itemBtn.style.color = '#1a202c';
             });
-            
+            itemBtn.addEventListener('mouseleave', () => {
+                itemBtn.style.backgroundColor = '#4a5568';
+                itemBtn.style.color = '#e2e8f0';
+            });
+
+            // Single click handler to avoid double execution
+            this.addEventListener(itemBtn, 'click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                console.log(`🎒 Item button clicked: ${item.name}`);
+                this.hideSubMenu('items-submenu');
+
+                // For healing items, auto-target the player
+                const isHealingItem = item.name && (
+                    item.name.includes('potion') ||
+                    item.name.includes('heal') ||
+                    item.name.includes('health') ||
+                    item.name.includes('mana')
+                );
+
+                if (isHealingItem) {
+                    const gameState = this.gameState || window.GameState;
+                    const combat = gameState.combat;
+                    const player = combat.player;
+
+                    if (player) {
+                        console.log(`🎒 Auto-targeting player for healing item: ${item.name}`);
+                        this.executeTargetedAction('item', player, item.name);
+                    } else {
+                        console.error('🎒 Player not found for healing item');
+                        this.notifyError('Player not found');
+                    }
+                } else {
+                    // For non-healing items, show target selection
+                    this.showTargetSelection('item', item.name);
+                }
+            });
+
+
             itemList.appendChild(itemBtn);
+            console.log(`🎒 Added button for ${item.name} to DOM`);
         });
-        
+
         console.log(`🎒 Populated ${usableItems.length} usable items`);
+        console.log(`🎒 Item list container children:`, itemList.children.length);
     }
 
     /**
      * Check if an item is usable in combat
-     * Extracted from original ui.js isUsableInCombat method
+     * Enhanced to check ItemData for consumable items
      */
     isUsableInCombat(itemName) {
+        // Hardcoded list of known combat items
         const combatItems = [
             'potion', 'hi_potion', 'ether', 'elixir',
             'antidote', 'eye_drops', 'echo_screen',
             'phoenix_down', 'remedy', 'mega_potion',
-            'healing_potion', 'mana_potion', 'stamina_potion'
+            'healing_potion', 'mana_potion', 'stamina_potion',
+            'health_potion'  // Add health_potion which is commonly generated
         ];
-        return combatItems.includes(itemName);
+
+        // Check hardcoded list first
+        if (combatItems.includes(itemName)) {
+            return true;
+        }
+
+        // Check ItemData if available for consumable items
+        if (typeof ItemData !== 'undefined' && ItemData.items) {
+            const itemData = ItemData.items[itemName];
+            if (itemData && itemData.type === 'consumable') {
+                return true;
+            }
+        }
+
+        // Check for common item naming patterns
+        if (itemName.includes('potion') || itemName.includes('elixir') ||
+            itemName.includes('antidote') || itemName.includes('remedy')) {
+            return true;
+        }
+
+        return false;
     }
 
     // ================================================
@@ -914,7 +1076,33 @@ class CombatUI extends BaseUIModule {
                     break;
                 case 'item':
                     if (actionData) {
-                        const itemResult = combat.useItem(actionData, target);
+                        console.log(`🎒 DEBUG: Starting item usage - ${actionData} on ${target.name || 'target'}`);
+                        console.log(`🎒 DEBUG: gameState.combatEngine exists?`, !!gameState.combatEngine);
+                        console.log(`🎒 DEBUG: UI target object:`, target);
+                        console.log(`🎒 DEBUG: UI target HP sources:`, {
+                            'target.hp': target.hp,
+                            'target.stats.hp': target?.stats?.hp,
+                            'target.maxHP': target.maxHP,
+                            'target.stats.maxHP': target?.stats?.maxHP,
+                            'target.currentStats.hp': target?.currentStats?.hp
+                        });
+
+                        // Use combatEngine for item usage, not the combat state object
+                        let itemResult = null;
+                        if (gameState.combatEngine && typeof gameState.combatEngine.useItem === 'function') {
+                            console.log(`🎒 DEBUG: Using combatEngine.useItem`);
+                            // CombatEngine.useItem expects (userId, itemId)
+                            itemResult = gameState.combatEngine.useItem('player', actionData);
+                        } else if (typeof gameState.useItem === 'function') {
+                            console.log(`🎒 DEBUG: Using gameState.useItem (fallback)`);
+                            itemResult = gameState.useItem(actionData);
+                        } else {
+                            console.error(`🎒 DEBUG: No useItem method available!`);
+                        }
+
+                        console.log(`🎒 DEBUG: itemResult:`, itemResult);
+                        console.log(`🎒 DEBUG: target HP after:`, target.hp);
+
                         const itemMsg = `${combat.player.name || 'Player'} uses ${actionData} on ${target.name || 'target'}!`;
                         this.addBattleLogEntry(itemMsg, 'item');
                         this.notifyInfo(itemMsg);
@@ -1368,7 +1556,8 @@ class CombatUI extends BaseUIModule {
         const itemsBtn = document.getElementById('items-btn');
         if (itemsBtn) {
             const player = combat.player || {};
-            const hasUsableItems = Object.entries(player.inventory || {})
+            const items = (player.inventory && player.inventory.items) || {};
+            const hasUsableItems = Object.entries(items)
                 .some(([item, qty]) => qty > 0 && this.isUsableInCombat(item));
             itemsBtn.disabled = !hasUsableItems;
             if (!hasUsableItems) console.log('🔒 Items disabled - no usable items');
