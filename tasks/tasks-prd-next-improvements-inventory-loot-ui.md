@@ -25,11 +25,11 @@
 
 ## Tasks
 
-- [ ] 1.0 Implement equipment type resolver in `lootSystem.js`
+- [x] 1.0 Implement equipment type resolver in `lootSystem.js`
   - [x] 1.1 Add a resolver for abstract types like `nature_equipment` that maps area/rarity → concrete item IDs.
   - [x] 1.2 Update area loot generation to call the resolver and handle failures gracefully (fallback to simple material drop if needed).
   - [x] 1.3 Add logs/warnings with actionable messages when unknown types are encountered.
-  - [ ] 1.4 Add unit tests to validate resolver outputs and rarity distribution.
+  - [x] 1.4 Add unit tests to validate resolver outputs and rarity distribution.
 
 - [ ] 2.0 Populate Available Equipment and enable equip/unequip in `InventoryUI`
   - [x] 2.1 Filter inventory to equipment types (`weapon`, `armor`, `accessory`) and render into `#equipment-list`.
