@@ -247,6 +247,11 @@ class CombatEngine {
             const enemyLevel = ref.level || 1;
             const species = ref.species || ref?.speciesData?.name || 'unknown';
 
+            // Track monster defeat for area progression
+            if (this.gameState && typeof this.gameState.trackMonsterDefeat === 'function') {
+                this.gameState.trackMonsterDefeat(species);
+            }
+
             // Enhanced XP calculation with level scaling
             let baseXP = enemyLevel * 8;
 

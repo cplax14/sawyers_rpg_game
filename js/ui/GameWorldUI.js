@@ -838,7 +838,21 @@ class GameWorldUI extends BaseUIModule {
                 progressText.textContent = ` (Currently ${currentLevel})`;
                 text.appendChild(progressText);
             } else if (req.type === 'story' && !isCompleted) {
-                // Add story progress hints if needed
+                // Add progress display for area clearing requirements
+                const areaClearingFlags = {
+                    'forest_path_cleared': 'forest_path',
+                    'plains_explored': 'plains',
+                    'mountains_cleared': 'mountains'
+                };
+
+                if (areaClearingFlags[req.flag]) {
+                    const areaName = areaClearingFlags[req.flag];
+                    const progress = this.getAreaClearingProgress(areaName);
+                    const progressText = document.createElement('span');
+                    progressText.className = 'progress-indicator';
+                    progressText.textContent = ` (${progress.totalDefeats}/${progress.required} monsters defeated)`;
+                    text.appendChild(progressText);
+                }
             }
 
             reqDiv.appendChild(icon);
