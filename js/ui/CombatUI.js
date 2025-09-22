@@ -954,7 +954,55 @@ class CombatUI extends BaseUIModule {
                 // Victory check
                 if (aliveEnemies.length === 0) {
                     this.addBattleLogEntry('Victory! Returning to world...', 'success');
-                    this.notifySuccess('Victory!');
+
+                    // Grant loot rewards and capture reward information
+                    const gameState = this.gameState || window.GameState;
+                    let rewardInfo = { experience: 0, gold: 0, items: [], itemText: '' };
+
+                    if (gameState?.combatEngine && typeof gameState.combatEngine.endBattle === 'function') {
+                        // Create defeated enemies list for rewards
+                        const defeatedEnemies = (combat.enemies || []).map(enemy => ({
+                            ref: {
+                                species: enemy.species || enemy.name,
+                                level: enemy.level || 1
+                            }
+                        }));
+
+                        // Call combat engine's endBattle with victory result to trigger loot
+                        const endBattleResult = gameState.combatEngine.endBattle({
+                            victory: true,
+                            defeated: defeatedEnemies
+                        });
+
+                        // Get reward info from combat state
+                        if (gameState.combat && gameState.combat.rewardData) {
+                            rewardInfo = gameState.combat.rewardData;
+                        }
+                    } else {
+                        // Fallback: call grantRewards directly if combat engine not available
+                        console.log('⚠️ Combat engine not available, using fallback loot system');
+                        const defeatedEnemies = (combat.enemies || []).map(enemy => ({
+                            ref: {
+                                species: enemy.species || enemy.name,
+                                level: enemy.level || 1
+                            }
+                        }));
+
+                        // Manually call the reward system and capture results
+                        if (gameState?.combatEngine?.grantRewards) {
+                            const rewardData = gameState.combatEngine.grantRewards({
+                                victory: true,
+                                defeated: defeatedEnemies
+                            });
+                            if (rewardData) {
+                                rewardInfo = rewardData;
+                            }
+                        }
+                    }
+
+                    // Show enhanced victory modal with reward information
+                    this.showVictoryModal(rewardInfo);
+
                     // Reset combat state after victory
                     combat.active = false;
                     combat.currentTurn = null;
@@ -1642,6 +1690,283 @@ class CombatUI extends BaseUIModule {
             return this.uiManager.game[property];
         }
         return null;
+    }
+
+    /**
+     * Show victory modal with detailed battle results
+     * @param {Object} rewardInfo - Information about battle rewards
+     */
+    showVictoryModal(rewardInfo) {
+        // Create modal if it doesn't exist
+        let modal = document.getElementById('victory-modal');
+        if (!modal) {
+            modal = this.createVictoryModal();
+        }
+
+        // Populate modal with victory information
+        const expEl = modal.querySelector('.victory-experience');
+        const goldEl = modal.querySelector('.victory-gold');
+        const itemsEl = modal.querySelector('.victory-items');
+        const noItemsEl = modal.querySelector('.victory-no-items');
+
+        if (expEl) expEl.textContent = `+${rewardInfo.experience || 0} EXP`;
+        if (goldEl) goldEl.textContent = `+${rewardInfo.gold || 0} Gold`;
+
+        // Handle items list
+        if (rewardInfo.items && rewardInfo.items.length > 0) {
+            if (itemsEl) {
+                itemsEl.innerHTML = '';
+                rewardInfo.items.forEach(item => {
+                    const itemEl = document.createElement('li');
+                    itemEl.textContent = item;
+                    itemsEl.appendChild(itemEl);
+                });
+                itemsEl.style.display = 'block';
+            }
+            if (noItemsEl) noItemsEl.style.display = 'none';
+        } else {
+            if (itemsEl) itemsEl.style.display = 'none';
+            if (noItemsEl) noItemsEl.style.display = 'block';
+        }
+
+        // Show modal
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+        modal.focus();
+    }
+
+    /**
+     * Create the victory modal DOM structure
+     */
+    createVictoryModal() {
+        const modal = document.createElement('div');
+        modal.id = 'victory-modal';
+        modal.className = 'victory-modal hidden';
+        modal.tabIndex = -1;
+        modal.innerHTML = `
+            <div class="victory-modal-backdrop"></div>
+            <div class="victory-modal-content">
+                <div class="victory-header">
+                    <span class="victory-icon">🎉</span>
+                    <h2 class="victory-title">Victory!</h2>
+                </div>
+                <div class="victory-body">
+                    <div class="victory-rewards">
+                        <h3>Battle Rewards</h3>
+                        <div class="victory-rewards-grid">
+                            <div class="victory-reward-item">
+                                <span class="victory-reward-icon">⭐</span>
+                                <span class="victory-experience">+0 EXP</span>
+                            </div>
+                            <div class="victory-reward-item">
+                                <span class="victory-reward-icon">💰</span>
+                                <span class="victory-gold">+0 Gold</span>
+                            </div>
+                        </div>
+
+                        <div class="victory-items-section">
+                            <h4>Items Obtained:</h4>
+                            <ul class="victory-items"></ul>
+                            <p class="victory-no-items">No items obtained</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="victory-footer">
+                    <button class="btn primary victory-continue-btn">Continue</button>
+                </div>
+            </div>
+        `;
+
+        // Add event listeners
+        const continueBtn = modal.querySelector('.victory-continue-btn');
+        const backdrop = modal.querySelector('.victory-modal-backdrop');
+
+        const closeModal = () => {
+            modal.classList.add('hidden');
+            modal.style.display = 'none';
+        };
+
+        if (continueBtn) continueBtn.addEventListener('click', closeModal);
+        if (backdrop) backdrop.addEventListener('click', closeModal);
+
+        // Close on Escape key
+        modal.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // Add CSS styles
+        this.addVictoryModalStyles();
+
+        // Add to document
+        document.body.appendChild(modal);
+        return modal;
+    }
+
+    /**
+     * Add CSS styles for victory modal
+     */
+    addVictoryModalStyles() {
+        if (document.getElementById('victory-modal-styles')) return;
+
+        const styles = document.createElement('style');
+        styles.id = 'victory-modal-styles';
+        styles.textContent = `
+            .victory-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .victory-modal.hidden {
+                display: none !important;
+            }
+
+            .victory-modal-backdrop {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.7);
+            }
+
+            .victory-modal-content {
+                position: relative;
+                background: var(--background-primary, #2c1810);
+                border: 3px solid #4caf50;
+                border-radius: 12px;
+                padding: 0;
+                max-width: 500px;
+                width: 90%;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+                font-family: var(--font-primary, 'Georgia', serif);
+            }
+
+            .victory-header {
+                display: flex;
+                align-items: center;
+                gap: 16px;
+                padding: 20px 24px;
+                border-bottom: 2px solid #4caf50;
+                background: linear-gradient(135deg, #388e3c, #2e7d32);
+                border-radius: 9px 9px 0 0;
+            }
+
+            .victory-icon {
+                font-size: 32px;
+                line-height: 1;
+            }
+
+            .victory-title {
+                margin: 0;
+                color: white;
+                font-size: 24px;
+                font-weight: bold;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            }
+
+            .victory-body {
+                padding: 24px;
+            }
+
+            .victory-rewards h3 {
+                margin: 0 0 16px 0;
+                color: var(--text-primary, #f4e4bc);
+                font-size: 18px;
+                text-align: center;
+            }
+
+            .victory-rewards-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+                margin-bottom: 20px;
+            }
+
+            .victory-reward-item {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 12px;
+                background: var(--background-secondary, #3d2415);
+                border: 1px solid var(--primary-gold, #d4af37);
+                border-radius: 8px;
+                justify-content: center;
+            }
+
+            .victory-reward-icon {
+                font-size: 20px;
+            }
+
+            .victory-experience,
+            .victory-gold {
+                color: var(--text-primary, #f4e4bc);
+                font-weight: bold;
+                font-size: 16px;
+            }
+
+            .victory-items-section h4 {
+                margin: 0 0 12px 0;
+                color: var(--text-primary, #f4e4bc);
+                font-size: 16px;
+            }
+
+            .victory-items {
+                margin: 0 0 0 20px;
+                padding: 0;
+                list-style: none;
+            }
+
+            .victory-items li {
+                color: var(--text-primary, #f4e4bc);
+                padding: 4px 0;
+                position: relative;
+            }
+
+            .victory-items li:before {
+                content: "•";
+                color: var(--primary-gold, #d4af37);
+                font-weight: bold;
+                position: absolute;
+                left: -12px;
+            }
+
+            .victory-no-items {
+                color: var(--text-secondary, #b8860b);
+                font-style: italic;
+                margin: 0;
+            }
+
+            .victory-footer {
+                padding: 20px 24px;
+                border-top: 1px solid var(--primary-gold, #d4af37);
+                display: flex;
+                justify-content: center;
+            }
+
+            .victory-continue-btn {
+                padding: 12px 32px;
+                background: var(--primary-gold, #d4af37);
+                color: var(--background-primary, #2c1810);
+                border: none;
+                border-radius: 6px;
+                font-weight: bold;
+                font-size: 16px;
+                cursor: pointer;
+                transition: background 0.2s;
+            }
+
+            .victory-continue-btn:hover {
+                background: var(--secondary-gold, #b8941f);
+            }
+        `;
+        document.head.appendChild(styles);
     }
 
     /**

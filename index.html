@@ -20,6 +20,8 @@
                         <h1 class="game-title">Sawyer's RPG Game</h1>
                         <p class="game-subtitle">A Fantasy Adventure</p>
                     </div>
+
+            
                     
                     <div class="main-menu-art">
                         <div class="menu-emblem">⚔️</div>
@@ -653,16 +655,16 @@
             <div id="inventory" class="screen">
                 <div class="inventory-content">
                     <header class="inventory-header">
-                        <h2 class="inventory-title">Inventory & Equipment</h2>
+                        <h2 class="inventory-title">Inventory &amp; Equipment</h2>
                         <div class="player-gold">
                             <span class="gold-icon">💰</span>
-                            <span class="gold-amount" id="player-gold">0</span>
+                            <span class="gold-amount" id="inventory-gold">0</span>
                             <span class="gold-label">Gold</span>
                         </div>
                     </header>
                     
                     <!-- Tab Navigation -->
-                    <div class="inventory-tabs">
+                    <div class="inventory-tabs" id="inventory-tabs">
                         <button class="tab-btn active" data-tab="equipment">
                             <span class="tab-icon">⚔️</span>
                             <span class="tab-text">Equipment</span>
@@ -686,6 +688,15 @@
                                     <h3 id="character-name">Player</h3>
                                     <p class="character-class" id="character-class">Knight</p>
                                     <p class="character-level">Level <span id="character-level">1</span></p>
+                                    <div class="experience-progress">
+                                        <div class="exp-info">
+                                            <span class="exp-text">EXP: <span id="character-experience">0</span> / <span id="character-experience-next">100</span></span>
+                                            <span class="exp-percent" id="character-experience-percent"> (0%)</span>
+                                        </div>
+                                        <div class="exp-bar">
+                                            <div class="exp-fill" id="character-exp-fill" style="width: 0%"></div>
+                                        </div>
+                                    </div>
                                 </div>
                                 
                                 <!-- Equipment Slots -->

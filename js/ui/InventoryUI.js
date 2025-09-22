@@ -27,7 +27,6 @@ class InventoryUI extends BaseUIModule {
             backButton: document.getElementById('back-from-inventory'),
             tabs: document.getElementById('inventory-tabs'),
             itemList: document.getElementById('inventory-items'),
-            equipmentPanel: document.getElementById('equipment-panel'),
             filterSelect: document.getElementById('inventory-filter'),
             goldDisplay: document.getElementById('inventory-gold')
         };
@@ -58,7 +57,7 @@ class InventoryUI extends BaseUIModule {
         }
 
         if (itemList) {
-            // Delegate clicks for item interaction; specific actions will be implemented in later subtasks
+            // Delegate clicks for item interaction; specific actions will be implemented later
             this.addEventListener(itemList, 'click', (e) => {
                 const row = e.target.closest('[data-item-id]');
                 if (!row) return;
@@ -67,6 +66,26 @@ class InventoryUI extends BaseUIModule {
                 this.openItemDetail(itemId);
             });
         }
+
+        // Equipment list click-to-equip (delegation)
+        const equipmentList = document.getElementById('equipment-list');
+        if (equipmentList) {
+            this.addEventListener(equipmentList, 'click', (e) => {
+                const row = e.target.closest('.equipment-list-row');
+                if (!row) return;
+                const itemId = row.getAttribute('data-item-id');
+                if (!itemId) return;
+                this.equipItem(itemId);
+            });
+        }
+
+        // Equipment filters
+        document.querySelectorAll('.equipment-filters .filter-btn').forEach(btn => {
+            this.addEventListener(btn, 'click', () => {
+                const filter = btn.getAttribute('data-filter') || 'all';
+                this.setEquipmentFilter(filter);
+            });
+        });
 
         // Tabs
         document.querySelectorAll('.inventory-tabs .tab-btn').forEach(btn => {
@@ -132,9 +151,10 @@ class InventoryUI extends BaseUIModule {
             });
         }
 
-        // Equipment slot click-to-unequip (delegate on panel)
-        if (this.elements.equipmentPanel) {
-            this.addEventListener(this.elements.equipmentPanel, 'click', (e) => {
+        // Equipment slot click-to-unequip (delegate on equipment slots container)
+        const equipmentSlotsContainer = document.querySelector('.equipment-slots');
+        if (equipmentSlotsContainer) {
+            this.addEventListener(equipmentSlotsContainer, 'click', (e) => {
                 const slotEl = e.target.closest('.equipment-slot');
                 if (!slotEl) return;
                 const slotType = slotEl.getAttribute('data-slot');
@@ -164,7 +184,14 @@ class InventoryUI extends BaseUIModule {
             this.cacheElements();
             this.attachEvents();
         }
+        try {
+            const gs = this.getGameState();
+            const inv = gs?.player?.inventory?.items || {};
+            console.log('[INV DEBUG] onShow - inventory keys:', Object.keys(inv), 'gold:', gs?.player?.inventory?.gold);
+        } catch(_) {}
         this.refreshAll();
+        // Ensure character stats/EXP are up to date when entering the screen
+        try { this.updateCharacterStatsDisplay(); } catch (_) {}
     }
 
     // Called when module is hidden
@@ -177,6 +204,7 @@ class InventoryUI extends BaseUIModule {
         this.refreshHeader();
         this.refreshInventoryList();
         this.refreshEquipmentPanel();
+        this.updateCharacterStatsDisplay();
         // Ensure current tab content is populated
         this.switchTab(this.state.selectedTab || 'items');
     }
@@ -200,6 +228,7 @@ class InventoryUI extends BaseUIModule {
         const gs = this.getGameState();
         const items = gs?.player?.inventory?.items || {};
         const entries = Object.entries(items);
+        console.log('[INV DEBUG] refreshInventoryList entries:', entries.length);
         const filtered = this.applyFilters(entries);
 
         itemList.innerHTML = '';
@@ -254,31 +283,35 @@ class InventoryUI extends BaseUIModule {
 
     // Equipment panel refresh (skeleton; full logic in 7.2–7.4)
     refreshEquipmentPanel() {
-        const { equipmentPanel } = this.elements;
-        if (!equipmentPanel) return;
-
         const gs = this.getGameState();
         const eq = gs?.player?.equipment || {};
-        equipmentPanel.innerHTML = '';
-
+        // Update individual equipment slots using the existing HTML structure
         const slots = ['weapon', 'armor', 'accessory'];
         slots.forEach((slot) => {
-            const row = document.createElement('div');
-            row.className = 'equipment-row';
-
-            const label = document.createElement('span');
-            label.className = 'equipment-slot';
-            label.setAttribute('data-slot', slot);
-            label.textContent = slot.charAt(0).toUpperCase() + slot.slice(1);
-
-            const value = document.createElement('span');
-            value.className = 'equipment-item';
+            const slotElement = document.getElementById(`equipped-${slot}`);
             const itemId = eq[slot] || null;
-            value.textContent = itemId ? this.formatItemName(itemId) : 'None';
 
-            row.appendChild(label);
-            row.appendChild(value);
-            equipmentPanel.appendChild(row);
+            if (slotElement) {
+                const itemNameEl = slotElement.querySelector('.item-name');
+                const itemIconEl = slotElement.querySelector('.item-icon');
+
+                if (itemNameEl) {
+                    itemNameEl.textContent = itemId ? this.formatItemName(itemId) : 'None';
+                }
+                if (itemIconEl && itemId) {
+                    // Try to get the item icon from ItemData
+                    const item = window.ItemData?.getItem?.(itemId);
+                    if (item?.icon) {
+                        itemIconEl.textContent = item.icon;
+                    } else {
+                        // Default icons based on slot type
+                        const defaultIcons = { weapon: '⚔️', armor: '🛡️', accessory: '💍' };
+                        itemIconEl.textContent = defaultIcons[slot] || '⚔️';
+                    }
+                } else if (itemIconEl) {
+                    itemIconEl.textContent = '❌';
+                }
+            }
         });
     }
 
@@ -303,6 +336,14 @@ class InventoryUI extends BaseUIModule {
         // Populate active tab
         switch (tabName) {
             case 'equipment':
+                // Recalculate stats based on current equipment and level
+                const gs = this.getGameState();
+                if (gs && typeof gs.recalcPlayerStats === 'function') {
+                    gs.recalcPlayerStats();
+                }
+                // Update player panel, stats, EXP, equipped items and list
+                this.updateCharacterStatsDisplay();
+                this.refreshEquipmentPanel();
                 this.renderEquipmentList(this.state.equipmentFilter || 'all');
                 break;
             case 'items':
@@ -344,40 +385,37 @@ class InventoryUI extends BaseUIModule {
     // -------------------------------
 
     updateEquipmentSlots(equipment) {
-        // Rebuild the equipment panel using provided equipment mapping
-        const { equipmentPanel } = this.elements;
-        if (!equipmentPanel) return;
+        // Update equipment slots using the existing HTML structure
         const eq = equipment || {};
-        equipmentPanel.innerHTML = '';
-        ['weapon', 'armor', 'accessory'].forEach(slot => {
-            const row = document.createElement('div');
-            row.className = 'equipment-row';
-            const label = document.createElement('span');
-            label.className = 'equipment-slot';
-            label.setAttribute('data-slot', slot);
-            label.textContent = slot.charAt(0).toUpperCase() + slot.slice(1);
-            const value = document.createElement('span');
-            value.className = 'equipment-item';
-            const itemId = eq[slot] || null;
-            value.textContent = itemId ? this.formatItemName(itemId) : 'None';
-            row.appendChild(label);
-            row.appendChild(value);
-            equipmentPanel.appendChild(row);
-        });
+        // Use the same logic as refreshEquipmentPanel
+        this.refreshEquipmentPanel();
     }
 
     renderEquipmentList(filter = 'all') {
         const container = document.getElementById('equipment-list');
         if (!container) return;
+        
+        // Clean up any existing tooltip event listeners
+        const existingRows = container.querySelectorAll('.equipment-list-row');
+        existingRows.forEach(row => {
+            if (row._cleanupTooltip) {
+                row._cleanupTooltip();
+            }
+        });
         const gs = this.getGameState();
-        const items = gs?.player?.inventory?.items || {};
+        const player = gs?.player;
+        const items = player?.inventory?.items || {};
         const entries = Object.entries(items);
+        
+        // Get currently equipped items
+        const equippedItems = player?.equipment ? Object.values(player.equipment) : [];
+        
         // If ItemData exists, filter by equipment types and requested filter
         const filtered = entries.filter(([itemId, qty]) => {
             if (qty <= 0) return false;
             if (typeof window.ItemData !== 'undefined' && window.ItemData?.getItem) {
                 const item = window.ItemData.getItem(itemId);
-                const isEquip = ['weapon', 'armor', 'accessory'].includes(item?.type);
+                const isEquip = item && ['weapon', 'armor', 'accessory'].includes(item.type);
                 if (!isEquip) return false;
                 if (filter === 'all') return true;
                 return item.type === filter;
@@ -397,16 +435,119 @@ class InventoryUI extends BaseUIModule {
 
         filtered.forEach(([itemId, qty]) => {
             const row = document.createElement('div');
+            const item = window.ItemData?.getItem?.(itemId);
+            const isEquipped = equippedItems.includes(itemId);
+            
+            // Set row classes and attributes
             row.className = 'equipment-list-row';
+            if (isEquipped) {
+                row.classList.add('equipped');
+            }
             row.setAttribute('data-item-id', itemId);
-            const name = document.createElement('span');
+            
+            // Create item icon
+            const icon = document.createElement('span');
+            icon.className = 'item-icon';
+            icon.textContent = item?.icon || '⚔️';
+            
+            // Item info container
+            const infoContainer = document.createElement('div');
+            infoContainer.className = 'item-info';
+            
+            // Item name
+            const name = document.createElement('div');
             name.className = 'item-name';
             name.textContent = this.formatItemName(itemId);
+            
+            // Item quantity
             const count = document.createElement('span');
             count.className = 'item-qty';
             count.textContent = `x${qty}`;
-            row.appendChild(name);
-            row.appendChild(count);
+            
+            // Add equipped badge if equipped
+            if (isEquipped) {
+                const badge = document.createElement('span');
+                badge.className = 'equipped-badge';
+                badge.textContent = 'Equipped';
+                name.appendChild(badge);
+            }
+            
+            // Assemble the row
+            infoContainer.appendChild(name);
+            infoContainer.appendChild(count);
+            
+            row.appendChild(icon);
+            row.appendChild(infoContainer);
+            
+            // Add tooltip functionality
+            if (item?.description) {
+                const tooltip = document.createElement('div');
+                tooltip.className = 'equipment-tooltip';
+                tooltip.textContent = item.description;
+                row.appendChild(tooltip);
+                
+                // Add hover events for tooltip
+                row.addEventListener('mouseenter', (e) => {
+                    // Show the tooltip first to calculate its dimensions
+                    tooltip.style.visibility = 'visible';
+                    tooltip.style.opacity = '1';
+                    
+                    // Get the row's position
+                    const rect = row.getBoundingClientRect();
+                    
+                    // Check if tooltip would go off screen to the right
+                    const tooltipWidth = 250; // Max width from CSS
+                    const rightSpace = window.innerWidth - rect.right - 20;
+                    const useLeftPosition = rightSpace < tooltipWidth;
+                    
+                    // Position the tooltip
+                    if (useLeftPosition) {
+                        tooltip.classList.add('left');
+                        tooltip.classList.remove('right');
+                        tooltip.style.left = `${rect.left - 15}px`;
+                    } else {
+                        tooltip.classList.add('right');
+                        tooltip.classList.remove('left');
+                        tooltip.style.left = `${rect.right + 15}px`;
+                    }
+                    
+                    // Center vertically
+                    tooltip.style.top = `${rect.top + (rect.height / 2)}px`;
+                    
+                    row.classList.add('hover');
+                });
+                
+                row.addEventListener('mouseleave', () => {
+                    tooltip.style.visibility = 'hidden';
+                    tooltip.style.opacity = '0';
+                    row.classList.remove('hover');
+                });
+                
+                // Handle window resize to reposition tooltips if needed
+                const handleResize = () => {
+                    if (row.classList.contains('hover')) {
+                        row.dispatchEvent(new Event('mouseenter'));
+                    }
+                };
+                
+                window.addEventListener('resize', handleResize);
+                
+                // Clean up event listener when row is removed
+                row._cleanupTooltip = () => {
+                    window.removeEventListener('resize', handleResize);
+                };
+            }
+            
+            // Add click handler for item actions
+            row.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.openItemDetail(itemId);
+            });
+            
+            // Position the row as relative to contain absolute tooltips
+            row.style.position = 'relative';
+            
+            // Add the row to the container
             container.appendChild(row);
         });
     }
@@ -417,17 +558,24 @@ class InventoryUI extends BaseUIModule {
         const gs = this.getGameState();
         const items = gs?.player?.inventory?.items || {};
         const entries = Object.entries(items);
+        console.log('[INV DEBUG] renderItemsGrid entries:', entries.length, 'filter:', filter);
         const filtered = entries.filter(([itemId, qty]) => {
             if (qty <= 0) return false;
+            // Prefer ItemData classification when available
             if (typeof window.ItemData !== 'undefined' && window.ItemData?.getItem) {
                 const item = window.ItemData.getItem(itemId);
-                if (!item) return false;
+                // If item is unknown to ItemData, still show it as a generic item
+                if (!item) return true;
+                // Hide equipment from the Items tab
                 if (['weapon', 'armor', 'accessory'].includes(item.type)) return false;
                 if (filter === 'all') return true;
+                // If a specific filter is set, apply it to known items; unknown items already passed above
                 return item.type === filter;
             }
+            // Fallback: no ItemData -> show all entries in Items tab
             return true;
         });
+        console.log('[INV DEBUG] renderItemsGrid filtered:', filtered);
 
         container.innerHTML = '';
         if (filtered.length === 0) {
@@ -435,6 +583,7 @@ class InventoryUI extends BaseUIModule {
             empty.className = 'empty-state';
             empty.textContent = 'No items';
             container.appendChild(empty);
+            console.log('[INV DEBUG] renderItemsGrid filtered=0');
             return;
         }
 
@@ -450,8 +599,15 @@ class InventoryUI extends BaseUIModule {
             count.textContent = `x${qty}`;
             cell.appendChild(name);
             cell.appendChild(count);
+            // Debug visual aid to ensure visibility
+            cell.style.border = '1px solid rgba(255,255,255,0.2)';
+            cell.style.padding = '6px';
+            cell.style.margin = '4px';
             container.appendChild(cell);
         });
+        // Ensure container is visible
+        container.style.minHeight = '60px';
+        container.style.color = getComputedStyle(document.body).color || '#fff';
     }
 
     renderMaterialsGrid(filter = 'all') {
@@ -460,17 +616,23 @@ class InventoryUI extends BaseUIModule {
         const gs = this.getGameState();
         const items = gs?.player?.inventory?.items || {};
         const entries = Object.entries(items);
+        console.log('[INV DEBUG] renderMaterialsGrid entries:', entries.length, 'filter:', filter);
         const filtered = entries.filter(([itemId, qty]) => {
             if (qty <= 0) return false;
+            // Prefer ItemData classification when available
             if (typeof window.ItemData !== 'undefined' && window.ItemData?.getItem) {
                 const item = window.ItemData.getItem(itemId);
-                if (!item) return false;
-                // Heuristic: treat type === 'material' as crafting material
-                if (filter === 'all') return item.type === 'material';
-                return item.type === 'material' && item.subtype === filter;
+                // If item not found in ItemData, still show it in Materials as a generic entry
+                if (!item) return true;
+                // Only include materials here when known
+                if (item.type !== 'material') return false;
+                if (filter === 'all') return true;
+                return item.subtype === filter;
             }
-            return false;
+            // Fallback: no ItemData -> show all entries in Materials tab as a generic list
+            return true;
         });
+        console.log('[INV DEBUG] renderMaterialsGrid filtered:', filtered);
 
         container.innerHTML = '';
         if (filtered.length === 0) {
@@ -478,6 +640,7 @@ class InventoryUI extends BaseUIModule {
             empty.className = 'empty-state';
             empty.textContent = 'No materials';
             container.appendChild(empty);
+            console.log('[INV DEBUG] renderMaterialsGrid filtered=0');
             return;
         }
 
@@ -493,8 +656,14 @@ class InventoryUI extends BaseUIModule {
             count.textContent = `x${qty}`;
             cell.appendChild(name);
             cell.appendChild(count);
+            // Debug visual aid
+            cell.style.border = '1px solid rgba(255,255,255,0.2)';
+            cell.style.padding = '6px';
+            cell.style.margin = '4px';
             container.appendChild(cell);
         });
+        container.style.minHeight = '60px';
+        container.style.color = getComputedStyle(document.body).color || '#fff';
     }
 
     // Utility: prettify item id
@@ -508,8 +677,17 @@ class InventoryUI extends BaseUIModule {
 
     updateCharacterStatsDisplay() {
         const gs = this.getGameState();
-        if (!gs || !gs.player || typeof gs.player.getEffectiveStats !== 'function') return;
-        const stats = gs.player.getEffectiveStats();
+        if (!gs || !gs.player) return;
+        // Prefer a character method if available; otherwise fall back to stored stats
+        let stats = null;
+        try {
+            if (typeof gs.player.getEffectiveStats === 'function') {
+                stats = gs.player.getEffectiveStats();
+            }
+        } catch (_) { /* ignore */ }
+        if (!stats) {
+            stats = gs.player.stats || {};
+        }
         const statMapping = {
             'stat-hp': 'hp',
             'stat-mp': 'mp',
@@ -522,10 +700,50 @@ class InventoryUI extends BaseUIModule {
         };
         for (const [elId, key] of Object.entries(statMapping)) {
             const el = document.getElementById(elId);
-            if (el && stats[key] !== undefined) {
-                el.textContent = stats[key];
+            if (el) {
+                // Provide graceful fallback values to ensure stats are always visible
+                const value = stats[key] !== undefined ? stats[key] : 0;
+                el.textContent = value;
             }
         }
+
+        // Update character level and experience progress
+        this.updateExperienceDisplay();
+    }
+
+    updateExperienceDisplay() {
+        const gs = this.getGameState();
+        if (!gs || !gs.player) return;
+
+        const player = gs.player;
+        const level = player.level || 1;
+        const currentExp = player.experience || 0;
+        // Fallback formula if experienceToNext is not tracked on player
+        const expToNext = player.experienceToNext || (typeof player.getExpToNext === 'function' ? player.getExpToNext() : Math.max(50, level * 100));
+        const expProgress = expToNext > 0 ? Math.min(100, (currentExp / expToNext) * 100) : 0;
+
+        try {
+            console.log('[INV DEBUG] EXP display:', { level, currentExp, expToNext, expProgress: Math.round(expProgress) });
+        } catch (_) {}
+
+        // Update level display
+        const levelEl = document.getElementById('character-level');
+        if (levelEl) levelEl.textContent = level;
+
+        // Update experience display
+        const expEl = document.getElementById('character-experience');
+        const expNextEl = document.getElementById('character-experience-next');
+        const expFillEl = document.getElementById('character-exp-fill');
+        const expPctEl = document.getElementById('character-experience-percent');
+
+        if (expEl) expEl.textContent = currentExp;
+        if (expNextEl) expNextEl.textContent = expToNext;
+        if (expFillEl) {
+            expFillEl.style.width = `${expProgress}%`;
+            expFillEl.style.minWidth = '2%';
+            expFillEl.style.backgroundColor = 'rgba(255,215,0,0.6)';
+        }
+        if (expPctEl) expPctEl.textContent = ` (${Math.round(expProgress)}%)`;
     }
 
     getItemStatsString(item) {
@@ -536,6 +754,60 @@ class InventoryUI extends BaseUIModule {
             parts.push(`${stat}: ${sign}${val}`);
         }
         return parts.join(', ');
+    }
+
+    /**
+     * Calculate stat differences between currently equipped item and a new item
+     * @param {string} itemId - The ID of the item to compare
+     * @returns {Object} Object containing stat deltas and comparison info
+     */
+    getStatDeltas(itemId) {
+        const gs = this.getGameState();
+        if (!gs || !gs.player || !window.ItemData) return null;
+
+        const item = window.ItemData.getItem(itemId);
+        if (!item || !['weapon', 'armor', 'accessory'].includes(item.type)) return null;
+
+        const slot = item.type;
+        const currentItemId = gs.player.equipment?.[slot];
+        const currentItem = currentItemId ? window.ItemData.getItem(currentItemId) : null;
+
+        const deltas = {};
+        const statMapping = {
+            'hp': 'HP',
+            'mp': 'MP',
+            'attack': 'Attack',
+            'defense': 'Defense',
+            'magicAttack': 'Magic Atk',
+            'magicDefense': 'Magic Def',
+            'speed': 'Speed',
+            'accuracy': 'Accuracy'
+        };
+
+        // Calculate deltas for each stat
+        Object.entries(statMapping).forEach(([statKey, displayName]) => {
+            const newVal = item.stats?.[statKey] || 0;
+            const currentVal = currentItem?.stats?.[statKey] || 0;
+            const delta = newVal - currentVal;
+            
+            if (delta !== 0) {
+                deltas[statKey] = {
+                    displayName,
+                    current: currentVal,
+                    new: newVal,
+                    delta,
+                    isBetter: delta > 0,
+                    isWorse: delta < 0
+                };
+            }
+        });
+
+        return {
+            hasDeltas: Object.keys(deltas).length > 0,
+            deltas,
+            isNewSlot: !currentItem,
+            slotType: slot
+        };
     }
 
     openItemDetail(itemId) {
@@ -559,12 +831,22 @@ class InventoryUI extends BaseUIModule {
         if (descEl) descEl.textContent = item?.description || '';
         if (statsEl) statsEl.textContent = this.getItemStatsString(item);
 
-        // Enable/disable action buttons based on item type (actual actions in 7.4)
+        // Show/hide and enable/disable action buttons based on item type
         const isEquip = item && ['weapon', 'armor', 'accessory'].includes(item.type);
-        if (equipBtn) equipBtn.disabled = !isEquip;
-        // For now, leave use/sell toggles permissive; detailed rules in 7.4
-        if (useBtn) useBtn.disabled = false;
-        if (sellBtn) sellBtn.disabled = false;
+        const isUsable = item && ['potion', 'consumable'].includes(item.type);
+
+        if (equipBtn) {
+            equipBtn.style.display = isEquip ? 'inline-block' : 'none';
+            equipBtn.disabled = !isEquip;
+        }
+        if (useBtn) {
+            useBtn.style.display = isUsable ? 'inline-block' : 'none';
+            useBtn.disabled = !isUsable;
+        }
+        if (sellBtn) {
+            sellBtn.style.display = 'inline-block';
+            sellBtn.disabled = false;
+        }
 
         modal.classList.remove('hidden');
     }
@@ -595,6 +877,7 @@ class InventoryUI extends BaseUIModule {
         this.updateEquipmentSlots(gs.player.equipment);
         this.updateCharacterStatsDisplay();
         this.refreshInventoryList();
+        this.renderEquipmentList(this.state.equipmentFilter || 'all');
         this.refreshHeader();
 
         // Optional autosave
@@ -641,6 +924,7 @@ class InventoryUI extends BaseUIModule {
         this.updateEquipmentSlots(gs.player.equipment);
         this.updateCharacterStatsDisplay();
         this.refreshInventoryList();
+        this.renderEquipmentList(this.state.equipmentFilter || 'all');
         this.refreshHeader();
         try { window.SaveSystem?.autoSave?.(); } catch (_) {}
     }

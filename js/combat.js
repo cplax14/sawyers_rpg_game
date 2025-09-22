@@ -223,7 +223,11 @@ class CombatEngine {
         c.active = false;
         // Grant rewards on victory
         if (result && result.victory) {
-            this.grantRewards(result);
+            // Suppress notification since victory modal will show the rewards
+            const resultWithSuppress = { ...result, suppressNotification: true };
+            const rewardData = this.grantRewards(resultWithSuppress);
+            // Store reward data for victory modal
+            c.rewardData = rewardData;
         }
     }
 
@@ -336,9 +340,19 @@ class CombatEngine {
             }
         }
 
-        // Display notification
-        const itemText = itemSummary.length > 0 ? `, items: ${itemSummary.join(', ')}` : '';
-        this.gameState.addNotification(`Battle Rewards: +${totalXP} EXP, +${totalGold} gold${itemText}`, 'success');
+        // Display notification only if not suppressed (victory modal will show this info)
+        if (!result.suppressNotification) {
+            const itemText = itemSummary.length > 0 ? `, items: ${itemSummary.join(', ')}` : '';
+            this.gameState.addNotification(`Battle Rewards: +${totalXP} EXP, +${totalGold} gold${itemText}`, 'success');
+        }
+
+        // Return reward data for UI display
+        return {
+            experience: totalXP,
+            gold: totalGold,
+            items: itemSummary,
+            allDrops: allDrops
+        };
     }
 
     isBattleActive() {

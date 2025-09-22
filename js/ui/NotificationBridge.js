@@ -32,22 +32,296 @@ class NotificationBridge {
      * @param {string} type - Notification type ('info', 'success', 'warning', 'error')
      */
     showNotification(message, type = 'info') {
+        // Suppress Battle Rewards notifications (handled by victory modal)
+        if (message.includes('Battle Rewards')) {
+            console.log('Suppressing Battle Rewards notification (handled by victory modal)');
+            return;
+        }
+
+        // Check if we're in active combat to determine notification behavior
+        const isInCombat = this.isInActiveCombat();
+
+        // Combat-related messages that should show as toasts during combat
+        const isCombatMessage = message.includes('casts') || message.includes('takes') ||
+                               message.includes('damage') || message.includes('healing') ||
+                               message.includes('Attack deals') || message.includes('hits for') ||
+                               type === 'combat' || type === 'info';
+
+        // If it's a combat message and we're in combat, show as toast for immediate feedback
+        if (isCombatMessage && isInCombat) {
+            // Allow these to show as normal toasts during combat
+        } else {
+            // For important notifications outside combat, show as modal instead of small toast
+            const importantTypes = ['success', 'warning', 'error', 'level_up', 'achievement'];
+            const isImportantEquipment = message.includes('Equipped') || message.includes('Unequipped');
+            const isImportantLoot = message.includes('Level Up');
+
+            if (importantTypes.includes(type) || isImportantEquipment || isImportantLoot) {
+                this.showNotificationModal(message, type);
+                return;
+            }
+        }
+
         // Try GameState notification first (original behavior)
         if (this.gameState && typeof this.gameState.addNotification === 'function') {
             this.gameState.addNotification(message, type);
         }
-        
+
         // Also show in UI notification system
         if (this.uiHelpers && typeof this.uiHelpers.showNotification === 'function') {
             const mappedType = this.typeMapping[type] || type;
             this.uiHelpers.showNotification(message, mappedType);
         }
-        
+
         // Fallback to console if both systems fail
         if (this.fallbackToConsole) {
             const timestamp = new Date().toLocaleTimeString();
             console.log(`[${timestamp}] ${type.toUpperCase()}: ${message}`);
         }
+    }
+
+    /**
+     * Show important notifications as modal dialogs
+     * @param {string} message - The notification message
+     * @param {string} type - Notification type
+     */
+    showNotificationModal(message, type = 'info') {
+        // Create modal if it doesn't exist
+        let modal = document.getElementById('notification-modal');
+        if (!modal) {
+            modal = this.createNotificationModal();
+        }
+
+        // Set content and styling based on type
+        const titleEl = modal.querySelector('.notification-title');
+        const messageEl = modal.querySelector('.notification-message');
+        const iconEl = modal.querySelector('.notification-icon');
+
+        const config = this.getNotificationConfig(type);
+        if (titleEl) titleEl.textContent = config.title;
+        if (messageEl) messageEl.textContent = message;
+        if (iconEl) iconEl.textContent = config.icon;
+
+        // Apply type-specific styling
+        modal.className = `notification-modal ${config.class}`;
+
+        // Show modal
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+
+        // Focus the modal for accessibility
+        modal.focus();
+    }
+
+    /**
+     * Create the notification modal DOM structure
+     */
+    createNotificationModal() {
+        const modal = document.createElement('div');
+        modal.id = 'notification-modal';
+        modal.className = 'notification-modal hidden';
+        modal.tabIndex = -1;
+        modal.innerHTML = `
+            <div class="notification-modal-backdrop"></div>
+            <div class="notification-modal-content">
+                <div class="notification-header">
+                    <span class="notification-icon">ℹ️</span>
+                    <h3 class="notification-title">Notification</h3>
+                </div>
+                <div class="notification-body">
+                    <p class="notification-message">Message content</p>
+                </div>
+                <div class="notification-footer">
+                    <button class="btn primary notification-ok-btn">OK</button>
+                </div>
+            </div>
+        `;
+
+        // Add event listeners
+        const okBtn = modal.querySelector('.notification-ok-btn');
+        const backdrop = modal.querySelector('.notification-modal-backdrop');
+
+        const closeModal = () => {
+            modal.classList.add('hidden');
+            modal.style.display = 'none';
+        };
+
+        if (okBtn) okBtn.addEventListener('click', closeModal);
+        if (backdrop) backdrop.addEventListener('click', closeModal);
+
+        // Close on Escape key
+        modal.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // Add CSS styles
+        this.addNotificationModalStyles();
+
+        // Add to document
+        document.body.appendChild(modal);
+        return modal;
+    }
+
+    /**
+     * Get configuration for different notification types
+     */
+    getNotificationConfig(type) {
+        const configs = {
+            'success': { title: 'Success!', icon: '✅', class: 'success' },
+            'error': { title: 'Error', icon: '❌', class: 'error' },
+            'warning': { title: 'Warning', icon: '⚠️', class: 'warning' },
+            'level_up': { title: 'Level Up!', icon: '🎉', class: 'success' },
+            'achievement': { title: 'Achievement!', icon: '🏆', class: 'success' },
+            'info': { title: 'Notice', icon: 'ℹ️', class: 'info' }
+        };
+        return configs[type] || configs['info'];
+    }
+
+    /**
+     * Add CSS styles for notification modal
+     */
+    addNotificationModalStyles() {
+        if (document.getElementById('notification-modal-styles')) return;
+
+        const styles = document.createElement('style');
+        styles.id = 'notification-modal-styles';
+        styles.textContent = `
+            .notification-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .notification-modal.hidden {
+                display: none !important;
+            }
+
+            .notification-modal-backdrop {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.6);
+            }
+
+            .notification-modal-content {
+                position: relative;
+                background: var(--background-primary, #2c1810);
+                border: 2px solid var(--primary-gold, #d4af37);
+                border-radius: 8px;
+                padding: 0;
+                max-width: 400px;
+                width: 90%;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+                font-family: var(--font-primary, 'Georgia', serif);
+            }
+
+            .notification-header {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 16px 20px;
+                border-bottom: 1px solid var(--primary-gold, #d4af37);
+                background: linear-gradient(135deg, var(--background-secondary, #3d2415), var(--background-primary, #2c1810));
+            }
+
+            .notification-icon {
+                font-size: 24px;
+                line-height: 1;
+            }
+
+            .notification-title {
+                margin: 0;
+                color: var(--text-primary, #f4e4bc);
+                font-size: 18px;
+                font-weight: bold;
+            }
+
+            .notification-body {
+                padding: 20px;
+            }
+
+            .notification-message {
+                margin: 0;
+                color: var(--text-primary, #f4e4bc);
+                font-size: 16px;
+                line-height: 1.4;
+            }
+
+            .notification-footer {
+                padding: 16px 20px;
+                border-top: 1px solid var(--primary-gold, #d4af37);
+                display: flex;
+                justify-content: center;
+            }
+
+            .notification-ok-btn {
+                padding: 8px 24px;
+                background: var(--primary-gold, #d4af37);
+                color: var(--background-primary, #2c1810);
+                border: none;
+                border-radius: 4px;
+                font-weight: bold;
+                cursor: pointer;
+                transition: background 0.2s;
+            }
+
+            .notification-ok-btn:hover {
+                background: var(--secondary-gold, #b8941f);
+            }
+
+            .notification-modal.success .notification-modal-content {
+                border-color: #4caf50;
+            }
+
+            .notification-modal.success .notification-header {
+                border-bottom-color: #4caf50;
+            }
+
+            .notification-modal.error .notification-modal-content {
+                border-color: #f44336;
+            }
+
+            .notification-modal.error .notification-header {
+                border-bottom-color: #f44336;
+            }
+
+            .notification-modal.warning .notification-modal-content {
+                border-color: #ff9800;
+            }
+
+            .notification-modal.warning .notification-header {
+                border-bottom-color: #ff9800;
+            }
+        `;
+        document.head.appendChild(styles);
+    }
+
+    /**
+     * Check if we're currently in active combat
+     * @returns {boolean} True if combat is active
+     */
+    isInActiveCombat() {
+        // Check multiple ways combat might be active
+        if (this.gameState?.combat?.active) return true;
+        if (window.GameState?.combat?.active) return true;
+
+        // Check if combat UI is currently visible
+        const combatElement = document.getElementById('combat');
+        if (combatElement && !combatElement.classList.contains('hidden')) return true;
+
+        // Check current scene
+        const currentScene = window.ui?.sceneManager?.currentScene?.name;
+        if (currentScene === 'combat') return true;
+
+        return false;
     }
 
     /**

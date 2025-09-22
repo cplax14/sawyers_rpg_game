@@ -134,18 +134,23 @@ const LootSystem = {
             for (const lootEntry of monsterLoot.lootTable) {
                 const dropResult = this.rollForLoot(lootEntry, playerLevel, monsterLoot.level);
 
-                if (dropResult.dropped) {
-                    const item = this.generateLootItem(
-                        lootEntry.itemType,
-                        dropResult.rarity,
-                        playerLevel,
-                        monsterLoot.level,
-                        areaName
-                    );
+                if (!dropResult.dropped) continue;
 
-                    if (item) {
-                        generatedLoot.items.push(item);
-                    }
+                // Resolve to a concrete item id when possible (e.g., from items list or equipmentTypes)
+                const resolvedItemType = this.resolveConcreteItemId(lootEntry) || lootEntry.itemType;
+
+                const item = this.generateLootItem(
+                    resolvedItemType,
+                    dropResult.rarity,
+                    playerLevel,
+                    monsterLoot.level,
+                    areaName
+                );
+
+                if (item) {
+                    generatedLoot.items.push(item);
+                } else {
+                    console.warn('Monster loot generation failed for item type:', resolvedItemType, 'from entry:', lootEntry);
                 }
             }
 
@@ -202,18 +207,51 @@ const LootSystem = {
 
                 const dropResult = this.rollForLoot(modifiedEntry, playerLevel, areaLootConfig.recommendedLevel);
 
-                if (dropResult.dropped) {
-                    const item = this.generateLootItem(
-                        lootEntry.itemType,
-                        dropResult.rarity,
+                if (!dropResult.dropped) continue;
+
+                // Resolve a concrete item id from items list, equipment types, or abstract itemType
+                let selectedItemType = lootEntry.itemType;
+                if (Array.isArray(lootEntry.items) && lootEntry.items.length > 0) {
+                    if (typeof ItemData !== 'undefined' && typeof ItemData.getItem === 'function') {
+                        const valid = lootEntry.items.filter(id => !!ItemData.getItem(id));
+                        if (valid.length > 0) {
+                            selectedItemType = valid[Math.floor(Math.random() * valid.length)];
+                        } else if (Array.isArray(lootEntry.equipmentTypes)) {
+                            selectedItemType = this.resolveConcreteItemId(lootEntry) || lootEntry.itemType;
+                        }
+                    } else {
+                        selectedItemType = lootEntry.items[Math.floor(Math.random() * lootEntry.items.length)];
+                    }
+                } else if (Array.isArray(lootEntry.equipmentTypes) && lootEntry.equipmentTypes.length > 0) {
+                    selectedItemType = this.resolveConcreteItemId(lootEntry) || lootEntry.itemType;
+                } else {
+                    // If itemType itself is abstract, try to resolve via resolver
+                    const resolved = this.resolveConcreteItemId(lootEntry);
+                    if (resolved) selectedItemType = resolved;
+                }
+
+                // Attempt to generate the item; if it fails due to unknown type, fallback to a safe material
+                let item = this.generateLootItem(
+                    selectedItemType,
+                    dropResult.rarity,
+                    playerLevel,
+                    areaLootConfig.recommendedLevel,
+                    areaName
+                );
+
+                if (!item) {
+                    console.warn('[Loot] Area loot generation failed for item type:', selectedItemType, 'from entry:', lootEntry, '— falling back to material');
+                    item = this.generateLootItem(
+                        'material',
+                        'common',
                         playerLevel,
                         areaLootConfig.recommendedLevel,
                         areaName
                     );
+                }
 
-                    if (item) {
-                        generatedLoot.items.push(item);
-                    }
+                if (item) {
+                    generatedLoot.items.push(item);
                 }
             }
 
@@ -323,6 +361,9 @@ const LootSystem = {
 
             const item = {
                 ...baseItem,
+                // Canonical item id used by ItemData and inventory keys
+                itemId: itemType,
+                // Unique instance id for generated loot instance
                 id: this.generateItemId(),
                 rarity,
                 rarityInfo: tierInfo,
@@ -732,7 +773,7 @@ const LootSystem = {
         const basExp = 50 + (contentLevel * 10);
         const levelPenalty = Math.max(0.1, 1 - ((playerLevel - contentLevel) * 0.1));
 
-        return Math.round(baseExp * levelPenalty);
+        return Math.round(basExp * levelPenalty);
     },
 
     /**
@@ -771,7 +812,22 @@ const LootSystem = {
     },
 
     getBaseItemTemplate: function(itemType) {
-        // This will be populated from ItemData when available
+        // First check if ItemData is available and has this specific item ID
+        if (typeof ItemData !== 'undefined') {
+            // Prefer official accessor if available
+            if (typeof ItemData.getItem === 'function') {
+                const found = ItemData.getItem(itemType);
+                if (found) return { ...found };
+            }
+
+            // Fallback to combined map if exposed
+            if (typeof ItemData.getAllItems === 'function') {
+                const all = ItemData.getAllItems();
+                if (all && all[itemType]) return { ...all[itemType] };
+            }
+        }
+
+        // Fallback to generic templates for basic types
         const templates = {
             weapon: { name: 'Weapon', category: 'equipment', slot: 'weapon', baseValue: 50 },
             armor: { name: 'Armor', category: 'equipment', slot: 'armor', baseValue: 40 },
@@ -790,19 +846,95 @@ const LootSystem = {
         return ['weapon', 'armor', 'accessory', 'material'].includes(itemType);
     },
 
-    addBonusProperties: function(item, tierInfo) {
-        item.bonusProperties = item.bonusProperties || [];
-
-        // Add 1-2 random bonus properties for rare+ items
-        const bonusCount = 1 + (item.rarityLevel >= 4 ? 1 : 0);
-        const availableBonuses = ['durability_boost', 'experience_bonus', 'gold_find', 'magic_resistance'];
-
-        for (let i = 0; i < bonusCount && i < availableBonuses.length; i++) {
-            const bonus = availableBonuses[Math.floor(Math.random() * availableBonuses.length)];
-            if (!item.bonusProperties.includes(bonus)) {
-                item.bonusProperties.push(bonus);
+    /**
+     * Resolve a concrete item ID from a loot entry that may reference abstract categories
+     */
+    resolveConcreteItemId: function(lootEntry) {
+        try {
+            // 1) Prefer explicit items array
+            if (Array.isArray(lootEntry.items) && lootEntry.items.length > 0) {
+                if (typeof ItemData !== 'undefined' && typeof ItemData.getItem === 'function') {
+                    const valid = lootEntry.items.filter(id => !!ItemData.getItem(id));
+                    if (valid.length > 0) {
+                        return valid[Math.floor(Math.random() * valid.length)];
+                    }
+                }
+                // Fallback to any listed item
+                return lootEntry.items[Math.floor(Math.random() * lootEntry.items.length)];
             }
+
+            // 2) Handle equipment type abstractions via equipmentTypes array
+            if (Array.isArray(lootEntry.equipmentTypes) && lootEntry.equipmentTypes.length > 0) {
+                const equipmentMap = {
+                    light_armor: ['leather_armor', 'leather_vest', 'ranger_cloak', 'cloth_robe'],
+                    simple_weapon: ['iron_sword', 'oak_staff', 'steel_dagger', 'hunting_bow', 'battle_axe'],
+                    beast_armor: ['leather_armor', 'ranger_cloak'],
+                    nature_accessory: ['nature_charm', 'health_ring'],
+                    // New umbrella key for beginner forest-themed gear
+                    nature_equipment: ['oak_staff', 'leather_armor', 'nature_charm']
+                };
+
+                let candidates = [];
+                for (const key of lootEntry.equipmentTypes) {
+                    if (equipmentMap[key]) {
+                        candidates = candidates.concat(equipmentMap[key]);
+                    }
+                }
+
+                if (candidates.length > 0) {
+                    if (typeof ItemData !== 'undefined' && typeof ItemData.getItem === 'function') {
+                        const valid = candidates.filter(id => !!ItemData.getItem(id));
+                        if (valid.length > 0) {
+                            return valid[Math.floor(Math.random() * valid.length)];
+                        }
+                    }
+                    return candidates[Math.floor(Math.random() * candidates.length)];
+                }
+            }
+
+            // 3) Handle when itemType itself is an abstract umbrella (e.g., 'nature_equipment')
+            if (typeof lootEntry.itemType === 'string') {
+                const abstractMaps = {
+                    nature_equipment: ['oak_staff', 'leather_armor', 'nature_charm'],
+                    forest_equipment: ['oak_staff', 'leather_armor', 'ranger_cloak'],
+                    beginner_weapon: ['iron_sword', 'steel_dagger', 'oak_staff', 'hunting_bow'],
+                    beginner_armor: ['leather_armor', 'cloth_robe']
+                };
+                const list = abstractMaps[lootEntry.itemType];
+                if (Array.isArray(list) && list.length > 0) {
+                    if (typeof ItemData !== 'undefined' && typeof ItemData.getItem === 'function') {
+                        const valid = list.filter(id => !!ItemData.getItem(id));
+                        if (valid.length > 0) return valid[Math.floor(Math.random() * valid.length)];
+                    }
+                    return list[Math.floor(Math.random() * list.length)];
+                }
+            }
+
+            return null;
+        } catch (e) {
+            console.warn('Failed to resolve concrete item id for loot entry:', lootEntry, e);
+            return null;
         }
+    },
+
+    addBonusProperties: function(item, tierInfo) {
+        item.bonusProperties = item.bonusProperties || {};
+
+        // Rare+ items get bonus properties based on item type
+        const bonusTypes = {
+            weapon: ['attack_bonus', 'critical_chance', 'accuracy_bonus'],
+            armor: ['defense_bonus', 'magic_resistance', 'durability_bonus'],
+            accessory: ['magic_power', 'mana_bonus', 'experience_bonus'],
+            consumable: ['healing_boost', 'duration_bonus', 'stack_bonus']
+        };
+
+        const itemType = item.type || 'weapon';
+        const availableBonuses = bonusTypes[itemType] || bonusTypes.weapon;
+        const bonusType = availableBonuses[Math.floor(Math.random() * availableBonuses.length)];
+
+        // Calculate bonus value based on rarity
+        const bonusValue = (item.rarityLevel + 1) * 0.1; // 0.2 for rare, 0.3 for epic, etc.
+        item.bonusProperties[bonusType] = bonusValue;
     },
 
     addSpecialEffects: function(item, tierInfo) {
@@ -852,11 +984,21 @@ const LootSystem = {
             }
 
             // Find monster in MonsterData
-            const monster = MonsterData.species[monsterName.toLowerCase().replace(/\s+/g, '_')];
-            if (!monster || !monster.lootTable) {
+            const normalizedName = monsterName.toLowerCase().replace(/\s+/g, '_');
+            console.log(`🔍 Looking for monster loot: "${monsterName}" -> "${normalizedName}"`);
+            const monster = MonsterData.species[normalizedName];
+
+            if (!monster) {
+                console.warn(`Monster not found in data: ${monsterName} (${normalizedName})`);
+                return this.getFallbackMonsterConfig(monsterName);
+            }
+
+            if (!monster.lootTable) {
                 console.warn(`No loot table found for monster: ${monsterName}`);
                 return this.getFallbackMonsterConfig(monsterName);
             }
+
+            console.log(`✅ Found loot table for ${monsterName}:`, monster.lootTable);
 
             // Convert MonsterData format to LootSystem format
             const config = {

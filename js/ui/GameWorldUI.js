@@ -766,7 +766,7 @@ class GameWorldUI extends BaseUIModule {
     }
 
     /**
-     * Display unlock requirements for locked areas
+     * Display unlock requirements for locked areas with actionable guidance
      */
     displayUnlockRequirements(container, unlockStatus) {
         const requirementsDiv = document.createElement('div');
@@ -776,17 +776,20 @@ class GameWorldUI extends BaseUIModule {
         header.className = 'status-header';
         header.innerHTML = `
             <span class="status-icon">🔒</span>
-            <span class="status-text">Unlock Requirements</span>
+            <span class="status-text">How to Unlock</span>
         `;
         requirementsDiv.appendChild(header);
 
         if (unlockStatus.requirements.length === 0) {
             const noReqs = document.createElement('div');
             noReqs.className = 'requirement-item completed';
-            noReqs.textContent = 'No specific requirements';
+            noReqs.textContent = 'No specific requirements - should be accessible';
             requirementsDiv.appendChild(noReqs);
         } else {
             this.displayRequirementsList(requirementsDiv, unlockStatus.requirements, unlockStatus.missing);
+
+            // Add helpful hints section
+            this.addProgressionHints(requirementsDiv, unlockStatus);
         }
 
         container.appendChild(requirementsDiv);
@@ -827,13 +830,15 @@ class GameWorldUI extends BaseUIModule {
             text.className = 'requirement-text';
             text.textContent = req.description;
 
-            // Add current progress for level requirements
+            // Add current progress and hints for different requirement types
             if (req.type === 'level' && !isCompleted) {
                 const currentLevel = gs?.player?.level || 1;
                 const progressText = document.createElement('span');
                 progressText.className = 'progress-indicator';
                 progressText.textContent = ` (Currently ${currentLevel})`;
                 text.appendChild(progressText);
+            } else if (req.type === 'story' && !isCompleted) {
+                // Add story progress hints if needed
             }
 
             reqDiv.appendChild(icon);
@@ -895,10 +900,44 @@ class GameWorldUI extends BaseUIModule {
     }
 
     /**
-     * Format story flag names for display
+     * Format story flag names for display with actionable instructions
      */
     formatStoryFlag(flag) {
-        return flag.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        // Special handling for area clearing flags
+        const areaProgressFlags = {
+            'forest_path_cleared': 'Defeat 5 monsters in Forest Path area',
+            'plains_explored': 'Explore Plains area thoroughly and complete encounters',
+            'mountain_guide': 'Complete the rockslide event in Mountain Base',
+            'fire_resistance_obtained': 'Obtain fire resistance item from Crystal Caves or complete fire temple trials',
+            'fire_temple_cleared': 'Defeat the fire temple boss and complete all fire temple trials',
+            'nature_blessing': 'Complete the pack encounter with the "communication attempt" choice (ranger/paladin only)',
+            'all_temples_cleared': 'Complete trials in all discovered temple areas',
+            'darkness_awakened': 'Complete shadow-related story events in various areas',
+            'shadow_guild_contact': 'Find and complete rogue-specific story encounters'
+        };
+
+        // Check if this is a known progression flag
+        if (areaProgressFlags[flag]) {
+            return areaProgressFlags[flag];
+        }
+
+        // Check if this flag corresponds to a story event
+        if (typeof window.StoryData !== 'undefined') {
+            const event = window.StoryData.getEvent(flag);
+            if (event) {
+                return `Complete story event: "${event.name}" (${event.description})`;
+            }
+        }
+
+        // Check if this is a boss defeat flag
+        if (flag.includes('defeated') || flag.includes('boss')) {
+            const bossName = flag.replace(/_defeated|_boss/g, '').replace(/_/g, ' ');
+            return `Defeat the ${bossName.charAt(0).toUpperCase() + bossName.slice(1)} boss`;
+        }
+
+        // Default formatting with hint about progression
+        const formatted = flag.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        return `Progress the story: ${formatted}`;
     }
 
     /**
@@ -913,6 +952,49 @@ class GameWorldUI extends BaseUIModule {
      */
     formatBossName(boss) {
         return boss.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    }
+
+    /**
+     * Get actionable hint for story progression requirements
+     */
+    getStoryProgressHint(flag) {
+        const hints = {
+            'forest_path_cleared': 'Tip: Explore Forest Path area thoroughly, defeat monsters, and complete story events',
+            'tutorial_complete': 'Tip: Complete the starting tutorial in Peaceful Village',
+            'first_monster_encounter': 'Tip: Explore Forest Path and encounter your first wild monster',
+            'pack_encounter': 'Tip: Continue exploring Deep Forest until you encounter the wolf pack',
+            'plains_explored': 'Tip: Visit Plains area and complete exploration encounters',
+            'mountain_guide': 'Tip: Progress through Mountain Base story events',
+            'fire_resistance_obtained': 'Tip: Explore Crystal Caves or complete fire-related quests',
+            'nature_blessing': 'Tip: Complete the wolf pack encounter with ranger/paladin communication choice'
+        };
+
+        return hints[flag] || 'Tip: Progress through story events in available areas';
+    }
+
+    /**
+     * Add helpful progression hints section
+     */
+    addProgressionHints(container, unlockStatus) {
+        // Only add hints for certain types of requirements
+        const hasStoryRequirements = unlockStatus.requirements.some(req => req.type === 'story');
+
+        if (hasStoryRequirements) {
+            const hintsDiv = document.createElement('div');
+            hintsDiv.className = 'progression-hints';
+
+            const hintsHeader = document.createElement('div');
+            hintsHeader.className = 'hints-header';
+            hintsHeader.innerHTML = '💡 Progression Tips';
+            hintsDiv.appendChild(hintsHeader);
+
+            const generalHint = document.createElement('div');
+            generalHint.className = 'general-hint';
+            generalHint.textContent = 'Explore available areas, complete story events, and defeat monsters to progress.';
+            hintsDiv.appendChild(generalHint);
+
+            container.appendChild(hintsDiv);
+        }
     }
 
     /**
@@ -1125,6 +1207,60 @@ class GameWorldUI extends BaseUIModule {
         `;
 
         document.head.appendChild(styles);
+
+        // Add additional styles for requirement hints
+        if (!document.getElementById('progression-hints-styles')) {
+            const hintStyles = document.createElement('style');
+            hintStyles.id = 'progression-hints-styles';
+            hintStyles.textContent = `
+                /* Requirement hints and tips */
+                .requirement-hint {
+                    font-size: 0.8em;
+                    color: #888;
+                    font-style: italic;
+                    margin-top: 2px;
+                    padding-left: 24px;
+                    line-height: 1.3;
+                }
+
+                .progression-hints {
+                    margin-top: 12px;
+                    padding: 8px;
+                    background: #f0f8ff;
+                    border-left: 3px solid #2196F3;
+                    border-radius: 3px;
+                }
+
+                .hints-header {
+                    font-weight: bold;
+                    font-size: 0.9em;
+                    color: #1976D2;
+                    margin-bottom: 4px;
+                }
+
+                .general-hint {
+                    font-size: 0.85em;
+                    color: #555;
+                    line-height: 1.4;
+                }
+
+                .progression-status.locked .status-text {
+                    color: #d32f2f;
+                    font-weight: bold;
+                }
+
+                .requirement-item.incomplete .requirement-text {
+                    color: #666;
+                    font-weight: normal;
+                }
+
+                .requirement-item.completed .requirement-text {
+                    color: #4CAF50;
+                    font-weight: 500;
+                }
+            `;
+            document.head.appendChild(hintStyles);
+        }
     }
 
     /**
@@ -1890,6 +2026,16 @@ class GameWorldUI extends BaseUIModule {
         
         super.cleanup();
         console.log('🧹 GameWorldUI cleaned up');
+    }
+
+    /**
+     * Get area clearing progress from GameState
+     */
+    getAreaClearingProgress(areaName) {
+        if (!this.gameState) {
+            return { totalDefeats: 0, required: 5, percentage: 0 };
+        }
+        return this.gameState.getAreaProgressInfo(areaName);
     }
 }
 

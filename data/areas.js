@@ -106,7 +106,7 @@ const AreaData = {
             description: "Ancient woods where stronger creatures dwell.",
             type: "wilderness",
             unlocked: false,
-            unlockRequirements: { story: "forest_path_cleared", level: 5 },
+            unlockRequirements: { story: "forest_path_cleared", level: 3 },
             encounterRate: 45,
             monsters: ["goblin", "wolf", "orc", "slime"],
             spawnTable: [

@@ -251,8 +251,8 @@ class UIRefactoringValidator {
             };
             
             // Temporarily override game reference
-            const originalGetGameReference = this.monsterUI.getGameReference;
-            this.monsterUI.getGameReference = () => mockGameState;
+            const originalGetGS = this.monsterUI.getGS;
+            this.monsterUI.getGS = () => mockGameState;
             
             this.assertTrue(
                 this.monsterUI.isMonsterInParty(1),
@@ -264,7 +264,7 @@ class UIRefactoringValidator {
             );
             
             // Restore original method
-            this.monsterUI.getGameReference = originalGetGameReference;
+            this.monsterUI.getGS = originalGetGS;
             
             this.recordSuccess('Party management');
         } catch (error) {

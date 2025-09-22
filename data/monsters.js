@@ -42,7 +42,7 @@ const MonsterData = {
                         quantityRange: [1, 2]
                     },
                     {
-                        itemType: "healing_potion",
+                        itemType: "health_potion",
                         dropChance: 0.25,
                         rarityWeights: { common: 0.9, uncommon: 0.1 },
                         quantityRange: [1, 1]

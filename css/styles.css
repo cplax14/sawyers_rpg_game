@@ -2978,22 +2978,25 @@ button:focus {
 
 .inventory-content {
     height: 100%;
+    width: 100%;
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
-    padding: var(--spacing-lg);
+    padding: var(--spacing-md);
     background: linear-gradient(135deg, var(--shadow-black) 0%, var(--deep-brown) 25%, var(--medium-brown) 75%, var(--light-brown) 100%);
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 .inventory-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: var(--spacing-md);
-    background: linear-gradient(135deg, var(--deep-brown), var(--medium-brown));
-    border-radius: var(--border-radius);
-    border: 2px solid var(--gold-accent);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--deep-brown);
+    border-bottom: 2px solid var(--gold-accent);
     box-shadow: var(--shadow-heavy);
+    margin-bottom: var(--spacing-md);
+    flex-shrink: 0;
 }
 
 .inventory-title {
@@ -3069,6 +3072,8 @@ button:focus {
     display: none;
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0; /* Fix for Firefox flexbox bug */
 }
 
 .inventory-tab-content.active {
@@ -3108,6 +3113,42 @@ button:focus {
 .character-level {
     color: var(--light-brown);
     margin: 0 0 var(--spacing-md) 0;
+}
+
+/* Experience Progress */
+.experience-progress {
+    margin: var(--spacing-sm) 0 var(--spacing-md) 0;
+}
+
+.exp-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-xs);
+}
+
+.exp-text {
+    font-size: 0.9em;
+    color: var(--light-brown);
+    font-weight: 500;
+}
+
+.exp-bar {
+    width: 100%;
+    height: 12px;
+    background: linear-gradient(135deg, var(--shadow-black), #333);
+    border: 1px solid var(--dark-gold);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.exp-fill {
+    height: 100%;
+    background: linear-gradient(135deg, var(--primary-gold), var(--secondary-gold));
+    border-radius: 5px;
+    transition: width 0.3s ease;
+    box-shadow: 0 0 8px rgba(212, 175, 55, 0.6);
 }
 
 /* Equipment Slots */
@@ -3197,6 +3238,7 @@ button:focus {
 .stat-label {
     color: var(--light-brown);
     font-size: 0.9rem;
+    font-weight: bold;
 }
 
 .stat-value {
@@ -3617,20 +3659,408 @@ button:focus {
     }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
     .inventory-content {
-        padding: var(--spacing-md);
+        padding: var(--spacing-sm);
         gap: var(--spacing-sm);
     }
     
+    .equipment-layout {
+        grid-template-columns: 1fr 1fr;
+        gap: var(--spacing-md);
+    }
+    
+    .character-display, .equipment-inventory {
+        min-width: 0; /* Allow shrinking below content size */
+    }
+}
+
+@media (max-width: 600px) {
+    .equipment-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .character-display {
+        order: 2;
+    }
+    
+    .equipment-inventory {
+        order: 1;
+    }
+    
+    .inventory-tabs {
+        font-size: 0.8rem;
+    }
+    
+    .inventory-tabs .tab-icon {
+        display: none;
+    }
+}
+
+/* Equipment Layout */
+.equipment-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-md);
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    height: 100%;
+}
+
+.character-display {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    padding: var(--spacing-md);
+    border: 1px solid var(--medium-brown);
+    box-shadow: var(--shadow-medium);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.equipment-inventory {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+    padding: var(--spacing-md);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.equipment-inventory h4 {
+    margin-top: 0;
+    margin-bottom: var(--spacing-sm);
+    padding-bottom: var(--spacing-xs);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    flex-shrink: 0; /* Prevent header from shrinking */
+}
+
+/* Scrollable equipment list */
+#equipment-list {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: var(--spacing-sm);
+    margin: 0;
+    min-height: 200px; /* Ensure minimum height */
+    max-height: 60vh; /* Limit maximum height */
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+/* Custom scrollbar for equipment list */
+#equipment-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+#equipment-list::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 3px;
+}
+
+#equipment-list::-webkit-scrollbar-thumb {
+    background: rgba(212, 175, 55, 0.5);
+    border-radius: 3px;
+}
+
+#equipment-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(212, 175, 55, 0.7);
+}
+
+/* Empty state */
+#equipment-list .empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--light-brown);
+    font-style: italic;
+    height: 100%;
+    padding: var(--spacing-md);
+    text-align: center;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 600px) {
     .equipment-filters,
     .items-filters,
     .materials-filters {
         justify-content: center;
+        gap: 6px;
+    }
+    
+    .filter-btn {
+        padding: 2px 8px;
+        font-size: 0.7rem;
     }
     
     .item-actions {
         flex-direction: column;
+    }
+    
+    .equipment-layout {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .character-display {
+        order: 2;
+        margin-top: var(--spacing-md);
+    }
+    
+    .equipment-inventory {
+        order: 1;
+    }
+    
+}
+
+.inventory-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.inventory-tab-content {
+    flex: 1;
+    display: none;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    overflow: hidden;
+    min-height: 0; /* Allows flex children to respect overflow */
+}
+
+.equipment-list-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    margin: 0;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(212, 175, 55, 0.1);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 44px;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.equipment-list-row .item-icon {
+    margin-right: 10px;
+    font-size: 1.2em;
+    min-width: 24px;
+    text-align: center;
+}
+
+.equipment-list-row .item-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.equipment-list-row .item-name {
+    font-weight: 600;
+    color: var(--parchment);
+    margin-bottom: 2px;
+}
+
+.equipment-list-row .item-qty {
+    font-size: 0.8em;
+    color: var(--light-brown);
+}
+
+.equipment-list-row .equipped-badge {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
+    font-size: 0.7em;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 8px;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.equipment-list-row:hover {
+    background: rgba(212, 175, 55, 0.2);
+    border-color: var(--gold-accent);
+}
+
+.item-name {
+    color: var(--parchment);
+    font-weight: 500;
+}
+
+.item-qty {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    color: var(--gold-accent);
+}
+
+/* Empty State */
+.empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100px;
+    color: var(--light-brown);
+    font-style: italic;
+}
+
+/* Equipment Slots */
+.equipment-slots {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-sm);
+    margin: var(--spacing-md) 0;
+}
+
+.equipment-slot {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px dashed var(--medium-brown);
+    border-radius: 4px;
+    padding: var(--spacing-sm);
+    text-align: center;
+    min-height: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.equipment-slot.equipped {
+    border-style: solid;
+    border-color: var(--gold-accent);
+    background: rgba(212, 175, 55, 0.1);
+}
+
+.slot-label {
+    font-size: 0.8rem;
+    color: var(--light-brown);
+    margin-bottom: 4px;
+}
+
+.slot-item {
+    font-size: 0.9rem;
+    color: var(--parchment);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Character Stats */
+.character-stats {
+    margin-top: var(--spacing-md);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-sm);
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-label {
+    color: var(--light-brown);
+    font-size: 0.9rem;
+}
+
+.stat-value {
+    color: var(--parchment);
+    font-weight: 600;
+}
+
+/* Equipment Filters */
+.equipment-filters,
+.items-filters,
+.materials-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+    justify-content: flex-start;
+}
+
+.filter-btn {
+    padding: 4px 12px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--medium-brown);
+    border-radius: 12px;
+    color: var(--light-brown);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+    background: rgba(212, 175, 55, 0.2);
+    color: var(--parchment);
+}
+
+.filter-btn.active {
+    background: var(--gold-accent);
+    color: var(--deep-brown);
+    font-weight: bold;
+    border-color: var(--gold-accent);
+}
+
+/* Item Actions */
+.item-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 600px) {
+    .equipment-filters,
+    .items-filters,
+    .materials-filters {
+        justify-content: center;
+        gap: 6px;
+    }
+    
+    .filter-btn {
+        padding: 2px 8px;
+        font-size: 0.7rem;
+    }
+    
+    .item-actions {
+        flex-direction: column;
+    }
+    
+    .equipment-layout {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .character-display {
+        order: 2;
+        margin-top: var(--spacing-md);
+    }
+    
+    .equipment-inventory {
+        order: 1;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
     }
 }
 

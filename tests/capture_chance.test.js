@@ -17,6 +17,18 @@ describe('Capture Chance Tests', () => {
 
     beforeEach(() => {
         gameState.resetCombat();
+
+        // Ensure player and inventory exist
+        if (!gameState.player) {
+            gameState.player = { inventory: { items: {} } };
+        }
+        if (!gameState.player.inventory) {
+            gameState.player.inventory = { items: {} };
+        }
+        if (!gameState.player.inventory.items) {
+            gameState.player.inventory.items = {};
+        }
+
         if (!gameState.combatEngine) gameState.initializeCombatEngine();
     });
 
