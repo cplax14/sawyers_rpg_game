@@ -1847,6 +1847,66 @@ p {
     padding: var(--spacing-lg);
 }
 
+/* Story Choice Buttons */
+.story-choices {
+    margin-top: var(--spacing-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    width: 100%;
+}
+
+.story-choice-btn,
+.story-continue-btn {
+    background: linear-gradient(145deg, var(--primary-gold), var(--secondary-gold));
+    color: var(--deep-brown);
+    border: 2px solid var(--dark-gold);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-family: var(--font-ui);
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    font-size: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    display: block;
+    width: 100%;
+    margin-bottom: var(--spacing-md);
+    min-height: 40px;
+}
+
+.story-choice-btn:hover,
+.story-continue-btn:hover {
+    background: linear-gradient(145deg, var(--secondary-gold), var(--dark-gold));
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.story-choice-btn:active,
+.story-continue-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Story Speaker */
+#story-speaker {
+    font-family: var(--font-ui);
+    font-weight: bold;
+    color: var(--deep-brown);
+    margin-bottom: var(--spacing-sm);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Story Text */
+#story-text {
+    font-family: var(--font-body);
+    color: var(--deep-brown);
+    line-height: 1.6;
+    margin-bottom: var(--spacing-lg);
+}
+
 .monster-portrait {
     text-align: center;
     margin-bottom: var(--spacing-lg);

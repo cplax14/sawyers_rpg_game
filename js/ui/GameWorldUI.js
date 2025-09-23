@@ -393,11 +393,11 @@ class GameWorldUI extends BaseUIModule {
     populateWorldMapAreas() {
         const gs = this.gameState || this.getGameReference('gameState');
         if (!gs || typeof window.AreaData === 'undefined') return;
-        
+
         const list = this.getOrCreateWorldMapList();
         list.innerHTML = '';
         this.worldMapButtons = [];
-        
+
         const unlocked = window.AreaData.getUnlockedAreas(
             gs.world.storyFlags,
             gs.player.level,
@@ -1600,24 +1600,32 @@ class GameWorldUI extends BaseUIModule {
      */
     exploreSelectedArea() {
         if (!this.selectedArea) return;
-        
-        // Trigger exploration/encounter system using the game instance's GameState
-        const gs = this.gameState || this.getGameReference('gameState');
-        if (gs && typeof gs.triggerRandomEncounter === 'function') {
-            gs.triggerRandomEncounter(this.selectedArea);
-        } else {
-            const area = window.AreaData?.areas?.[this.selectedArea];
-            const areaName = area?.name || this.selectedArea;
-            this.notifyInfo(`Exploring ${areaName}...`);
-        }
-        
-        // Attempt to trigger a story event available for this area
+
+        // First, check if there are available story events for this area
+        let storyEventTriggered = false;
         try {
-            this.triggerStoryEventIfAvailable(this.selectedArea);
+            storyEventTriggered = this.triggerStoryEventIfAvailable(this.selectedArea);
         } catch (error) {
             console.warn('Story event trigger failed:', error);
         }
-        
+
+        // Only trigger random combat encounter if no story event was triggered
+        if (!storyEventTriggered) {
+            console.log(`⚔️ No story event triggered, proceeding with random encounter in ${this.selectedArea}`);
+            const gs = this.gameState || this.getGameReference('gameState');
+            if (gs && typeof gs.triggerRandomEncounter === 'function') {
+                gs.triggerRandomEncounter(this.selectedArea);
+            } else {
+                const area = window.AreaData?.areas?.[this.selectedArea];
+                const areaName = area?.name || this.selectedArea;
+                this.notifyInfo(`Exploring ${areaName}...`);
+            }
+        } else {
+            console.log(`📖 Story event was triggered in ${this.selectedArea}, skipping random encounter`);
+            // Refresh world map to show any newly unlocked areas
+            this.refreshWorldMapDisplay();
+        }
+
         console.log(`🔍 Exploring area: ${this.selectedArea}`);
     }
 
@@ -1820,24 +1828,29 @@ class GameWorldUI extends BaseUIModule {
      */
     triggerStoryEventIfAvailable(areaId) {
         if (typeof window.StoryData === 'undefined' || !window.GameState) {
-            return;
+            return false;
         }
-        
+
         try {
             const flags = window.GameState.world?.storyFlags || [];
             const completed = window.GameState.world?.completedEvents || [];
             const events = (window.StoryData.getAreaEvents(areaId, flags) || [])
                 .filter(e => !completed.includes(e));
-            
+
             // Avoid opening if modal already visible
             const modal = document.getElementById('story-modal');
             const isOpen = modal && !modal.classList.contains('hidden');
-            
+
             if (!isOpen && events.length > 0) {
+                console.log(`📖 Triggering story event: ${events[0]} in ${areaId}`);
                 this.showStoryEvent(events[0]);
+                return true; // Story event was triggered
             }
+
+            return false; // No story event triggered
         } catch (error) {
             console.warn(`Failed to trigger story event for ${areaId}:`, error);
+            return false;
         }
     }
 

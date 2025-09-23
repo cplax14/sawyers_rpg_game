@@ -622,12 +622,15 @@ class InventoryUI extends BaseUIModule {
             // Prefer ItemData classification when available
             if (typeof window.ItemData !== 'undefined' && window.ItemData?.getItem) {
                 const item = window.ItemData.getItem(itemId);
-                // If item not found in ItemData, still show it in Materials as a generic entry
+                // If item not found in ItemData, show it in Materials with generic icon and pretty name
                 if (!item) return true;
-                // Only include materials here when known
-                if (item.type !== 'material') return false;
+                // Include materials and scrolls in Materials tab
+                const isValidForMaterialsTab = item.type === 'material' || item.type === 'scroll';
+                if (!isValidForMaterialsTab) return false;
                 if (filter === 'all') return true;
-                return item.subtype === filter;
+                // For scrolls, filter by type; for materials, filter by category
+                if (filter === 'scroll') return item.type === 'scroll';
+                return item.category === filter;
             }
             // Fallback: no ItemData -> show all entries in Materials tab as a generic list
             return true;
@@ -648,13 +651,30 @@ class InventoryUI extends BaseUIModule {
             const cell = document.createElement('div');
             cell.className = 'material-cell';
             cell.setAttribute('data-item-id', itemId);
+
+            // Create name container with icon
+            const nameContainer = document.createElement('div');
+            nameContainer.className = 'item-name-container';
+            nameContainer.style.cssText = 'display: flex; align-items: center; gap: 6px;';
+
+            // Get icon for the material (always returns something, fallback to 📦)
+            const icon = this.getMaterialIcon(itemId) || '📦';
+            const iconSpan = document.createElement('span');
+            iconSpan.className = 'material-icon';
+            iconSpan.textContent = icon;
+            iconSpan.style.cssText = 'font-size: 16px; flex-shrink: 0;';
+            nameContainer.appendChild(iconSpan);
+
             const name = document.createElement('div');
             name.className = 'item-name';
             name.textContent = this.formatItemName(itemId);
+            nameContainer.appendChild(name);
+
             const count = document.createElement('div');
             count.className = 'item-qty';
             count.textContent = `x${qty}`;
-            cell.appendChild(name);
+
+            cell.appendChild(nameContainer);
             cell.appendChild(count);
             // Debug visual aid
             cell.style.border = '1px solid rgba(255,255,255,0.2)';
@@ -666,9 +686,150 @@ class InventoryUI extends BaseUIModule {
         container.style.color = getComputedStyle(document.body).color || '#fff';
     }
 
-    // Utility: prettify item id
+    // Utility: prettify item id - converts raw IDs to human-readable names
     formatItemName(id) {
-        return (id || '').replace(/_/g, ' ').replace(/\b\w/g, (m) => m.toUpperCase());
+        if (!id) return 'Unknown Item';
+
+        // Convert underscores/hyphens to spaces, then title case each word
+        return id.toString()
+            .replace(/[_-]/g, ' ')
+            .replace(/\b\w/g, (m) => m.toUpperCase())
+            .trim();
+    }
+
+    // Get icon for material based on ItemData or intelligent fallback
+    getMaterialIcon(itemId) {
+        // First try to get icon from ItemData if available
+        if (typeof window.ItemData !== 'undefined' && window.ItemData?.getItem) {
+            const item = window.ItemData.getItem(itemId);
+            if (item && item.icon) {
+                return item.icon;
+            }
+
+            // Special handling for scrolls by type
+            if (item && item.type === 'scroll') {
+                return '📜';
+            }
+
+            // If no direct icon, use category-based mapping for materials
+            if (item && item.category) {
+                return this.getCategoryIcon(item.category);
+            }
+        }
+
+        // Fallback: intelligent icon mapping based on item name
+        return this.getIconFromName(itemId);
+    }
+
+    // Get icon based on material category
+    getCategoryIcon(category) {
+        const categoryIcons = {
+            // Monster-derived materials
+            'monster_part': '🦴',
+
+            // Natural materials (plants, herbs, wood)
+            'natural': '🌿',
+
+            // Minerals, ores, crystals
+            'mineral': '💎',
+
+            // Magical components
+            'magical': '✨',
+
+            // Crafting and utility
+            'crafting': '🔨',
+            'maintenance': '🔧',
+            'utility': '📦',
+
+            // Evolution items
+            'evolution': '💫'
+        };
+
+        return categoryIcons[category] || '📦'; // Default to package icon
+    }
+
+    // Intelligent icon mapping based on item name/ID
+    getIconFromName(itemId) {
+        // Handle null/undefined item IDs
+        if (!itemId) {
+            return '📦';
+        }
+
+        const nameIconMap = {
+            // Specific materials first (more specific matches win)
+            'sap': '🍯', 'resin': '🍯',
+            'healing_herb': '🌿', 'mana_flower': '🌸', 'poison_ivy': '☘️',
+
+            // Herbs and plants
+            'herb': '🌿', 'flower': '🌸', 'leaf': '🍃', 'root': '🌱',
+
+            // Wood and tree materials
+            'wood': '🌲', 'branch': '🌳', 'log': '🪵', 'bark': '🌳',
+            'oak': '🌳', 'pine': '🌲', 'birch': '🌳', 'willow': '🌳',
+
+            // Crystals and gems
+            'crystal': '💎', 'gem': '💎', 'diamond': '💎', 'ruby': '❤️',
+            'sapphire': '💙', 'emerald': '💚', 'amethyst': '💜',
+            'quartz': '💎', 'shard': '💎',
+
+            // Ores and metals
+            'ore': '⛏️', 'iron': '⛏️', 'copper': '🟤', 'gold': '🟨',
+            'silver': '⚪', 'steel': '⚫', 'mithril': '✨', 'adamantine': '💠',
+
+            // Monster parts
+            'fang': '🔪', 'tooth': '🦷', 'claw': '🪝', 'horn': '🦏',
+            'scale': '🐲', 'pelt': '🧥', 'fur': '🧸', 'feather': '🪶',
+            'bone': '🦴', 'skull': '💀', 'heart': '❤️', 'eye': '👁️',
+            'wing': '🦋', 'tail': '🦎', 'tusk': '🦏',
+
+            // Slime/gel materials
+            'slime': '🫧', 'gel': '🫧', 'ooze': '🟢',
+
+            // Magical materials
+            'essence': '💫', 'dust': '✨', 'powder': '🌟',
+            'rune': '🔮', 'scroll': '📜', 'tome': '📚',
+            'orb': '🔮', 'wand': '🪄', 'staff': '🪄',
+
+            // Tools and components
+            'kit': '🔧', 'tool': '🔨', 'part': '⚙️', 'gear': '⚙️',
+            'spring': '⚙️', 'wire': '🔗', 'chain': '⛓️',
+
+            // Food/bait items
+            'bait': '🥩', 'meat': '🥩', 'fish': '🐟', 'bread': '🍞',
+
+            // Bottles and containers
+            'potion': '🧪', 'vial': '🧪', 'bottle': '🍶', 'jar': '🫙',
+
+            // Time/special materials
+            'time': '⏳', 'temporal': '⏳', 'void': '🕳️', 'chaos': '🌀',
+            'evolution': '💫', 'transform': '🔄'
+        };
+
+        // Check if any keyword from the map appears in the item ID
+        // Process from most specific to least specific to get better matches
+        const itemLower = itemId.toLowerCase();
+
+        // For compound materials, prefer the most relevant match
+        let bestMatch = null;
+        let bestScore = 0;
+
+        for (const [keyword, icon] of Object.entries(nameIconMap)) {
+            if (itemLower.includes(keyword)) {
+                // Score based on keyword length and position (longer, more specific keywords win)
+                const score = keyword.length;
+                if (score > bestScore) {
+                    bestMatch = icon;
+                    bestScore = score;
+                }
+            }
+        }
+
+        if (bestMatch) {
+            return bestMatch;
+        }
+
+        // Ultimate fallback - generic material icon
+        return '📦';
     }
 
     // -------------------------------

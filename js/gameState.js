@@ -355,20 +355,28 @@ class GameState {
      * Check for new spells available at current level
      */
     checkForNewSpells() {
-        if (!this.spellSystem) return;
+        if (!this.spellSystem) return [];
 
         const learnableSpells = this.spellSystem.getLearnableSpells();
         let learnedCount = 0;
+        const learnedSpells = [];
 
         learnableSpells.forEach(spellEntry => {
             if (this.spellSystem.learnSpell(spellEntry.id)) {
                 learnedCount++;
+                learnedSpells.push({
+                    id: spellEntry.id,
+                    name: spellEntry.name || spellEntry.id,
+                    description: spellEntry.description || 'A powerful spell'
+                });
             }
         });
 
         if (learnedCount > 0) {
             this.addNotification(`Learned ${learnedCount} new spell${learnedCount > 1 ? 's' : ''}!`, 'spell');
         }
+
+        return learnedSpells;
     }
 
     /**
@@ -782,7 +790,12 @@ class GameState {
      */
     levelUp() {
         this.player.experience -= this.player.experienceToNext;
+        const oldLevel = this.player.level;
         this.player.level++;
+
+        // Store old stats for comparison
+        const oldStats = { ...this.player.stats };
+        const oldSpellCount = this.player.spells ? this.player.spells.length : 0;
 
         // Calculate new stats
         if (this.player.class && typeof CharacterData !== 'undefined') {
@@ -791,15 +804,149 @@ class GameState {
         }
 
         // Learn new spells available at this level
-        this.checkForNewSpells();
+        const learnedSpells = this.checkForNewSpells();
 
         // Calculate next level experience requirement
         this.player.experienceToNext = this.calculateExperienceRequired(this.player.level + 1);
 
-        this.addNotification(`Level Up! Now level ${this.player.level}`, 'success');
-        console.log(`Player leveled up to ${this.player.level}`);
+        // Prepare level-up data for modal
+        const levelUpData = {
+            oldLevel: oldLevel,
+            newLevel: this.player.level,
+            statGains: this.calculateStatGains(oldStats, this.player.stats),
+            newSpells: learnedSpells || [],
+            newSpellCount: (this.player.spells ? this.player.spells.length : 0) - oldSpellCount
+        };
+
+        // Show level-up modal
+        this.showLevelUpModal(levelUpData);
+
+        // Also send notification for systems that expect it
+        this.addNotification(`Level Up! Now level ${this.player.level}`, 'level_up');
+        console.log(`Player leveled up to ${this.player.level}`, levelUpData);
     }
-    
+
+    /**
+     * Calculate stat gains from level up
+     */
+    calculateStatGains(oldStats, newStats) {
+        const gains = {};
+        const statKeys = ['hp', 'mp', 'attack', 'defense', 'magicAttack', 'magicDefense', 'speed', 'accuracy'];
+
+        statKeys.forEach(stat => {
+            const oldValue = oldStats[stat] || 0;
+            const newValue = newStats[stat] || 0;
+            const gain = newValue - oldValue;
+            if (gain > 0) {
+                gains[stat] = gain;
+            }
+        });
+
+        return gains;
+    }
+
+    /**
+     * Show level-up modal with stat gains and new spells
+     */
+    showLevelUpModal(levelUpData) {
+        // Only show modal if UIHelpers is available and has the showModal method
+        if (typeof window.UIHelpers === 'undefined' || typeof window.UIHelpers.showModal !== 'function') {
+            console.log('UIHelpers.showModal not available, skipping level-up modal');
+            return;
+        }
+
+        // Build content HTML for the modal
+        let content = `
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h2 style="color: #d4af37; margin: 0;">🎉 Level Up!</h2>
+                <p style="font-size: 18px; margin: 10px 0;">
+                    Level ${levelUpData.oldLevel} → <strong>Level ${levelUpData.newLevel}</strong>
+                </p>
+            </div>
+        `;
+
+        // Show stat gains
+        const statGains = levelUpData.statGains;
+        if (Object.keys(statGains).length > 0) {
+            content += `
+                <div style="margin-bottom: 20px;">
+                    <h3 style="color: #4caf50; margin-bottom: 10px;">📈 Stat Increases</h3>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+            `;
+
+            const statLabels = {
+                hp: 'Health',
+                mp: 'Mana',
+                attack: 'Attack',
+                defense: 'Defense',
+                magicAttack: 'Magic Attack',
+                magicDefense: 'Magic Defense',
+                speed: 'Speed',
+                accuracy: 'Accuracy'
+            };
+
+            Object.entries(statGains).forEach(([stat, gain]) => {
+                const label = statLabels[stat] || stat;
+                content += `
+                    <div style="background: rgba(76, 175, 80, 0.1); padding: 8px; border-radius: 4px; border-left: 3px solid #4caf50;">
+                        <strong>${label}:</strong> +${gain}
+                    </div>
+                `;
+            });
+
+            content += `
+                    </div>
+                </div>
+            `;
+        }
+
+        // Show new spells
+        if (levelUpData.newSpells && levelUpData.newSpells.length > 0) {
+            content += `
+                <div style="margin-bottom: 20px;">
+                    <h3 style="color: #2196f3; margin-bottom: 10px;">✨ New Spells Learned</h3>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+            `;
+
+            levelUpData.newSpells.forEach(spell => {
+                content += `
+                    <div style="background: rgba(33, 150, 243, 0.1); padding: 12px; border-radius: 4px; border-left: 3px solid #2196f3;">
+                        <div style="font-weight: bold; color: #2196f3;">${spell.name}</div>
+                        <div style="font-size: 14px; color: #666; margin-top: 4px;">${spell.description}</div>
+                    </div>
+                `;
+            });
+
+            content += `
+                    </div>
+                </div>
+            `;
+        } else if (levelUpData.newSpellCount > 0) {
+            content += `
+                <div style="margin-bottom: 20px;">
+                    <h3 style="color: #2196f3; margin-bottom: 10px;">✨ Spells Updated</h3>
+                    <p style="color: #666;">Your spell list has been updated with ${levelUpData.newSpellCount} new spell${levelUpData.newSpellCount > 1 ? 's' : ''}!</p>
+                </div>
+            `;
+        }
+
+        // Show the modal
+        window.UIHelpers.showModal({
+            title: `Level ${levelUpData.newLevel} Achieved!`,
+            content: content,
+            buttons: [
+                {
+                    text: 'Continue',
+                    primary: true,
+                    action: () => {
+                        // Modal will auto-close
+                        console.log('Level-up modal closed');
+                    }
+                }
+            ]
+        });
+    }
+
     /**
      * Calculate experience required for a level
      */
@@ -2169,8 +2316,8 @@ class GameState {
         const characterTraits = this.analyzeCharacterTraits(flags);
         const branchAlignment = this.checkBranchCharacterAlignment(proposedBranch, characterTraits);
 
-        if (branchAlignment.conflicts.length > 0) {
-            result.warnings.push(`Character arc conflicts with ${proposedBranch}: ${branchAlignment.conflicts.join(', ')}`);
+        if (branchAlignment.conflict.length > 0) {
+            result.warnings.push(`Character arc conflicts with ${proposedBranch}: ${branchAlignment.conflict.join(', ')}`);
         }
 
         if (branchAlignment.support.length === 0) {
@@ -3506,12 +3653,12 @@ class GameState {
 
         const outcome = StoryData.processChoice(eventName, choiceOutcome);
         if (!outcome) return null;
-        
+
         // Apply outcome effects
         if (outcome.storyFlags) {
             outcome.storyFlags.forEach(flag => this.addStoryFlag(flag));
         }
-        
+
         if (outcome.unlockAreas) {
             outcome.unlockAreas.forEach(area => {
                 if (!this.world.unlockedAreas.includes(area)) {
@@ -3520,7 +3667,7 @@ class GameState {
                 }
             });
         }
-        
+
         if (outcome.items) {
             outcome.items.forEach(item => this.addItem(item, 1));
         }
@@ -3529,10 +3676,24 @@ class GameState {
         this.world.completedEvents.push(eventName);
         // Mark as completed via flag for UI convenience
         this.addStoryFlag(`${eventName}_completed`);
+        // Also add the base event name flag for unlock requirements
+        this.addStoryFlag(eventName);
 
         // Check if this is an encounter-type story event that should trigger combat
         const eventData = StoryData.getEvent(eventName);
         if (eventData && (eventData.type === 'encounter' || eventData.type === 'major_encounter' || eventData.type === 'boss_encounter')) {
+
+            // Check if this outcome is a peaceful resolution that shouldn't trigger combat
+            const outcome = eventData.outcomes?.[choiceOutcome];
+            const isPeacefulResolution = outcome && !outcome.forceCombat &&
+                (choiceOutcome.includes('respectful') || choiceOutcome.includes('communication') ||
+                 choiceOutcome.includes('peaceful') || choiceOutcome.includes('negotiate'));
+
+            if (isPeacefulResolution) {
+                console.log(`🎭 Story event ${eventName} outcome ${choiceOutcome} is peaceful, skipping combat`);
+                return;
+            }
+
             console.log(`🎭 Story event ${eventName} is type ${eventData.type}, triggering encounter`);
 
             // Check if the event has encounter data

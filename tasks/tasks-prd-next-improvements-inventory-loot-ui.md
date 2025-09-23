@@ -15,6 +15,7 @@
 - `css/styles.css` - Base screen visibility rules (`.screen` vs `.screen.active`) and general theme adjustments.
 - `tests/core_systems_integration.test.js` - Integration hooks for EXP/loot flows; extend with assertions.
 - `tests/loot_system.test.js` - Loot distribution unit tests; add coverage for equipment resolver and rarity.
+- `tests/test-runner.html` - Test runner configuration; includes loot system tests and loads lootSystem.js.
 
 ### Notes
 
@@ -31,7 +32,7 @@
   - [x] 1.3 Add logs/warnings with actionable messages when unknown types are encountered.
   - [x] 1.4 Add unit tests to validate resolver outputs and rarity distribution.
 
-- [ ] 2.0 Populate Available Equipment and enable equip/unequip in `InventoryUI`
+- [x] 2.0 Populate Available Equipment and enable equip/unequip in `InventoryUI`
   - [x] 2.1 Filter inventory to equipment types (`weapon`, `armor`, `accessory`) and render into `#equipment-list`.
   - [x] 2.2 Click-to-equip: call `GameState.equipItem(itemId)`; confirm slot rules, class/level gating via `ItemData.canPlayerUseItem`.
   - [x] 2.3 Click-to-unequip: allow unequip by clicking `equipment-slot` rows; return gear to inventory.
@@ -43,15 +44,15 @@
   - [x] 3.2 Populate `#stat-*` fields and sync MP (hp/mp/atk/def/mag atk/mag def/speed/accuracy).
   - [x] 3.3 Add graceful fallback values and ensure numbers are visible with theme contrast.
 
-- [ ] 4.0 Enhance EXP feedback and level-up experience
+- [x] 4.0 Enhance EXP feedback and level-up experience
   - [x] 4.1 Show "+EXP" toast on victory and a level-up toast when `levelUp()` triggers.
-  - [ ] 4.2 Optional modal: display stat gains and newly learned spells.
+  - [x] 4.2 Optional modal: display stat gains and newly learned spells.
   - [x] 4.3 Ensure `InventoryUI.updateExperienceDisplay()` is called on Equipment tab open.
 
-- [ ] 5.0 Improve Materials tab categorization and icons
-  - [ ] 5.1 Add subtype icon mapping (e.g., herbs 🌿, wood 🌲, crystals 💎) and display next to names.
-  - [ ] 5.2 Keep unknown entries visible with a generic icon and raw ID → Pretty Name.
-  - [ ] 5.3 Add simple filters for subtypes (herb/wood/crystal/scroll) and wire buttons.
+- [x] 5.0 Improve Materials tab categorization and icons
+  - [x] 5.1 Add subtype icon mapping (e.g., herbs 🌿, wood 🌲, crystals 💎) and display next to names.
+  - [x] 5.2 Keep unknown entries visible with a generic icon and raw ID → Pretty Name.
+  - [x] 5.3 Add simple filters for subtypes (herb/wood/crystal/scroll) and wire buttons.
 
 - [x] 6.0 Eliminate duplicate scene transitions after battle
   - [x] 6.1 Audit where `ui.showScene('inventory')` is called; ensure a single orchestrator (likely Combat → World → Inventory).

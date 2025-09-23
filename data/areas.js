@@ -126,7 +126,15 @@ const AreaData = {
             description: "A cave system home to a pack of wolves.",
             type: "dungeon",
             unlocked: false,
-            unlockRequirements: { story: "pack_encounter", item: "wolf_tracker" },
+            unlockRequirements: {
+                and: [
+                    { story: "pack_encounter" },
+                    { or: [
+                        { item: "wolf_tracker" },
+                        { item: "wolf_companion" }
+                    ]}
+                ]
+            },
             encounterRate: 70,
             monsters: ["wolf", "dire_wolf", "alpha_wolf"],
             spawnTable: [
