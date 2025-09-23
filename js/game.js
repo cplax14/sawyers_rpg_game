@@ -105,7 +105,15 @@ class SawyersRPG {
         } else {
             console.warn('⚠️ SaveSystem not loaded');
         }
-        
+
+        // Initialize loot system
+        if (typeof LootSystem !== 'undefined') {
+            LootSystem.initialize();
+            console.log('✅ Loot System initialized');
+        } else {
+            console.warn('⚠️ LootSystem not loaded');
+        }
+
         // Try to load auto-save
         this.tryLoadAutoSave();
     }

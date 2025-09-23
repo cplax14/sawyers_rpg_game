@@ -368,6 +368,189 @@ const ItemData = {
             effect: { type: "revive", amount: 0.25 },
             value: 500,
             icon: "🪶"
+        },
+
+        // ================================================
+        // SPELL SCROLLS
+        // ================================================
+        fireball_scroll: {
+            name: "Fireball Scroll",
+            description: "A scroll containing the Fireball spell. Single use.",
+            type: "consumable",
+            category: "spell_scroll",
+            rarity: "uncommon",
+            effect: { type: "learn_spell", spell: "fireball" },
+            usageType: "spell_learning",
+            requirements: { minIntelligence: 12 },
+            value: 150,
+            icon: "📜🔥"
+        },
+        ice_shard_scroll: {
+            name: "Ice Shard Scroll",
+            description: "Teaches the Ice Shard spell to compatible classes.",
+            type: "consumable",
+            category: "spell_scroll",
+            rarity: "uncommon",
+            effect: { type: "learn_spell", spell: "ice_shard" },
+            usageType: "spell_learning",
+            requirements: { classes: ["wizard", "paladin"] },
+            value: 140,
+            icon: "📜❄️"
+        },
+        heal_scroll: {
+            name: "Heal Scroll",
+            description: "Contains the basic Heal spell.",
+            type: "consumable",
+            category: "spell_scroll",
+            rarity: "common",
+            effect: { type: "learn_spell", spell: "heal" },
+            usageType: "spell_learning",
+            requirements: { classes: ["wizard", "paladin"] },
+            value: 100,
+            icon: "📜✨"
+        },
+        lightning_bolt_scroll: {
+            name: "Lightning Bolt Scroll",
+            description: "A powerful electrical spell scroll.",
+            type: "consumable",
+            category: "spell_scroll",
+            rarity: "rare",
+            effect: { type: "learn_spell", spell: "lightning_bolt" },
+            usageType: "spell_learning",
+            requirements: { level: 8, classes: ["wizard"] },
+            value: 300,
+            icon: "📜⚡"
+        },
+        ancient_magic_scroll: {
+            name: "Ancient Magic Scroll",
+            description: "Contains lost magical knowledge.",
+            type: "consumable",
+            category: "spell_scroll",
+            rarity: "epic",
+            effect: { type: "learn_spell", spell: "ancient_magic" },
+            usageType: "spell_learning",
+            requirements: { level: 15, story: "ancient_knowledge" },
+            value: 800,
+            icon: "📜🌟"
+        },
+
+        // ================================================
+        // ENHANCEMENT CONSUMABLES
+        // ================================================
+        strength_potion: {
+            name: "Strength Potion",
+            description: "Temporarily increases attack power by 25% for 5 battles.",
+            type: "consumable",
+            category: "enhancement",
+            rarity: "uncommon",
+            effect: { type: "temp_buff", stat: "attack", multiplier: 1.25, duration: 5 },
+            value: 80,
+            icon: "💪"
+        },
+        defense_elixir: {
+            name: "Defense Elixir",
+            description: "Boosts defense by 30% for 3 battles.",
+            type: "consumable",
+            category: "enhancement",
+            rarity: "uncommon",
+            effect: { type: "temp_buff", stat: "defense", multiplier: 1.3, duration: 3 },
+            value: 85,
+            icon: "🛡️"
+        },
+        speed_tonic: {
+            name: "Speed Tonic",
+            description: "Increases speed and accuracy for 4 battles.",
+            type: "consumable",
+            category: "enhancement",
+            rarity: "rare",
+            effect: { type: "temp_buff", stats: ["speed", "accuracy"], multiplier: 1.2, duration: 4 },
+            value: 120,
+            icon: "💨"
+        },
+        magic_amplifier: {
+            name: "Magic Amplifier",
+            description: "Enhances magical abilities for 6 battles.",
+            type: "consumable",
+            category: "enhancement",
+            rarity: "rare",
+            effect: { type: "temp_buff", stats: ["magicAttack", "magicDefense"], multiplier: 1.35, duration: 6 },
+            value: 150,
+            icon: "🔮"
+        },
+        experience_booster: {
+            name: "Experience Booster",
+            description: "Doubles experience gain for the next battle.",
+            type: "consumable",
+            category: "enhancement",
+            rarity: "uncommon",
+            effect: { type: "temp_buff", bonus: "experience", multiplier: 2.0, duration: 1 },
+            value: 200,
+            icon: "⭐"
+        },
+        lucky_charm: {
+            name: "Lucky Charm",
+            description: "Increases critical hit chance and loot drops for 3 battles.",
+            type: "consumable",
+            category: "enhancement",
+            rarity: "rare",
+            effect: { type: "temp_buff", bonus: ["critical", "loot_drop"], multiplier: 1.5, duration: 3 },
+            value: 180,
+            icon: "🍀"
+        },
+
+        // ================================================
+        // UTILITY CONSUMABLES
+        // ================================================
+        torch: {
+            name: "Torch",
+            description: "Provides light in dark areas. Required for some dungeons.",
+            type: "consumable",
+            category: "utility",
+            rarity: "common",
+            effect: { type: "utility", function: "light_source" },
+            duration: 10, // 10 area explorations
+            value: 15,
+            icon: "🔦"
+        },
+        rope: {
+            name: "Rope",
+            description: "Allows access to certain areas or escape from battles.",
+            type: "consumable",
+            category: "utility",
+            rarity: "common",
+            effect: { type: "utility", function: "escape_aid" },
+            value: 30,
+            icon: "🪢"
+        },
+        monster_bait: {
+            name: "Monster Bait",
+            description: "Increases monster encounter rate for 5 explorations.",
+            type: "consumable",
+            category: "utility",
+            rarity: "uncommon",
+            effect: { type: "temp_effect", effect: "encounter_boost", multiplier: 1.5, duration: 5 },
+            value: 60,
+            icon: "🥩"
+        },
+        monster_repel: {
+            name: "Monster Repel",
+            description: "Reduces monster encounters for 8 explorations.",
+            type: "consumable",
+            category: "utility",
+            rarity: "uncommon",
+            effect: { type: "temp_effect", effect: "encounter_reduce", multiplier: 0.3, duration: 8 },
+            value: 45,
+            icon: "🚫"
+        },
+        teleport_crystal: {
+            name: "Teleport Crystal",
+            description: "Instantly return to the last town visited.",
+            type: "consumable",
+            category: "utility",
+            rarity: "rare",
+            effect: { type: "utility", function: "teleport_town" },
+            value: 250,
+            icon: "💎"
         }
     },
 
@@ -455,6 +638,233 @@ const ItemData = {
             value: 20,
             icon: "🥩"
         },
+
+        // ================================================
+        // MONSTER-DERIVED MATERIALS
+        // ================================================
+        slime_gel: {
+            name: "Slime Gel",
+            description: "Viscous gel from slimes. Used in potion brewing.",
+            type: "material",
+            category: "monster_part",
+            rarity: "common",
+            craftingUse: ["alchemy", "equipment_repair"],
+            value: 8,
+            icon: "🫧"
+        },
+        goblin_tooth: {
+            name: "Goblin Tooth",
+            description: "Sharp tooth from a goblin. Used for crafting arrows.",
+            type: "material",
+            category: "monster_part",
+            rarity: "common",
+            craftingUse: ["weapon_crafting", "ammunition"],
+            value: 12,
+            icon: "🦷"
+        },
+        wolf_fang: {
+            name: "Wolf Fang",
+            description: "Curved fang from a wolf. Prized for weapon enhancement.",
+            type: "material",
+            category: "monster_part",
+            rarity: "uncommon",
+            craftingUse: ["weapon_enhancement", "jewelry"],
+            value: 25,
+            icon: "🔪"
+        },
+        wolf_pelt: {
+            name: "Wolf Pelt",
+            description: "Thick fur from a wolf. Excellent for armor crafting.",
+            type: "material",
+            category: "monster_part",
+            rarity: "uncommon",
+            craftingUse: ["armor_crafting", "clothing"],
+            value: 30,
+            icon: "🧥"
+        },
+        orc_tusk: {
+            name: "Orc Tusk",
+            description: "Massive tusk from an orc. Used for powerful weapons.",
+            type: "material",
+            category: "monster_part",
+            rarity: "rare",
+            craftingUse: ["weapon_crafting", "decoration"],
+            value: 60,
+            icon: "🦏"
+        },
+        dragon_scale: {
+            name: "Dragon Scale",
+            description: "Incredibly hard scale from a dragon. Ultimate armor material.",
+            type: "material",
+            category: "monster_part",
+            rarity: "legendary",
+            craftingUse: ["legendary_armor", "magical_items"],
+            value: 500,
+            icon: "🐲"
+        },
+        dragon_heart: {
+            name: "Dragon Heart",
+            description: "The still-beating heart of an ancient dragon. Immense magical power.",
+            type: "material",
+            category: "monster_part",
+            rarity: "legendary",
+            craftingUse: ["artifact_creation", "spell_enhancement"],
+            value: 2000,
+            icon: "❤️"
+        },
+
+        // ================================================
+        // NATURAL MATERIALS
+        // ================================================
+        healing_herb: {
+            name: "Healing Herb",
+            description: "A common medicinal plant found in forests.",
+            type: "material",
+            category: "natural",
+            rarity: "common",
+            craftingUse: ["alchemy", "healing_items"],
+            value: 5,
+            icon: "🌿"
+        },
+        mana_flower: {
+            name: "Mana Flower",
+            description: "Blue flower that restores magical energy.",
+            type: "material",
+            category: "natural",
+            rarity: "common",
+            craftingUse: ["alchemy", "mana_items"],
+            value: 8,
+            icon: "🌸"
+        },
+        oak_branch: {
+            name: "Oak Branch",
+            description: "Sturdy wood from ancient oak trees.",
+            type: "material",
+            category: "natural",
+            rarity: "common",
+            craftingUse: ["weapon_crafting", "tool_making"],
+            value: 6,
+            icon: "🌳"
+        },
+        pine_sap: {
+            name: "Pine Sap",
+            description: "Sticky resin used as adhesive and coating.",
+            type: "material",
+            category: "natural",
+            rarity: "common",
+            craftingUse: ["equipment_repair", "coating"],
+            value: 4,
+            icon: "🍯"
+        },
+        forest_crystal: {
+            name: "Forest Crystal",
+            description: "Crystallized nature energy found in ancient groves.",
+            type: "material",
+            category: "natural",
+            rarity: "rare",
+            craftingUse: ["magical_items", "enhancement"],
+            value: 120,
+            icon: "💚"
+        },
+
+        // ================================================
+        // MINERAL MATERIALS
+        // ================================================
+        iron_ore: {
+            name: "Iron Ore",
+            description: "Raw iron extracted from mountain caves.",
+            type: "material",
+            category: "mineral",
+            rarity: "common",
+            craftingUse: ["weapon_crafting", "armor_crafting"],
+            value: 15,
+            icon: "⛏️"
+        },
+        quartz_crystal: {
+            name: "Quartz Crystal",
+            description: "Clear crystal with magical conductivity.",
+            type: "material",
+            category: "mineral",
+            rarity: "uncommon",
+            craftingUse: ["magical_items", "jewelry"],
+            value: 40,
+            icon: "💎"
+        },
+        amethyst_shard: {
+            name: "Amethyst Shard",
+            description: "Purple crystal fragment with potent magical properties.",
+            type: "material",
+            category: "mineral",
+            rarity: "rare",
+            craftingUse: ["spell_enhancement", "magical_weapons"],
+            value: 80,
+            icon: "💜"
+        },
+        mithril_ore: {
+            name: "Mithril Ore",
+            description: "Legendary metal ore lighter than steel but stronger than iron.",
+            type: "material",
+            category: "mineral",
+            rarity: "epic",
+            craftingUse: ["legendary_equipment", "artifact_creation"],
+            value: 300,
+            icon: "✨"
+        },
+        adamantine_crystal: {
+            name: "Adamantine Crystal",
+            description: "The hardest known substance, capable of cutting anything.",
+            type: "material",
+            category: "mineral",
+            rarity: "legendary",
+            craftingUse: ["legendary_weapons", "cutting_tools"],
+            value: 1000,
+            icon: "💠"
+        },
+
+        // ================================================
+        // MAGICAL COMPONENTS
+        // ================================================
+        mana_essence: {
+            name: "Mana Essence",
+            description: "Concentrated magical energy in physical form.",
+            type: "material",
+            category: "magical",
+            rarity: "uncommon",
+            craftingUse: ["spell_scrolls", "mana_items"],
+            value: 50,
+            icon: "🔵"
+        },
+        crystal_essence: {
+            name: "Crystal Essence",
+            description: "Pure energy extracted from magical crystals.",
+            type: "material",
+            category: "magical",
+            rarity: "rare",
+            craftingUse: ["magical_enhancement", "power_cores"],
+            value: 100,
+            icon: "💫"
+        },
+        dragon_essence: {
+            name: "Dragon Essence",
+            description: "Condensed power from ancient dragons.",
+            type: "material",
+            category: "magical",
+            rarity: "epic",
+            craftingUse: ["legendary_spells", "dragon_items"],
+            value: 400,
+            icon: "🐉"
+        },
+        time_relic: {
+            name: "Time Relic",
+            description: "Fragment of crystallized time itself.",
+            type: "material",
+            category: "magical",
+            rarity: "legendary",
+            craftingUse: ["time_magic", "temporal_artifacts"],
+            value: 1500,
+            icon: "⏳"
+        },
+
         evolution_stone: {
             name: "Evolution Stone",
             description: "A mysterious stone that triggers monster evolution.",

@@ -386,6 +386,18 @@ class SceneManager {
             return false;
         }
 
+        // Guard against switching to the same scene
+        if (this.currentScene && this.currentScene.name === sceneName) {
+            console.log(`Already on scene ${sceneName}, ignoring transition`);
+            return true;
+        }
+
+        // Guard against re-entrant transitions
+        if (this.transitionManager && this.transitionManager.isTransitioning()) {
+            console.log(`Transition already in progress, ignoring transition to ${sceneName}`);
+            return false;
+        }
+
         // Handle scene transition if enabled and current scene exists
         if (transition && this.options.enableTransitions && this.currentScene) {
             // Setup transition with completion callback

@@ -30,7 +30,31 @@ const MonsterData = {
             evolvesTo: ["king_slime"],
             evolutionItems: [],
             breedsWith: ["slime", "goblin"],
-            areas: ["forest", "plains"]
+            areas: ["forest", "plains"],
+            lootTable: {
+                level: 1,
+                goldRange: [3, 8],
+                drops: [
+                    {
+                        itemType: "slime_gel",
+                        dropChance: 0.65,
+                        rarityWeights: { common: 0.8, uncommon: 0.15, rare: 0.05 },
+                        quantityRange: [1, 2]
+                    },
+                    {
+                        itemType: "health_potion",
+                        dropChance: 0.25,
+                        rarityWeights: { common: 0.9, uncommon: 0.1 },
+                        quantityRange: [1, 1]
+                    },
+                    {
+                        itemType: "equipment",
+                        dropChance: 0.08,
+                        rarityWeights: { common: 0.7, uncommon: 0.25, rare: 0.05 },
+                        equipmentTypes: ["light_armor", "simple_weapon"]
+                    }
+                ]
+            }
         },
         
         goblin: {
@@ -51,7 +75,37 @@ const MonsterData = {
             evolvesTo: ["hobgoblin"],
             evolutionItems: [],
             breedsWith: ["goblin", "orc", "slime"],
-            areas: ["forest", "cave", "mountains"]
+            areas: ["forest", "cave", "mountains"],
+            lootTable: {
+                level: 2,
+                goldRange: [5, 12],
+                drops: [
+                    {
+                        itemType: "goblin_tooth",
+                        dropChance: 0.45,
+                        rarityWeights: { common: 0.75, uncommon: 0.2, rare: 0.05 },
+                        quantityRange: [1, 3]
+                    },
+                    {
+                        itemType: "crude_weapon",
+                        dropChance: 0.35,
+                        rarityWeights: { common: 0.8, uncommon: 0.18, rare: 0.02 },
+                        equipmentTypes: ["club", "dagger", "sling"]
+                    },
+                    {
+                        itemType: "leather_scraps",
+                        dropChance: 0.3,
+                        rarityWeights: { common: 0.9, uncommon: 0.1 },
+                        quantityRange: [1, 2]
+                    },
+                    {
+                        itemType: "mana_potion",
+                        dropChance: 0.15,
+                        rarityWeights: { common: 0.85, uncommon: 0.15 },
+                        quantityRange: [1, 1]
+                    }
+                ]
+            }
         },
         
         wolf: {
@@ -72,7 +126,37 @@ const MonsterData = {
             evolvesTo: ["dire_wolf"],
             evolutionItems: [],
             breedsWith: ["wolf", "bear", "fox"],
-            areas: ["forest", "mountains", "plains"]
+            areas: ["forest", "mountains", "plains"],
+            lootTable: {
+                level: 4,
+                goldRange: [8, 18],
+                drops: [
+                    {
+                        itemType: "wolf_fang",
+                        dropChance: 0.55,
+                        rarityWeights: { common: 0.65, uncommon: 0.25, rare: 0.08, epic: 0.02 },
+                        quantityRange: [1, 2]
+                    },
+                    {
+                        itemType: "wolf_pelt",
+                        dropChance: 0.4,
+                        rarityWeights: { common: 0.7, uncommon: 0.25, rare: 0.05 },
+                        quantityRange: [1, 1]
+                    },
+                    {
+                        itemType: "beast_equipment",
+                        dropChance: 0.15,
+                        rarityWeights: { common: 0.6, uncommon: 0.3, rare: 0.09, epic: 0.01 },
+                        equipmentTypes: ["hunting_bow", "beast_armor", "nature_accessory"]
+                    },
+                    {
+                        itemType: "stamina_potion",
+                        dropChance: 0.2,
+                        rarityWeights: { common: 0.8, uncommon: 0.2 },
+                        quantityRange: [1, 1]
+                    }
+                ]
+            }
         },
         
         // Intermediate Monsters
@@ -94,7 +178,43 @@ const MonsterData = {
             evolvesTo: ["orc_warrior"],
             evolutionItems: [],
             breedsWith: ["orc", "goblin", "troll"],
-            areas: ["mountains", "cave", "wasteland"]
+            areas: ["mountains", "cave", "wasteland"],
+            lootTable: {
+                level: 8,
+                goldRange: [15, 35],
+                drops: [
+                    {
+                        itemType: "orc_tusk",
+                        dropChance: 0.5,
+                        rarityWeights: { common: 0.5, uncommon: 0.35, rare: 0.12, epic: 0.03 },
+                        quantityRange: [1, 2]
+                    },
+                    {
+                        itemType: "warrior_equipment",
+                        dropChance: 0.4,
+                        rarityWeights: { common: 0.4, uncommon: 0.4, rare: 0.17, epic: 0.03 },
+                        equipmentTypes: ["war_axe", "battle_armor", "strength_ring"]
+                    },
+                    {
+                        itemType: "iron_ore",
+                        dropChance: 0.35,
+                        rarityWeights: { common: 0.7, uncommon: 0.25, rare: 0.05 },
+                        quantityRange: [2, 4]
+                    },
+                    {
+                        itemType: "strength_potion",
+                        dropChance: 0.25,
+                        rarityWeights: { common: 0.6, uncommon: 0.3, rare: 0.1 },
+                        quantityRange: [1, 2]
+                    },
+                    {
+                        itemType: "spell_scroll",
+                        dropChance: 0.1,
+                        rarityWeights: { uncommon: 0.6, rare: 0.3, epic: 0.1 },
+                        spellTypes: ["earth_magic", "combat_magic"]
+                    }
+                ]
+            }
         },
         
         fire_sprite: {
@@ -479,7 +599,49 @@ const MonsterData = {
             evolvesTo: [],
             evolutionItems: [],
             breedsWith: ["ancient_dragon"],
-            areas: ["dragon_peak"]
+            areas: ["dragon_peak"],
+            lootTable: {
+                level: 50,
+                goldRange: [500, 1500],
+                drops: [
+                    {
+                        itemType: "dragon_scale",
+                        dropChance: 0.95,
+                        rarityWeights: { rare: 0.3, epic: 0.5, legendary: 0.2 },
+                        quantityRange: [3, 8]
+                    },
+                    {
+                        itemType: "dragon_heart",
+                        dropChance: 0.8,
+                        rarityWeights: { epic: 0.6, legendary: 0.4 },
+                        quantityRange: [1, 1]
+                    },
+                    {
+                        itemType: "legendary_equipment",
+                        dropChance: 0.7,
+                        rarityWeights: { epic: 0.4, legendary: 0.6 },
+                        equipmentTypes: ["dragonslayer_sword", "ancient_armor", "time_amulet"]
+                    },
+                    {
+                        itemType: "ancient_tome",
+                        dropChance: 0.6,
+                        rarityWeights: { rare: 0.2, epic: 0.4, legendary: 0.4 },
+                        spellTypes: ["time_magic", "dragon_magic", "ancient_arts"]
+                    },
+                    {
+                        itemType: "dragon_essence",
+                        dropChance: 0.5,
+                        rarityWeights: { epic: 0.7, legendary: 0.3 },
+                        quantityRange: [2, 5]
+                    },
+                    {
+                        itemType: "legendary_gem",
+                        dropChance: 0.25,
+                        rarityWeights: { legendary: 1.0 },
+                        quantityRange: [1, 2]
+                    }
+                ]
+            }
         },
 
         // Mystic Grove Monsters
@@ -954,6 +1116,246 @@ const MonsterData = {
         }
         
         return null;
+    },
+
+    /**
+     * Create an AI-enabled monster instance for combat
+     */
+    createAIMonster: function(species, level, stats = null) {
+        const speciesData = this.getSpecies(species);
+        if (!speciesData) return null;
+
+        const monster = {
+            species: species,
+            level: level,
+            stats: stats || this.getStatsAtLevel(species, level),
+            currentStats: null, // Will be set by combat system
+            abilities: [...(speciesData.abilities || [])],
+            speciesData: speciesData,
+            type: speciesData.type || ['unknown'],
+
+            // AI decision making method
+            chooseAIAction: function(targets) {
+                return MonsterData.chooseMonsterAction(this, targets);
+            }
+        };
+
+        // Initialize current stats for combat
+        monster.currentStats = { ...monster.stats };
+
+        return monster;
+    },
+
+    /**
+     * AI action selection for monsters
+     */
+    chooseMonsterAction: function(monster, targets) {
+        if (!targets || targets.length === 0) {
+            return { type: 'defend' };
+        }
+
+        // Get monster's available actions
+        const actions = this.getAvailableActions(monster, targets);
+
+        if (actions.length === 0) {
+            return { type: 'attack', target: targets[0] };
+        }
+
+        // Choose action based on AI personality and situation
+        return this.selectBestAction(monster, targets, actions);
+    },
+
+    /**
+     * Get available actions for a monster
+     */
+    getAvailableActions: function(monster, targets) {
+        const actions = [];
+
+        // Always can attack
+        actions.push({ type: 'attack', priority: 50 });
+
+        // Check for spell/ability actions
+        if (monster.abilities && monster.abilities.length > 0) {
+            for (const ability of monster.abilities) {
+                const spellAction = this.getSpellAction(monster, ability, targets);
+                if (spellAction) {
+                    actions.push(spellAction);
+                }
+            }
+        }
+
+        // Defensive actions based on health
+        const healthPercent = (monster.currentStats?.hp || 0) / (monster.stats?.hp || 1);
+        if (healthPercent < 0.3) {
+            actions.push({ type: 'defend', priority: 70 });
+        }
+
+        return actions;
+    },
+
+    /**
+     * Convert monster ability to spell action
+     */
+    getSpellAction: function(monster, ability, targets) {
+        // Map common abilities to spell-like actions
+        const spellMappings = {
+            'fireball': { type: 'spell', spellId: 'fireball', mpCost: 8, priority: 80, targetType: 'enemy' },
+            'heal': { type: 'spell', spellId: 'heal', mpCost: 6, priority: 90, targetType: 'self' },
+            'ice_shard': { type: 'spell', spellId: 'ice_shard', mpCost: 6, priority: 75, targetType: 'enemy' },
+            'lightning_bolt': { type: 'spell', spellId: 'lightning_bolt', mpCost: 10, priority: 85, targetType: 'enemy' },
+            'flame_burst': { type: 'ability', ability: 'flame_burst', mpCost: 5, priority: 70, targetType: 'enemy' },
+            'dragon_breath': { type: 'ability', ability: 'dragon_breath', mpCost: 12, priority: 90, targetType: 'enemy' },
+            'fire_shield': { type: 'ability', ability: 'fire_shield', mpCost: 8, priority: 60, targetType: 'self' },
+            'roar': { type: 'ability', ability: 'roar', mpCost: 4, priority: 50, targetType: 'all' },
+            'claw_attack': { type: 'attack', priority: 60 }, // Enhanced attack
+            'bounce': { type: 'ability', ability: 'bounce', mpCost: 3, priority: 40, targetType: 'enemy' }
+        };
+
+        const mapping = spellMappings[ability];
+        if (!mapping) {
+            // Default to ability action
+            return { type: 'ability', ability: ability, mpCost: 5, priority: 50, targetType: 'enemy' };
+        }
+
+        // Check if monster has enough MP
+        const currentMP = monster.currentStats?.mp || 0;
+        if (currentMP < mapping.mpCost) {
+            return null; // Can't cast
+        }
+
+        // Select appropriate target based on action type
+        let target = null;
+        switch (mapping.targetType) {
+            case 'enemy':
+                target = targets[0]; // For now, target first available enemy
+                break;
+            case 'self':
+                target = monster; // Self-targeting
+                break;
+            case 'all':
+                target = targets[0]; // Will affect all, but need a primary target
+                break;
+        }
+
+        return {
+            ...mapping,
+            target: target
+        };
+    },
+
+    /**
+     * Select the best action based on AI logic
+     */
+    selectBestAction: function(monster, targets, actions) {
+        if (actions.length === 0) {
+            return { type: 'attack', target: targets[0] };
+        }
+
+        // Calculate situation modifiers
+        const healthPercent = (monster.currentStats?.hp || 0) / (monster.stats?.hp || 1);
+        const mpPercent = (monster.currentStats?.mp || 0) / (monster.stats?.mp || 1);
+
+        // Adjust action priorities based on situation
+        const adjustedActions = actions.map(action => {
+            let priority = action.priority || 50;
+
+            // Boost healing when low on health
+            if (action.type === 'spell' && action.spellId === 'heal' && healthPercent < 0.5) {
+                priority += 40;
+            }
+
+            // Prefer attacks when low on MP
+            if (action.type === 'attack' && mpPercent < 0.3) {
+                priority += 30;
+            }
+
+            // High-damage spells when enemy is low on health
+            const targetHealthPercent = this.getTargetHealthPercent(action.target);
+            if (action.type === 'spell' && targetHealthPercent < 0.3) {
+                priority += 20;
+            }
+
+            // Monster personality adjustments
+            const personality = this.getMonsterPersonality(monster);
+            priority = this.applyPersonalityModifier(action, priority, personality);
+
+            return { ...action, adjustedPriority: priority };
+        });
+
+        // Select action with highest adjusted priority (with some randomness)
+        adjustedActions.sort((a, b) => (b.adjustedPriority || 0) - (a.adjustedPriority || 0));
+
+        // Add some randomness: 70% chance to pick best, 30% chance to pick from top 3
+        const randomRoll = Math.random();
+        if (randomRoll < 0.7 || adjustedActions.length === 1) {
+            return adjustedActions[0];
+        } else {
+            const topActions = adjustedActions.slice(0, Math.min(3, adjustedActions.length));
+            const randomIndex = Math.floor(Math.random() * topActions.length);
+            return topActions[randomIndex];
+        }
+    },
+
+    /**
+     * Get target's health percentage
+     */
+    getTargetHealthPercent: function(target) {
+        if (!target || !target.currentStats || !target.stats) return 1.0;
+        return (target.currentStats.hp || 0) / (target.stats.hp || 1);
+    },
+
+    /**
+     * Get monster personality based on species type
+     */
+    getMonsterPersonality: function(monster) {
+        const types = monster.type || [];
+
+        if (types.includes('aggressive')) return 'aggressive';
+        if (types.includes('magical')) return 'magical';
+        if (types.includes('defensive')) return 'defensive';
+        if (types.includes('cunning')) return 'cunning';
+
+        // Default personalities based on element
+        if (types.includes('fire')) return 'aggressive';
+        if (types.includes('water') || types.includes('ice')) return 'balanced';
+        if (types.includes('nature')) return 'defensive';
+        if (types.includes('dark')) return 'cunning';
+
+        return 'balanced';
+    },
+
+    /**
+     * Apply personality modifiers to action priorities
+     */
+    applyPersonalityModifier: function(action, priority, personality) {
+        switch (personality) {
+            case 'aggressive':
+                if (action.type === 'attack') priority += 20;
+                if (action.type === 'spell' && action.spellId && action.spellId.includes('fire')) priority += 15;
+                break;
+
+            case 'magical':
+                if (action.type === 'spell' || action.type === 'ability') priority += 25;
+                if (action.type === 'attack') priority -= 10;
+                break;
+
+            case 'defensive':
+                if (action.type === 'defend') priority += 20;
+                if (action.type === 'spell' && action.spellId === 'heal') priority += 30;
+                break;
+
+            case 'cunning':
+                if (action.type === 'ability') priority += 15;
+                // Prefer status effects and tricks
+                break;
+
+            case 'balanced':
+            default:
+                // No significant modifiers
+                break;
+        }
+
+        return priority;
     }
 };
 

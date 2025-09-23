@@ -25,6 +25,38 @@ class CombatEngine {
         combat.currentTurn = 0;
         combat.actions = [];
         combat.battleResult = null;
+
+        // Populate combat.enemies array for CombatUI compatibility
+        combat.enemies = participants
+            .filter(p => p.side === 'enemy')
+            .map(p => ({
+                name: p.ref?.species || 'Unknown',
+                species: p.ref?.species || 'unknown',
+                level: p.ref?.level || 1,
+                hp: p.ref?.currentStats?.hp || p.ref?.stats?.hp || 20,
+                maxHp: p.ref?.stats?.hp || 20,
+                attack: p.ref?.stats?.attack || 10,
+                defense: p.ref?.stats?.defense || 5,
+                capturable: true,
+                id: p.id,
+                ref: p.ref
+            }));
+
+        // Populate combat.player for CombatUI compatibility
+        const playerParticipant = participants.find(p => p.side === 'player');
+        if (playerParticipant && playerParticipant.ref) {
+            combat.player = {
+                name: playerParticipant.ref.name || 'Player',
+                hp: playerParticipant.ref.stats?.hp || 100,
+                maxHp: playerParticipant.ref.stats?.maxHp || 100,
+                mana: playerParticipant.ref.stats?.mana || playerParticipant.ref.stats?.mp || 10,
+                maxMana: playerParticipant.ref.stats?.maxMana || playerParticipant.ref.stats?.maxMp || 10,
+                spells: playerParticipant.ref.spells || [],
+                inventory: playerParticipant.ref.inventory?.items || {}
+            };
+        }
+
+
         return ordered;
     }
 
@@ -49,9 +81,138 @@ class CombatEngine {
     endTurn() {
         const c = this.gameState.combat;
         if (!c.active || c.turnOrder.length === 0) return;
+
+        // Process end-of-turn effects before advancing
+        this.processEndOfTurnEffects();
+
         c.currentTurn = (c.currentTurn + 1) % c.turnOrder.length;
         if (c.currentTurn === 0) {
             c.turn += 1;
+            // Process end-of-round effects
+            this.processEndOfRoundEffects();
+        }
+    }
+
+    /**
+     * Process effects that happen at the end of each turn
+     */
+    processEndOfTurnEffects() {
+        const currentActor = this.getCurrentActor();
+        if (!currentActor) return;
+
+        const actorRef = this.getRef(currentActor);
+        if (actorRef) {
+            // MP regeneration
+            this.applyMPRegeneration(actorRef);
+            // Update status effects
+            this.updateStatusEffects(actorRef);
+        }
+    }
+
+    /**
+     * Process effects that happen at the end of each round
+     */
+    processEndOfRoundEffects() {
+        const c = this.gameState.combat;
+        if (!c.turnOrder) return;
+
+        // Apply MP regeneration and status updates to all participants
+        for (const participant of c.turnOrder) {
+            if (participant.defeated) continue;
+
+            const ref = this.getRef(participant);
+            if (ref) {
+                this.applyMPRegeneration(ref);
+                this.updateStatusEffects(ref);
+                this.updateTemporaryEffects(ref);
+            }
+        }
+
+        // Use SpellSystem's global regeneration if available
+        if (this.gameState.spellSystem) {
+            this.gameState.spellSystem.updateMPRegeneration(1000); // 1 second passed
+        }
+    }
+
+    /**
+     * Apply MP regeneration to a character
+     */
+    applyMPRegeneration(characterRef) {
+        if (!characterRef || !characterRef.stats) return;
+
+        // Use SpellSystem regeneration if available
+        if (this.gameState.spellSystem) {
+            this.gameState.spellSystem.regenerateCharacterMP(characterRef);
+            return;
+        }
+
+        // Fallback MP regeneration
+        this.ensureCurrentStats(characterRef);
+        const maxMP = characterRef.stats.maxMp || characterRef.stats.mp || 0;
+        const currentMP = characterRef.currentStats.mp || 0;
+
+        if (currentMP < maxMP) {
+            const regenAmount = Math.ceil(maxMP * 0.05); // 5% regen per turn
+            const newMP = Math.min(maxMP, currentMP + regenAmount);
+            characterRef.currentStats.mp = newMP;
+            characterRef.stats.mp = newMP; // Sync
+
+            if (regenAmount > 0) {
+                this.gameState.addNotification(
+                    `${characterRef.name || 'Character'} regenerates ${regenAmount} MP`,
+                    'info'
+                );
+            }
+        }
+    }
+
+    /**
+     * Update status effects (duration, removal)
+     */
+    updateStatusEffects(characterRef) {
+        if (!characterRef || !characterRef.statusEffects) return;
+
+        const expiredEffects = [];
+        characterRef.statusEffects = characterRef.statusEffects.filter(effect => {
+            effect.duration -= 1;
+            if (effect.duration <= 0) {
+                expiredEffects.push(effect);
+                return false;
+            }
+            return true;
+        });
+
+        // Notify about expired effects
+        for (const effect of expiredEffects) {
+            this.gameState.addNotification(
+                `${characterRef.name || 'Character'} recovers from ${effect.type}`,
+                'info'
+            );
+        }
+    }
+
+    /**
+     * Update temporary stat effects (buffs/debuffs)
+     */
+    updateTemporaryEffects(characterRef) {
+        if (!characterRef || !characterRef.temporaryEffects) return;
+
+        const expiredEffects = [];
+        characterRef.temporaryEffects = characterRef.temporaryEffects.filter(effect => {
+            effect.duration -= 1;
+            if (effect.duration <= 0) {
+                expiredEffects.push(effect);
+                return false;
+            }
+            return true;
+        });
+
+        // Notify about expired effects
+        for (const effect of expiredEffects) {
+            this.gameState.addNotification(
+                `${characterRef.name || 'Character'}'s ${effect.stat} returns to normal`,
+                'info'
+            );
         }
     }
 
@@ -62,7 +223,11 @@ class CombatEngine {
         c.active = false;
         // Grant rewards on victory
         if (result && result.victory) {
-            this.grantRewards(result);
+            // Suppress notification since victory modal will show the rewards
+            const resultWithSuppress = { ...result, suppressNotification: true };
+            const rewardData = this.grantRewards(resultWithSuppress);
+            // Store reward data for victory modal
+            c.rewardData = rewardData;
         }
     }
 
@@ -74,13 +239,18 @@ class CombatEngine {
 
         let totalXP = 0;
         let totalGold = 0;
-        const drops = [];
+        const allDrops = [];
         const playerLevel = this.gameState?.player?.level || 1;
 
         for (const e of enemies) {
             const ref = this.getRef(e) || e.ref || {};
             const enemyLevel = ref.level || 1;
             const species = ref.species || ref?.speciesData?.name || 'unknown';
+
+            // Track monster defeat for area progression
+            if (this.gameState && typeof this.gameState.trackMonsterDefeat === 'function') {
+                this.gameState.trackMonsterDefeat(species);
+            }
 
             // Enhanced XP calculation with level scaling
             let baseXP = enemyLevel * 8;
@@ -107,43 +277,230 @@ class CombatEngine {
 
             totalXP += baseXP;
 
-            // Enhanced gold calculation
-            let baseGold = Math.floor(enemyLevel * 2.5);
-            if (levelDiff > 0) {
-                baseGold = Math.floor(baseGold * (1 + levelDiff * 0.08));
-            }
-            totalGold += baseGold;
-
-            // Improved drop system with level-appropriate items
-            const dropChance = 0.15 + (enemyLevel * 0.005); // Slightly higher drop chance for higher level enemies
-            if (Math.random() < dropChance) {
-                if (enemyLevel >= 15 && Math.random() < 0.3) {
-                    drops.push('mana_potion');
-                } else {
-                    drops.push('health_potion');
+            // Enhanced loot generation with tiered system
+            if (typeof LootSystem !== 'undefined') {
+                const monsterLoot = LootSystem.generateMonsterLoot(species, enemyLevel, playerLevel);
+                if (monsterLoot) {
+                    totalGold += monsterLoot.gold || 0;
+                    if (monsterLoot.items && monsterLoot.items.length > 0) {
+                        allDrops.push(...monsterLoot.items);
+                    }
                 }
-            }
+            } else {
+                // Fallback to old loot system if LootSystem not available
+                let baseGold = Math.floor(enemyLevel * 2.5);
+                if (levelDiff > 0) {
+                    baseGold = Math.floor(baseGold * (1 + levelDiff * 0.08));
+                }
+                totalGold += baseGold;
 
-            // Rare drops for higher level enemies
-            if (enemyLevel >= 20 && Math.random() < 0.05) {
-                drops.push('capture_orb'); // Better capture item
+                // Improved drop system with level-appropriate items
+                const dropChance = 0.15 + (enemyLevel * 0.005);
+                if (Math.random() < dropChance) {
+                    if (enemyLevel >= 15 && Math.random() < 0.3) {
+                        allDrops.push({ itemId: 'mana_potion', quantity: 1, rarity: 'common' });
+                    } else {
+                        allDrops.push({ itemId: 'health_potion', quantity: 1, rarity: 'common' });
+                    }
+                }
+
+                // Rare drops for higher level enemies
+                if (enemyLevel >= 20 && Math.random() < 0.05) {
+                    allDrops.push({ itemId: 'capture_orb', quantity: 1, rarity: 'uncommon' });
+                }
             }
         }
 
+        // Generate area-specific loot if available
+        if (typeof LootSystem !== 'undefined' && this.gameState.world?.currentArea) {
+            const areaLoot = LootSystem.generateAreaLoot(this.gameState.world.currentArea, playerLevel);
+            if (areaLoot && areaLoot.items && areaLoot.items.length > 0) {
+                allDrops.push(...areaLoot.items);
+            }
+        }
+
+        // Grant rewards
         if (totalXP > 0) {
             this.gameState.addExperience(totalXP);
         }
         if (totalGold > 0) {
             this.gameState.addGold(totalGold);
         }
-        for (const item of drops) {
-            this.gameState.addItem(item, 1);
+
+        // Add items to inventory with overflow handling
+        const itemSummary = [];
+        for (const drop of allDrops) {
+            const itemId = drop.itemId || drop.id || drop;
+            const quantity = drop.quantity || 1;
+            const rarity = drop.rarity || 'common';
+            const itemData = drop; // Pass the full drop object as item data for loot-generated items
+
+            // For loot-generated items (objects with properties), pass the full data
+            const fullItemData = (typeof drop === 'object' && drop.name) ? drop : null;
+
+            const added = this.gameState.addItem(itemId, quantity, rarity, fullItemData);
+            if (added) {
+                const displayName = fullItemData?.name || itemId;
+                itemSummary.push(`${displayName}${quantity > 1 ? ` x${quantity}` : ''}${rarity !== 'common' ? ` (${rarity})` : ''}`);
+            }
         }
-        this.gameState.addNotification(`Battle Rewards: +${totalXP} EXP, +${totalGold} gold${drops.length?`, items: ${drops.join(', ')}`:''}`, 'success');
+
+        // Display notification only if not suppressed (victory modal will show this info)
+        if (!result.suppressNotification) {
+            const itemText = itemSummary.length > 0 ? `, items: ${itemSummary.join(', ')}` : '';
+            this.gameState.addNotification(`Battle Rewards: +${totalXP} EXP, +${totalGold} gold${itemText}`, 'success');
+        }
+
+        // Return reward data for UI display
+        return {
+            experience: totalXP,
+            gold: totalGold,
+            items: itemSummary,
+            allDrops: allDrops
+        };
     }
 
     isBattleActive() {
         return !!this.gameState.combat.active;
+    }
+
+    /**
+     * Use an item during combat
+     * @param {string} itemId - The ID of the item to use
+     * @param {Object} target - The target to use the item on (optional for self-targeting items)
+     * @returns {Object} Result of item usage
+     */
+    useItem(itemId, target = null) {
+        console.log(`🎒 Combat useItem called: ${itemId} on ${target?.name || 'no target'}`);
+
+        // Check if player has the item first
+        if (!this.gameState.player.inventory.items[itemId] || this.gameState.player.inventory.items[itemId] <= 0) {
+            console.log(`🎒 Item ${itemId} not in inventory`);
+            return { success: false, reason: 'Item not in inventory' };
+        }
+
+        // Get item data to understand its effects
+        const itemData = this.gameState.getItemData(itemId);
+        if (!itemData) {
+            console.log(`🎒 Item ${itemId} data not found`);
+            return { success: false, reason: 'Unknown item' };
+        }
+
+        // For healing items in combat, handle targeting manually
+        if (itemData.usageType === 'healing' && target) {
+            return this.useHealingItemInCombat(itemId, itemData, target);
+        } else if (itemData.usageType === 'mana' && target) {
+            return this.useManaItemInCombat(itemId, itemData, target);
+        } else {
+            // For other items, delegate to game state
+            const result = this.gameState.useItem(itemId);
+            console.log(`🎒 Item ${itemId} used via GameState:`, result);
+            return result;
+        }
+    }
+
+    /**
+     * Handle healing item usage in combat with proper targeting
+     */
+    useHealingItemInCombat(itemId, itemData, target) {
+        const targetRef = this.getRef(target);
+        if (!targetRef) {
+            return { success: false, reason: 'Invalid target' };
+        }
+
+        const healAmount = itemData.effect?.healing || itemData.effect?.power || 20;
+        const currentHp = this.getStat(targetRef, 'hp', targetRef.maxHP || 100);
+        const maxHp = targetRef.maxHP || 100;
+
+        if (currentHp >= maxHp) {
+            return { success: false, reason: 'Target already at full health' };
+        }
+
+        // Apply healing
+        const newHp = Math.min(maxHp, currentHp + healAmount);
+        const actualHealing = newHp - currentHp;
+        targetRef.hp = newHp;
+
+        // Remove item from inventory
+        const removeResult = this.gameState.removeItem(itemId, 1);
+        console.log(`🎒 Remove item result for ${itemId}:`, removeResult);
+
+        console.log(`🎒 Healed ${target.name || 'target'} for ${actualHealing} HP`);
+
+        return {
+            success: true,
+            effect: { heal: actualHealing },
+            message: `Restored ${actualHealing} HP to ${target.name || 'target'}`
+        };
+    }
+
+    /**
+     * Handle mana item usage in combat with proper targeting
+     */
+    useManaItemInCombat(itemId, itemData, target) {
+        const targetRef = this.getRef(target);
+        if (!targetRef) {
+            return { success: false, reason: 'Invalid target' };
+        }
+
+        const manaAmount = itemData.effect?.mana || itemData.effect?.power || 10;
+        const currentMp = this.getStat(targetRef, 'mp', targetRef.maxMP || 50);
+        const maxMp = targetRef.maxMP || 50;
+
+        if (currentMp >= maxMp) {
+            return { success: false, reason: 'Target already at full mana' };
+        }
+
+        // Apply mana restoration
+        const newMp = Math.min(maxMp, currentMp + manaAmount);
+        const actualMana = newMp - currentMp;
+        targetRef.mp = newMp;
+
+        // Remove item from inventory
+        const removeResult = this.gameState.removeItem(itemId, 1);
+        console.log(`🎒 Remove item result for ${itemId}:`, removeResult);
+
+        console.log(`🎒 Restored ${actualMana} MP to ${target.name || 'target'}`);
+
+        return {
+            success: true,
+            effect: { mana: actualMana },
+            message: `Restored ${actualMana} MP to ${target.name || 'target'}`
+        };
+    }
+
+    /**
+     * Apply item effect to a target in combat
+     * @param {Object} effect - The effect to apply
+     * @param {Object} target - The target to apply effect to
+     */
+    applyItemEffectToTarget(effect, target) {
+        const targetRef = this.getRef(target);
+        if (!targetRef) return;
+
+        // Apply healing effects
+        if (effect.heal && effect.heal > 0) {
+            const currentHp = this.getStat(targetRef, 'hp', targetRef.maxHP || 100);
+            const maxHp = targetRef.maxHP || 100;
+            const newHp = Math.min(maxHp, currentHp + effect.heal);
+            targetRef.hp = newHp;
+            console.log(`🎒 Healed ${target.name || 'target'} for ${effect.heal} HP`);
+        }
+
+        // Apply mana restoration
+        if (effect.mana && effect.mana > 0) {
+            const currentMp = this.getStat(targetRef, 'mp', targetRef.maxMP || 50);
+            const maxMp = targetRef.maxMP || 50;
+            const newMp = Math.min(maxMp, currentMp + effect.mana);
+            targetRef.mp = newMp;
+            console.log(`🎒 Restored ${target.name || 'target'} ${effect.mana} MP`);
+        }
+
+        // Apply status effects (buffs/debuffs)
+        if (effect.statusEffect) {
+            // Add status effect logic here if needed
+            console.log(`🎒 Applied status effect to ${target.name || 'target'}`);
+        }
     }
 
     // ================================================
@@ -184,10 +541,29 @@ class CombatEngine {
     healTarget(ref, amount) {
         this.ensureCurrentStats(ref);
         if (!ref || !ref.currentStats) return 0;
-        const maxHP = this.getStat(ref, 'hp', ref.currentStats.hp || 0);
+
+        // Get max HP from stats, with a reasonable fallback (100 for players, current HP for others)
+        let maxHP = this.getStat(ref, 'hp', 0);
+        if (maxHP <= 0) {
+            // If no max HP in stats, use a reasonable default based on what we know
+            if (ref.maxHP) {
+                maxHP = ref.maxHP;
+            } else if (ref.stats && ref.stats.maxHP) {
+                maxHP = ref.stats.maxHP;
+            } else {
+                // Default to 100 for player-like entities, or current HP + healing amount for others
+                maxHP = Math.max(100, (ref.currentStats.hp || 0) + amount);
+            }
+        }
+
+        console.log(`🎒 healTarget debug: maxHP=${maxHP}, currentHP=${ref.currentStats.hp}, healAmount=${amount}`);
+
         const before = ref.currentStats.hp || 0;
         ref.currentStats.hp = Math.min(maxHP, before + Math.max(1, Math.floor(amount)));
-        return ref.currentStats.hp - before;
+        const healed = ref.currentStats.hp - before;
+
+        console.log(`🎒 healTarget result: healed ${healed} HP (${before} -> ${ref.currentStats.hp})`);
+        return healed;
     }
     
     computeDamage(attackerRef, defenderRef, type = 'physical') {
@@ -241,39 +617,293 @@ class CombatEngine {
         const d = this.getParticipantById(targetId);
         if (!a || !d) return { success: false, reason: 'Invalid participants' };
         const aref = this.getRef(a);
-        // Try to consume MP if method exists
-        let consumed = true;
-        if (aref && typeof aref.useMP === 'function') {
-            consumed = aref.useMP(mpCost);
-        } else {
-            // Fallback to manual mp field if present
-            this.ensureCurrentStats(aref);
-            if (aref?.currentStats) {
-                if ((aref.currentStats.mp || 0) >= mpCost) {
-                    aref.currentStats.mp -= mpCost;
-                    consumed = true;
-                } else {
-                    consumed = false;
-                }
-            }
+
+        // Enhanced MP validation using SpellSystem if available
+        let mpValidation = this.validateMPCost(aref, mpCost);
+        if (!mpValidation.canCast) {
+            return { success: false, reason: mpValidation.reason };
         }
-        if (!consumed) return { success: false, reason: 'Not enough MP' };
+
+        // Consume MP using enhanced system
+        const consumed = this.consumeMP(aref, mpCost);
+        if (!consumed) return { success: false, reason: 'Failed to consume MP' };
+
         const dmg = this.computeDamage(aref, this.getRef(d), 'magic') + 5; // small magic bonus
         const dealt = this.applyDamage(this.getRef(d), dmg);
         this.gameState.addNotification(`${moveId} hits for ${dealt}`, 'info');
         this.performAction({ type: 'magic', moveId, targetId });
         return { success: true, damage: dealt };
     }
-    
+
+    /**
+     * Validate MP cost for an action
+     */
+    validateMPCost(characterRef, mpCost) {
+        if (!characterRef) {
+            return { canCast: false, reason: 'Invalid character' };
+        }
+
+        // Use SpellSystem validation if available
+        if (this.gameState.spellSystem) {
+            return {
+                canCast: this.gameState.spellSystem.hasEnoughMP(characterRef, mpCost),
+                reason: this.gameState.spellSystem.hasEnoughMP(characterRef, mpCost)
+                    ? 'Valid'
+                    : `Insufficient MP (need ${mpCost}, have ${characterRef.stats?.mp || 0})`
+            };
+        }
+
+        // Fallback validation
+        this.ensureCurrentStats(characterRef);
+        const currentMP = characterRef.currentStats?.mp || characterRef.stats?.mp || 0;
+
+        return {
+            canCast: currentMP >= mpCost,
+            reason: currentMP >= mpCost
+                ? 'Valid'
+                : `Insufficient MP (need ${mpCost}, have ${currentMP})`
+        };
+    }
+
+    /**
+     * Consume MP from a character
+     */
+    consumeMP(characterRef, mpCost) {
+        if (!characterRef) return false;
+
+        // Use SpellSystem if available
+        if (this.gameState.spellSystem) {
+            return this.gameState.spellSystem.consumeMP(characterRef, mpCost);
+        }
+
+        // Fallback MP consumption
+        if (characterRef && typeof characterRef.useMP === 'function') {
+            return characterRef.useMP(mpCost);
+        } else {
+            // Manual MP field management
+            this.ensureCurrentStats(characterRef);
+            if (characterRef?.currentStats) {
+                if ((characterRef.currentStats.mp || 0) >= mpCost) {
+                    characterRef.currentStats.mp -= mpCost;
+                    // Sync with stats.mp if it exists
+                    if (characterRef.stats) {
+                        characterRef.stats.mp = characterRef.currentStats.mp;
+                    }
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Cast a spell using the spell system
+     */
+    castSpell(casterId, spellId, targetId = null) {
+        if (!this.gameState.spellSystem) {
+            return { success: false, reason: 'Spell system not available' };
+        }
+
+        const caster = this.getParticipantById(casterId);
+        if (!caster) {
+            return { success: false, reason: 'Invalid caster' };
+        }
+
+        const casterRef = this.getRef(caster);
+        if (!casterRef) {
+            return { success: false, reason: 'Invalid caster reference' };
+        }
+
+        // Get target reference if targetId provided
+        let target = null;
+        if (targetId) {
+            const targetParticipant = this.getParticipantById(targetId);
+            target = targetParticipant ? this.getRef(targetParticipant) : null;
+        }
+
+        // Use spell system to cast the spell
+        const result = this.gameState.spellSystem.castSpellForCharacter(casterRef, spellId, target);
+
+        if (result.success) {
+            // Apply spell effects to combat participants
+            this.processSpellEffects(result.effects, casterRef, target);
+
+            // Record the action in combat
+            this.performAction({
+                type: 'spell',
+                spellId: spellId,
+                targetId: targetId,
+                mpCost: result.mpConsumed,
+                effects: result.effects
+            });
+
+            // Check for KO'd targets after spell effects
+            this.checkForDefeatedTargets();
+        }
+
+        return result;
+    }
+
+    /**
+     * Process spell effects and apply them to combat participants
+     */
+    processSpellEffects(effects, caster, originalTarget) {
+        if (!effects || !Array.isArray(effects)) return;
+
+        for (const effect of effects) {
+            this.applySpellEffectToCombat(effect, caster, originalTarget);
+        }
+    }
+
+    /**
+     * Apply a single spell effect to combat participants
+     */
+    applySpellEffectToCombat(effect, caster, originalTarget) {
+        switch (effect.type) {
+            case 'damage':
+                if (originalTarget) {
+                    // Update the combat participant's current stats
+                    this.ensureCurrentStats(originalTarget);
+                    // Damage was already applied by SpellSystem, just sync the stats
+                    this.gameState.addNotification(
+                        `${effect.target} takes ${effect.amount} spell damage!`,
+                        'combat'
+                    );
+                }
+                break;
+
+            case 'heal':
+                if (originalTarget) {
+                    this.ensureCurrentStats(originalTarget);
+                    this.gameState.addNotification(
+                        `${effect.target} recovers ${effect.amount} HP!`,
+                        'heal'
+                    );
+                }
+                break;
+
+            case 'stat_boost':
+            case 'stat_debuff':
+                // Apply temporary stat modifications
+                this.applyTemporaryStatEffect(originalTarget, effect);
+                break;
+
+            case 'status_applied':
+                this.gameState.addNotification(
+                    `${effect.target} is affected by ${effect.status}!`,
+                    'status'
+                );
+                break;
+
+            case 'status_removed':
+                this.gameState.addNotification(
+                    `${effect.target} recovers from status effects!`,
+                    'heal'
+                );
+                break;
+
+            default:
+                console.warn(`Unknown spell effect type: ${effect.type}`);
+        }
+    }
+
+    /**
+     * Apply temporary stat effects for buffs/debuffs
+     */
+    applyTemporaryStatEffect(target, effect) {
+        if (!target) return;
+
+        // Initialize temporary effects tracking if needed
+        if (!target.temporaryEffects) {
+            target.temporaryEffects = [];
+        }
+
+        // Add the temporary effect
+        const tempEffect = {
+            type: effect.type,
+            stat: effect.stat,
+            amount: effect.amount,
+            duration: effect.duration,
+            appliedAt: Date.now(),
+            source: 'spell'
+        };
+
+        target.temporaryEffects.push(tempEffect);
+
+        const effectVerb = effect.type === 'stat_boost' ? 'increased' : 'decreased';
+        this.gameState.addNotification(
+            `${effect.target}'s ${effect.stat} ${effectVerb} by ${Math.abs(effect.amount)}!`,
+            effect.type === 'stat_boost' ? 'buff' : 'debuff'
+        );
+    }
+
+    /**
+     * Check for defeated targets and handle KOs
+     */
+    checkForDefeatedTargets() {
+        const combat = this.gameState.combat;
+        if (!combat.turnOrder) return;
+
+        for (const participant of combat.turnOrder) {
+            const ref = this.getRef(participant);
+            if (ref && ref.currentStats && ref.currentStats.hp <= 0) {
+                this.gameState.addNotification(
+                    `${participant.id} was defeated!`,
+                    'warning'
+                );
+                // Mark as defeated (could remove from turn order or set a flag)
+                participant.defeated = true;
+            }
+        }
+    }
+
     useItem(userId, itemId = 'health_potion') {
+        console.log(`🎒 CombatEngine.useItem called: userId=${userId}, itemId=${itemId}`);
+
         const u = this.getParticipantById(userId);
+        console.log(`🎒 Found participant:`, u);
+
         if (!u) return { success: false, reason: 'Invalid participant' };
+
+        const uRef = this.getRef(u);
+        console.log(`🎒 Player ref:`, uRef);
+
+        // CRITICAL FIX: Sync HP from UI player object to combat engine participant
+        const uiPlayer = this.gameState.combat?.player;
+        if (uiPlayer && uiPlayer.hp !== undefined) {
+            console.log(`🎒 Syncing HP from UI player (${uiPlayer.hp}) to combat participant (${uRef?.currentStats?.hp})`);
+            this.ensureCurrentStats(uRef);
+            if (uRef.currentStats) {
+                uRef.currentStats.hp = uiPlayer.hp;
+                console.log(`🎒 HP synced: combat participant now has ${uRef.currentStats.hp} HP`);
+            }
+        }
+
+        console.log(`🎒 Player ref HP sources:`, {
+            'ref.hp': uRef?.hp,
+            'ref.stats.hp': uRef?.stats?.hp,
+            'ref.maxHP': uRef?.maxHP,
+            'ref.stats.maxHP': uRef?.stats?.maxHP,
+            'ref.currentStats.hp': uRef?.currentStats?.hp
+        });
+
         const inv = this.gameState.player.inventory.items;
         if (!inv[itemId] || inv[itemId] <= 0) return { success: false, reason: 'No item' };
         // Currently only support a simple heal potion
         const healAmount = itemId === 'health_potion' ? 30 : 0;
         if (healAmount <= 0) return { success: false, reason: 'Unsupported item' };
-        const healed = this.healTarget(this.getRef(u), healAmount);
+        const healed = this.healTarget(uRef, healAmount);
+
+        // CRITICAL FIX: Sync healed HP back to UI player object
+        if (uiPlayer && healed > 0) {
+            const newHP = Math.min(uiPlayer.maxHp || 100, uiPlayer.hp + healed);
+            console.log(`🎒 Syncing healed HP back to UI player: ${uiPlayer.hp} -> ${newHP}`);
+            uiPlayer.hp = newHP;
+        }
+
         this.gameState.removeItem(itemId, 1);
         this.gameState.addNotification(`Used ${itemId}, healed ${healed}`, 'item');
         this.performAction({ type: 'item', itemId });
@@ -524,6 +1154,11 @@ class CombatEngine {
                 const targetId = this.findTurnIdForRef(action.target) || (targets[0]?.id ?? null);
                 return this.magic(participantId, targetId, action.ability || 'ability', 5);
             }
+            case 'spell': {
+                // Cast a specific spell
+                const targetId = this.findTurnIdForRef(action.target) || (targets[0]?.id ?? null);
+                return this.castSpell(participantId, action.spellId, targetId);
+            }
             case 'attack': {
                 const targetId = this.findTurnIdForRef(action.target) || (targets[0]?.id ?? null);
                 return this.attack(participantId, targetId);
@@ -548,6 +1183,112 @@ class CombatEngine {
         }
         const found = c.turnOrder.find(p => this.getRef(p) === targetRef);
         return found ? found.id : null;
+    }
+
+    /**
+     * Start an encounter with a monster
+     */
+    startEncounter(encounter) {
+        try {
+            // Create AI-enabled monster
+            const species = encounter.species || encounter.monster || 'slime';
+            const level = encounter.level || 1;
+            const stats = encounter.stats || null;
+
+            const monster = this.createEncounterMonster(species, level, stats);
+            if (!monster) {
+                throw new Error('Failed to create monster for encounter');
+            }
+
+            // Create player participant
+            const player = this.gameState.player;
+            const playerParticipant = {
+                id: 'player',
+                side: 'player',
+                speed: player.stats?.speed || 50,
+                ref: player
+            };
+
+            // Create monster participant
+            const monsterParticipant = {
+                id: 'monster_1',
+                side: 'enemy',
+                speed: monster.stats?.speed || 40,
+                ref: monster
+            };
+
+            // Start battle with participants
+            const participants = [playerParticipant, monsterParticipant];
+            this.startBattle(participants);
+
+            // Initialize MP for both participants
+            if (this.gameState.spellSystem) {
+                this.gameState.spellSystem.initializeMp(player);
+                this.gameState.spellSystem.initializeMp(monster);
+            }
+
+            this.gameState.addNotification(`Encountered ${monster.species} (Level ${monster.level})!`, 'combat');
+
+            return { success: true, monster: monster };
+
+        } catch (error) {
+            console.error('Failed to start encounter:', error);
+            return { success: false, reason: error.message };
+        }
+    }
+
+    /**
+     * Create an AI-enabled monster for encounter
+     */
+    createEncounterMonster(species, level, stats = null) {
+        if (typeof MonsterData !== 'undefined' && MonsterData.createAIMonster) {
+            // Use the new AI monster creation
+            return MonsterData.createAIMonster(species, level, stats);
+        } else {
+            // Fallback to basic monster creation
+            const basicStats = stats || (MonsterData?.getStatsAtLevel ?
+                MonsterData.getStatsAtLevel(species, level) :
+                { hp: 20 + level * 5, mp: 10 + level * 2, attack: 10 + level * 2, defense: 8 + level });
+
+            return {
+                species: species,
+                level: level,
+                stats: basicStats,
+                currentStats: { ...basicStats },
+                abilities: ['attack'], // Basic fallback
+
+                // Basic AI action for fallback
+                chooseAIAction: function(targets) {
+                    if (targets && targets.length > 0) {
+                        return { type: 'attack', target: targets[0] };
+                    }
+                    return { type: 'defend' };
+                }
+            };
+        }
+    }
+
+    /**
+     * Enhanced AI turn processing with spell support
+     */
+    processAITurn() {
+        const currentActor = this.getCurrentActor();
+        if (!currentActor || currentActor.side !== 'enemy') {
+            return { success: false, reason: 'Not an enemy turn' };
+        }
+
+        // Use the existing aiTakeTurn method
+        const result = this.aiTakeTurn(currentActor.id);
+
+        // Process MP regeneration for AI after their turn
+        if (result.success && this.gameState.spellSystem) {
+            const monsterRef = this.getRef(currentActor);
+            if (monsterRef) {
+                this.gameState.spellSystem.regenerateMP(monsterRef, 'combat');
+            }
+        }
+
+        return result;
     }
 }
 

@@ -373,6 +373,19 @@ class UIManager extends EventTarget {
     }
 
     /**
+     * Show a story event using the StoryUI module
+     */
+    showStoryEvent(payload) {
+        const storyModule = this.getModule('StoryUI');
+        if (storyModule && typeof storyModule.showStoryEvent === 'function') {
+            return storyModule.showStoryEvent(payload.eventName);
+        } else {
+            console.warn('StoryUI module not available for story event');
+            return false;
+        }
+    }
+
+    /**
      * Get notification manager
      */
     getNotificationManager() {

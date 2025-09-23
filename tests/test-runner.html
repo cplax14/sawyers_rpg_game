@@ -223,6 +223,8 @@ Loaded Modules:
     <script src="../data/characters.js"></script>
     <script src="../data/monsters.js"></script>
     <script src="../data/areas.js"></script>
+    <script src="../data/items.js"></script>
+    <script src="../data/spells.js"></script>
     <script src="../data/story.js"></script>
     
     <!-- Load Game Engine for Testing (with mocking) -->
@@ -240,6 +242,8 @@ Loaded Modules:
         });
         window.cancelAnimationFrame = window.cancelAnimationFrame || clearTimeout;
     </script>
+    <script src="../js/spellSystem.js"></script>
+    <script src="../js/lootSystem.js"></script>
     <script src="../js/gameState.js"></script>
     <script src="../js/utils.js"></script>
     <script src="../js/monster.js"></script>
@@ -397,10 +401,20 @@ Loaded Modules:
     <script src="skills.test.js"></script>
     <script src="combat.test.js"></script>
     <script src="combat_actions.test.js"></script>
+    <script src="spell_casting_integration.test.js"></script>
     <script src="combat_status.test.js"></script>
     <script src="combat_ai.test.js"></script>
     <script src="combat_rewards.test.js"></script>
     <script src="capture_chance.test.js"></script>
+    <script src="loot_system.test.js"></script>
+    <script src="level_up_modal.test.js"></script>
+    <script src="material_icons.test.js"></script>
+    <script src="material_filters.test.js"></script>
+    <script src="wolf_den_unlock.test.js"></script>
+    <script src="story_event_triggering.test.js"></script>
+    <script src="exploration_story_priority.test.js"></script>
+    <script src="story_modal_integration.test.js"></script>
+    <script src="story_manual_trigger.test.js"></script>
     <script src="world_map.test.js"></script>
     <script src="random_encounters.test.js"></script>
     <script src="spawn_tables.test.js"></script>
@@ -415,6 +429,10 @@ Loaded Modules:
     <script src="ui_endings.test.js"></script>
     <script src="ui_story_content.test.js"></script>
     <script src="ui_story_branches.test.js"></script>
+    <script src="story_progression.test.js"></script>
+    <script src="story_accessibility.test.js"></script>
+    <script src="story_path_validation.test.js"></script>
+    <script src="story_smoke_test.test.js"></script>
     <script src="ui_menu_smoke.test.js"></script>
     <script src="ui_world_map_interactions.test.js"></script>
     <script src="ui_explore_encounter.test.js"></script>

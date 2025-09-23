@@ -18,10 +18,25 @@ describe('Combat Rewards Tests', () => {
     beforeEach(() => {
         // Reset state and inventory
         gameState.resetCombat();
+        if (!gameState.player) {
+            gameState.player = { level: 1, experience: 0, inventory: { items: {} } };
+        }
         gameState.player.level = 1;
         gameState.player.experience = 0;
-        gameState.player.experienceToNext = gameState.calculateExperienceRequired(2);
+
+        // Calculate experience to next level safely
+        if (typeof gameState.calculateExperienceRequired === 'function') {
+            gameState.player.experienceToNext = gameState.calculateExperienceRequired(2);
+        } else {
+            gameState.player.experienceToNext = 100; // Default fallback
+        }
+
+        // Ensure inventory exists
+        if (!gameState.player.inventory) {
+            gameState.player.inventory = { items: {} };
+        }
         gameState.player.inventory.items = {};
+
         if (!gameState.combatEngine) gameState.initializeCombatEngine();
     });
 

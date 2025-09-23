@@ -173,7 +173,14 @@ class CombatUI extends BaseUIModule {
         const submenu = document.getElementById(submenuId);
         if (submenu) {
             submenu.classList.remove('hidden');
-            
+
+            // Ensure submenu can receive clicks
+            if (submenuId === 'items-submenu') {
+                submenu.style.position = 'relative';
+                submenu.style.zIndex = '998';
+                submenu.style.pointerEvents = 'auto';
+            }
+
             // Populate submenu content based on type
             if (submenuId === 'magic-submenu') {
                 this.populateSpellList();
@@ -306,15 +313,40 @@ class CombatUI extends BaseUIModule {
         
         // Get available targets based on action type
         let targets = [];
+        const enemies = combat.enemies || [];
+
         if (actionType === 'attack' || actionType === 'capture') {
-            targets = combat.enemies.filter(enemy => enemy.hp > 0);
-        } else if (actionType === 'magic' || actionType === 'item') {
-            // Could target enemies or allies depending on spell/item
-            targets = combat.enemies.filter(enemy => enemy.hp > 0);
+            targets = enemies.filter(enemy => enemy.hp > 0);
+        } else if (actionType === 'magic') {
+            // Could target enemies or allies depending on spell
+            targets = enemies.filter(enemy => enemy.hp > 0);
             // Add player and monsters as potential targets for healing/buffs
             if (combat.player) targets.push(combat.player);
             if (combat.playerMonsters) {
                 targets.push(...combat.playerMonsters.filter(m => m.hp > 0));
+            }
+        } else if (actionType === 'item') {
+            // For items, determine targets based on item type
+            const isHealingItem = actionData && (
+                actionData.includes('potion') ||
+                actionData.includes('heal') ||
+                actionData.includes('health') ||
+                actionData.includes('mana')
+            );
+
+            if (isHealingItem) {
+                // Healing items target allies only
+                if (combat.player) targets.push(combat.player);
+                if (combat.playerMonsters) {
+                    targets.push(...combat.playerMonsters.filter(m => m.hp > 0));
+                }
+            } else {
+                // Other items could target enemies or allies
+                targets = enemies.filter(enemy => enemy.hp > 0);
+                if (combat.player) targets.push(combat.player);
+                if (combat.playerMonsters) {
+                    targets.push(...combat.playerMonsters.filter(m => m.hp > 0));
+                }
             }
         }
         
@@ -374,6 +406,32 @@ class CombatUI extends BaseUIModule {
             console.warn('Spell list element not found');
             return;
         }
+
+        // Debug spell list container
+        console.log('🔍 Spell list container:', spellList);
+        console.log('🔍 Container styles:', {
+            display: getComputedStyle(spellList).display,
+            pointerEvents: getComputedStyle(spellList).pointerEvents,
+            zIndex: getComputedStyle(spellList).zIndex,
+            position: getComputedStyle(spellList).position
+        });
+
+        // Force container to be clickable with maximum z-index
+        spellList.style.pointerEvents = 'auto';
+        spellList.style.position = 'fixed';
+        spellList.style.zIndex = '999999';
+        spellList.style.left = '50%';
+        spellList.style.top = '50%';
+        spellList.style.transform = 'translate(-50%, -50%)';
+        spellList.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+        spellList.style.padding = '20px';
+        spellList.style.borderRadius = '8px';
+        spellList.style.border = '2px solid #ffd700';
+
+        // Add click debug to container
+        spellList.addEventListener('click', (e) => {
+            console.log('🎯 Click on spell list container, target:', e.target);
+        });
         
         const gameState = this.gameState || window.GameState;
         if (!gameState || !gameState.player) {
@@ -384,9 +442,11 @@ class CombatUI extends BaseUIModule {
         spellList.innerHTML = '';
         const player = gameState.player;
         
-        // Get player's available spells
+        // Get player's available spells using SpellSystem
         let spells = [];
-        if (player.spells) {
+        if (gameState.spellSystem && typeof gameState.spellSystem.getAvailableSpells === 'function') {
+            spells = gameState.spellSystem.getAvailableSpells();
+        } else if (player.spells) {
             spells = player.spells;
         } else if (player.knownSpells) {
             spells = player.knownSpells;
@@ -403,30 +463,275 @@ class CombatUI extends BaseUIModule {
             return;
         }
         
-        spells.forEach(spell => {
-            const spellBtn = document.createElement('button');
-            spellBtn.className = 'spell-btn';
-            
-            let spellName = typeof spell === 'string' ? spell : spell.name;
-            let manaCost = typeof spell === 'object' ? spell.manaCost : 0;
-            
-            spellBtn.textContent = `${spellName}${manaCost > 0 ? ` (${manaCost} MP)` : ''}`;
-            
-            // Disable if not enough mana
-            if (manaCost > 0 && player.mana < manaCost) {
-                spellBtn.disabled = true;
-                spellBtn.classList.add('insufficient-mana');
-            }
-            
-            this.addEventListener(spellBtn, 'click', () => {
-                this.hideSubMenu('magic-submenu');
-                this.showTargetSelection('magic', spell);
+        // Group spells by category for better organization
+        const spellsByCategory = this.groupSpellsByCategory(spells);
+
+        // Create spell categories
+        Object.entries(spellsByCategory).forEach(([category, categorySpells]) => {
+            if (categorySpells.length === 0) return;
+
+            // Create category header
+            const categoryHeader = document.createElement('div');
+            categoryHeader.className = 'spell-category-header';
+            categoryHeader.textContent = this.formatCategoryName(category);
+            spellList.appendChild(categoryHeader);
+
+            // Create category container
+            const categoryContainer = document.createElement('div');
+            categoryContainer.className = 'spell-category-container';
+            spellList.appendChild(categoryContainer);
+
+            categorySpells.forEach(spell => {
+                const spellCard = this.createEnhancedSpellButton(spell, player);
+                categoryContainer.appendChild(spellCard);
             });
-            
-            spellList.appendChild(spellBtn);
         });
         
         console.log(`🧙 Populated ${spells.length} spells`);
+    }
+
+    /**
+     * Group spells by category for organized display
+     */
+    groupSpellsByCategory(spells) {
+        const categories = {
+            damage: [],
+            healing: [],
+            utility: [],
+            buff: [],
+            debuff: [],
+            other: []
+        };
+
+        spells.forEach(spell => {
+            const spellData = this.getSpellData(spell);
+            const category = this.determineSpellCategory(spellData);
+            categories[category].push(spell);
+        });
+
+        // Remove empty categories
+        Object.keys(categories).forEach(key => {
+            if (categories[key].length === 0) {
+                delete categories[key];
+            }
+        });
+
+        return categories;
+    }
+
+    /**
+     * Get unified spell data from different formats
+     */
+    getSpellData(spell) {
+        if (typeof spell === 'string') {
+            return { id: spell, name: spell, element: 'none', effects: [] };
+        } else if (spell.data) {
+            return { id: spell.id || spell.spellId, ...spell.data };
+        } else {
+            return { id: spell.id || spell.spellId || spell.name, ...spell };
+        }
+    }
+
+    /**
+     * Determine spell category based on effects
+     */
+    determineSpellCategory(spellData) {
+        const effects = spellData.effects || [];
+        const spellName = (spellData.name || '').toLowerCase();
+
+        // Check for healing spells
+        if (effects.some(e => e.type === 'heal') || spellName.includes('heal') || spellName.includes('cure')) {
+            return 'healing';
+        }
+
+        // Check for damage spells
+        if (effects.some(e => e.type === 'damage') ||
+            spellName.includes('ball') || spellName.includes('bolt') ||
+            spellName.includes('strike') || spellName.includes('blast')) {
+            return 'damage';
+        }
+
+        // Check for buffs
+        if (effects.some(e => e.type === 'status_applied' && e.beneficial) ||
+            spellName.includes('bless') || spellName.includes('enhance') || spellName.includes('boost')) {
+            return 'buff';
+        }
+
+        // Check for debuffs
+        if (effects.some(e => e.type === 'status_applied' && !e.beneficial) ||
+            spellName.includes('curse') || spellName.includes('slow') || spellName.includes('weaken')) {
+            return 'debuff';
+        }
+
+        // Check for utility spells
+        if (effects.some(e => ['teleport', 'summon', 'shield', 'dispel'].includes(e.type)) ||
+            spellName.includes('light') || spellName.includes('detect') || spellName.includes('shield')) {
+            return 'utility';
+        }
+
+        return 'other';
+    }
+
+    /**
+     * Format category name for display
+     */
+    formatCategoryName(category) {
+        const categoryNames = {
+            damage: '⚔️ Damage Spells',
+            healing: '✨ Healing Spells',
+            utility: '🛠️ Utility Spells',
+            buff: '📈 Buffs',
+            debuff: '📉 Debuffs',
+            other: '🔮 Other Spells'
+        };
+        return categoryNames[category] || '🔮 Other Spells';
+    }
+
+    /**
+     * Create enhanced spell button with detailed information
+     */
+    createEnhancedSpellButton(spell, player) {
+        const spellCard = document.createElement('button');
+        spellCard.className = 'spell-card';
+
+        // Get spell data
+        const spellData = this.getSpellData(spell);
+        spellCard.setAttribute('data-spell', spellData.id || spell.id || spell);
+        let canCast = true;
+        let canCastReason = '';
+
+        // Check if can cast using spell system
+        if (spell.canCast) {
+            canCast = spell.canCast.canCast;
+            canCastReason = spell.canCast.reason || '';
+        }
+
+        // Create spell header
+        const spellHeader = document.createElement('div');
+        spellHeader.className = 'spell-header';
+
+        // Create spell name with element icon
+        const spellNameContainer = document.createElement('div');
+        spellNameContainer.className = 'spell-name';
+
+        if (spellData.element && spellData.element !== 'none') {
+            const elementIcon = document.createElement('span');
+            elementIcon.className = 'spell-element-icon';
+            elementIcon.textContent = this.getElementIcon(spellData.element);
+            elementIcon.title = spellData.element;
+            spellNameContainer.appendChild(elementIcon);
+        }
+
+        const nameText = document.createElement('span');
+        nameText.textContent = spellData.name || spellData.id;
+        spellNameContainer.appendChild(nameText);
+
+        // Create MP cost display
+        const spellCost = document.createElement('div');
+        spellCost.className = 'spell-mp-cost';
+        const mpCost = spellData.mpCost || 0;
+        spellCost.textContent = mpCost > 0 ? `${mpCost} MP` : 'Free';
+
+        spellHeader.appendChild(spellNameContainer);
+        spellHeader.appendChild(spellCost);
+
+        // Create spell description
+        if (spellData.description) {
+            const description = document.createElement('div');
+            description.className = 'spell-description';
+            description.textContent = spellData.description;
+            spellCard.appendChild(description);
+        }
+
+        // Create spell details section
+        const spellDetails = document.createElement('div');
+        spellDetails.className = 'spell-details';
+
+        // Add damage/effect info
+        if (spellData.damage) {
+            const damageInfo = document.createElement('div');
+            damageInfo.className = 'spell-damage-range';
+            if (typeof spellData.damage === 'object' && spellData.damage.min !== undefined) {
+                damageInfo.textContent = `${spellData.damage.min}-${spellData.damage.max} dmg`;
+            } else {
+                damageInfo.textContent = `${spellData.damage} dmg`;
+            }
+            spellDetails.appendChild(damageInfo);
+        } else if (spellData.healing) {
+            const healingInfo = document.createElement('div');
+            healingInfo.className = 'spell-effect-info';
+            if (typeof spellData.healing === 'object' && spellData.healing.min !== undefined) {
+                healingInfo.textContent = `${spellData.healing.min}-${spellData.healing.max} heal`;
+            } else {
+                healingInfo.textContent = `${spellData.healing} heal`;
+            }
+            spellDetails.appendChild(healingInfo);
+        } else if (spellData.effects && spellData.effects.length > 0) {
+            const effectInfo = document.createElement('div');
+            effectInfo.className = 'spell-effect-info';
+            effectInfo.textContent = spellData.effects.slice(0, 2).join(', ');
+            spellDetails.appendChild(effectInfo);
+        }
+
+        // Add cooldown if applicable
+        if (spell.cooldown && spell.cooldown > 0) {
+            const cooldownInfo = document.createElement('div');
+            cooldownInfo.className = 'spell-effect-info';
+            cooldownInfo.textContent = `Cooldown: ${Math.ceil(spell.cooldown)}s`;
+            spellDetails.appendChild(cooldownInfo);
+        }
+
+        // Add level/tier info if available
+        if (spellData.level || spellData.tier) {
+            const levelInfo = document.createElement('div');
+            levelInfo.className = 'spell-effect-info';
+            levelInfo.textContent = `Lv.${spellData.level || spellData.tier}`;
+            spellDetails.appendChild(levelInfo);
+        }
+
+        spellCard.appendChild(spellHeader);
+        spellCard.appendChild(spellDetails);
+
+        // Apply styling and interactivity based on availability
+        if (!canCast) {
+            spellCard.classList.add('spell-insufficient-mp');
+            spellCard.disabled = true;
+            spellCard.title = canCastReason;
+        } else {
+            spellCard.addEventListener('click', () => {
+                this.hideSubMenu('magic-submenu');
+                this.showTargetSelection('magic', {
+                    id: spellData.id,
+                    name: spellData.name || spellData.id
+                });
+            });
+        }
+
+        return spellCard;
+    }
+
+    /**
+     * Get element icon for spell display
+     */
+    getElementIcon(element) {
+        const elementIcons = {
+            fire: '🔥',
+            ice: '❄️',
+            water: '💧',
+            thunder: '⚡',
+            electric: '⚡',
+            earth: '🌍',
+            nature: '🌿',
+            healing: '✨',
+            holy: '☀️',
+            light: '💡',
+            dark: '🌑',
+            death: '💀',
+            arcane: '🔮',
+            wind: '💨',
+            poison: '☠️'
+        };
+        return elementIcons[element] || '✨';
     }
 
     /**
@@ -447,12 +752,31 @@ class CombatUI extends BaseUIModule {
         }
         
         itemList.innerHTML = '';
+
+        // Ensure the item list container can receive clicks
+        itemList.style.position = 'relative';
+        itemList.style.zIndex = '999';
+        itemList.style.pointerEvents = 'auto';
+
         const inventory = gameState.player.inventory || {};
-        
+        const items = inventory.items || {};
+
+        // Debug: log all inventory items
+        console.log('🎒 All inventory items:', Object.entries(items).filter(([name, qty]) => qty > 0));
+
         // Get usable items in combat
-        const usableItems = Object.entries(inventory)
-            .filter(([itemName, quantity]) => quantity > 0 && this.isUsableInCombat(itemName))
+        const usableItems = Object.entries(items)
+            .filter(([itemName, quantity]) => {
+                const hasQuantity = quantity > 0;
+                const isUsable = this.isUsableInCombat(itemName);
+                if (hasQuantity && !isUsable) {
+                    console.log(`🎒 Item "${itemName}" not usable in combat`);
+                }
+                return hasQuantity && isUsable;
+            })
             .map(([itemName, quantity]) => ({ name: itemName, quantity }));
+
+        console.log('⚔️ Usable combat items:', usableItems);
         
         if (usableItems.length === 0) {
             const noItems = document.createElement('div');
@@ -462,6 +786,40 @@ class CombatUI extends BaseUIModule {
             noItems.style.textAlign = 'center';
             noItems.style.padding = '10px';
             itemList.appendChild(noItems);
+
+            // Add a back button when no items are available
+            const backBtn = document.createElement('button');
+            backBtn.className = 'item-btn back-btn';
+            backBtn.textContent = 'Back to Combat';
+
+            // Style the back button
+            backBtn.style.display = 'block';
+            backBtn.style.width = '100%';
+            backBtn.style.padding = '8px 12px';
+            backBtn.style.margin = '10px 0 4px 0';
+            backBtn.style.backgroundColor = '#e53e3e';
+            backBtn.style.color = '#ffffff';
+            backBtn.style.border = '1px solid #c53030';
+            backBtn.style.borderRadius = '4px';
+            backBtn.style.cursor = 'pointer';
+            backBtn.style.fontSize = '14px';
+            backBtn.style.position = 'relative';
+            backBtn.style.zIndex = '1000';
+            backBtn.style.pointerEvents = 'auto';
+
+            // Hover effects for back button
+            backBtn.addEventListener('mouseenter', () => {
+                backBtn.style.backgroundColor = '#fc8181';
+            });
+            backBtn.addEventListener('mouseleave', () => {
+                backBtn.style.backgroundColor = '#e53e3e';
+            });
+
+            this.addEventListener(backBtn, 'click', () => {
+                this.hideSubMenu('items-submenu');
+            });
+
+            itemList.appendChild(backBtn);
             return;
         }
         
@@ -469,30 +827,109 @@ class CombatUI extends BaseUIModule {
             const itemBtn = document.createElement('button');
             itemBtn.className = 'item-btn';
             itemBtn.textContent = `${item.name} (${item.quantity})`;
-            
-            this.addEventListener(itemBtn, 'click', () => {
-                this.hideSubMenu('items-submenu');
-                this.showTargetSelection('item', item.name);
+
+            // Ensure button is styled and clickable
+            itemBtn.style.display = 'block';
+            itemBtn.style.width = '100%';
+            itemBtn.style.padding = '8px 12px';
+            itemBtn.style.margin = '4px 0';
+            itemBtn.style.backgroundColor = '#4a5568';
+            itemBtn.style.color = '#e2e8f0';
+            itemBtn.style.border = '1px solid #718096';
+            itemBtn.style.borderRadius = '4px';
+            itemBtn.style.cursor = 'pointer';
+            itemBtn.style.fontSize = '14px';
+            itemBtn.style.position = 'relative';
+            itemBtn.style.zIndex = '1000';
+            itemBtn.style.pointerEvents = 'auto';
+
+            // Hover effects
+            itemBtn.addEventListener('mouseenter', () => {
+                itemBtn.style.backgroundColor = '#68d391';
+                itemBtn.style.color = '#1a202c';
             });
-            
+            itemBtn.addEventListener('mouseleave', () => {
+                itemBtn.style.backgroundColor = '#4a5568';
+                itemBtn.style.color = '#e2e8f0';
+            });
+
+            // Single click handler to avoid double execution
+            this.addEventListener(itemBtn, 'click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                console.log(`🎒 Item button clicked: ${item.name}`);
+                this.hideSubMenu('items-submenu');
+
+                // For healing items, auto-target the player
+                const isHealingItem = item.name && (
+                    item.name.includes('potion') ||
+                    item.name.includes('heal') ||
+                    item.name.includes('health') ||
+                    item.name.includes('mana')
+                );
+
+                if (isHealingItem) {
+                    const gameState = this.gameState || window.GameState;
+                    const combat = gameState.combat;
+                    const player = combat.player;
+
+                    if (player) {
+                        console.log(`🎒 Auto-targeting player for healing item: ${item.name}`);
+                        this.executeTargetedAction('item', player, item.name);
+                    } else {
+                        console.error('🎒 Player not found for healing item');
+                        this.notifyError('Player not found');
+                    }
+                } else {
+                    // For non-healing items, show target selection
+                    this.showTargetSelection('item', item.name);
+                }
+            });
+
+
             itemList.appendChild(itemBtn);
+            console.log(`🎒 Added button for ${item.name} to DOM`);
         });
-        
+
         console.log(`🎒 Populated ${usableItems.length} usable items`);
+        console.log(`🎒 Item list container children:`, itemList.children.length);
     }
 
     /**
      * Check if an item is usable in combat
-     * Extracted from original ui.js isUsableInCombat method
+     * Enhanced to check ItemData for consumable items
      */
     isUsableInCombat(itemName) {
+        // Hardcoded list of known combat items
         const combatItems = [
             'potion', 'hi_potion', 'ether', 'elixir',
             'antidote', 'eye_drops', 'echo_screen',
             'phoenix_down', 'remedy', 'mega_potion',
-            'healing_potion', 'mana_potion', 'stamina_potion'
+            'healing_potion', 'mana_potion', 'stamina_potion',
+            'health_potion'  // Add health_potion which is commonly generated
         ];
-        return combatItems.includes(itemName);
+
+        // Check hardcoded list first
+        if (combatItems.includes(itemName)) {
+            return true;
+        }
+
+        // Check ItemData if available for consumable items
+        if (typeof ItemData !== 'undefined' && ItemData.items) {
+            const itemData = ItemData.items[itemName];
+            if (itemData && itemData.type === 'consumable') {
+                return true;
+            }
+        }
+
+        // Check for common item naming patterns
+        if (itemName.includes('potion') || itemName.includes('elixir') ||
+            itemName.includes('antidote') || itemName.includes('remedy')) {
+            return true;
+        }
+
+        return false;
     }
 
     // ================================================
@@ -561,16 +998,111 @@ class CombatUI extends BaseUIModule {
                     break;
                 case 'magic':
                     if (actionData) {
-                        const spellResult = combat.castSpell(combat.player, actionData, target);
-                        const spellName = typeof actionData === 'string' ? actionData : actionData.name;
-                        const magicMsg = `${combat.player.name || 'Player'} casts ${spellName} on ${target.name || 'target'}!`;
-                        this.addBattleLogEntry(magicMsg, 'magic');
-                        this.notifyInfo(magicMsg);
+                        // Get spell ID (actionData might be spell object or ID)
+                        const spellId = typeof actionData === 'string' ? actionData : actionData.id;
+
+                        // Get target ID - try multiple approaches
+                        let targetId = target.id || target.monsterId || target.name;
+
+                        // If still no ID, try to find the target in combat enemies by name
+                        if (!targetId && gameState.combat && gameState.combat.enemies) {
+                            const enemy = gameState.combat.enemies.find(e => e.name === target.name);
+                            if (enemy) {
+                                targetId = enemy.id || enemy.monsterId || enemy.name;
+                            }
+                        }
+
+                        // Debug targeting
+                        console.log('🎯 Spell targeting debug:', {
+                            spellId,
+                            target: target,
+                            targetId: targetId,
+                            targetName: target.name || 'Unknown',
+                            combatEnemies: gameState.combat?.enemies?.map(e => ({ name: e.name, id: e.id, monsterId: e.monsterId }))
+                        });
+
+                        // Use the combat engine's castSpell method (which uses SpellSystem)
+                        let spellResult = null;
+
+                        // Try GameState spell casting first (direct SpellSystem access)
+                        if (gameState.castSpell && typeof gameState.castSpell === 'function') {
+                            console.log('🎯 Using GameState.castSpell');
+                            spellResult = gameState.castSpell(spellId, targetId);
+                        } else if (gameState.spellSystem && typeof gameState.spellSystem.castSpell === 'function') {
+                            // Direct spell system access
+                            console.log('🎯 Using SpellSystem.castSpell directly');
+                            spellResult = gameState.spellSystem.castSpell(spellId, 'player', targetId);
+                        } else if (gameState.combatEngine && typeof gameState.combatEngine.castSpell === 'function') {
+                            // Fallback to combat engine (though turnOrder is empty)
+                            console.log('🎯 Using CombatEngine.castSpell (fallback)');
+                            spellResult = gameState.combatEngine.castSpell('player', spellId, targetId);
+                        } else {
+                            console.error('No spell casting system available');
+                            this.addBattleLogEntry('Spell casting system not available', 'error');
+                            this.notifyError('Cannot cast spells - system not initialized');
+                            break;
+                        }
+
+                        if (spellResult && spellResult.success) {
+                            const spell = spellResult.spell;
+                            const casterName = spellResult.caster?.name || 'Player';
+                            const magicMsg = `${casterName} casts ${spell.name}!`;
+                            this.addBattleLogEntry(magicMsg, 'magic');
+                            this.notifyInfo(magicMsg);
+
+                            // Debug spell results
+                            console.log('🔍 Spell result:', spellResult);
+
+                            // Show spell results
+                            if (spellResult.effects && spellResult.effects.length > 0) {
+                                console.log('📊 Processing spell effects:', spellResult.effects);
+                                spellResult.effects.forEach(effect => {
+                                    console.log('📊 Individual effect:', effect);
+                                    if (effect.type === 'damage' && effect.amount > 0) {
+                                        this.addBattleLogEntry(`${spellResult.target?.name || 'Target'} takes ${effect.amount} damage!`, 'damage');
+                                    } else if (effect.type === 'healing' && effect.amount > 0) {
+                                        this.addBattleLogEntry(`${spellResult.target?.name || 'Target'} recovers ${effect.amount} HP!`, 'healing');
+                                    }
+                                });
+                            } else {
+                                console.log('⚠️ No spell effects to display - effects:', spellResult.effects);
+                            }
+                        } else {
+                            const reason = spellResult ? spellResult.reason : 'Spell failed';
+                            this.addBattleLogEntry(`Spell failed: ${reason}`, 'error');
+                            this.notifyError(`Cannot cast spell: ${reason}`);
+                        }
                     }
                     break;
                 case 'item':
                     if (actionData) {
-                        const itemResult = combat.useItem(actionData, target);
+                        console.log(`🎒 DEBUG: Starting item usage - ${actionData} on ${target.name || 'target'}`);
+                        console.log(`🎒 DEBUG: gameState.combatEngine exists?`, !!gameState.combatEngine);
+                        console.log(`🎒 DEBUG: UI target object:`, target);
+                        console.log(`🎒 DEBUG: UI target HP sources:`, {
+                            'target.hp': target.hp,
+                            'target.stats.hp': target?.stats?.hp,
+                            'target.maxHP': target.maxHP,
+                            'target.stats.maxHP': target?.stats?.maxHP,
+                            'target.currentStats.hp': target?.currentStats?.hp
+                        });
+
+                        // Use combatEngine for item usage, not the combat state object
+                        let itemResult = null;
+                        if (gameState.combatEngine && typeof gameState.combatEngine.useItem === 'function') {
+                            console.log(`🎒 DEBUG: Using combatEngine.useItem`);
+                            // CombatEngine.useItem expects (userId, itemId)
+                            itemResult = gameState.combatEngine.useItem('player', actionData);
+                        } else if (typeof gameState.useItem === 'function') {
+                            console.log(`🎒 DEBUG: Using gameState.useItem (fallback)`);
+                            itemResult = gameState.useItem(actionData);
+                        } else {
+                            console.error(`🎒 DEBUG: No useItem method available!`);
+                        }
+
+                        console.log(`🎒 DEBUG: itemResult:`, itemResult);
+                        console.log(`🎒 DEBUG: target HP after:`, target.hp);
+
                         const itemMsg = `${combat.player.name || 'Player'} uses ${actionData} on ${target.name || 'target'}!`;
                         this.addBattleLogEntry(itemMsg, 'item');
                         this.notifyInfo(itemMsg);
@@ -610,7 +1142,55 @@ class CombatUI extends BaseUIModule {
                 // Victory check
                 if (aliveEnemies.length === 0) {
                     this.addBattleLogEntry('Victory! Returning to world...', 'success');
-                    this.notifySuccess('Victory!');
+
+                    // Grant loot rewards and capture reward information
+                    const gameState = this.gameState || window.GameState;
+                    let rewardInfo = { experience: 0, gold: 0, items: [], itemText: '' };
+
+                    if (gameState?.combatEngine && typeof gameState.combatEngine.endBattle === 'function') {
+                        // Create defeated enemies list for rewards
+                        const defeatedEnemies = (combat.enemies || []).map(enemy => ({
+                            ref: {
+                                species: enemy.species || enemy.name,
+                                level: enemy.level || 1
+                            }
+                        }));
+
+                        // Call combat engine's endBattle with victory result to trigger loot
+                        const endBattleResult = gameState.combatEngine.endBattle({
+                            victory: true,
+                            defeated: defeatedEnemies
+                        });
+
+                        // Get reward info from combat state
+                        if (gameState.combat && gameState.combat.rewardData) {
+                            rewardInfo = gameState.combat.rewardData;
+                        }
+                    } else {
+                        // Fallback: call grantRewards directly if combat engine not available
+                        console.log('⚠️ Combat engine not available, using fallback loot system');
+                        const defeatedEnemies = (combat.enemies || []).map(enemy => ({
+                            ref: {
+                                species: enemy.species || enemy.name,
+                                level: enemy.level || 1
+                            }
+                        }));
+
+                        // Manually call the reward system and capture results
+                        if (gameState?.combatEngine?.grantRewards) {
+                            const rewardData = gameState.combatEngine.grantRewards({
+                                victory: true,
+                                defeated: defeatedEnemies
+                            });
+                            if (rewardData) {
+                                rewardInfo = rewardData;
+                            }
+                        }
+                    }
+
+                    // Show enhanced victory modal with reward information
+                    this.showVictoryModal(rewardInfo);
+
                     // Reset combat state after victory
                     combat.active = false;
                     combat.currentTurn = null;
@@ -677,13 +1257,13 @@ class CombatUI extends BaseUIModule {
         
         // Update player stats
         this.updatePlayerDisplay(combat.player);
-        
+
         // Update enemy displays
-        this.updateEnemyDisplays(combat.enemies);
-        
+        this.updateEnemyDisplays(combat.enemies || []);
+
         // Update battle log
         this.updateBattleLog();
-        
+
         // Update action button states
         this.updateActionButtonStates(combat);
         
@@ -710,20 +1290,62 @@ class CombatUI extends BaseUIModule {
         if (playerMP) {
             playerMP.textContent = `${player.mana || player.mp || 0}/${player.maxMana || player.maxMp || 0}`;
         }
-        
+
+        // Enhanced MP display using new CSS classes
+        const mpDisplay = document.querySelector('.mp-display .mp-text');
+        if (mpDisplay) {
+            const currentMP = player.mana || player.mp || 0;
+            const maxMP = player.maxMana || player.maxMp || 0;
+            mpDisplay.textContent = `Mana: ${currentMP}/${maxMP}`;
+        }
+
         // Update HP bar
         const hpBar = document.querySelector('.player-hp-bar .hp-fill');
         if (hpBar && player.maxHp > 0) {
             const hpPercent = (player.hp / player.maxHp) * 100;
             hpBar.style.width = `${hpPercent}%`;
         }
-        
-        // Update MP bar
+
+        // Update MP bar (both old and new styles)
         const mpBar = document.querySelector('.player-mp-bar .mp-fill');
         if (mpBar && player.maxMana > 0) {
             const mpPercent = ((player.mana || player.mp || 0) / player.maxMana) * 100;
             mpBar.style.width = `${mpPercent}%`;
         }
+
+        // Update enhanced MP bar
+        const enhancedMpBar = document.querySelector('.mp-bar .mp-fill');
+        if (enhancedMpBar && (player.maxMana || player.maxMp) > 0) {
+            const currentMP = player.mana || player.mp || 0;
+            const maxMP = player.maxMana || player.maxMp || 0;
+            const mpPercent = (currentMP / maxMP) * 100;
+            enhancedMpBar.style.width = `${mpPercent}%`;
+        }
+
+        // Update spell button states based on current MP
+        this.updateSpellButtonStates(player.mana || player.mp || 0);
+    }
+
+    /**
+     * Update spell button states based on current MP
+     */
+    updateSpellButtonStates(currentMP) {
+        const spellButtons = document.querySelectorAll('.spell-card');
+        spellButtons.forEach(button => {
+            const mpCostElement = button.querySelector('.spell-mp-cost');
+            if (mpCostElement) {
+                const mpCostText = mpCostElement.textContent;
+                const mpCost = parseInt(mpCostText.replace(/[^\d]/g, '')) || 0;
+
+                if (mpCost > currentMP) {
+                    button.classList.add('spell-insufficient-mp');
+                    button.disabled = true;
+                } else {
+                    button.classList.remove('spell-insufficient-mp');
+                    button.disabled = false;
+                }
+            }
+        });
     }
 
     /**
@@ -905,7 +1527,8 @@ class CombatUI extends BaseUIModule {
         // Update attack button
         const attackBtn = document.getElementById('attack-btn');
         if (attackBtn) {
-            const hasEnemies = combat.enemies.some(enemy => enemy.hp > 0);
+            const enemies = combat.enemies || [];
+            const hasEnemies = enemies.some(enemy => enemy.hp > 0);
             attackBtn.disabled = !hasEnemies;
             if (!hasEnemies) console.log('🔒 Attack disabled - no enemies');
         }
@@ -913,7 +1536,8 @@ class CombatUI extends BaseUIModule {
         // Update capture button
         const captureBtn = document.getElementById('capture-btn');
         if (captureBtn) {
-            const canCapture = combat.enemies.some(enemy => enemy.hp > 0 && enemy.capturable !== false);
+            const enemies = combat.enemies || [];
+            const canCapture = enemies.some(enemy => enemy.hp > 0 && enemy.capturable !== false);
             captureBtn.disabled = !canCapture;
             if (!canCapture) console.log('🔒 Capture disabled - no capturable enemies');
         }
@@ -921,8 +1545,9 @@ class CombatUI extends BaseUIModule {
         // Update magic button
         const magicBtn = document.getElementById('magic-btn');
         if (magicBtn) {
-            const hasSpells = combat.player.spells && combat.player.spells.length > 0;
-            const hasMana = (combat.player.mana || combat.player.mp || 0) > 0;
+            const player = combat.player || {};
+            const hasSpells = player.spells && player.spells.length > 0;
+            const hasMana = (player.mana || player.mp || 0) > 0;
             magicBtn.disabled = !hasSpells || !hasMana;
             if (!hasSpells || !hasMana) console.log('🔒 Magic disabled - no spells or mana');
         }
@@ -930,7 +1555,9 @@ class CombatUI extends BaseUIModule {
         // Update items button
         const itemsBtn = document.getElementById('items-btn');
         if (itemsBtn) {
-            const hasUsableItems = Object.entries(combat.player.inventory || {})
+            const player = combat.player || {};
+            const items = (player.inventory && player.inventory.items) || {};
+            const hasUsableItems = Object.entries(items)
                 .some(([item, qty]) => qty > 0 && this.isUsableInCombat(item));
             itemsBtn.disabled = !hasUsableItems;
             if (!hasUsableItems) console.log('🔒 Items disabled - no usable items');
@@ -1252,6 +1879,283 @@ class CombatUI extends BaseUIModule {
             return this.uiManager.game[property];
         }
         return null;
+    }
+
+    /**
+     * Show victory modal with detailed battle results
+     * @param {Object} rewardInfo - Information about battle rewards
+     */
+    showVictoryModal(rewardInfo) {
+        // Create modal if it doesn't exist
+        let modal = document.getElementById('victory-modal');
+        if (!modal) {
+            modal = this.createVictoryModal();
+        }
+
+        // Populate modal with victory information
+        const expEl = modal.querySelector('.victory-experience');
+        const goldEl = modal.querySelector('.victory-gold');
+        const itemsEl = modal.querySelector('.victory-items');
+        const noItemsEl = modal.querySelector('.victory-no-items');
+
+        if (expEl) expEl.textContent = `+${rewardInfo.experience || 0} EXP`;
+        if (goldEl) goldEl.textContent = `+${rewardInfo.gold || 0} Gold`;
+
+        // Handle items list
+        if (rewardInfo.items && rewardInfo.items.length > 0) {
+            if (itemsEl) {
+                itemsEl.innerHTML = '';
+                rewardInfo.items.forEach(item => {
+                    const itemEl = document.createElement('li');
+                    itemEl.textContent = item;
+                    itemsEl.appendChild(itemEl);
+                });
+                itemsEl.style.display = 'block';
+            }
+            if (noItemsEl) noItemsEl.style.display = 'none';
+        } else {
+            if (itemsEl) itemsEl.style.display = 'none';
+            if (noItemsEl) noItemsEl.style.display = 'block';
+        }
+
+        // Show modal
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+        modal.focus();
+    }
+
+    /**
+     * Create the victory modal DOM structure
+     */
+    createVictoryModal() {
+        const modal = document.createElement('div');
+        modal.id = 'victory-modal';
+        modal.className = 'victory-modal hidden';
+        modal.tabIndex = -1;
+        modal.innerHTML = `
+            <div class="victory-modal-backdrop"></div>
+            <div class="victory-modal-content">
+                <div class="victory-header">
+                    <span class="victory-icon">🎉</span>
+                    <h2 class="victory-title">Victory!</h2>
+                </div>
+                <div class="victory-body">
+                    <div class="victory-rewards">
+                        <h3>Battle Rewards</h3>
+                        <div class="victory-rewards-grid">
+                            <div class="victory-reward-item">
+                                <span class="victory-reward-icon">⭐</span>
+                                <span class="victory-experience">+0 EXP</span>
+                            </div>
+                            <div class="victory-reward-item">
+                                <span class="victory-reward-icon">💰</span>
+                                <span class="victory-gold">+0 Gold</span>
+                            </div>
+                        </div>
+
+                        <div class="victory-items-section">
+                            <h4>Items Obtained:</h4>
+                            <ul class="victory-items"></ul>
+                            <p class="victory-no-items">No items obtained</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="victory-footer">
+                    <button class="btn primary victory-continue-btn">Continue</button>
+                </div>
+            </div>
+        `;
+
+        // Add event listeners
+        const continueBtn = modal.querySelector('.victory-continue-btn');
+        const backdrop = modal.querySelector('.victory-modal-backdrop');
+
+        const closeModal = () => {
+            modal.classList.add('hidden');
+            modal.style.display = 'none';
+        };
+
+        if (continueBtn) continueBtn.addEventListener('click', closeModal);
+        if (backdrop) backdrop.addEventListener('click', closeModal);
+
+        // Close on Escape key
+        modal.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // Add CSS styles
+        this.addVictoryModalStyles();
+
+        // Add to document
+        document.body.appendChild(modal);
+        return modal;
+    }
+
+    /**
+     * Add CSS styles for victory modal
+     */
+    addVictoryModalStyles() {
+        if (document.getElementById('victory-modal-styles')) return;
+
+        const styles = document.createElement('style');
+        styles.id = 'victory-modal-styles';
+        styles.textContent = `
+            .victory-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .victory-modal.hidden {
+                display: none !important;
+            }
+
+            .victory-modal-backdrop {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.7);
+            }
+
+            .victory-modal-content {
+                position: relative;
+                background: var(--background-primary, #2c1810);
+                border: 3px solid #4caf50;
+                border-radius: 12px;
+                padding: 0;
+                max-width: 500px;
+                width: 90%;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+                font-family: var(--font-primary, 'Georgia', serif);
+            }
+
+            .victory-header {
+                display: flex;
+                align-items: center;
+                gap: 16px;
+                padding: 20px 24px;
+                border-bottom: 2px solid #4caf50;
+                background: linear-gradient(135deg, #388e3c, #2e7d32);
+                border-radius: 9px 9px 0 0;
+            }
+
+            .victory-icon {
+                font-size: 32px;
+                line-height: 1;
+            }
+
+            .victory-title {
+                margin: 0;
+                color: white;
+                font-size: 24px;
+                font-weight: bold;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            }
+
+            .victory-body {
+                padding: 24px;
+            }
+
+            .victory-rewards h3 {
+                margin: 0 0 16px 0;
+                color: var(--text-primary, #f4e4bc);
+                font-size: 18px;
+                text-align: center;
+            }
+
+            .victory-rewards-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+                margin-bottom: 20px;
+            }
+
+            .victory-reward-item {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 12px;
+                background: var(--background-secondary, #3d2415);
+                border: 1px solid var(--primary-gold, #d4af37);
+                border-radius: 8px;
+                justify-content: center;
+            }
+
+            .victory-reward-icon {
+                font-size: 20px;
+            }
+
+            .victory-experience,
+            .victory-gold {
+                color: var(--text-primary, #f4e4bc);
+                font-weight: bold;
+                font-size: 16px;
+            }
+
+            .victory-items-section h4 {
+                margin: 0 0 12px 0;
+                color: var(--text-primary, #f4e4bc);
+                font-size: 16px;
+            }
+
+            .victory-items {
+                margin: 0 0 0 20px;
+                padding: 0;
+                list-style: none;
+            }
+
+            .victory-items li {
+                color: var(--text-primary, #f4e4bc);
+                padding: 4px 0;
+                position: relative;
+            }
+
+            .victory-items li:before {
+                content: "•";
+                color: var(--primary-gold, #d4af37);
+                font-weight: bold;
+                position: absolute;
+                left: -12px;
+            }
+
+            .victory-no-items {
+                color: var(--text-secondary, #b8860b);
+                font-style: italic;
+                margin: 0;
+            }
+
+            .victory-footer {
+                padding: 20px 24px;
+                border-top: 1px solid var(--primary-gold, #d4af37);
+                display: flex;
+                justify-content: center;
+            }
+
+            .victory-continue-btn {
+                padding: 12px 32px;
+                background: var(--primary-gold, #d4af37);
+                color: var(--background-primary, #2c1810);
+                border: none;
+                border-radius: 6px;
+                font-weight: bold;
+                font-size: 16px;
+                cursor: pointer;
+                transition: background 0.2s;
+            }
+
+            .victory-continue-btn:hover {
+                background: var(--secondary-gold, #b8941f);
+            }
+        `;
+        document.head.appendChild(styles);
     }
 
     /**
