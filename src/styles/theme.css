@@ -1,0 +1,269 @@
+/* ================================================== */
+/*        REACT COMPONENT DESIGN SYSTEM THEME        */
+/* ================================================== */
+
+/* Import existing fantasy theme variables */
+@import url('../../public/css/styles.css');
+
+:root {
+  /* ===== COMPONENT SIZING ===== */
+  /* Atomic Design component sizes */
+  --size-atom-sm: 32px;
+  --size-atom-md: 40px;
+  --size-atom-lg: 48px;
+  --size-atom-xl: 56px;
+
+  /* Molecule component sizes */
+  --size-molecule-sm: 200px;
+  --size-molecule-md: 280px;
+  --size-molecule-lg: 320px;
+
+  /* Organism component sizes */
+  --size-organism-sm: 400px;
+  --size-organism-md: 600px;
+  --size-organism-lg: 800px;
+
+  /* ===== RESPONSIVE BREAKPOINTS ===== */
+  --breakpoint-mobile: 320px;
+  --breakpoint-tablet: 768px;
+  --breakpoint-desktop: 1024px;
+  --breakpoint-wide: 1440px;
+
+  /* ===== COMPONENT SPACING SYSTEM ===== */
+  /* Enhanced spacing for component composition */
+  --space-component-xs: 0.125rem; /* 2px - minimal gaps */
+  --space-component-sm: 0.25rem;  /* 4px - tight spacing */
+  --space-component-md: 0.5rem;   /* 8px - default spacing */
+  --space-component-lg: 0.75rem;  /* 12px - comfortable spacing */
+  --space-component-xl: 1rem;     /* 16px - generous spacing */
+  --space-component-xxl: 1.5rem;  /* 24px - section spacing */
+  --space-component-xxxl: 2rem;   /* 32px - major section spacing */
+
+  /* ===== COMPONENT STATE COLORS ===== */
+  /* Interactive states for components */
+  --color-hover: color-mix(in srgb, var(--primary-gold) 20%, transparent);
+  --color-active: color-mix(in srgb, var(--primary-gold) 30%, transparent);
+  --color-focus: var(--primary-gold);
+  --color-disabled: color-mix(in srgb, var(--parchment) 50%, var(--shadow-black));
+
+  /* Component state borders */
+  --border-hover: 2px solid var(--primary-gold);
+  --border-active: 2px solid var(--secondary-gold);
+  --border-focus: 2px solid var(--primary-gold);
+  --border-disabled: 1px solid var(--light-shadow);
+
+  /* ===== BUTTON VARIANTS ===== */
+  /* Primary button (Call-to-action) */
+  --btn-primary-bg: var(--gradient-gold);
+  --btn-primary-color: var(--shadow-black);
+  --btn-primary-border: var(--border-ornate);
+  --btn-primary-hover-bg: linear-gradient(135deg, #e6c547 0%, #d4af37 50%, #b8860b 100%);
+  --btn-primary-active-bg: linear-gradient(135deg, #b8860b 0%, #8b7355 50%, #6b5b47 100%);
+
+  /* Secondary button (Supporting actions) */
+  --btn-secondary-bg: var(--gradient-leather);
+  --btn-secondary-color: var(--parchment);
+  --btn-secondary-border: 2px solid var(--aged-bronze);
+  --btn-secondary-hover-bg: linear-gradient(145deg, #5d4037 0%, #3b2a1f 50%, #2d1b0e 100%);
+
+  /* Danger button (Destructive actions) */
+  --btn-danger-bg: linear-gradient(135deg, var(--dragon-red) 0%, var(--blood-red) 100%);
+  --btn-danger-color: var(--parchment);
+  --btn-danger-border: 2px solid var(--blood-red);
+
+  /* Success button (Positive actions) */
+  --btn-success-bg: linear-gradient(135deg, var(--emerald-green) 0%, var(--forest-green) 100%);
+  --btn-success-color: var(--parchment);
+  --btn-success-border: 2px solid var(--dark-green);
+
+  /* ===== CARD VARIANTS ===== */
+  /* Default card styling */
+  --card-bg: var(--gradient-parchment);
+  --card-border: var(--border-ornate);
+  --card-shadow: var(--shadow-medium);
+  --card-hover-shadow: var(--shadow-heavy);
+  --card-padding: var(--space-component-xl);
+
+  /* Character class card */
+  --card-character-bg: var(--gradient-leather);
+  --card-character-border: var(--border-medieval);
+  --card-character-selected-border: 3px solid var(--primary-gold);
+  --card-character-hover-transform: translateY(-4px);
+
+  /* Area card for world map */
+  --card-area-bg: var(--gradient-metal);
+  --card-area-border: var(--border-mystical);
+  --card-area-hover-glow: 0 0 20px rgba(212, 175, 55, 0.4);
+
+  /* ===== INPUT VARIANTS ===== */
+  --input-bg: rgba(244, 230, 208, 0.9);
+  --input-border: 2px solid var(--aged-bronze);
+  --input-focus-border: var(--border-focus);
+  --input-placeholder-color: color-mix(in srgb, var(--leather-brown) 70%, transparent);
+  --input-padding: var(--space-component-md) var(--space-component-lg);
+
+  /* ===== MODAL VARIANTS ===== */
+  --modal-bg: var(--gradient-parchment);
+  --modal-border: var(--border-ornate);
+  --modal-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  --modal-overlay-bg: rgba(26, 26, 26, 0.8);
+  --modal-backdrop-blur: blur(3px);
+
+  /* ===== TOOLTIP VARIANTS ===== */
+  --tooltip-bg: rgba(45, 27, 14, 0.95);
+  --tooltip-color: var(--parchment);
+  --tooltip-border: 1px solid var(--dark-gold);
+  --tooltip-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --tooltip-arrow-size: 6px;
+
+  /* ===== ANIMATION PRESETS ===== */
+  /* Component entrance animations */
+  --anim-fade-in: fadeIn 0.3s ease-out;
+  --anim-slide-up: slideUp 0.3s ease-out;
+  --anim-scale-in: scaleIn 0.2s ease-out;
+  --anim-bounce-in: bounceIn 0.4s ease-out;
+
+  /* Component state transitions */
+  --transition-color: color var(--transition-fast);
+  --transition-transform: transform var(--transition-normal);
+  --transition-shadow: box-shadow var(--transition-normal);
+  --transition-all: all var(--transition-normal);
+
+  /* ===== Z-INDEX LAYERS ===== */
+  --z-base: 0;
+  --z-elevated: 10;
+  --z-modal: 1000;
+  --z-tooltip: 2000;
+  --z-notification: 3000;
+  --z-overlay: 9999;
+
+  /* ===== COMPONENT FONT VARIANTS ===== */
+  /* Heading hierarchy for components */
+  --font-heading-xl: 2.5rem;  /* 40px - Page titles */
+  --font-heading-lg: 2rem;    /* 32px - Section titles */
+  --font-heading-md: 1.5rem;  /* 24px - Component titles */
+  --font-heading-sm: 1.25rem; /* 20px - Card titles */
+
+  /* Body text variants */
+  --font-body-lg: 1.125rem;   /* 18px - Large body text */
+  --font-body-md: 1rem;       /* 16px - Default body text */
+  --font-body-sm: 0.875rem;   /* 14px - Small body text */
+  --font-body-xs: 0.75rem;    /* 12px - Caption text */
+
+  /* UI element text */
+  --font-ui-lg: 1.125rem;     /* 18px - Large buttons */
+  --font-ui-md: 1rem;         /* 16px - Default buttons */
+  --font-ui-sm: 0.875rem;     /* 14px - Small buttons */
+
+  /* ===== ACCESSIBILITY ENHANCEMENTS ===== */
+  /* Focus outlines */
+  --focus-outline: 2px solid var(--primary-gold);
+  --focus-outline-offset: 2px;
+
+  /* High contrast mode support */
+  --color-text-high-contrast: var(--shadow-black);
+  --color-bg-high-contrast: var(--parchment);
+
+  /* Motion preferences */
+  --motion-reduce: none; /* Will be overridden by media query */
+}
+
+/* ===== ANIMATION KEYFRAMES ===== */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ===== RESPONSIVE DESIGN SYSTEM ===== */
+/* Media queries for responsive component behavior */
+@media (max-width: 767px) {
+  :root {
+    /* Adjust component sizes for mobile */
+    --size-molecule-md: 260px;
+    --size-organism-md: 100vw;
+
+    /* Reduce spacing on mobile */
+    --space-component-xl: 0.75rem;
+    --space-component-xxl: 1rem;
+
+    /* Adjust font sizes for mobile */
+    --font-heading-xl: 2rem;
+    --font-heading-lg: 1.75rem;
+  }
+}
+
+@media (min-width: 1440px) {
+  :root {
+    /* Larger components for wide screens */
+    --size-organism-lg: 1000px;
+    --space-component-xxxl: 3rem;
+  }
+}
+
+/* ===== ACCESSIBILITY ===== */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-reduce: none;
+    --transition-fast: none;
+    --transition-normal: none;
+    --transition-slow: none;
+  }
+
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (prefers-high-contrast: high) {
+  :root {
+    --border-hover: 3px solid var(--color-text-high-contrast);
+    --border-focus: 3px solid var(--color-text-high-contrast);
+  }
+}
+
+/* ===== DARK MODE SUPPORT (for future enhancement) ===== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Fantasy theme is naturally dark, but we can adjust if needed */
+    --modal-overlay-bg: rgba(0, 0, 0, 0.9);
+  }
+}

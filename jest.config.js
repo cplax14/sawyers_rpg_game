@@ -2,8 +2,9 @@
 export default {
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
-  moduleNameMapping: {
+  moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
+    '\\.(module\\.css|module\\.scss|module\\.sass)$': 'identity-obj-proxy',
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   collectCoverageFrom: [
@@ -18,13 +19,11 @@ export default {
   ],
   transform: {
     '^.+\\.(ts|tsx)$': ['ts-jest', {
-      useESM: true,
+      tsconfig: {
+        jsx: 'react-jsx',
+      },
     }],
   },
+  preset: 'ts-jest/presets/default-esm',
   extensionsToTreatAsEsm: ['.ts', '.tsx'],
-  globals: {
-    'ts-jest': {
-      useESM: true,
-    },
-  },
 };
