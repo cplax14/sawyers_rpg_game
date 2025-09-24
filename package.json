@@ -6,8 +6,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:react": "vite --config vite.react.config.ts",
     "build": "tsc -b && vite build",
+    "build:react": "tsc -b && vite build --config vite.react.config.ts",
     "preview": "vite preview",
+    "preview:react": "vite preview --config vite.react.config.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",

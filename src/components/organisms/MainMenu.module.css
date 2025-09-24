@@ -1,0 +1,473 @@
+/* Main Menu Organism Component */
+@import url('../../styles/theme.css');
+
+/* ===== CONTAINER ===== */
+.mainMenu {
+  min-height: 100vh;
+  background: var(--game-bg-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: var(--space-layout-md);
+  position: relative;
+  z-index: 2;
+}
+
+/* ===== BACKGROUND ELEMENTS ===== */
+.backgroundPattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(circle at 20% 80%, rgba(212, 175, 55, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(33, 150, 243, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(139, 195, 74, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ===== PRELOADING STATE ===== */
+.preloadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-component-xl);
+  min-height: 60vh;
+  text-align: center;
+}
+
+.preloadingText {
+  font-size: var(--font-size-lg);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* ===== MAIN MENU CONTENT ===== */
+.menuContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-layout-md);
+  text-align: center;
+}
+
+/* ===== LOGO ===== */
+.logo {
+  margin-bottom: var(--space-component-xl);
+}
+
+.gameTitle {
+  font-size: var(--font-size-hero);
+  font-weight: 800;
+  color: var(--primary-gold);
+  text-shadow:
+    0 0 20px rgba(212, 175, 55, 0.5),
+    0 4px 8px rgba(0, 0, 0, 0.3),
+    2px 2px 0px rgba(139, 69, 19, 0.8);
+  margin: 0;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.gameSubtitle {
+  font-size: var(--font-size-lg);
+  color: var(--moonlight-silver);
+  text-shadow: var(--text-shadow-silver);
+  margin: var(--space-component-sm) 0 0 0;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* ===== PLAYER INFO ===== */
+.playerInfo {
+  background: var(--card-bg-secondary);
+  border: var(--card-border);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-component-lg);
+  box-shadow: var(--card-shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-component-xs);
+  margin-bottom: var(--space-component-md);
+  overflow: hidden;
+}
+
+.welcomeText {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.playerName {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--info-blue);
+  text-shadow: var(--text-shadow-info);
+}
+
+.playerDetails {
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+  text-transform: capitalize;
+}
+
+/* ===== MENU BUTTONS ===== */
+.menuButtons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-lg);
+  width: 100%;
+  max-width: 300px;
+}
+
+.menuButton {
+  width: 100%;
+  justify-content: center;
+}
+
+/* ===== FOOTER ===== */
+.footer {
+  margin-top: var(--space-component-xl);
+  color: var(--text-tertiary);
+  font-size: var(--font-size-sm);
+}
+
+.footer p {
+  margin: 0;
+  font-style: italic;
+}
+
+/* ===== LOAD MENU ===== */
+.loadMenuContent {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-xl);
+}
+
+.loadMenuHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-component-md);
+}
+
+.loadMenuTitle {
+  font-size: var(--font-size-xxl);
+  font-weight: 700;
+  color: var(--moonlight-silver);
+  text-shadow: var(--text-shadow-silver);
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+.backButton {
+  flex-shrink: 0;
+}
+
+/* ===== SAVE SLOTS ===== */
+.saveSlotsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-md);
+  max-height: 400px;
+  overflow-y: auto;
+  padding: var(--space-component-sm);
+  border-radius: var(--border-radius);
+}
+
+.saveSlot {
+  background: var(--card-bg-secondary);
+  border: var(--card-border);
+  border-radius: var(--border-radius);
+  padding: var(--space-component-lg);
+  cursor: pointer;
+  transition: var(--transition-all);
+  position: relative;
+}
+
+.saveSlot:hover:not(.empty) {
+  background: var(--card-bg-hover);
+  box-shadow: var(--card-shadow-hover);
+  transform: translateY(-2px);
+}
+
+.saveSlot.selected {
+  border-color: var(--info-blue);
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.3);
+}
+
+.saveSlot.empty {
+  opacity: 0.6;
+  cursor: default;
+  border-style: dashed;
+}
+
+.saveSlotHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-component-sm);
+}
+
+.slotNumber {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.saveDate {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+
+.emptySlot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-component-lg) 0;
+}
+
+.emptySlot span {
+  color: var(--text-tertiary);
+  font-style: italic;
+  font-size: var(--font-size-base);
+}
+
+.saveInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-component-md);
+}
+
+.playerInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-xs);
+  flex: 1;
+}
+
+.saveInfo .playerName {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.playerClass {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  text-transform: capitalize;
+}
+
+.gameInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-xs);
+  align-items: flex-end;
+  text-align: right;
+}
+
+.location {
+  font-size: var(--font-size-sm);
+  color: var(--primary-gold);
+  font-weight: 500;
+}
+
+.playTime {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+
+/* ===== LOAD MENU ACTIONS ===== */
+.loadMenuActions {
+  display: flex;
+  justify-content: center;
+  padding-top: var(--space-component-md);
+  border-top: var(--border-divider);
+}
+
+.noSavesMessage {
+  text-align: center;
+  padding: var(--space-component-xl);
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.noSavesMessage p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 1023px) {
+  .container {
+    padding: var(--space-layout-sm);
+  }
+
+  .gameTitle {
+    font-size: var(--font-size-xxl);
+  }
+
+  .gameSubtitle {
+    font-size: var(--font-size-base);
+  }
+}
+
+@media (max-width: 767px) {
+  .mainMenu {
+    align-items: flex-start;
+    padding-top: var(--space-layout-md);
+  }
+
+  .container {
+    padding: var(--space-layout-xs);
+  }
+
+  .gameTitle {
+    font-size: var(--font-size-xl);
+  }
+
+  .gameSubtitle {
+    font-size: var(--font-size-sm);
+  }
+
+  .menuButtons {
+    max-width: 100%;
+  }
+
+  .loadMenuHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-component-sm);
+  }
+
+  .loadMenuTitle {
+    text-align: center;
+    font-size: var(--font-size-xl);
+  }
+
+  .saveInfo {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-component-sm);
+  }
+
+  .gameInfo {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .saveSlotsList {
+    max-height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .gameTitle {
+    font-size: var(--font-size-lg);
+  }
+
+  .saveSlot {
+    padding: var(--space-component-md);
+  }
+
+  .saveSlotHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-component-xs);
+  }
+}
+
+/* ===== ACCESSIBILITY ===== */
+@media (prefers-reduced-motion: reduce) {
+  .mainMenu * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode adjustments */
+@media (prefers-high-contrast: high) {
+  .playerInfo,
+  .saveSlot {
+    border-width: 2px;
+  }
+
+  .saveSlot.selected {
+    border-width: 3px;
+  }
+}
+
+/* ===== FOCUS MANAGEMENT ===== */
+.menuButton:focus-visible,
+.backButton:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+}
+
+.saveSlot:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+}
+
+/* ===== SCROLLBAR STYLING ===== */
+.saveSlotsList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.saveSlotsList::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  border-radius: var(--border-radius-pill);
+}
+
+.saveSlotsList::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: var(--border-radius-pill);
+}
+
+.saveSlotsList::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes pulse-glow {
+  0%, 100% {
+    text-shadow:
+      0 0 20px rgba(212, 175, 55, 0.5),
+      0 4px 8px rgba(0, 0, 0, 0.3),
+      2px 2px 0px rgba(139, 69, 19, 0.8);
+  }
+  50% {
+    text-shadow:
+      0 0 30px rgba(212, 175, 55, 0.8),
+      0 4px 8px rgba(0, 0, 0, 0.3),
+      2px 2px 0px rgba(139, 69, 19, 0.8);
+  }
+}
+
+.gameTitle {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gameTitle {
+    animation: none;
+  }
+}

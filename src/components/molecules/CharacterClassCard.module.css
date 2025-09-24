@@ -1,0 +1,391 @@
+/* CharacterClassCard Molecule Component */
+@import url('../../styles/theme.css');
+
+/* ===== CARD CONTAINER ===== */
+.characterCard {
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+  transition: var(--transition-all);
+}
+
+.characterCard:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+}
+
+.characterCard.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.characterCard.disabled:hover {
+  transform: none !important;
+}
+
+/* ===== VARIANT STYLES ===== */
+.default {
+  min-width: 320px;
+  max-width: 400px;
+}
+
+.compact {
+  min-width: 280px;
+  max-width: 320px;
+}
+
+/* ===== CARD INNER ===== */
+.cardInner {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-lg);
+  padding: var(--space-component-xl);
+}
+
+/* ===== HEADER ===== */
+.header {
+  text-align: center;
+  border-bottom: var(--border-divider);
+  padding-bottom: var(--space-component-lg);
+}
+
+.className {
+  font-size: var(--font-size-xxl);
+  font-weight: 700;
+  color: var(--primary-gold);
+  margin: 0 0 var(--space-component-sm) 0;
+  text-shadow: var(--text-shadow-gold);
+  letter-spacing: 0.02em;
+}
+
+.description {
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+  margin: 0;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+/* ===== STATS SECTIONS ===== */
+.statsSection {
+  flex: 1;
+}
+
+.sectionTitle {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--primary-gold);
+  margin: 0 0 var(--space-component-sm) 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-shadow: var(--text-shadow-subtle);
+}
+
+.statGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-component-xs);
+  margin-bottom: var(--space-component-md);
+}
+
+.statItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-component-xs);
+  padding: var(--space-component-xs);
+  background: var(--stat-item-bg);
+  border: var(--stat-item-border);
+  border-radius: var(--border-radius-sm);
+  transition: var(--transition-all);
+}
+
+.statItem:hover {
+  background: var(--stat-item-hover-bg);
+  transform: translateY(-1px);
+}
+
+.statIcon {
+  font-size: var(--font-size-sm);
+  width: 16px;
+  text-align: center;
+}
+
+.statLabel {
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--text-secondary);
+  flex: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.statValue {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--primary-gold);
+  text-shadow: var(--text-shadow-subtle);
+  min-width: 24px;
+  text-align: right;
+}
+
+/* ===== ABILITIES SECTION ===== */
+.abilitiesSection {
+  flex: 1;
+}
+
+.abilityList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-component-xs);
+  margin-bottom: var(--space-component-md);
+}
+
+.abilityTag {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-component-xs) var(--space-component-sm);
+  background: var(--ability-tag-bg);
+  color: var(--ability-tag-color);
+  border: var(--ability-tag-border);
+  border-radius: var(--border-radius-pill);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  text-transform: capitalize;
+  cursor: pointer;
+  transition: var(--transition-all);
+}
+
+.abilityTag:hover {
+  background: var(--ability-tag-hover-bg);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ===== WEAPONS SECTION ===== */
+.weaponsSection {
+  flex: 1;
+}
+
+.weaponList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-component-xs);
+  margin-bottom: var(--space-component-md);
+}
+
+.weaponTag {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-component-xs) var(--space-component-sm);
+  background: var(--weapon-tag-bg);
+  color: var(--weapon-tag-color);
+  border: var(--weapon-tag-border);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  text-transform: capitalize;
+  transition: var(--transition-all);
+}
+
+.weaponTag:hover {
+  background: var(--weapon-tag-hover-bg);
+  transform: translateY(-1px);
+}
+
+/* ===== BONUS SECTION ===== */
+.bonusSection {
+  background: var(--bonus-section-bg);
+  border: var(--bonus-section-border);
+  border-radius: var(--border-radius);
+  padding: var(--space-component-md);
+  margin-bottom: var(--space-component-md);
+}
+
+.bonusText {
+  font-size: var(--font-size-sm);
+  color: var(--bonus-text-color);
+  margin: 0;
+  line-height: 1.4;
+  font-style: italic;
+}
+
+/* ===== SELECTION INDICATOR ===== */
+.selectionIndicator {
+  position: absolute;
+  top: var(--space-component-md);
+  right: var(--space-component-md);
+  width: 32px;
+  height: 32px;
+  background: var(--success-green);
+  border: 2px solid var(--parchment);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.checkmark {
+  color: var(--parchment);
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  text-shadow: var(--text-shadow-heavy);
+}
+
+/* ===== ACTIONS ===== */
+.actions {
+  margin-top: auto;
+  padding-top: var(--space-component-md);
+  border-top: var(--border-divider);
+}
+
+/* ===== SELECTED STATE ===== */
+.selected .cardInner {
+  border: 3px solid var(--success-green);
+  box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
+}
+
+.selected .className {
+  color: var(--success-green);
+  text-shadow: var(--text-shadow-success);
+}
+
+/* ===== HOVER EFFECTS ===== */
+.characterCard:not(.disabled):hover .cardInner {
+  box-shadow: var(--card-character-hover-shadow);
+}
+
+.characterCard:not(.disabled):hover .className {
+  color: var(--primary-gold-bright);
+}
+
+.characterCard:not(.disabled):hover .statValue {
+  color: var(--primary-gold-bright);
+}
+
+/* ===== COMPACT VARIANT ===== */
+.compact .cardInner {
+  padding: var(--space-component-lg);
+  gap: var(--space-component-md);
+}
+
+.compact .statGrid {
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-component-xs);
+}
+
+.compact .className {
+  font-size: var(--font-size-xl);
+}
+
+.compact .description {
+  font-size: var(--font-size-sm);
+}
+
+.compact .sectionTitle {
+  font-size: var(--font-size-xs);
+}
+
+/* ===== RESPONSIVE BEHAVIOR ===== */
+@media (max-width: 767px) {
+  .characterCard {
+    min-width: 100%;
+    max-width: 100%;
+  }
+
+  .cardInner {
+    padding: var(--space-component-lg);
+    gap: var(--space-component-md);
+  }
+
+  .statGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-component-xs);
+  }
+
+  .className {
+    font-size: var(--font-size-xl);
+  }
+
+  .description {
+    font-size: var(--font-size-sm);
+  }
+
+  .abilityList,
+  .weaponList {
+    flex-direction: column;
+    gap: var(--space-component-xs);
+  }
+
+  .abilityTag,
+  .weaponTag {
+    text-align: center;
+  }
+}
+
+@media (max-width: 479px) {
+  .statGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .statItem {
+    justify-content: space-between;
+  }
+
+  .selectionIndicator {
+    width: 28px;
+    height: 28px;
+    top: var(--space-component-sm);
+    right: var(--space-component-sm);
+  }
+
+  .checkmark {
+    font-size: var(--font-size-base);
+  }
+}
+
+/* ===== ACCESSIBILITY ===== */
+
+/* High contrast mode adjustments */
+@media (prefers-high-contrast: high) {
+  .statItem,
+  .abilityTag,
+  .weaponTag,
+  .bonusSection {
+    border-width: 2px;
+  }
+
+  .selected .cardInner {
+    border-width: 4px;
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .characterCard {
+    transition: none;
+  }
+
+  .statItem,
+  .abilityTag,
+  .weaponTag {
+    transition: none;
+  }
+
+  .statItem:hover,
+  .abilityTag:hover,
+  .weaponTag:hover {
+    transform: none;
+  }
+}
+
+/* ===== FOCUS MANAGEMENT ===== */
+.characterCard:focus {
+  outline: none;
+}
+
+.characterCard:focus-visible .cardInner {
+  border-color: var(--focus-color);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3);
+}

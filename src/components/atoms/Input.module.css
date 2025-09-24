@@ -1,0 +1,296 @@
+/* Input Atom Component */
+@import url('../../styles/theme.css');
+
+/* ===== CONTAINER ===== */
+.container {
+  position: relative;
+  width: 100%;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+/* ===== LABEL ===== */
+.label {
+  display: block;
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--leather-brown);
+  margin-bottom: var(--space-component-xs);
+  line-height: 1.4;
+}
+
+.required {
+  color: var(--danger-red);
+  margin-left: var(--space-component-xs);
+  font-weight: 700;
+}
+
+/* ===== INPUT WRAPPER ===== */
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* ===== INPUT BASE STYLES ===== */
+.input {
+  /* Base styles */
+  width: 100%;
+  font-family: var(--font-family);
+  font-weight: 500;
+  line-height: 1.5;
+  border-radius: var(--border-radius);
+  border: var(--input-border);
+  background: var(--input-bg);
+  color: var(--leather-brown);
+  transition: var(--transition-all);
+  outline: none;
+
+  /* Remove default styles */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  /* Text styling */
+  letter-spacing: 0.025em;
+}
+
+.input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+/* ===== SIZE VARIANTS ===== */
+.sm {
+  padding: var(--input-padding-sm);
+  font-size: var(--font-size-sm);
+  height: var(--input-height-sm);
+}
+
+.md {
+  padding: var(--input-padding);
+  font-size: var(--font-size-base);
+  height: var(--input-height);
+}
+
+.lg {
+  padding: var(--input-padding-lg);
+  font-size: var(--font-size-lg);
+  height: var(--input-height-lg);
+}
+
+/* ===== STYLE VARIANTS ===== */
+
+/* Default input - parchment style */
+.default {
+  background: var(--input-bg);
+  border: var(--input-border);
+  box-shadow: var(--input-shadow);
+}
+
+/* Search input variant */
+.search {
+  background: var(--input-search-bg);
+  border: var(--input-search-border);
+  border-radius: var(--border-radius-pill);
+  padding-left: var(--space-component-lg);
+  padding-right: var(--space-component-lg);
+}
+
+/* Password input variant */
+.password {
+  background: var(--input-bg);
+  border: var(--input-border);
+  padding-right: var(--space-component-xxl);
+}
+
+/* ===== STATE STYLES ===== */
+
+/* Focus state */
+.focused {
+  border-color: var(--primary-gold);
+  box-shadow: var(--input-focus-shadow);
+  background: var(--input-focus-bg);
+}
+
+/* Error state */
+.error {
+  border-color: var(--danger-red);
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+  background: var(--input-error-bg, rgba(220, 53, 69, 0.05));
+}
+
+/* Disabled state */
+.disabled {
+  background: var(--input-disabled-bg);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.disabled::placeholder {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+/* ===== ICON STYLES ===== */
+
+/* Icon positioning */
+.hasIconBefore {
+  padding-left: var(--space-component-xxl);
+}
+
+.hasIconAfter {
+  padding-right: var(--space-component-xxl);
+}
+
+.iconBefore,
+.iconAfter {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.iconBefore {
+  left: var(--space-component-md);
+}
+
+.iconAfter {
+  right: var(--space-component-md);
+}
+
+/* ===== PASSWORD TOGGLE BUTTON ===== */
+.passwordToggle {
+  position: absolute;
+  right: var(--space-component-sm);
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: var(--space-component-xs);
+  cursor: pointer;
+  color: var(--text-muted);
+  border-radius: var(--border-radius-sm);
+  transition: var(--transition-all);
+  z-index: 3;
+
+  /* Size adjustments */
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.passwordToggle:hover {
+  color: var(--primary-gold);
+  background: rgba(212, 175, 55, 0.1);
+}
+
+.passwordToggle:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: 2px;
+}
+
+/* ===== HELPER TEXT AND ERROR MESSAGES ===== */
+.helperText,
+.errorMessage {
+  font-size: var(--font-size-xs);
+  line-height: 1.4;
+  margin-top: var(--space-component-xs);
+}
+
+.helperText {
+  color: var(--text-muted);
+}
+
+.errorMessage {
+  color: var(--danger-red);
+  font-weight: 500;
+}
+
+/* ===== RESPONSIVE BEHAVIOR ===== */
+@media (max-width: 767px) {
+  .input {
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+
+  .sm {
+    font-size: 16px;
+  }
+
+  .passwordToggle {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* ===== ACCESSIBILITY ===== */
+
+/* High contrast mode adjustments */
+@media (prefers-high-contrast: high) {
+  .input {
+    border-width: 2px;
+  }
+
+  .error {
+    border-width: 3px;
+  }
+
+  .focused {
+    border-width: 3px;
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .input {
+    transition: none;
+  }
+
+  .passwordToggle {
+    transition: none;
+  }
+}
+
+/* ===== BROWSER-SPECIFIC FIXES ===== */
+
+/* Remove X button in IE/Edge */
+.input::-ms-clear {
+  display: none;
+}
+
+/* Remove search cancel button in WebKit */
+.search::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Firefox number input spinner removal */
+.input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.input::-webkit-outer-spin-button,
+.input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* ===== FOCUS MANAGEMENT ===== */
+.input:focus-visible {
+  outline: none;
+}
+
+.container:focus-within .label {
+  color: var(--primary-gold);
+}

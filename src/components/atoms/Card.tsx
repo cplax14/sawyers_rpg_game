@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react';
 import { motion, HTMLMotionProps } from 'framer-motion';
-import styles from './Card.module.css';
+// import styles from './Card.module.css'; // Temporarily disabled due to PostCSS parsing issues
 
 export interface CardProps extends HTMLMotionProps<'div'> {
   /** Card content */

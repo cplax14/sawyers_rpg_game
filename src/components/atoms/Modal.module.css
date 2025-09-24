@@ -1,0 +1,286 @@
+/* Modal Atom Component */
+@import url('../../styles/theme.css');
+
+/* ===== OVERLAY ===== */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--modal-overlay-bg);
+  backdrop-filter: var(--modal-backdrop-filter);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-component-lg);
+  z-index: 1000;
+}
+
+/* ===== MODAL CONTAINER ===== */
+.modal {
+  background: var(--modal-bg);
+  border: var(--modal-border);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--modal-shadow);
+  max-height: 90vh;
+  max-width: 90vw;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  /* Fantasy styling */
+  position: relative;
+}
+
+.modal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--modal-border-gradient);
+  z-index: 1;
+}
+
+.modal:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+}
+
+/* ===== SIZE VARIANTS ===== */
+.sm {
+  max-width: 400px;
+}
+
+.md {
+  max-width: 600px;
+}
+
+.lg {
+  max-width: 800px;
+}
+
+.xl {
+  max-width: 1200px;
+}
+
+/* ===== HEADER ===== */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-component-xl);
+  padding-bottom: var(--space-component-lg);
+  border-bottom: var(--modal-header-border);
+  background: var(--modal-header-bg);
+  position: relative;
+  z-index: 2;
+}
+
+.title {
+  font-family: var(--font-family);
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--primary-gold);
+  margin: 0;
+  text-shadow: var(--text-shadow-gold);
+  letter-spacing: 0.02em;
+}
+
+.closeButton {
+  background: var(--button-close-bg);
+  border: var(--button-close-border);
+  border-radius: var(--border-radius);
+  color: var(--button-close-color);
+  cursor: pointer;
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  height: 32px;
+  width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-all);
+  line-height: 1;
+  padding: 0;
+}
+
+.closeButton:hover {
+  background: var(--button-close-hover-bg);
+  color: var(--button-close-hover-color);
+  transform: scale(1.1);
+}
+
+.closeButton:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: 2px;
+}
+
+.closeButton:active {
+  transform: scale(0.95);
+}
+
+/* ===== CONTENT ===== */
+.content {
+  padding: var(--space-component-xl);
+  overflow-y: auto;
+  flex: 1;
+  color: var(--leather-brown);
+  line-height: 1.6;
+}
+
+.content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.content::-webkit-scrollbar-track {
+  background: var(--scrollbar-track-bg);
+  border-radius: var(--border-radius-sm);
+}
+
+.content::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb-bg);
+  border-radius: var(--border-radius-sm);
+}
+
+.content::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover-bg);
+}
+
+/* Content typography styles */
+.content h1,
+.content h2,
+.content h3,
+.content h4,
+.content h5,
+.content h6 {
+  color: var(--primary-gold);
+  margin-top: 0;
+  margin-bottom: var(--space-component-md);
+}
+
+.content p {
+  margin-bottom: var(--space-component-md);
+}
+
+.content p:last-child {
+  margin-bottom: 0;
+}
+
+/* ===== RESPONSIVE BEHAVIOR ===== */
+@media (max-width: 767px) {
+  .overlay {
+    padding: var(--space-component-md);
+    align-items: flex-end;
+  }
+
+  .modal {
+    max-height: 85vh;
+    max-width: 100%;
+    margin-bottom: 0;
+  }
+
+  .sm,
+  .md,
+  .lg,
+  .xl {
+    max-width: 100%;
+  }
+
+  .header {
+    padding: var(--space-component-lg);
+    padding-bottom: var(--space-component-md);
+  }
+
+  .content {
+    padding: var(--space-component-lg);
+  }
+
+  .title {
+    font-size: var(--font-size-lg);
+  }
+}
+
+@media (max-width: 479px) {
+  .header {
+    padding: var(--space-component-md);
+  }
+
+  .content {
+    padding: var(--space-component-md);
+  }
+
+  .closeButton {
+    height: 28px;
+    width: 28px;
+    font-size: var(--font-size-base);
+  }
+}
+
+/* ===== ACCESSIBILITY ===== */
+
+/* High contrast mode adjustments */
+@media (prefers-high-contrast: high) {
+  .modal {
+    border-width: 2px;
+  }
+
+  .header {
+    border-bottom-width: 2px;
+  }
+
+  .closeButton {
+    border-width: 2px;
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .closeButton {
+    transition: none;
+  }
+
+  .closeButton:hover {
+    transform: none;
+  }
+
+  .closeButton:active {
+    transform: none;
+  }
+}
+
+/* ===== MODAL OVERLAY ANIMATIONS ===== */
+
+/* Focus ring for modal */
+.modal:focus {
+  outline: none;
+}
+
+.modal[data-focus-visible] {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+}
+
+/* ===== UTILITY CLASSES ===== */
+
+/* For modals with no padding content */
+.modal .content.noPadding {
+  padding: 0;
+}
+
+/* For modals with custom scrolling */
+.modal .content.customScroll {
+  overflow-y: visible;
+}
+
+/* For full-width modals on mobile */
+@media (max-width: 767px) {
+  .modal.fullWidthMobile {
+    max-width: 100%;
+    margin: 0;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+  }
+}

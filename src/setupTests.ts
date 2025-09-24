@@ -6,6 +6,7 @@ jest.mock('framer-motion', () => ({
   motion: {
     div: 'div',
     button: 'button',
+    input: 'input',
     span: 'span',
     img: 'img',
   },
