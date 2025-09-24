@@ -1,0 +1,267 @@
+/* React App Specific Styles */
+
+/* Ensure react-root fills viewport */
+#react-root {
+  width: 100vw !important;
+  height: 100vh !important;
+  position: relative;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh !important;
+}
+
+.App {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--deep-brown) 0%, var(--shadow-black) 100%);
+}
+
+.game-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  /* Remove flex centering that constrains content */
+}
+
+/* Loading Screen Styles */
+.loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--deep-brown) 0%, var(--shadow-black) 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  color: var(--primary-gold);
+}
+
+.loading-content {
+  text-align: center;
+  max-width: 400px;
+  padding: 2rem;
+}
+
+.loading-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 4px var(--heavy-shadow);
+  background: linear-gradient(45deg, var(--primary-gold), var(--secondary-gold));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.loading-subtitle {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  opacity: 0.8;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid var(--light-shadow);
+  border-top: 4px solid var(--primary-gold);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+.loading-text {
+  font-size: 1rem;
+  opacity: 0.7;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+/* React UI Overlay */
+.react-ui-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 10000;
+}
+
+.react-ui-overlay > * {
+  pointer-events: auto;
+}
+
+/* Game Canvas Container */
+.game-canvas-container {
+  position: relative;
+  width: 800px;
+  height: 600px;
+  max-width: 100vw;
+  max-height: 100vh;
+  border: 2px solid var(--dark-gold);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 0 20px var(--heavy-shadow);
+  background: var(--shadow-black);
+}
+
+.game-canvas-container canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* Screen transition animations */
+.screen-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.screen-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+
+.screen-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.screen-exit-active {
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 0.3s ease-in, transform 0.3s ease-in;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .game-canvas-container {
+    width: 100vw;
+    height: 60vh;
+    border-radius: 0;
+    border: none;
+  }
+
+  .loading-title {
+    font-size: 2rem;
+  }
+
+  .loading-subtitle {
+    font-size: 1rem;
+  }
+}
+
+@media (max-height: 600px) {
+  .game-canvas-container {
+    height: 100vh;
+    width: auto;
+    aspect-ratio: 4/3;
+  }
+}
+
+/* World Map Area Styling */
+.map-area {
+  background: linear-gradient(145deg, var(--medium-brown), var(--deep-brown));
+  border: 2px solid var(--dark-gold);
+  border-radius: 12px;
+  padding: 15px;
+  margin: 10px;
+  min-width: 120px;
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.map-area:hover {
+  transform: translateY(-3px);
+  border-color: var(--primary-gold);
+  box-shadow: 0 8px 16px rgba(212, 175, 55, 0.4);
+  background: linear-gradient(145deg, var(--medium-brown), #8B4513);
+}
+
+.map-area:focus {
+  outline: 2px solid var(--primary-gold);
+  outline-offset: 2px;
+}
+
+.map-area.current {
+  border-color: var(--primary-gold);
+  background: linear-gradient(145deg, #CD853F, var(--medium-brown));
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
+}
+
+.map-area.current::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, var(--primary-gold), var(--dark-gold));
+  border-radius: 12px;
+  z-index: -1;
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from { opacity: 0.6; }
+  to { opacity: 1; }
+}
+
+.area-icon {
+  font-size: 2.5rem;
+  margin-bottom: 8px;
+  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.area-name {
+  color: var(--parchment);
+  font-size: 0.9rem;
+  font-weight: bold;
+  text-align: center;
+  text-shadow: 1px 1px 2px var(--heavy-shadow);
+  line-height: 1.2;
+}
+
+/* Area type specific colors */
+.map-area[data-type="wilderness"] .area-icon { color: #228B22; }
+.map-area[data-type="temple"] .area-icon { color: #DAA520; }
+.map-area[data-type="rival_area"] .area-icon { color: #DC143C; }
+.map-area[data-type="convergence_point"] .area-icon { color: #9370DB; }
+.map-area[data-type="class_trials"] .area-icon { color: #FF6347; }
+.map-area[data-type="spiritual_plane"] .area-icon { color: #40E0D0; }
+
+/* Screen visibility management */
+.screen {
+  display: none;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.screen.active {
+  display: block;
+}
