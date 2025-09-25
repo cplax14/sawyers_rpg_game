@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../atoms/Button';
 import { LoadingSpinner } from '../atoms/LoadingSpinner';
-import { usePlayer, useUI, useSaveLoad, useDataPreloader } from '../../hooks';
+import { usePlayer, useUI, useSaveLoad, useDataPreloader, useResponsive, useReducedMotion } from '../../hooks';
 import { SaveSlot } from '../../types/game';
 import { mainMenuStyles } from '../../utils/temporaryStyles';
 // import styles from './MainMenu.module.css'; // Temporarily disabled due to PostCSS parsing issues
@@ -28,6 +28,8 @@ export const MainMenu: React.FC<MainMenuProps> = ({
   const { navigateToScreen } = useUI();
   const { saveSlots, hasAnySaves, loadGame } = useSaveLoad();
   const { preloadCriticalData, isDataReady } = useDataPreloader();
+  const { isMobile, isTablet, isLandscape } = useResponsive();
+  const { animationConfig } = useReducedMotion();
 
   const [showLoadMenu, setShowLoadMenu] = useState(false);
   const [isPreloading, setIsPreloading] = useState(false);
@@ -189,28 +191,34 @@ export const MainMenu: React.FC<MainMenuProps> = ({
     );
   }
 
+  // Responsive container styles
+  const containerStyle = {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    width: '100vw',
+    height: '100vh',
+    background: 'linear-gradient(135deg, #1a1a2e, #16213e, #0f3460)',
+    padding: isMobile ? '1rem' : isTablet ? '1.5rem' : '2rem',
+    position: 'relative' as const,
+    overflow: isMobile ? 'auto' : 'hidden'
+  };
+
+  const innerContainerStyle = {
+    maxWidth: isMobile ? '100%' : isTablet ? '400px' : '500px',
+    width: '100%',
+    textAlign: 'center' as const
+  };
+
   return (
     <div
       className={`${styles.mainMenu} ${className || ''}`}
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: '100vw',
-        height: '100vh',
-        background: 'linear-gradient(135deg, #1a1a2e, #16213e, #0f3460)',
-        padding: '2rem',
-        position: 'relative'
-      }}
+      style={containerStyle}
     >
       <div
         className={styles.container}
-        style={{
-          maxWidth: '500px',
-          width: '100%',
-          textAlign: 'center'
-        }}
+        style={innerContainerStyle}
       >
         {/* Background Elements */}
         <div className={styles.backgroundPattern} />
@@ -225,8 +233,8 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: '2rem',
-                maxWidth: '500px',
+                gap: isMobile ? '1rem' : isTablet ? '1.5rem' : '2rem',
+                maxWidth: isMobile ? '100%' : isTablet ? '400px' : '500px',
                 width: '100%',
                 zIndex: 1,
                 position: 'relative'
@@ -234,7 +242,10 @@ export const MainMenu: React.FC<MainMenuProps> = ({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
+              transition={{
+                duration: animationConfig.duration * 1.5,
+                ease: animationConfig.ease
+              }}
             >
               {/* Logo */}
               <motion.div
@@ -247,7 +258,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                 <h1
                   className={styles.gameTitle}
                   style={{
-                    fontSize: '3.5rem',
+                    fontSize: isMobile ? (isLandscape ? '2rem' : '2.5rem') : isTablet ? '3rem' : '3.5rem',
                     fontWeight: 'bold',
                     color: '#ffd700',
                     margin: 0,
@@ -294,7 +305,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                 style={{
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '1rem',
+                  gap: isMobile ? '0.75rem' : '1rem',
                   width: '100%',
                   maxWidth: '300px'
                 }}
@@ -304,38 +315,42 @@ export const MainMenu: React.FC<MainMenuProps> = ({
               >
                 <Button
                   variant="primary"
-                  size="large"
+                  size={isMobile ? "md" : "large"}
                   onClick={handleContinue}
                   disabled={!player && !hasAnySaves}
                   className={styles.menuButton}
+                  touchFriendly={true}
                 >
                   {player ? 'Continue Game' : 'Continue'}
                 </Button>
 
                 <Button
                   variant="secondary"
-                  size="large"
+                  size={isMobile ? "md" : "large"}
                   onClick={handleNewGame}
                   className={styles.menuButton}
+                  touchFriendly={true}
                 >
                   New Game
                 </Button>
 
                 <Button
                   variant="secondary"
-                  size="large"
+                  size={isMobile ? "md" : "large"}
                   onClick={handleShowLoadMenu}
                   disabled={!hasAnySaves}
                   className={styles.menuButton}
+                  touchFriendly={true}
                 >
                   Load Game
                 </Button>
 
                 <Button
                   variant="secondary"
-                  size="large"
+                  size={isMobile ? "md" : "large"}
                   onClick={handleSettings}
                   className={styles.menuButton}
+                  touchFriendly={true}
                 >
                   Settings
                 </Button>

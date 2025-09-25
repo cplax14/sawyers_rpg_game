@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AreaCard } from '../molecules/AreaCard';
 import { Button } from '../atoms/Button';
 import { LoadingSpinner } from '../atoms/LoadingSpinner';
-import { useAreas, usePlayer, useWorld, useUI } from '../../hooks';
+import { useAreas, usePlayer, useWorld, useUI, useHorizontalSwipeNavigation, useIsMobile } from '../../hooks';
 import { ReactArea } from '../../types/game';
 import { worldMapStyles } from '../../utils/temporaryStyles';
 // import styles from './WorldMap.module.css'; // Temporarily disabled due to PostCSS parsing issues
@@ -36,6 +36,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({
   const { player, playerLevel } = usePlayer();
   const { currentAreaId, unlockedAreas, changeArea, hasStoryFlag, isAreaUnlocked } = useWorld();
   const { navigateToScreen } = useUI();
+  const isMobile = useIsMobile();
 
   // Debug logging
   console.log('🗺️ WorldMap Debug:', {
@@ -124,6 +125,33 @@ export const WorldMap: React.FC<WorldMapProps> = ({
     setFilterType(type);
   }, []);
 
+  // Swipe navigation for filters (mobile only)
+  const handleSwipeLeft = useCallback(() => {
+    if (!isMobile) return;
+
+    const currentIndex = AREA_FILTERS.findIndex(filter => filter.type === filterType);
+    const nextIndex = (currentIndex + 1) % AREA_FILTERS.length;
+    setFilterType(AREA_FILTERS[nextIndex].type);
+  }, [isMobile, filterType]);
+
+  const handleSwipeRight = useCallback(() => {
+    if (!isMobile) return;
+
+    const currentIndex = AREA_FILTERS.findIndex(filter => filter.type === filterType);
+    const prevIndex = currentIndex === 0 ? AREA_FILTERS.length - 1 : currentIndex - 1;
+    setFilterType(AREA_FILTERS[prevIndex].type);
+  }, [isMobile, filterType]);
+
+  // Set up swipe gestures
+  const { swipeHandlers } = useHorizontalSwipeNavigation(
+    handleSwipeLeft,
+    handleSwipeRight,
+    {
+      minDistance: 60,
+      maxDuration: 400
+    }
+  );
+
   const toggleUnlockedFilter = useCallback(() => {
     setShowUnlockedOnly(prev => !prev);
   }, []);
@@ -206,6 +234,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({
         padding: '1rem',
         boxSizing: 'border-box'
       }}
+      {...(isMobile ? swipeHandlers : {})}
     >
       <div
         className={styles.container}
@@ -268,6 +297,26 @@ export const WorldMap: React.FC<WorldMapProps> = ({
               />
               <span>Show unlocked only</span>
             </label>
+
+            {/* Mobile swipe indicator */}
+            {isMobile && (
+              <div
+                style={{
+                  fontSize: '0.75rem',
+                  color: '#64748b',
+                  marginTop: '0.5rem',
+                  textAlign: 'center',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem'
+                }}
+              >
+                <span>←</span>
+                <span>Swipe to change filters</span>
+                <span>→</span>
+              </div>
+            )}
           </div>
         </motion.div>
 

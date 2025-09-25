@@ -4,7 +4,7 @@ import { CharacterClassCard } from '../molecules/CharacterClassCard';
 import { Button } from '../atoms/Button';
 import { Input } from '../atoms/Input';
 import { LoadingSpinner } from '../atoms/LoadingSpinner';
-import { useCharacterClasses, usePlayer, useUI } from '../../hooks';
+import { useCharacterClasses, usePlayer, useUI, useResponsive } from '../../hooks';
 import { ReactCharacterClass } from '../../types/game';
 import { characterSelectionStyles } from '../../utils/temporaryStyles';
 // import styles from './CharacterSelection.module.css'; // Temporarily disabled due to PostCSS parsing issues
@@ -23,6 +23,7 @@ export const CharacterSelection: React.FC<CharacterSelectionProps> = ({
   const { characterClasses, isLoading, error } = useCharacterClasses();
   const { createPlayer } = usePlayer();
   const { navigateToScreen } = useUI();
+  const { isMobile, isTablet, isLandscape } = useResponsive();
 
   const [selectedClass, setSelectedClass] = useState<ReactCharacterClass | null>(null);
   const [playerName, setPlayerName] = useState('');
@@ -167,8 +168,25 @@ export const CharacterSelection: React.FC<CharacterSelectionProps> = ({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
         >
-          <h1 className={styles.title}>Create Your Character</h1>
-          <p className={styles.subtitle}>
+          <h1
+            className={styles.title}
+            style={{
+              fontSize: isMobile ? (isLandscape ? '1.5rem' : '1.75rem') : isTablet ? '2rem' : '2.25rem',
+              textAlign: 'center',
+              margin: '0 0 1rem 0'
+            }}
+          >
+            Create Your Character
+          </h1>
+          <p
+            className={styles.subtitle}
+            style={{
+              fontSize: isMobile ? '0.9rem' : '1rem',
+              textAlign: 'center',
+              margin: '0 0 1.5rem 0',
+              color: '#94a3b8'
+            }}
+          >
             Choose your class and enter your name to begin your adventure
           </p>
         </motion.div>
@@ -297,11 +315,17 @@ export const CharacterSelection: React.FC<CharacterSelectionProps> = ({
         >
           <Button
             variant="primary"
-            size="large"
+            size={isMobile ? "md" : "large"}
             onClick={handleCreateCharacter}
             disabled={!selectedClass || !playerName || typeof playerName !== 'string' || !playerName.trim() || isCreating || !!nameError}
             loading={isCreating}
             className={styles.createButton}
+            touchFriendly={true}
+            style={{
+              minHeight: '48px',
+              width: '100%',
+              maxWidth: isMobile ? '100%' : '300px'
+            }}
           >
             {isCreating ? 'Creating Character...' : 'Start Adventure'}
           </Button>

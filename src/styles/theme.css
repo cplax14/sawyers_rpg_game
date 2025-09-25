@@ -24,10 +24,33 @@
   --size-organism-lg: 800px;
 
   /* ===== RESPONSIVE BREAKPOINTS ===== */
-  --breakpoint-mobile: 320px;
-  --breakpoint-tablet: 768px;
-  --breakpoint-desktop: 1024px;
-  --breakpoint-wide: 1440px;
+  /* Mobile-first approach with specific device targeting */
+  --breakpoint-xs: 320px;    /* Small phones */
+  --breakpoint-sm: 480px;    /* Large phones */
+  --breakpoint-md: 768px;    /* Tablets */
+  --breakpoint-lg: 1024px;   /* Small laptops */
+  --breakpoint-xl: 1200px;   /* Desktops */
+  --breakpoint-xxl: 1440px;  /* Large screens */
+
+  /* Touch-friendly minimum sizes */
+  --touch-target-min: 44px;  /* Apple's minimum touch target */
+  --touch-target-comfortable: 48px; /* More comfortable touch target */
+
+  /* Mobile-specific spacing */
+  --space-mobile-xs: 0.25rem;   /* 4px */
+  --space-mobile-sm: 0.5rem;    /* 8px */
+  --space-mobile-md: 1rem;      /* 16px */
+  --space-mobile-lg: 1.5rem;    /* 24px */
+  --space-mobile-xl: 2rem;      /* 32px */
+
+  /* Mobile font sizes */
+  --font-size-mobile-xs: 0.75rem;   /* 12px */
+  --font-size-mobile-sm: 0.875rem;  /* 14px */
+  --font-size-mobile-md: 1rem;      /* 16px */
+  --font-size-mobile-lg: 1.125rem;  /* 18px */
+  --font-size-mobile-xl: 1.25rem;   /* 20px */
+  --font-size-mobile-xxl: 1.5rem;   /* 24px */
+  --font-size-mobile-title: 2rem;   /* 32px */
 
   /* ===== COMPONENT SPACING SYSTEM ===== */
   /* Enhanced spacing for component composition */
@@ -257,6 +280,145 @@
   :root {
     --border-hover: 3px solid var(--color-text-high-contrast);
     --border-focus: 3px solid var(--color-text-high-contrast);
+  }
+}
+
+/* ===== MOBILE-FIRST RESPONSIVE BREAKPOINTS ===== */
+/* Extra small devices (phones, 320px and up) */
+@media (min-width: 320px) {
+  :root {
+    --current-breakpoint: 'xs';
+  }
+}
+
+/* Small devices (large phones, 480px and up) */
+@media (min-width: 480px) {
+  :root {
+    --current-breakpoint: 'sm';
+    --space-component-xl: 1rem;
+    --space-component-xxl: 1.25rem;
+  }
+}
+
+/* Medium devices (tablets, 768px and up) */
+@media (min-width: 768px) {
+  :root {
+    --current-breakpoint: 'md';
+    --space-component-xl: 1.25rem;
+    --space-component-xxl: 1.5rem;
+    --space-component-xxxl: 2rem;
+
+    /* Restore larger font sizes on tablets+ */
+    --font-heading-xl: 2.5rem;
+    --font-heading-lg: 2rem;
+  }
+}
+
+/* Large devices (desktops, 1024px and up) */
+@media (min-width: 1024px) {
+  :root {
+    --current-breakpoint: 'lg';
+    --space-component-xl: 1.5rem;
+    --space-component-xxl: 2rem;
+    --space-component-xxxl: 2.5rem;
+  }
+}
+
+/* Extra large devices (large desktops, 1200px and up) */
+@media (min-width: 1200px) {
+  :root {
+    --current-breakpoint: 'xl';
+  }
+}
+
+/* Extra extra large devices (very large screens, 1440px and up) */
+@media (min-width: 1440px) {
+  :root {
+    --current-breakpoint: 'xxl';
+    --space-component-xxxl: 3rem;
+  }
+}
+
+/* ===== TOUCH-FRIENDLY MOBILE OPTIMIZATIONS ===== */
+@media (max-width: 767px) {
+  :root {
+    /* Mobile-optimized spacing */
+    --card-padding: var(--space-mobile-md);
+    --input-padding: var(--space-mobile-sm) var(--space-mobile-md);
+
+    /* Larger touch targets */
+    --size-atom-sm: var(--touch-target-comfortable);
+    --size-atom-md: calc(var(--touch-target-comfortable) + 8px);
+
+    /* Mobile typography adjustments */
+    --font-body-lg: var(--font-size-mobile-lg);
+    --font-body-md: var(--font-size-mobile-md);
+    --font-ui-lg: var(--font-size-mobile-lg);
+    --font-ui-md: var(--font-size-mobile-md);
+  }
+
+  /* Mobile-specific button adjustments */
+  .btn-button, .button {
+    min-height: var(--touch-target-comfortable) !important;
+    padding: var(--space-mobile-sm) var(--space-mobile-md) !important;
+    font-size: var(--font-size-mobile-md) !important;
+  }
+
+  /* Mobile grid adjustments */
+  .class-grid {
+    grid-template-columns: 1fr !important;
+    gap: var(--space-mobile-md) !important;
+  }
+
+  .areas-grid {
+    grid-template-columns: 1fr !important;
+    gap: var(--space-mobile-md) !important;
+  }
+
+  /* Mobile card adjustments */
+  .card.interactive {
+    padding: var(--space-mobile-md) !important;
+    margin: var(--space-mobile-xs) 0 !important;
+  }
+}
+
+/* ===== LANDSCAPE MOBILE OPTIMIZATIONS ===== */
+@media (max-width: 767px) and (orientation: landscape) {
+  :root {
+    /* Optimize for landscape mobile viewing */
+    --space-mobile-lg: 1rem;
+    --space-mobile-xl: 1.25rem;
+  }
+
+  /* Adjust heights for landscape */
+  .character-selection,
+  .world-map,
+  .main-menu {
+    padding: var(--space-mobile-sm) var(--space-mobile-md) !important;
+  }
+
+  /* Compact headers in landscape */
+  .title {
+    font-size: var(--font-size-mobile-xxl) !important;
+    margin-bottom: var(--space-mobile-xs) !important;
+  }
+
+  .subtitle {
+    font-size: var(--font-size-mobile-md) !important;
+    margin-bottom: var(--space-mobile-sm) !important;
+  }
+}
+
+/* ===== TABLET OPTIMIZATIONS ===== */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .class-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+    gap: 1rem !important;
+  }
+
+  .areas-grid {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)) !important;
+    gap: 1.25rem !important;
   }
 }
 
