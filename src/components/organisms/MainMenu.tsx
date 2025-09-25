@@ -2,9 +2,10 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../atoms/Button';
 import { LoadingSpinner } from '../atoms/LoadingSpinner';
-import { usePlayer, useUI, useSaveLoad, useDataPreloader, useResponsive, useReducedMotion } from '../../hooks';
+import { usePlayer, useUI, useSaveLoad, useDataPreloader, useResponsive, useReducedMotion, useSaveSystem } from '../../hooks';
 import { SaveSlot } from '../../types/game';
 import { mainMenuStyles } from '../../utils/temporaryStyles';
+import { SaveLoadManager } from './SaveLoadManager';
 // import styles from './MainMenu.module.css'; // Temporarily disabled due to PostCSS parsing issues
 
 const styles = mainMenuStyles;
@@ -30,8 +31,14 @@ export const MainMenu: React.FC<MainMenuProps> = ({
   const { preloadCriticalData, isDataReady } = useDataPreloader();
   const { isMobile, isTablet, isLandscape } = useResponsive();
   const { animationConfig } = useReducedMotion();
+  const {
+    saveSlots: newSaveSlots,
+    isInitialized: saveSystemInitialized,
+    loadGame: loadGameNew
+  } = useSaveSystem();
 
   const [showLoadMenu, setShowLoadMenu] = useState(false);
+  const [showSaveManager, setShowSaveManager] = useState(false);
   const [isPreloading, setIsPreloading] = useState(false);
   const [selectedSaveSlot, setSelectedSaveSlot] = useState<number | null>(null);
 
@@ -93,13 +100,26 @@ export const MainMenu: React.FC<MainMenuProps> = ({
   }, [onSettings, navigateToScreen]);
 
   const handleShowLoadMenu = useCallback(() => {
-    setShowLoadMenu(true);
-  }, []);
+    if (saveSystemInitialized && newSaveSlots.some(slot => !slot.isEmpty)) {
+      setShowSaveManager(true);
+    } else {
+      setShowLoadMenu(true);
+    }
+  }, [saveSystemInitialized, newSaveSlots]);
 
   const handleHideLoadMenu = useCallback(() => {
     setShowLoadMenu(false);
     setSelectedSaveSlot(null);
   }, []);
+
+  const handleCloseSaveManager = useCallback(() => {
+    setShowSaveManager(false);
+  }, []);
+
+  const handleLoadComplete = useCallback(async (slotNumber: number) => {
+    setShowSaveManager(false);
+    navigateToScreen('world-map');
+  }, [navigateToScreen]);
 
   const formatPlayTime = useCallback((playTime: number): string => {
     const hours = Math.floor(playTime / 3600000);
@@ -225,7 +245,13 @@ export const MainMenu: React.FC<MainMenuProps> = ({
 
         {/* Main Menu Content */}
         <AnimatePresence mode="wait">
-          {!showLoadMenu ? (
+          {showSaveManager ? (
+            <SaveLoadManager
+              mode="load"
+              onClose={handleCloseSaveManager}
+              onLoadComplete={handleLoadComplete}
+            />
+          ) : !showLoadMenu ? (
             <motion.div
               key="main-menu"
               className={styles.menuContent}
