@@ -10,6 +10,7 @@ import {
   preloadCharacterSelection,
   preloadWorldMap
 } from './components/lazy/LazyComponents';
+import { AreaExploration } from './components/organisms/AreaExploration';
 import { performanceMonitor } from './utils/performanceMonitor';
 import { ReactGameState } from './contexts/ReactGameContext';
 import { reactAppStyles } from './utils/temporaryStyles';
@@ -86,27 +87,6 @@ const ReactApp: React.FC<ReactAppProps> = ({ className }) => {
     return () => window.removeEventListener('resize', debugSizing);
   }, []);
 
-  // Intelligent component preloading based on current screen
-  useEffect(() => {
-    const preloadComponents = async () => {
-      const { currentScreen } = gameState;
-
-      // Preload likely next screens
-      if (currentScreen === 'menu') {
-        // From menu, users likely go to character selection or world map
-        preloadCharacterSelection();
-        setTimeout(() => preloadWorldMap(), 1000);
-      } else if (currentScreen === 'character-selection') {
-        // From character selection, users go to world map
-        preloadWorldMap();
-      } else if (currentScreen === 'world-map') {
-        // From world map, users might go back to menu
-        preloadMainMenu();
-      }
-    };
-
-    preloadComponents();
-  }, [gameState.currentScreen]);
 
   // Initialize performance monitoring in development
   useEffect(() => {
@@ -186,6 +166,28 @@ const GameShell: React.FC = () => {
       initialize();
     }
   }, []); // Empty dependency array - run only once on mount
+
+  // Intelligent component preloading based on current screen
+  useEffect(() => {
+    const preloadComponents = async () => {
+      // Preload likely next screens
+      if (currentScreen === 'menu') {
+        // From menu, users likely go to character selection or world map
+        preloadCharacterSelection();
+        setTimeout(() => preloadWorldMap(), 1000);
+      } else if (currentScreen === 'character-selection') {
+        // From character selection, users go to world map
+        preloadWorldMap();
+      } else if (currentScreen === 'world-map') {
+        // From world map, users might go back to menu
+        preloadMainMenu();
+      }
+    };
+
+    if (!isInitializing) {
+      preloadComponents();
+    }
+  }, [currentScreen, isInitializing]);
 
   // Debug GameShell sizing - run only once after initialization
   useEffect(() => {
@@ -333,13 +335,7 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({ currentScreen, gameState })
         return <LazyWorldMap />;
 
       case 'area':
-        return (
-          <div className={styles.placeholderScreen}>
-            <h2>Area Screen</h2>
-            <p>Area exploration screen coming soon...</p>
-            <p>Current Area: {gameState.currentArea || 'None'}</p>
-          </div>
-        );
+        return <AreaExploration />;
 
       case 'combat':
         return (

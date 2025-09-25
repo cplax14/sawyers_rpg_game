@@ -2,6 +2,7 @@ import React, { createContext, useContext, useReducer, useEffect, ReactNode } fr
 
 // Enhanced TypeScript interfaces for the React rewrite
 export interface ReactPlayer {
+  id: string;
   name: string;
   class: string;
   level: number;
@@ -12,6 +13,7 @@ export interface ReactPlayer {
   experience: number;
   experienceToNext: number;
   gold: number;
+  baseStats: PlayerStats;
   stats: PlayerStats;
   equipment: Equipment;
   spells: string[]; // Spell IDs
@@ -175,21 +177,37 @@ export interface SaveSlot {
 
 // Action types for the reducer
 export type ReactGameAction =
-  | { type: 'SET_LOADING'; payload: boolean }
-  | { type: 'SET_ERROR'; payload: string | null }
+  | { type: 'SET_LOADING'; payload: { isLoading: boolean } }
+  | { type: 'SET_ERROR'; payload: { error: string | null } }
   | { type: 'SET_CURRENT_SCREEN'; payload: ReactGameState['currentScreen'] }
   | { type: 'CREATE_PLAYER'; payload: { name: string; class: string } }
   | { type: 'UPDATE_PLAYER'; payload: Partial<ReactPlayer> }
+  | { type: 'UPDATE_PLAYER_STATS'; payload: { playerId: string; stats: Partial<ReactPlayer['stats']> } }
+  | { type: 'LEVEL_UP_PLAYER'; payload: { playerId: string } }
+  | { type: 'ADD_EXPERIENCE'; payload: { playerId: string; experience: number } }
+  | { type: 'ADD_GOLD'; payload: { playerId: string; gold: number } }
+  | { type: 'CHANGE_AREA'; payload: { areaId: string } }
   | { type: 'SET_CURRENT_AREA'; payload: string }
-  | { type: 'UNLOCK_AREA'; payload: string }
+  | { type: 'UNLOCK_AREA'; payload: { areaId: string } }
+  | { type: 'SET_STORY_FLAG'; payload: { flag: string; value: boolean } }
+  | { type: 'COMPLETE_QUEST'; payload: { questId: string } }
+  | { type: 'ADD_ITEM'; payload: { item: ReactItem; quantity: number } }
+  | { type: 'REMOVE_ITEM'; payload: { itemId: string; quantity: number } }
+  | { type: 'USE_ITEM'; payload: { itemId: string } }
+  | { type: 'EQUIP_ITEM'; payload: { playerId: string; itemId: string } }
   | { type: 'ADD_TO_INVENTORY'; payload: ReactItem[] }
   | { type: 'REMOVE_FROM_INVENTORY'; payload: { itemId: string; quantity?: number } }
   | { type: 'UPDATE_ITEM_QUANTITY'; payload: { itemId: string; quantity: number } }
-  | { type: 'CAPTURE_MONSTER'; payload: ReactMonster }
-  | { type: 'RELEASE_MONSTER'; payload: string }
+  | { type: 'CAPTURE_MONSTER'; payload: { monster: ReactMonster } }
+  | { type: 'RELEASE_MONSTER'; payload: { monsterId: string } }
+  | { type: 'UPDATE_MONSTER'; payload: { monsterId: string; updates: Partial<ReactMonster> } }
+  | { type: 'RENAME_MONSTER'; payload: { monsterId: string; nickname: string } }
   | { type: 'UPDATE_STORY_FLAGS'; payload: Record<string, boolean> }
-  | { type: 'COMPLETE_QUEST'; payload: string }
-  | { type: 'UPDATE_SETTINGS'; payload: Partial<GameSettings> }
+  | { type: 'UPDATE_SETTINGS'; payload: { settings: Partial<GameSettings> } }
+  | { type: 'RESET_SETTINGS' }
+  | { type: 'SAVE_GAME'; payload: { slotIndex: number; saveName: string; timestamp: number } }
+  | { type: 'LOAD_GAME'; payload: { slotIndex: number } }
+  | { type: 'DELETE_SAVE'; payload: { slotIndex: number } }
   | { type: 'UPDATE_PLAYTIME'; payload: number }
   | { type: 'LOAD_GAME_DATA'; payload: Partial<ReactGameState> }
   | { type: 'SAVE_TO_SLOT'; payload: { slotId: number; data: SaveSlot } }
@@ -244,10 +262,10 @@ const initialState: ReactGameState = {
 function reactGameReducer(state: ReactGameState, action: ReactGameAction): ReactGameState {
   switch (action.type) {
     case 'SET_LOADING':
-      return { ...state, isLoading: action.payload };
+      return { ...state, isLoading: action.payload.isLoading };
 
     case 'SET_ERROR':
-      return { ...state, error: action.payload };
+      return { ...state, error: action.payload.error };
 
     case 'SET_CURRENT_SCREEN':
       return { ...state, currentScreen: action.payload };
@@ -255,7 +273,16 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
     case 'CREATE_PLAYER':
       const { name, class: playerClass } = action.payload;
       // This will be enhanced with actual class data
+      const baseStats = {
+        attack: 10,
+        defense: 10,
+        magicAttack: 10,
+        magicDefense: 10,
+        speed: 10,
+        accuracy: 85,
+      };
       const newPlayer: ReactPlayer = {
+        id: `player_${Date.now()}`,
         name,
         class: playerClass,
         level: 1,
@@ -266,14 +293,8 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         experience: 0,
         experienceToNext: 100,
         gold: 100,
-        stats: {
-          attack: 10,
-          defense: 10,
-          magicAttack: 10,
-          magicDefense: 10,
-          speed: 10,
-          accuracy: 85,
-        },
+        baseStats,
+        stats: { ...baseStats },
         equipment: {
           weapon: null,
           armor: null,
@@ -285,7 +306,8 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         ...state,
         player: newPlayer,
         currentScreen: 'world-map',
-        sessionStartTime: Date.now()
+        sessionStartTime: Date.now(),
+        storyFlags: { ...state.storyFlags, tutorial_complete: true }
       };
 
     case 'UPDATE_PLAYER':
@@ -295,14 +317,30 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         player: { ...state.player, ...action.payload },
       };
 
+    case 'CHANGE_AREA':
+      return { ...state, currentArea: action.payload.areaId };
+
     case 'SET_CURRENT_AREA':
       return { ...state, currentArea: action.payload };
 
     case 'UNLOCK_AREA':
-      if (state.unlockedAreas.includes(action.payload)) return state;
+      if (state.unlockedAreas.includes(action.payload.areaId)) return state;
       return {
         ...state,
-        unlockedAreas: [...state.unlockedAreas, action.payload],
+        unlockedAreas: [...state.unlockedAreas, action.payload.areaId],
+      };
+
+    case 'SET_STORY_FLAG':
+      return {
+        ...state,
+        storyFlags: { ...state.storyFlags, [action.payload.flag]: action.payload.value },
+      };
+
+    case 'COMPLETE_QUEST':
+      if (state.completedQuests.includes(action.payload.questId)) return state;
+      return {
+        ...state,
+        completedQuests: [...state.completedQuests, action.payload.questId],
       };
 
     case 'ADD_TO_INVENTORY':
@@ -349,13 +387,13 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
     case 'CAPTURE_MONSTER':
       return {
         ...state,
-        capturedMonsters: [...state.capturedMonsters, action.payload],
+        capturedMonsters: [...state.capturedMonsters, action.payload.monster],
       };
 
     case 'RELEASE_MONSTER':
       return {
         ...state,
-        capturedMonsters: state.capturedMonsters.filter(monster => monster.id !== action.payload),
+        capturedMonsters: state.capturedMonsters.filter(monster => monster.id !== action.payload.monsterId),
       };
 
     case 'UPDATE_STORY_FLAGS':
@@ -374,7 +412,13 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
     case 'UPDATE_SETTINGS':
       return {
         ...state,
-        settings: { ...state.settings, ...action.payload },
+        settings: { ...state.settings, ...action.payload.settings },
+      };
+
+    case 'RESET_SETTINGS':
+      return {
+        ...state,
+        settings: defaultSettings,
       };
 
     case 'UPDATE_PLAYTIME':
@@ -473,7 +517,7 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
   };
 
   const unlockArea = (areaId: string) => {
-    dispatch({ type: 'UNLOCK_AREA', payload: areaId });
+    dispatch({ type: 'UNLOCK_AREA', payload: { areaId } });
   };
 
   const addItems = (items: ReactItem[]) => {
@@ -500,11 +544,11 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
   };
 
   const captureMonster = (monster: ReactMonster) => {
-    dispatch({ type: 'CAPTURE_MONSTER', payload: monster });
+    dispatch({ type: 'CAPTURE_MONSTER', payload: { monster } });
   };
 
   const releaseMonster = (monsterId: string) => {
-    dispatch({ type: 'RELEASE_MONSTER', payload: monsterId });
+    dispatch({ type: 'RELEASE_MONSTER', payload: { monsterId } });
   };
 
   const updateStoryFlags = (flags: Record<string, boolean>) => {
@@ -512,11 +556,11 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
   };
 
   const completeQuest = (questId: string) => {
-    dispatch({ type: 'COMPLETE_QUEST', payload: questId });
+    dispatch({ type: 'COMPLETE_QUEST', payload: { questId } });
   };
 
   const updateSettings = (settings: Partial<GameSettings>) => {
-    dispatch({ type: 'UPDATE_SETTINGS', payload: settings });
+    dispatch({ type: 'UPDATE_SETTINGS', payload: { settings } });
   };
 
   const setCurrentScreen = (screen: ReactGameState['currentScreen']) => {
@@ -524,11 +568,11 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
   };
 
   const setLoading = (loading: boolean) => {
-    dispatch({ type: 'SET_LOADING', payload: loading });
+    dispatch({ type: 'SET_LOADING', payload: { isLoading: loading } });
   };
 
   const setError = (error: string | null) => {
-    dispatch({ type: 'SET_ERROR', payload: error });
+    dispatch({ type: 'SET_ERROR', payload: { error } });
   };
 
   const resetGame = () => {
