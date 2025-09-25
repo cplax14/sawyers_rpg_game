@@ -165,7 +165,7 @@ const AreaCard: React.FC<AreaCardProps> = ({
         <div className={styles.header}>
           <div className={styles.titleRow}>
             <span className={styles.areaIcon} role="img" aria-label={area.type}>
-              {getAreaIcon()}
+              {areaIcon}
             </span>
             <h3 className={styles.areaName}>{area.name}</h3>
             {completionRate > 0 && (
@@ -190,7 +190,7 @@ const AreaCard: React.FC<AreaCardProps> = ({
               <span className={styles.statLabel}>Level:</span>
               <span
                 className={styles.statValue}
-                style={{ color: getDifficultyColor() }}
+                style={{ color: difficultyColor }}
               >
                 {area.recommendedLevel || 'Any'}
               </span>
