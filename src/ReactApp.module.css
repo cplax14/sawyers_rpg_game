@@ -1,0 +1,363 @@
+/* React Game Application Styles */
+@import url('./styles/theme.css');
+
+/* ===== MAIN APP CONTAINER ===== */
+.reactApp {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--game-bg-gradient);
+  position: relative;
+  font-family: var(--font-family);
+  color: var(--text-primary);
+}
+
+/* ===== INITIALIZATION SCREEN ===== */
+.initializationScreen {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--game-bg-gradient);
+}
+
+.initializationContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-component-xl);
+  text-align: center;
+  padding: var(--space-layout-lg);
+}
+
+.gameLogo h1 {
+  font-size: var(--font-size-hero);
+  font-weight: 800;
+  color: var(--primary-gold);
+  text-shadow:
+    0 0 20px rgba(212, 175, 55, 0.5),
+    0 4px 8px rgba(0, 0, 0, 0.3),
+    2px 2px 0px rgba(139, 69, 19, 0.8);
+  margin: 0;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+.gameLogo p {
+  font-size: var(--font-size-lg);
+  color: var(--moonlight-silver);
+  text-shadow: var(--text-shadow-silver);
+  margin: var(--space-component-sm) 0 0 0;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.initializationText {
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* ===== ERROR SCREEN ===== */
+.errorScreen {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--game-bg-gradient);
+}
+
+.errorContent {
+  text-align: center;
+  padding: var(--space-layout-lg);
+  background: var(--card-bg-secondary);
+  border: 2px solid var(--danger-red);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--card-shadow);
+  max-width: 500px;
+}
+
+.errorContent h2 {
+  color: var(--danger-red);
+  font-size: var(--font-size-xl);
+  margin: 0 0 var(--space-component-lg) 0;
+}
+
+.errorMessage {
+  color: var(--text-secondary);
+  margin: 0 0 var(--space-component-lg) 0;
+  line-height: 1.5;
+}
+
+.retryButton {
+  background: var(--button-primary-bg);
+  color: var(--button-primary-color);
+  border: var(--button-primary-border);
+  border-radius: var(--border-radius);
+  padding: var(--space-component-md) var(--space-component-lg);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-all);
+}
+
+.retryButton:hover {
+  background: var(--button-primary-hover-bg);
+  transform: translateY(-2px);
+}
+
+/* ===== GAME SHELL ===== */
+.gameShell {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ===== LOADING OVERLAY ===== */
+.loadingOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* ===== ERROR BANNER ===== */
+.errorBanner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: var(--danger-red);
+  color: white;
+  padding: var(--space-component-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 999;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.errorText {
+  font-weight: 600;
+  flex: 1;
+}
+
+.dismissError {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: var(--font-size-lg);
+  font-weight: bold;
+  cursor: pointer;
+  padding: var(--space-component-xs);
+  border-radius: var(--border-radius-sm);
+  transition: var(--transition-all);
+}
+
+.dismissError:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ===== SCREEN CONTAINER ===== */
+.screenContainer {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: auto;
+}
+
+/* ===== PLACEHOLDER SCREENS ===== */
+.placeholderScreen {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-component-lg);
+  text-align: center;
+  background: var(--game-bg-gradient);
+  padding: var(--space-layout-lg);
+}
+
+.placeholderScreen h2 {
+  font-size: var(--font-size-xxl);
+  color: var(--moonlight-silver);
+  text-shadow: var(--text-shadow-silver);
+  margin: 0;
+}
+
+.placeholderScreen p {
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ===== DEVELOPMENT INFO PANEL ===== */
+.appWithDevtools {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.devInfo {
+  position: fixed;
+  top: var(--space-component-md);
+  right: var(--space-component-md);
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: var(--space-component-sm);
+  font-size: var(--font-size-xs);
+  font-family: monospace;
+  z-index: 998;
+  min-width: 200px;
+  backdrop-filter: blur(8px);
+  box-shadow: var(--card-shadow);
+}
+
+.devInfoHeader {
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: var(--space-component-xs);
+  margin-bottom: var(--space-component-xs);
+}
+
+.devInfoHeader h4 {
+  color: var(--primary-gold);
+  margin: 0;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.devInfoContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-xs);
+}
+
+.devInfoItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-component-sm);
+  padding: 2px 0;
+}
+
+.devInfoItem span:first-child {
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.devInfoItem span:last-child {
+  color: var(--text-primary);
+  font-weight: 600;
+  text-align: right;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.devInfoError {
+  color: var(--danger-red) !important;
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes pulse-glow {
+  0%, 100% {
+    text-shadow:
+      0 0 20px rgba(212, 175, 55, 0.5),
+      0 4px 8px rgba(0, 0, 0, 0.3),
+      2px 2px 0px rgba(139, 69, 19, 0.8);
+  }
+  50% {
+    text-shadow:
+      0 0 30px rgba(212, 175, 55, 0.8),
+      0 4px 8px rgba(0, 0, 0, 0.3),
+      2px 2px 0px rgba(139, 69, 19, 0.8);
+  }
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 1023px) {
+  .devInfo {
+    top: var(--space-component-sm);
+    right: var(--space-component-sm);
+    min-width: 180px;
+  }
+
+  .gameLogo h1 {
+    font-size: var(--font-size-xxl);
+  }
+
+  .gameLogo p {
+    font-size: var(--font-size-base);
+  }
+}
+
+@media (max-width: 767px) {
+  .devInfo {
+    position: relative;
+    top: 0;
+    right: 0;
+    margin: var(--space-component-sm);
+    min-width: auto;
+    width: calc(100% - 2 * var(--space-component-sm));
+  }
+
+  .initializationContent,
+  .errorContent,
+  .placeholderScreen {
+    padding: var(--space-layout-md);
+  }
+
+  .gameLogo h1 {
+    font-size: var(--font-size-xl);
+  }
+
+  .gameLogo p {
+    font-size: var(--font-size-sm);
+  }
+}
+
+/* ===== ACCESSIBILITY ===== */
+@media (prefers-reduced-motion: reduce) {
+  .reactApp *,
+  .gameLogo h1 {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode adjustments */
+@media (prefers-high-contrast: high) {
+  .errorContent,
+  .devInfo {
+    border-width: 3px;
+  }
+
+  .errorBanner {
+    border-bottom: 2px solid white;
+  }
+}
+
+/* ===== FOCUS MANAGEMENT ===== */
+.retryButton:focus-visible,
+.dismissError:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+}

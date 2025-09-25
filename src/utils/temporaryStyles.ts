@@ -1,0 +1,122 @@
+/**
+ * Temporary fallback styles utility
+ * Provides plain CSS class names to prevent JavaScript errors when CSS modules are disabled
+ * TODO: Remove this when PostCSS configuration issues are resolved
+ */
+
+// Generic function to create fallback styles object
+const createFallbackStyles = (classNames: string[]) => {
+  const styles: Record<string, string> = {};
+  classNames.forEach(className => {
+    // Convert camelCase to kebab-case for CSS classes
+    const cssClass = className.replace(/([A-Z])/g, '-$1').toLowerCase();
+    styles[className] = cssClass;
+  });
+  return styles;
+};
+
+// Common component classes
+export const commonClasses = [
+  'container', 'header', 'content', 'footer', 'title', 'subtitle',
+  'loading', 'error', 'success', 'warning', 'info',
+  'button', 'primary', 'secondary', 'card', 'interactive',
+  'selected', 'active', 'disabled', 'hidden', 'visible'
+];
+
+// Create fallback styles for major components
+export const reactAppStyles = createFallbackStyles([
+  'reactApp', 'gameShell', 'screenContainer', 'loadingOverlay',
+  'errorBanner', 'errorText', 'dismissError', 'placeholderScreen',
+  'initializationScreen', 'initializationContent', 'gameLogo',
+  'initializationText', 'errorScreen', 'errorContent', 'errorMessage',
+  'retryButton', 'devInfo', 'devInfoHeader', 'devInfoContent',
+  'devInfoItem', 'devInfoError', 'appWithDevtools'
+]);
+
+export const mainMenuStyles = createFallbackStyles([
+  'mainMenu', 'container', 'header', 'title', 'subtitle',
+  'menuOptions', 'menuButton', 'loadGameMenu', 'saveSlot',
+  'slotHeader', 'slotInfo', 'slotActions', 'backButton',
+  'preloadingContainer', 'logo', 'preloadingText', 'backgroundPattern',
+  'menuContent', 'gameTitle', 'gameSubtitle', 'playerInfo', 'welcomeText',
+  'playerName', 'playerDetails', 'menuButtons', 'footer', 'loadMenuContent',
+  'loadMenuHeader', 'loadMenuTitle', 'saveSlotsList', 'loadMenuActions',
+  'noSavesMessage', 'saveSlotHeader', 'slotNumber', 'saveDate', 'emptySlot',
+  'saveInfo', 'playerClass', 'gameInfo', 'location', 'playTime', 'selected', 'empty'
+]);
+
+export const characterSelectionStyles = createFallbackStyles([
+  'characterSelection', 'container', 'header', 'title', 'subtitle',
+  'nameSection', 'nameLabel', 'nameInput', 'classSection',
+  'sectionTitle', 'classGrid', 'classCardWrapper', 'previewSection',
+  'previewTitle', 'previewContent', 'previewStats', 'statsList',
+  'statItem', 'previewSpells', 'spellsList', 'spellTag',
+  'actionSection', 'createButton', 'disclaimer', 'loadingContainer',
+  'loadingText', 'errorContainer', 'errorMessage'
+]);
+
+export const worldMapStyles = createFallbackStyles([
+  'worldMap', 'container', 'header', 'titleSection', 'title',
+  'subtitle', 'currentLocation', 'currentLabel', 'currentAreaName',
+  'filters', 'filterTabs', 'filterTab', 'active', 'filterOptions',
+  'checkboxLabel', 'checkbox', 'content', 'areasSection',
+  'areasGrid', 'areaCardWrapper', 'currentAreaCard', 'accessibilityWarning',
+  'emptyState', 'sidebar', 'sidebarContent', 'sidebarTitle',
+  'areaDetails', 'areaDescription', 'areaStats', 'statItem',
+  'areaType', 'areaMonsters', 'monsterTags', 'monsterTag',
+  'monsterMore', 'areaServices', 'serviceTags', 'serviceTag',
+  'areaConnections', 'connectionList', 'connectionButton',
+  'sidebarActions', 'loadingContainer', 'loadingText',
+  'errorContainer', 'errorMessage'
+]);
+
+export const cardStyles = createFallbackStyles([
+  'card', 'interactive', 'selected', 'glow', 'content',
+  'header', 'title', 'body', 'footer', 'areaCard', 'sm', 'md', 'lg',
+  'locked', 'inaccessible', 'cardInner', 'lockOverlay', 'lockIcon',
+  'titleRow', 'areaIcon', 'areaName', 'completionBadge', 'description',
+  'stats', 'statRow', 'statLabel', 'statValue', 'encounterRate',
+  'encounterBar', 'encounterText', 'services', 'servicesTitle', 'servicesList',
+  'serviceTag', 'monsters', 'monstersTitle', 'monsterList', 'monsterTag',
+  'monsterMore', 'progressSection', 'progressBar', 'progressFill',
+  'progressText', 'actions', 'levelWarning', 'warningIcon'
+]);
+
+export const modalStyles = createFallbackStyles([
+  'overlay', 'modal', 'header', 'title', 'closeButton',
+  'content', 'footer', 'actions'
+]);
+
+export const loadingSpinnerStyles = createFallbackStyles([
+  'loadingContainer', 'spinner', 'spinnerInner', 'message',
+  'sm', 'md', 'lg'
+]);
+
+export const inputStyles = createFallbackStyles([
+  'container', 'fullWidth', 'input', 'error', 'disabled', 'focused',
+  'hasIconBefore', 'hasIconAfter', 'label', 'required', 'inputWrapper',
+  'iconBefore', 'passwordToggle', 'iconAfter', 'errorMessage', 'helperText'
+]);
+
+export const characterClassCardStyles = createFallbackStyles([
+  'characterCard', 'default', 'selected', 'disabled', 'cardInner', 'header',
+  'className', 'description', 'statsSection', 'sectionTitle', 'statGrid',
+  'statItem', 'statIcon', 'statLabel', 'statValue', 'abilitiesSection',
+  'abilityList', 'abilityTag', 'weaponsSection', 'weaponList', 'weaponTag',
+  'bonusSection', 'bonusText', 'selectionIndicator', 'checkmark', 'actions'
+]);
+
+export const tooltipStyles = createFallbackStyles([
+  'tooltip', 'arrow', 'trigger', 'content', 'top', 'bottom', 'left', 'right'
+]);
+
+// Export default styles object for backwards compatibility
+export default {
+  reactApp: reactAppStyles,
+  mainMenu: mainMenuStyles,
+  characterSelection: characterSelectionStyles,
+  worldMap: worldMapStyles,
+  card: cardStyles,
+  modal: modalStyles,
+  loadingSpinner: loadingSpinnerStyles
+};

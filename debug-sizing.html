@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Sizing Issue</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: red; /* Red to see if this shows */
+        }
+        #root {
+            width: 100vw;
+            height: 100vh;
+            background: blue; /* Blue to see if this shows */
+            position: relative;
+            overflow: hidden;
+        }
+        .test-div {
+            width: 100%;
+            height: 100%;
+            background: green; /* Green to see if this shows */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="root">
+        <div class="test-div">
+            This should be full screen
+        </div>
+    </div>
+
+    <script>
+        // Log all the sizes
+        const root = document.getElementById('root');
+        const testDiv = document.querySelector('.test-div');
+
+        console.log('Debug Sizing Info:', {
+            viewport: {
+                innerWidth: window.innerWidth,
+                innerHeight: window.innerHeight
+            },
+            body: {
+                offsetWidth: document.body.offsetWidth,
+                offsetHeight: document.body.offsetHeight,
+                clientWidth: document.body.clientWidth,
+                clientHeight: document.body.clientHeight,
+                boundingRect: document.body.getBoundingClientRect(),
+                computedStyle: {
+                    width: getComputedStyle(document.body).width,
+                    height: getComputedStyle(document.body).height,
+                    overflow: getComputedStyle(document.body).overflow
+                }
+            },
+            root: {
+                offsetWidth: root.offsetWidth,
+                offsetHeight: root.offsetHeight,
+                clientWidth: root.clientWidth,
+                clientHeight: root.clientHeight,
+                boundingRect: root.getBoundingClientRect(),
+                computedStyle: {
+                    width: getComputedStyle(root).width,
+                    height: getComputedStyle(root).height,
+                    overflow: getComputedStyle(root).overflow
+                }
+            },
+            testDiv: {
+                offsetWidth: testDiv.offsetWidth,
+                offsetHeight: testDiv.offsetHeight,
+                clientWidth: testDiv.clientWidth,
+                clientHeight: testDiv.clientHeight,
+                boundingRect: testDiv.getBoundingClientRect(),
+                computedStyle: {
+                    width: getComputedStyle(testDiv).width,
+                    height: getComputedStyle(testDiv).height,
+                    overflow: getComputedStyle(testDiv).overflow
+                }
+            }
+        });
+    </script>
+</body>
+</html>

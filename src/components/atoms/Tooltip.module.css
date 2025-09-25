@@ -1,0 +1,311 @@
+/* Tooltip Atom Component */
+@import url('../../styles/theme.css');
+
+/* ===== TRIGGER WRAPPER ===== */
+.trigger {
+  display: inline-block;
+  position: relative;
+}
+
+/* ===== TOOLTIP CONTAINER ===== */
+.tooltip {
+  position: fixed;
+  border-radius: var(--border-radius);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+  font-weight: 500;
+  z-index: 1500;
+  word-wrap: break-word;
+  transform-origin: center;
+  pointer-events: none;
+  box-shadow: var(--tooltip-shadow);
+}
+
+/* ===== POSITIONING ===== */
+.top {
+  transform: translateX(-50%) translateY(-100%) translateY(-8px);
+}
+
+.bottom {
+  transform: translateX(-50%) translateY(8px);
+}
+
+.left {
+  transform: translateY(-50%) translateX(-100%) translateX(-8px);
+}
+
+.right {
+  transform: translateY(-50%) translateX(8px);
+}
+
+/* ===== CONTENT ===== */
+.content {
+  padding: var(--tooltip-padding);
+  border-radius: var(--border-radius);
+  position: relative;
+  z-index: 2;
+}
+
+/* ===== VARIANT STYLES ===== */
+
+/* Dark theme (default) */
+.dark .content {
+  background: var(--tooltip-dark-bg);
+  color: var(--tooltip-dark-color);
+  border: var(--tooltip-dark-border);
+}
+
+/* Light theme */
+.light .content {
+  background: var(--tooltip-light-bg);
+  color: var(--tooltip-light-color);
+  border: var(--tooltip-light-border);
+}
+
+/* Error theme */
+.error .content {
+  background: var(--tooltip-error-bg);
+  color: var(--tooltip-error-color);
+  border: var(--tooltip-error-border);
+}
+
+/* Warning theme */
+.warning .content {
+  background: var(--tooltip-warning-bg);
+  color: var(--tooltip-warning-color);
+  border: var(--tooltip-warning-border);
+}
+
+/* Info theme */
+.info .content {
+  background: var(--tooltip-info-bg);
+  color: var(--tooltip-info-color);
+  border: var(--tooltip-info-border);
+}
+
+/* ===== ARROW STYLES ===== */
+.arrow {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  z-index: 1;
+}
+
+.arrow::before {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  transform: rotate(45deg);
+}
+
+.arrow::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  transform: rotate(45deg);
+  z-index: -1;
+}
+
+/* Arrow positioning */
+.arrowTop {
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.arrowBottom {
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.arrowLeft {
+  right: -4px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.arrowRight {
+  left: -4px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Arrow colors for dark theme */
+.dark .arrow::before {
+  background: var(--tooltip-dark-bg);
+  border: var(--tooltip-dark-border);
+  border-width: 1px 1px 0 0;
+}
+
+.dark .arrow::after {
+  background: var(--tooltip-dark-bg);
+}
+
+/* Arrow colors for light theme */
+.light .arrow::before {
+  background: var(--tooltip-light-bg);
+  border: var(--tooltip-light-border);
+  border-width: 1px 1px 0 0;
+}
+
+.light .arrow::after {
+  background: var(--tooltip-light-bg);
+}
+
+/* Arrow colors for error theme */
+.error .arrow::before {
+  background: var(--tooltip-error-bg);
+  border: var(--tooltip-error-border);
+  border-width: 1px 1px 0 0;
+}
+
+.error .arrow::after {
+  background: var(--tooltip-error-bg);
+}
+
+/* Arrow colors for warning theme */
+.warning .arrow::before {
+  background: var(--tooltip-warning-bg);
+  border: var(--tooltip-warning-border);
+  border-width: 1px 1px 0 0;
+}
+
+.warning .arrow::after {
+  background: var(--tooltip-warning-bg);
+}
+
+/* Arrow colors for info theme */
+.info .arrow::before {
+  background: var(--tooltip-info-bg);
+  border: var(--tooltip-info-border);
+  border-width: 1px 1px 0 0;
+}
+
+.info .arrow::after {
+  background: var(--tooltip-info-bg);
+}
+
+/* ===== RESPONSIVE BEHAVIOR ===== */
+@media (max-width: 767px) {
+  .tooltip {
+    font-size: var(--font-size-xs);
+    max-width: 250px !important;
+  }
+
+  .content {
+    padding: var(--space-component-sm);
+  }
+
+  .arrow {
+    width: 6px;
+    height: 6px;
+  }
+
+  .arrow::before,
+  .arrow::after {
+    width: 6px;
+    height: 6px;
+  }
+
+  .arrowTop,
+  .arrowBottom {
+    margin-left: -3px;
+  }
+
+  .arrowLeft,
+  .arrowRight {
+    margin-top: -3px;
+  }
+}
+
+/* ===== ACCESSIBILITY ===== */
+
+/* High contrast mode adjustments */
+@media (prefers-high-contrast: high) {
+  .dark .content,
+  .light .content,
+  .error .content,
+  .warning .content,
+  .info .content {
+    border-width: 2px;
+  }
+
+  .arrow::before {
+    border-width: 2px 2px 0 0 !important;
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .tooltip {
+    transition: none;
+  }
+}
+
+/* ===== SPECIAL CASES ===== */
+
+/* Multiline text support */
+.tooltip .content {
+  white-space: pre-line;
+}
+
+/* Long text handling */
+.tooltip .content {
+  hyphens: auto;
+  word-break: break-word;
+}
+
+/* Rich content support */
+.tooltip .content h1,
+.tooltip .content h2,
+.tooltip .content h3,
+.tooltip .content h4,
+.tooltip .content h5,
+.tooltip .content h6 {
+  margin: 0 0 var(--space-component-xs) 0;
+  font-size: inherit;
+  font-weight: 600;
+}
+
+.tooltip .content p {
+  margin: 0 0 var(--space-component-xs) 0;
+}
+
+.tooltip .content p:last-child {
+  margin-bottom: 0;
+}
+
+.tooltip .content ul,
+.tooltip .content ol {
+  margin: 0;
+  padding-left: var(--space-component-lg);
+}
+
+.tooltip .content li {
+  margin-bottom: var(--space-component-xs);
+}
+
+.tooltip .content li:last-child {
+  margin-bottom: 0;
+}
+
+/* ===== TOUCH DEVICE SUPPORT ===== */
+@media (hover: none) and (pointer: coarse) {
+  /* On touch devices, tooltips should be slightly larger */
+  .tooltip {
+    font-size: var(--font-size-base);
+  }
+
+  .content {
+    padding: var(--space-component-md);
+  }
+
+  /* Prevent hover tooltips on touch devices */
+  .trigger:hover ~ .tooltip {
+    display: none;
+  }
+}

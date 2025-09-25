@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sawyer's RPG Game - React Port</title>
+
+    <!-- CSS files -->
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/src/styles/theme.css">
+    <link rel="stylesheet" href="/src/styles/global.css">
+
+    <!-- Fallback character card styling -->
+    <style>
+        .card.interactive {
+            background: linear-gradient(145deg, #4a3426 0%, #3b2a1f 50%, #2d1b0e 100%) !important;
+            border: 2px solid #cd7f32 !important;
+            border-radius: 12px !important;
+            padding: 1.5rem !important;
+            margin: 0.5rem !important;
+            cursor: pointer !important;
+            transition: all 0.3s ease !important;
+            position: relative !important;
+            min-height: 300px !important;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35) !important;
+        }
+
+        .card.interactive:hover {
+            border-color: #d4af37 !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+            transform: translateY(-4px) !important;
+        }
+
+        .card.interactive.selected {
+            border: 3px solid #d4af37 !important;
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3) !important;
+        }
+
+        .card .header h3 {
+            color: #d4af37 !important;
+            font-size: 1.25rem !important;
+            font-weight: 600 !important;
+            margin: 0 0 0.5rem 0 !important;
+            text-shadow: 0 1px 2px rgba(212, 175, 55, 0.3) !important;
+        }
+
+        .card .header p {
+            color: #f4e6d0 !important;
+            font-size: 0.875rem !important;
+            margin: 0 !important;
+        }
+
+        .card .section-title {
+            color: #b8860b !important;
+            font-size: 0.75rem !important;
+            font-weight: 600 !important;
+            text-transform: uppercase !important;
+            margin: 0 0 0.5rem 0 !important;
+        }
+
+        .card .stat-value {
+            color: #d4af37 !important;
+            font-weight: 600 !important;
+        }
+
+        .card .stat-label {
+            color: #f4e6d0 !important;
+        }
+
+        .card .ability-tag,
+        .card .weapon-tag {
+            background: #cd7f32 !important;
+            color: #f4e6d0 !important;
+            padding: 0.25rem 0.5rem !important;
+            border-radius: 6px !important;
+            font-size: 0.75rem !important;
+            border: 1px solid #8b7355 !important;
+        }
+
+        .class-grid {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+            gap: 1rem !important;
+            margin: 1rem 0 !important;
+        }
+
+        /* Start Adventure Button */
+        .button,
+        .btn-button {
+            background: linear-gradient(135deg, #d4af37 0%, #b8860b 50%, #8b7355 100%) !important;
+            color: #1a1a1a !important;
+            border: 2px solid #d4af37 !important;
+            border-radius: 8px !important;
+            padding: 1rem 2rem !important;
+            font-size: 1.125rem !important;
+            font-weight: 600 !important;
+            cursor: pointer !important;
+            transition: all 0.3s ease !important;
+            margin: 1rem 0 !important;
+            text-shadow: none !important;
+        }
+
+        .button:hover,
+        .btn-button:hover {
+            background: linear-gradient(135deg, #e6c547 0%, #d4af37 50%, #b8860b 100%) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4) !important;
+        }
+
+        .button:disabled,
+        .btn-button:disabled {
+            background: #5d5d5d !important;
+            color: #999 !important;
+            border-color: #5d5d5d !important;
+            cursor: not-allowed !important;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        /* World Map Styles */
+        .world-map {
+            width: 100vw !important;
+            height: 100vh !important;
+            overflow-y: auto !important;
+            padding: 1rem !important;
+            box-sizing: border-box !important;
+        }
+
+        .world-map .container {
+            max-width: 1200px !important;
+            margin: 0 auto !important;
+            padding: 0 1rem !important;
+        }
+
+        .world-map .header {
+            margin-bottom: 2rem !important;
+            text-align: center !important;
+        }
+
+        .world-map .title {
+            color: #d4af37 !important;
+            font-size: 2.5rem !important;
+            font-weight: 800 !important;
+            margin: 0 0 0.5rem 0 !important;
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.5) !important;
+        }
+
+        .world-map .subtitle {
+            color: #94a3b8 !important;
+            font-size: 1.1rem !important;
+            margin: 0 0 1rem 0 !important;
+        }
+
+        .world-map .filters {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 1rem !important;
+            margin-bottom: 2rem !important;
+            align-items: center !important;
+        }
+
+        .world-map .filter-tabs {
+            display: flex !important;
+            gap: 0.5rem !important;
+            flex-wrap: wrap !important;
+        }
+
+        .world-map .filter-tab {
+            background: #334155 !important;
+            color: #e2e8f0 !important;
+            border: 1px solid #475569 !important;
+            border-radius: 6px !important;
+            padding: 0.5rem 1rem !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+        }
+
+        .world-map .filter-tab.active,
+        .world-map .filter-tab:hover {
+            background: #d4af37 !important;
+            color: #1a1a1a !important;
+            border-color: #d4af37 !important;
+        }
+
+        .world-map .areas-grid {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+            gap: 1.5rem !important;
+            margin-bottom: 2rem !important;
+        }
+
+        .world-map .loading-container,
+        .world-map .error-container {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            min-height: 50vh !important;
+            text-align: center !important;
+            gap: 1rem !important;
+        }
+
+        .world-map .loading-text,
+        .world-map .error-message {
+            color: #94a3b8 !important;
+            font-size: 1.1rem !important;
+        }
+
+        .world-map .empty-state {
+            text-align: center !important;
+            padding: 3rem !important;
+            color: #94a3b8 !important;
+        }
+
+        /* Mobile-First Responsive Design */
+        @media (max-width: 767px) {
+            /* Mobile viewport optimizations */
+            html {
+                -webkit-text-size-adjust: 100% !important;
+                -ms-text-size-adjust: 100% !important;
+            }
+
+            body {
+                overflow-x: hidden !important;
+                -webkit-overflow-scrolling: touch !important;
+            }
+
+            /* Touch-friendly buttons */
+            .button, .btn-button {
+                min-height: 48px !important;
+                min-width: 48px !important;
+                padding: 12px 20px !important;
+                font-size: 16px !important;
+                touch-action: manipulation !important;
+                -webkit-tap-highlight-color: transparent !important;
+            }
+
+            /* Character class grid - single column on mobile */
+            .class-grid {
+                grid-template-columns: 1fr !important;
+                gap: 0.75rem !important;
+                padding: 0 !important;
+            }
+
+            .card.interactive {
+                margin: 0.25rem 0 !important;
+                padding: 1rem !important;
+                min-height: auto !important;
+            }
+
+            /* Mobile typography */
+            h1 {
+                font-size: 1.75rem !important;
+                line-height: 1.2 !important;
+            }
+
+            h2 {
+                font-size: 1.5rem !important;
+                line-height: 1.3 !important;
+            }
+
+            /* Mobile spacing adjustments */
+            .character-selection,
+            .world-map,
+            .main-menu {
+                padding: 1rem !important;
+            }
+
+            /* Form inputs */
+            input[type="text"], input[type="email"], input[type="password"] {
+                min-height: 48px !important;
+                font-size: 16px !important; /* Prevents zoom on iOS */
+                padding: 12px 16px !important;
+                border-radius: 8px !important;
+            }
+
+            /* World map mobile optimization */
+            .world-map .title {
+                font-size: 1.75rem !important;
+                margin-bottom: 0.5rem !important;
+            }
+
+            .world-map .filter-tabs {
+                flex-wrap: wrap !important;
+                gap: 0.5rem !important;
+            }
+
+            .world-map .filter-tab {
+                padding: 0.5rem 0.75rem !important;
+                font-size: 0.875rem !important;
+            }
+        }
+
+        /* Landscape mobile optimization */
+        @media (max-width: 767px) and (orientation: landscape) {
+            .character-selection,
+            .world-map,
+            .main-menu {
+                padding: 0.5rem 1rem !important;
+            }
+
+            h1 {
+                font-size: 1.5rem !important;
+                margin-bottom: 0.5rem !important;
+            }
+
+            .subtitle, p {
+                font-size: 0.875rem !important;
+                margin-bottom: 0.75rem !important;
+            }
+        }
+
+        /* Tablet optimization */
+        @media (min-width: 768px) and (max-width: 1023px) {
+            .class-grid {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+                gap: 1rem !important;
+            }
+
+            .areas-grid {
+                grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)) !important;
+                gap: 1.25rem !important;
+            }
+
+            h1 {
+                font-size: 2rem !important;
+            }
+
+            .button, .btn-button {
+                font-size: 1rem !important;
+                padding: 0.75rem 1.5rem !important;
+            }
+        }
+
+        /* Prevent text selection on interactive elements */
+        .card.interactive,
+        .button,
+        .btn-button,
+        .filter-tab {
+            -webkit-user-select: none !important;
+            -moz-user-select: none !important;
+            -ms-user-select: none !important;
+            user-select: none !important;
+        }
+
+        /* iOS specific optimizations */
+        @supports (-webkit-touch-callout: none) {
+            .button, .btn-button {
+                -webkit-appearance: none !important;
+                -webkit-touch-callout: none !important;
+            }
+
+            input[type="text"], input[type="email"], input[type="password"] {
+                -webkit-appearance: none !important;
+                border-radius: 8px !important;
+            }
+        }
+    </style>
+
+    <!-- Favicon (if it exists) -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+
+    <!-- Meta tags for better SEO and social sharing -->
+    <meta name="description" content="Sawyer's RPG Game - A monster taming adventure built with React">
+    <meta name="keywords" content="RPG, game, monsters, React, TypeScript">
+    <meta name="author" content="Sawyer's RPG Game">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="">
+    <meta property="og:title" content="Sawyer's RPG Game - React Port">
+    <meta property="og:description" content="A monster taming adventure built with React">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="Sawyer's RPG Game - React Port">
+    <meta property="twitter:description" content="A monster taming adventure built with React">
+
+    <!-- Theme color for mobile browsers -->
+    <meta name="theme-color" content="#0f172a">
+
+    <!-- Mobile viewport optimization -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+    <!-- Base styles to ensure proper rendering -->
+    <style>
+        /* Reset and base styles */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        html {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: auto;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+                         Oxygen, Ubuntu, Cantarell, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
+        }
+
+        #root {
+            width: 100vw;
+            min-height: 100vh;
+            position: relative;
+            margin: 0;
+            padding: 0;
+            overflow: visible;
+        }
+
+        /* Loading fallback styles */
+        .loading-fallback {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 2rem;
+            text-align: center;
+        }
+
+        .loading-fallback h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #d4af37;
+            margin: 0;
+            text-shadow:
+                0 0 20px rgba(212, 175, 55, 0.5),
+                0 4px 8px rgba(0, 0, 0, 0.3);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .loading-fallback p {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            margin: 0;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #334155;
+            border-top: 4px solid #d4af37;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Error fallback styles */
+        .error-fallback {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .error-content {
+            background: rgba(15, 23, 42, 0.8);
+            border: 2px solid #dc2626;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .error-content h2 {
+            color: #dc2626;
+            margin: 0 0 1rem 0;
+        }
+
+        .error-content button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .error-content button:hover {
+            background: #2563eb;
+        }
+
+        /* Hide fallback when React loads */
+        .react-loaded .loading-fallback,
+        .react-loaded .error-fallback {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- React Application Root -->
+    <div id="root">
+        <!-- Loading fallback - shown while React loads -->
+        <div class="loading-fallback" id="loading-fallback">
+            <h1>Sawyer's RPG</h1>
+            <div class="loading-spinner"></div>
+            <p>Loading game...</p>
+        </div>
+    </div>
+
+    <!-- Error fallback template - injected by JavaScript if needed -->
+    <template id="error-fallback-template">
+        <div class="error-fallback">
+            <div class="error-content">
+                <h2>Failed to Load Game</h2>
+                <p>There was a problem loading the game. Please check your connection and try again.</p>
+                <button onclick="window.location.reload()">Reload Game</button>
+            </div>
+        </div>
+    </template>
+
+    <!-- Performance monitoring (development only) -->
+    <script>
+        // Basic performance monitoring for development
+        if (typeof window !== 'undefined') {
+            window.__GAME_PERF__ = {
+                start: performance.now(),
+                marks: {},
+                measure: function(name) {
+                    this.marks[name] = performance.now() - this.start;
+                    console.log(`⏱️ ${name}: ${this.marks[name].toFixed(2)}ms`);
+                }
+            };
+        }
+
+        // Handle critical errors before React loads
+        window.addEventListener('error', function(event) {
+            console.error('🔥 Critical Error:', event.error);
+
+            const root = document.getElementById('root');
+            const template = document.getElementById('error-fallback-template');
+            if (root && template) {
+                root.innerHTML = template.innerHTML;
+            }
+        });
+
+        // Handle unhandled promise rejections
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('🔥 Unhandled Promise Rejection:', event.reason);
+        });
+    </script>
+
+    <!-- Load game data files (needed by the data loader) -->
+    <script src="/data/characters.js"></script>
+    <script src="/data/monsters.js"></script>
+    <script src="/data/areas.js"></script>
+    <script src="/data/items.js"></script>
+    <script src="/data/spells.js"></script>
+
+    <!-- Load the React application -->
+    <script type="module" src="/src/main-react.tsx"></script>
+
+    <!-- Performance mark -->
+    <script>
+        if (window.__GAME_PERF__) {
+            window.__GAME_PERF__.measure('HTML Loaded');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,199 @@
+/* Card Atom Component */
+@import url('../../styles/theme.css');
+
+.card {
+  /* Base card styles */
+  border-radius: var(--border-radius);
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition-all);
+
+  /* Default card styling */
+  background: var(--card-bg);
+  border: var(--card-border);
+  box-shadow: var(--card-shadow);
+}
+
+.card:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+}
+
+/* ===== PADDING VARIANTS ===== */
+.sm {
+  padding: var(--space-component-md);
+}
+
+.md {
+  padding: var(--card-padding);
+}
+
+.lg {
+  padding: var(--space-component-xxl);
+}
+
+/* ===== STYLE VARIANTS ===== */
+
+/* Default card - parchment style */
+.default {
+  background: var(--card-bg);
+  border: var(--card-border);
+  color: var(--leather-brown);
+}
+
+/* Character class card - leather style */
+.character {
+  background: var(--card-character-bg);
+  border: var(--card-character-border);
+  color: var(--parchment);
+  text-shadow: var(--text-shadow-heavy);
+}
+
+/* Area card for world map - metallic style */
+.area {
+  background: var(--card-area-bg);
+  border: var(--card-area-border);
+  color: var(--parchment);
+}
+
+/* Elevated card with stronger shadow */
+.elevated {
+  background: var(--card-bg);
+  border: var(--card-border);
+  box-shadow: var(--shadow-heavy);
+}
+
+/* ===== STATE MODIFIERS ===== */
+
+/* Interactive state */
+.interactive {
+  cursor: pointer;
+  user-select: none;
+}
+
+.interactive:hover {
+  box-shadow: var(--card-hover-shadow);
+}
+
+/* Selected state */
+.selected {
+  border-width: 3px;
+  border-color: var(--primary-gold);
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+  position: relative;
+}
+
+.selected::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, var(--primary-gold), var(--dark-gold));
+  border-radius: var(--border-radius-lg);
+  z-index: -1;
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+/* Character card selected state */
+.character.selected {
+  border: var(--card-character-selected-border);
+  transform: var(--card-character-hover-transform);
+}
+
+/* Glow effect */
+.glow:hover {
+  box-shadow: var(--card-area-hover-glow);
+}
+
+/* ===== ANIMATION KEYFRAMES ===== */
+@keyframes glow {
+  from { opacity: 0.6; }
+  to { opacity: 1; }
+}
+
+/* ===== RESPONSIVE BEHAVIOR ===== */
+@media (max-width: 767px) {
+  .card {
+    /* Reduce padding on mobile */
+    margin: var(--space-component-sm);
+  }
+
+  .sm {
+    padding: var(--space-component-sm);
+  }
+
+  .md {
+    padding: var(--space-component-lg);
+  }
+
+  .lg {
+    padding: var(--space-component-xl);
+  }
+}
+
+/* ===== ACCESSIBILITY ===== */
+
+/* High contrast mode adjustments */
+@media (prefers-high-contrast: high) {
+  .card {
+    border-width: 2px;
+  }
+
+  .selected {
+    border-width: 4px;
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+
+  .selected::before {
+    animation: none;
+  }
+}
+
+/* ===== CONTENT ORGANIZATION ===== */
+
+/* Common patterns for card content */
+.card > :first-child {
+  margin-top: 0;
+}
+
+.card > :last-child {
+  margin-bottom: 0;
+}
+
+/* Card header styling (when used with heading elements) */
+.card h1,
+.card h2,
+.card h3,
+.card h4,
+.card h5,
+.card h6 {
+  color: var(--primary-gold);
+  margin-bottom: var(--space-component-md);
+}
+
+.character h1,
+.character h2,
+.character h3,
+.character h4,
+.character h5,
+.character h6 {
+  color: var(--primary-gold);
+  text-shadow: var(--text-shadow-gold);
+}
+
+.area h1,
+.area h2,
+.area h3,
+.area h4,
+.area h5,
+.area h6 {
+  color: var(--moonlight-silver);
+}

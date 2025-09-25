@@ -3,6 +3,8 @@
  * Handles game initialization, main loop, and core coordination
  */
 
+console.log('📜 Loading game.js - React timing fix version');
+
 class SawyersRPG {
     constructor() {
         this.canvas = null;
@@ -25,6 +27,30 @@ class SawyersRPG {
      */
     async init() {
         try {
+            // Check if we're in React environment and should delay UI initialization
+            const isReactEnvironment = () => {
+                const hasReactRoot = document.getElementById('react-root') !== null;
+                const hasReactTitle = document.head.innerHTML.includes('React Port');
+                const isViteServer = window.location.href.includes('localhost:300');
+
+                console.log('🔍 Environment check:', {
+                    hasReactRoot,
+                    hasReactTitle,
+                    isViteServer,
+                    url: window.location.href,
+                    title: document.title
+                });
+
+                return hasReactRoot || hasReactTitle || isViteServer;
+            };
+
+            if (isReactEnvironment()) {
+                console.log('🔄 React environment detected - delaying initialization...');
+                // In React mode, only initialize core systems, not UI
+                await this.initializeCoreSystemsOnly();
+                return;
+            }
+
             console.log('🎮 Initializing Sawyer\'s RPG Game...');
 
             // Initialize testing overrides for easier development/testing
@@ -63,6 +89,58 @@ class SawyersRPG {
         }
     }
     
+    /**
+     * Initialize core systems only (for React mode)
+     */
+    async initializeCoreSystemsOnly() {
+        console.log('🔧 Initializing core systems for React...');
+
+        // Initialize game state manager
+        if (typeof GameState !== 'undefined') {
+            this.gameState = new GameState();
+            window.gameState = this.gameState;
+        }
+
+        // Initialize testing overrides for easier development/testing
+        this.initTestingOverrides();
+
+        console.log('✅ Core systems initialized for React');
+    }
+
+    /**
+     * Complete the initialization when React is ready
+     */
+    async completeInitializationForReact() {
+        console.log('🎮 Completing game initialization for React...');
+
+        // Get canvas and context
+        this.canvas = document.getElementById('game-canvas');
+        let hasCanvas = !!this.canvas;
+        if (!hasCanvas) {
+            console.warn('⚠️ Game canvas not found; running in test/headless mode');
+        } else {
+            this.ctx = this.canvas.getContext('2d');
+            if (!this.ctx) {
+                console.warn('⚠️ Could not get 2D rendering context; running in test/headless mode');
+                hasCanvas = false;
+            }
+        }
+
+        // Initialize remaining systems (UI etc)
+        await this.initializeSystems();
+
+        if (hasCanvas) {
+            // Set up event listeners
+            this.setupEventListeners();
+            // Start the game
+            this.start();
+        } else {
+            console.log('🧪 Initialized systems without canvas (tests)');
+        }
+
+        console.log('✅ Game initialization complete');
+    }
+
     /**
      * Initialize all game systems
      */
@@ -537,8 +615,46 @@ class SawyersRPG {
     }
 }
 
+// Don't auto-initialize in React port - wait for React to be ready
 // Initialize the game when script loads
-const game = new SawyersRPG();
+let game = null;
 
-// Make game instance globally available for debugging
-window.SawyersRPG = game;
+// Function to initialize game (called by React when ready)
+window.initializeSawyersRPG = async function() {
+    if (!game) {
+        console.log('🎮 Initializing game from React...');
+        game = new SawyersRPG();
+        // Make game instance globally available for debugging
+        window.SawyersRPG = game;
+
+        // Complete the initialization that was deferred
+        await game.completeInitializationForReact();
+        return game;
+    }
+    return game;
+};
+
+// For backwards compatibility with vanilla HTML version
+// Check if we're in React environment - use a more reliable method
+const isReactEnvironment = () => {
+    // Check multiple indicators that we're in React mode
+    return document.getElementById('react-root') !== null ||
+           document.head.innerHTML.includes('React Port') ||
+           window.location.href.includes('localhost:300'); // Vite dev server pattern
+};
+
+console.log('🔍 Checking environment:', {
+    hasReactRoot: document.getElementById('react-root') !== null,
+    hasReactTitle: document.head.innerHTML.includes('React Port'),
+    url: window.location.href,
+    isReact: isReactEnvironment()
+});
+
+if (!isReactEnvironment()) {
+    // Vanilla HTML version - auto-initialize
+    console.log('🍦 Vanilla environment detected - auto-initializing game...');
+    game = new SawyersRPG();
+    window.SawyersRPG = game;
+} else {
+    console.log('🔄 React environment detected - waiting for React initialization...');
+}
