@@ -1,7 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Card, Button, Tooltip } from '../atoms';
+import { cardStyles } from '../../utils/temporaryStyles';
 // import styles from './AreaCard.module.css'; // Temporarily disabled due to PostCSS parsing issues
+
+const styles = cardStyles;
 
 export interface Area {
   id: string;

@@ -38,7 +38,7 @@ export const usePlayer = () => {
   ) => {
     dispatch({
       type: 'CREATE_PLAYER',
-      payload: { name, characterClassId }
+      payload: { name, class: characterClassId }
     });
   }, [dispatch]);
 
@@ -96,7 +96,7 @@ export const usePlayer = () => {
   }, [state.player]);
 
   const isPlayerAlive = useMemo(() => {
-    return state.player?.currentStats.hp > 0;
+    return state.player ? state.player.hp > 0 : false;
   }, [state.player]);
 
   return {
@@ -346,7 +346,7 @@ export const useUI = () => {
   const navigateToScreen = useCallback((screen: ReactGameState['currentScreen']) => {
     dispatch({
       type: 'SET_CURRENT_SCREEN',
-      payload: { screen }
+      payload: screen
     });
   }, [dispatch]);
 

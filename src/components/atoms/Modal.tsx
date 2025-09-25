@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { modalStyles } from '../../utils/temporaryStyles';
 // import styles from './Modal.module.css'; // Temporarily disabled due to PostCSS parsing issues
+
+// Use temporary fallback styles to prevent JavaScript errors
+const styles = modalStyles;
 
 export interface ModalProps {
   /** Whether the modal is open */

@@ -5,9 +5,213 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sawyer's RPG Game - React Port</title>
 
-    <!-- Preload critical resources -->
-    <link rel="preload" href="/src/styles/theme.css" as="style">
-    <link rel="preload" href="/src/styles/global.css" as="style">
+    <!-- CSS files -->
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/src/styles/theme.css">
+    <link rel="stylesheet" href="/src/styles/global.css">
+
+    <!-- Fallback character card styling -->
+    <style>
+        .card.interactive {
+            background: linear-gradient(145deg, #4a3426 0%, #3b2a1f 50%, #2d1b0e 100%) !important;
+            border: 2px solid #cd7f32 !important;
+            border-radius: 12px !important;
+            padding: 1.5rem !important;
+            margin: 0.5rem !important;
+            cursor: pointer !important;
+            transition: all 0.3s ease !important;
+            position: relative !important;
+            min-height: 300px !important;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35) !important;
+        }
+
+        .card.interactive:hover {
+            border-color: #d4af37 !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+            transform: translateY(-4px) !important;
+        }
+
+        .card.interactive.selected {
+            border: 3px solid #d4af37 !important;
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3) !important;
+        }
+
+        .card .header h3 {
+            color: #d4af37 !important;
+            font-size: 1.25rem !important;
+            font-weight: 600 !important;
+            margin: 0 0 0.5rem 0 !important;
+            text-shadow: 0 1px 2px rgba(212, 175, 55, 0.3) !important;
+        }
+
+        .card .header p {
+            color: #f4e6d0 !important;
+            font-size: 0.875rem !important;
+            margin: 0 !important;
+        }
+
+        .card .section-title {
+            color: #b8860b !important;
+            font-size: 0.75rem !important;
+            font-weight: 600 !important;
+            text-transform: uppercase !important;
+            margin: 0 0 0.5rem 0 !important;
+        }
+
+        .card .stat-value {
+            color: #d4af37 !important;
+            font-weight: 600 !important;
+        }
+
+        .card .stat-label {
+            color: #f4e6d0 !important;
+        }
+
+        .card .ability-tag,
+        .card .weapon-tag {
+            background: #cd7f32 !important;
+            color: #f4e6d0 !important;
+            padding: 0.25rem 0.5rem !important;
+            border-radius: 6px !important;
+            font-size: 0.75rem !important;
+            border: 1px solid #8b7355 !important;
+        }
+
+        .class-grid {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+            gap: 1rem !important;
+            margin: 1rem 0 !important;
+        }
+
+        /* Start Adventure Button */
+        .button,
+        .btn-button {
+            background: linear-gradient(135deg, #d4af37 0%, #b8860b 50%, #8b7355 100%) !important;
+            color: #1a1a1a !important;
+            border: 2px solid #d4af37 !important;
+            border-radius: 8px !important;
+            padding: 1rem 2rem !important;
+            font-size: 1.125rem !important;
+            font-weight: 600 !important;
+            cursor: pointer !important;
+            transition: all 0.3s ease !important;
+            margin: 1rem 0 !important;
+            text-shadow: none !important;
+        }
+
+        .button:hover,
+        .btn-button:hover {
+            background: linear-gradient(135deg, #e6c547 0%, #d4af37 50%, #b8860b 100%) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4) !important;
+        }
+
+        .button:disabled,
+        .btn-button:disabled {
+            background: #5d5d5d !important;
+            color: #999 !important;
+            border-color: #5d5d5d !important;
+            cursor: not-allowed !important;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        /* World Map Styles */
+        .world-map {
+            width: 100vw !important;
+            height: 100vh !important;
+            overflow-y: auto !important;
+            padding: 1rem !important;
+            box-sizing: border-box !important;
+        }
+
+        .world-map .container {
+            max-width: 1200px !important;
+            margin: 0 auto !important;
+            padding: 0 1rem !important;
+        }
+
+        .world-map .header {
+            margin-bottom: 2rem !important;
+            text-align: center !important;
+        }
+
+        .world-map .title {
+            color: #d4af37 !important;
+            font-size: 2.5rem !important;
+            font-weight: 800 !important;
+            margin: 0 0 0.5rem 0 !important;
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.5) !important;
+        }
+
+        .world-map .subtitle {
+            color: #94a3b8 !important;
+            font-size: 1.1rem !important;
+            margin: 0 0 1rem 0 !important;
+        }
+
+        .world-map .filters {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 1rem !important;
+            margin-bottom: 2rem !important;
+            align-items: center !important;
+        }
+
+        .world-map .filter-tabs {
+            display: flex !important;
+            gap: 0.5rem !important;
+            flex-wrap: wrap !important;
+        }
+
+        .world-map .filter-tab {
+            background: #334155 !important;
+            color: #e2e8f0 !important;
+            border: 1px solid #475569 !important;
+            border-radius: 6px !important;
+            padding: 0.5rem 1rem !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+        }
+
+        .world-map .filter-tab.active,
+        .world-map .filter-tab:hover {
+            background: #d4af37 !important;
+            color: #1a1a1a !important;
+            border-color: #d4af37 !important;
+        }
+
+        .world-map .areas-grid {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+            gap: 1.5rem !important;
+            margin-bottom: 2rem !important;
+        }
+
+        .world-map .loading-container,
+        .world-map .error-container {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            min-height: 50vh !important;
+            text-align: center !important;
+            gap: 1rem !important;
+        }
+
+        .world-map .loading-text,
+        .world-map .error-message {
+            color: #94a3b8 !important;
+            font-size: 1.1rem !important;
+        }
+
+        .world-map .empty-state {
+            text-align: center !important;
+            padding: 3rem !important;
+            color: #94a3b8 !important;
+        }
+    </style>
 
     <!-- Favicon (if it exists) -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -52,7 +256,7 @@
             padding: 0;
             height: 100%;
             width: 100%;
-            overflow: hidden;
+            overflow: auto;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
                          Oxygen, Ubuntu, Cantarell, sans-serif;
             -webkit-font-smoothing: antialiased;
@@ -63,11 +267,11 @@
 
         #root {
             width: 100vw;
-            height: 100vh;
+            min-height: 100vh;
             position: relative;
             margin: 0;
             padding: 0;
-            overflow: hidden;
+            overflow: visible;
         }
 
         /* Loading fallback styles */
@@ -212,6 +416,13 @@
             console.error('🔥 Unhandled Promise Rejection:', event.reason);
         });
     </script>
+
+    <!-- Load game data files (needed by the data loader) -->
+    <script src="/data/characters.js"></script>
+    <script src="/data/monsters.js"></script>
+    <script src="/data/areas.js"></script>
+    <script src="/data/items.js"></script>
+    <script src="/data/spells.js"></script>
 
     <!-- Load the React application -->
     <script type="module" src="/src/main-react.tsx"></script>

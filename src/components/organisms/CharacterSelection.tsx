@@ -6,7 +6,10 @@ import { Input } from '../atoms/Input';
 import { LoadingSpinner } from '../atoms/LoadingSpinner';
 import { useCharacterClasses, usePlayer, useUI } from '../../hooks';
 import { ReactCharacterClass } from '../../types/game';
+import { characterSelectionStyles } from '../../utils/temporaryStyles';
 // import styles from './CharacterSelection.module.css'; // Temporarily disabled due to PostCSS parsing issues
+
+const styles = characterSelectionStyles;
 
 interface CharacterSelectionProps {
   onCharacterCreated?: () => void;
@@ -59,7 +62,8 @@ export const CharacterSelection: React.FC<CharacterSelectionProps> = ({
     return true;
   }, []);
 
-  const handleNameChange = useCallback((value: string) => {
+  const handleNameChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
     setPlayerName(value);
     if (nameError) {
       validateName(value);
@@ -132,9 +136,26 @@ export const CharacterSelection: React.FC<CharacterSelectionProps> = ({
   }
 
   return (
-    <div className={`${styles.characterSelection} ${className || ''}`}>
+    <div
+      className={`${styles.characterSelection} ${className || ''}`}
+      style={{
+        width: '100vw',
+        height: '100vh',
+        overflow: 'auto',
+        background: 'linear-gradient(135deg, #1a1a2e, #16213e, #0f3460)',
+        color: '#f4f4f4',
+        padding: '1rem',
+        boxSizing: 'border-box'
+      }}
+    >
       <motion.div
         className={styles.container}
+        style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          padding: '0 1rem',
+          minHeight: 'fit-content'
+        }}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
@@ -278,7 +299,7 @@ export const CharacterSelection: React.FC<CharacterSelectionProps> = ({
             variant="primary"
             size="large"
             onClick={handleCreateCharacter}
-            disabled={!selectedClass || !playerName.trim() || isCreating || !!nameError}
+            disabled={!selectedClass || !playerName || typeof playerName !== 'string' || !playerName.trim() || isCreating || !!nameError}
             loading={isCreating}
             className={styles.createButton}
           >

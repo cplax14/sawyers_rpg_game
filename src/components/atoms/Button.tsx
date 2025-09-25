@@ -2,6 +2,22 @@ import React, { forwardRef } from 'react';
 import { motion, HTMLMotionProps } from 'framer-motion';
 // import styles from './Button.module.css'; // Temporarily disabled due to PostCSS parsing issues
 
+// Temporary fallback styles while CSS modules are disabled
+const createButtonStyles = () => {
+  const buttonClasses = [
+    'button', 'primary', 'secondary', 'danger', 'success',
+    'sm', 'md', 'lg', 'loading', 'disabled', 'fullWidth'
+  ];
+  const styles: Record<string, string> = {};
+  buttonClasses.forEach(className => {
+    const cssClass = className.replace(/([A-Z])/g, '-$1').toLowerCase();
+    styles[className] = `btn-${cssClass}`;
+  });
+  return styles;
+};
+
+const styles = createButtonStyles();
+
 export interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'children'> {
   /** Button content */
   children: React.ReactNode;

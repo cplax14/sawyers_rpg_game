@@ -1,6 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { tooltipStyles } from '../../utils/temporaryStyles';
 // import styles from './Tooltip.module.css'; // Temporarily disabled due to PostCSS parsing issues
+
+// Use temporary fallback styles to prevent JavaScript errors
+const styles = tooltipStyles;
 
 export interface TooltipProps {
   /** Tooltip content */

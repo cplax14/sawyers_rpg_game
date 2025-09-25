@@ -1,6 +1,10 @@
 import React, { forwardRef } from 'react';
 import { motion, HTMLMotionProps } from 'framer-motion';
+import { cardStyles } from '../../utils/temporaryStyles';
 // import styles from './Card.module.css'; // Temporarily disabled due to PostCSS parsing issues
+
+// Use temporary fallback styles to prevent JavaScript errors
+const styles = cardStyles;
 
 export interface CardProps extends HTMLMotionProps<'div'> {
   /** Card content */

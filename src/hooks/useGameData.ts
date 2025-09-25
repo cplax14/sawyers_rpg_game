@@ -70,6 +70,15 @@ export const useGameData = (): UseGameDataResult => {
 export const useAreas = () => {
   const { data, isLoading, error } = useGameData();
 
+  // Debug logging for areas hook
+  console.log('🔍 useAreas Debug:', {
+    hasData: !!data,
+    areasCount: data?.areas?.length || 0,
+    isLoading,
+    error,
+    firstArea: data?.areas?.[0]?.name || 'None'
+  });
+
   const getAreaById = useCallback((id: string): ReactArea | undefined => {
     return data?.areas.find(area => area.id === id);
   }, [data]);

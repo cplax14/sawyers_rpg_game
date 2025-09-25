@@ -4,7 +4,10 @@ import { Button } from '../atoms/Button';
 import { LoadingSpinner } from '../atoms/LoadingSpinner';
 import { usePlayer, useUI, useSaveLoad, useDataPreloader } from '../../hooks';
 import { SaveSlot } from '../../types/game';
+import { mainMenuStyles } from '../../utils/temporaryStyles';
 // import styles from './MainMenu.module.css'; // Temporarily disabled due to PostCSS parsing issues
+
+const styles = mainMenuStyles;
 
 interface MainMenuProps {
   onNewGame?: () => void;
@@ -187,8 +190,28 @@ export const MainMenu: React.FC<MainMenuProps> = ({
   }
 
   return (
-    <div className={`${styles.mainMenu} ${className || ''}`}>
-      <div className={styles.container}>
+    <div
+      className={`${styles.mainMenu} ${className || ''}`}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100vw',
+        height: '100vh',
+        background: 'linear-gradient(135deg, #1a1a2e, #16213e, #0f3460)',
+        padding: '2rem',
+        position: 'relative'
+      }}
+    >
+      <div
+        className={styles.container}
+        style={{
+          maxWidth: '500px',
+          width: '100%',
+          textAlign: 'center'
+        }}
+      >
         {/* Background Elements */}
         <div className={styles.backgroundPattern} />
 
@@ -198,6 +221,16 @@ export const MainMenu: React.FC<MainMenuProps> = ({
             <motion.div
               key="main-menu"
               className={styles.menuContent}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '2rem',
+                maxWidth: '500px',
+                width: '100%',
+                zIndex: 1,
+                position: 'relative'
+              }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -206,12 +239,34 @@ export const MainMenu: React.FC<MainMenuProps> = ({
               {/* Logo */}
               <motion.div
                 className={styles.logo}
+                style={{ textAlign: 'center' }}
                 initial={{ opacity: 0, y: -50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2, duration: 0.8 }}
               >
-                <h1 className={styles.gameTitle}>Sawyer's RPG</h1>
-                <p className={styles.gameSubtitle}>Monster Taming Adventure</p>
+                <h1
+                  className={styles.gameTitle}
+                  style={{
+                    fontSize: '3.5rem',
+                    fontWeight: 'bold',
+                    color: '#ffd700',
+                    margin: 0,
+                    textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)'
+                  }}
+                >
+                  Sawyer's RPG
+                </h1>
+                <p
+                  className={styles.gameSubtitle}
+                  style={{
+                    fontSize: '1.4rem',
+                    color: '#cccccc',
+                    margin: '0.5rem 0 0 0',
+                    fontStyle: 'italic'
+                  }}
+                >
+                  Monster Taming Adventure
+                </p>
               </motion.div>
 
               {/* Current Player Info */}
@@ -236,6 +291,13 @@ export const MainMenu: React.FC<MainMenuProps> = ({
               {/* Menu Buttons */}
               <motion.div
                 className={styles.menuButtons}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1rem',
+                  width: '100%',
+                  maxWidth: '300px'
+                }}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6, duration: 0.5 }}

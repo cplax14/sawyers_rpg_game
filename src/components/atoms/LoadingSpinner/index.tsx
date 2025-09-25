@@ -1,5 +1,8 @@
 import React from 'react';
+import { loadingSpinnerStyles } from '../../../utils/temporaryStyles';
 // import styles from './LoadingSpinner.module.css'; // Temporarily disabled due to PostCSS parsing issues
+
+const styles = loadingSpinnerStyles;
 
 export interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg';

@@ -1,6 +1,10 @@
 import React, { forwardRef, useState } from 'react';
 import { motion, HTMLMotionProps } from 'framer-motion';
+import { inputStyles } from '../../utils/temporaryStyles';
 // import styles from './Input.module.css'; // Temporarily disabled due to PostCSS parsing issues
+
+// Use temporary fallback styles to prevent JavaScript errors
+const styles = inputStyles;
 
 export interface InputProps extends Omit<HTMLMotionProps<'input'>, 'children' | 'size'> {
   /** Input label */

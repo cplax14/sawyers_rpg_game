@@ -1,7 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Card, Button, Tooltip } from '../atoms';
+import { characterClassCardStyles } from '../../utils/temporaryStyles';
 // import styles from './CharacterClassCard.module.css'; // Temporarily disabled due to PostCSS parsing issues
+
+// Use temporary fallback styles to prevent JavaScript errors
+const styles = characterClassCardStyles;
 
 export interface CharacterClass {
   id: string;

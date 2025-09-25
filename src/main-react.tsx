@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ReactAppWithDevtools } from './ReactApp';
+import './styles/theme.css';
 import './styles/global.css';
 
 /**
@@ -85,8 +86,28 @@ const initializeApp = () => {
       id: rootElement.id,
       width: rootElement.offsetWidth,
       height: rootElement.offsetHeight,
-      display: window.getComputedStyle(rootElement).display,
-      position: window.getComputedStyle(rootElement).position
+      clientWidth: rootElement.clientWidth,
+      clientHeight: rootElement.clientHeight,
+      boundingRect: rootElement.getBoundingClientRect(),
+      computedStyle: {
+        width: window.getComputedStyle(rootElement).width,
+        height: window.getComputedStyle(rootElement).height,
+        display: window.getComputedStyle(rootElement).display,
+        position: window.getComputedStyle(rootElement).position,
+        overflow: window.getComputedStyle(rootElement).overflow,
+        margin: window.getComputedStyle(rootElement).margin,
+        padding: window.getComputedStyle(rootElement).padding,
+        boxSizing: window.getComputedStyle(rootElement).boxSizing
+      },
+      viewport: {
+        innerWidth: window.innerWidth,
+        innerHeight: window.innerHeight
+      },
+      bodyStyle: {
+        width: window.getComputedStyle(document.body).width,
+        height: window.getComputedStyle(document.body).height,
+        overflow: window.getComputedStyle(document.body).overflow
+      }
     });
 
     // Create React root and render the app
@@ -96,12 +117,33 @@ const initializeApp = () => {
     const AppComponent = isDevelopment ? ReactAppWithDevtools : ReactAppWithDevtools; // Always use devtools for now
 
     root.render(
-      <StrictMode>
-        <AppComponent />
-      </StrictMode>
+      <AppComponent />
     );
 
     console.log('🎮 React Game App mounted successfully');
+
+    // Debug after render with a small delay
+    setTimeout(() => {
+      console.log('🔍 Root element after React render:', {
+        id: rootElement.id,
+        width: rootElement.offsetWidth,
+        height: rootElement.offsetHeight,
+        clientWidth: rootElement.clientWidth,
+        clientHeight: rootElement.clientHeight,
+        boundingRect: rootElement.getBoundingClientRect(),
+        children: Array.from(rootElement.children).map(child => ({
+          tagName: child.tagName,
+          className: child.className,
+          boundingRect: child.getBoundingClientRect()
+        })),
+        computedStyle: {
+          width: window.getComputedStyle(rootElement).width,
+          height: window.getComputedStyle(rootElement).height,
+          display: window.getComputedStyle(rootElement).display,
+          position: window.getComputedStyle(rootElement).position
+        }
+      });
+    }, 100);
 
     // Add development helpers
     if (isDevelopment) {

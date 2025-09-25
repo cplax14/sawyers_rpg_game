@@ -5,7 +5,10 @@ import { Button } from '../atoms/Button';
 import { LoadingSpinner } from '../atoms/LoadingSpinner';
 import { useAreas, usePlayer, useWorld, useUI } from '../../hooks';
 import { ReactArea } from '../../types/game';
+import { worldMapStyles } from '../../utils/temporaryStyles';
 // import styles from './WorldMap.module.css'; // Temporarily disabled due to PostCSS parsing issues
+
+const styles = worldMapStyles;
 
 interface WorldMapProps {
   onAreaEnter?: (area: ReactArea) => void;
@@ -33,6 +36,17 @@ export const WorldMap: React.FC<WorldMapProps> = ({
   const { player, playerLevel } = usePlayer();
   const { currentAreaId, unlockedAreas, changeArea, hasStoryFlag, isAreaUnlocked } = useWorld();
   const { navigateToScreen } = useUI();
+
+  // Debug logging
+  console.log('🗺️ WorldMap Debug:', {
+    areas: areas?.length || 0,
+    isLoading,
+    error,
+    currentAreaId,
+    unlockedAreas,
+    playerLevel,
+    player: player?.name || 'None'
+  });
 
   const [selectedArea, setSelectedArea] = useState<ReactArea | null>(null);
   const [filterType, setFilterType] = useState<AreaFilter['type']>('all');
@@ -181,8 +195,26 @@ export const WorldMap: React.FC<WorldMapProps> = ({
   }
 
   return (
-    <div className={`${styles.worldMap} ${className || ''}`}>
-      <div className={styles.container}>
+    <div
+      className={`${styles.worldMap} ${className || ''}`}
+      style={{
+        width: '100vw',
+        height: '100vh',
+        overflow: 'auto',
+        background: 'linear-gradient(135deg, #1a1a2e, #16213e, #0f3460)',
+        color: '#f4f4f4',
+        padding: '1rem',
+        boxSizing: 'border-box'
+      }}
+    >
+      <div
+        className={styles.container}
+        style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          padding: '0 1rem'
+        }}
+      >
         {/* Header */}
         <motion.div
           className={styles.header}

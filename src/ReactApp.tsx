@@ -1,10 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { ReactGameProvider } from './contexts/ReactGameContext';
 import { MainMenu, CharacterSelection, WorldMap } from './components/organisms';
 import { LoadingSpinner } from './components/atoms';
 import { useGameState, useUI, useDataPreloader } from './hooks';
 import { ReactGameState } from './contexts/ReactGameContext';
+import { reactAppStyles } from './utils/temporaryStyles';
 // import styles from './ReactApp.module.css';  // Temporarily disabled due to PostCSS issues
+
+// Use temporary fallback styles to prevent JavaScript errors
+const styles = reactAppStyles;
 
 /**
  * Pure React Game Application
@@ -16,9 +20,81 @@ interface ReactAppProps {
 }
 
 const ReactApp: React.FC<ReactAppProps> = ({ className }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Debug container sizing
+    const debugSizing = () => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        const computed = window.getComputedStyle(containerRef.current);
+        console.log('🔍 ReactApp Container Debug:', {
+          boundingRect: {
+            width: rect.width,
+            height: rect.height,
+            top: rect.top,
+            left: rect.left
+          },
+          computedStyle: {
+            width: computed.width,
+            height: computed.height,
+            display: computed.display,
+            position: computed.position,
+            overflow: computed.overflow
+          },
+          viewport: {
+            innerWidth: window.innerWidth,
+            innerHeight: window.innerHeight
+          }
+        });
+
+        // Also check the root element
+        const root = document.getElementById('root');
+        if (root) {
+          const rootRect = root.getBoundingClientRect();
+          const rootComputed = window.getComputedStyle(root);
+          console.log('🔍 Root Element Debug:', {
+            boundingRect: {
+              width: rootRect.width,
+              height: rootRect.height,
+              top: rootRect.top,
+              left: rootRect.left
+            },
+            computedStyle: {
+              width: rootComputed.width,
+              height: rootComputed.height,
+              display: rootComputed.display,
+              position: rootComputed.position
+            }
+          });
+        }
+      }
+    };
+
+    // Debug immediately and on resize
+    debugSizing();
+    window.addEventListener('resize', debugSizing);
+
+    return () => window.removeEventListener('resize', debugSizing);
+  }, []);
+
   return (
     <ReactGameProvider>
-      <div className={`${styles.reactApp} ${className || ''}`}>
+      <div
+        ref={containerRef}
+        className={`react-app ${className || ''}`}
+        style={{
+          width: '100vw',
+          height: '100vh',
+          overflow: 'hidden',
+          position: 'relative',
+          background: 'linear-gradient(135deg, #1a1a2e, #16213e, #0f3460)',
+          color: '#f4f4f4',
+          margin: 0,
+          padding: 0,
+          boxSizing: 'border-box'
+        }}
+      >
         <GameShell />
       </div>
     </ReactGameProvider>
@@ -35,6 +111,7 @@ const GameShell: React.FC = () => {
 
   const [isInitializing, setIsInitializing] = useState(true);
   const [initError, setInitError] = useState<string | null>(null);
+  const gameShellRef = useRef<HTMLDivElement>(null);
 
   // Initialize the application
   useEffect(() => {
@@ -57,8 +134,42 @@ const GameShell: React.FC = () => {
       }
     };
 
-    initialize();
-  }, [preloadCriticalData, isDataReady]);
+    // Only initialize once when component mounts
+    if (isInitializing) {
+      initialize();
+    }
+  }, []); // Empty dependency array - run only once on mount
+
+  // Debug GameShell sizing - run only once after initialization
+  useEffect(() => {
+    const debugGameShell = () => {
+      if (gameShellRef.current) {
+        const rect = gameShellRef.current.getBoundingClientRect();
+        const computed = window.getComputedStyle(gameShellRef.current);
+        console.log('🔍 GameShell Debug:', {
+          boundingRect: {
+            width: rect.width,
+            height: rect.height,
+            top: rect.top,
+            left: rect.left
+          },
+          computedStyle: {
+            width: computed.width,
+            height: computed.height,
+            display: computed.display,
+            position: computed.position
+          },
+          currentScreen: currentScreen,
+          isInitializing: isInitializing
+        });
+      }
+    };
+
+    // Only debug once after initialization is complete
+    if (!isInitializing && gameShellRef.current) {
+      setTimeout(debugGameShell, 100); // Small delay to ensure DOM is ready
+    }
+  }, [isInitializing]); // Only depend on initialization status
 
   // Show initialization loading
   if (isInitializing) {
@@ -97,10 +208,37 @@ const GameShell: React.FC = () => {
   }
 
   return (
-    <div className={styles.gameShell}>
+    <div
+      ref={gameShellRef}
+      className={styles.gameShell}
+      style={{
+        width: '100vw',
+        height: '100vh',
+        position: 'relative',
+        overflow: 'hidden',
+        background: 'linear-gradient(135deg, #1a1a2e, #16213e, #0f3460)',
+        margin: 0,
+        padding: 0,
+        boxSizing: 'border-box'
+      }}
+    >
       {/* Global Loading Overlay */}
       {isLoading && (
-        <div className={styles.loadingOverlay}>
+        <div
+          className={styles.loadingOverlay}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'rgba(0, 0, 0, 0.8)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 9999
+          }}
+        >
           <LoadingSpinner size="large" />
         </div>
       )}
@@ -189,7 +327,15 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({ currentScreen, gameState })
   };
 
   return (
-    <div className={styles.screenContainer}>
+    <div
+      className={styles.screenContainer}
+      style={{
+        width: '100vw',
+        height: '100vh',
+        position: 'relative',
+        overflow: 'hidden'
+      }}
+    >
       {renderScreen()}
     </div>
   );
@@ -201,6 +347,9 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({ currentScreen, gameState })
 const DevInfoPanel: React.FC = () => {
   const { state } = useGameState();
   const { currentScreen } = useUI();
+
+  // Hide dev panel completely for now to prevent content blocking
+  return null;
 
   if (process.env.NODE_ENV !== 'development') {
     return null;
@@ -242,10 +391,12 @@ const DevInfoPanel: React.FC = () => {
 // Enhanced version with dev panel for development
 export const ReactAppWithDevtools: React.FC<ReactAppProps> = (props) => {
   return (
-    <div className={styles.appWithDevtools}>
-      <ReactApp {...props} />
-      <DevInfoPanel />
-    </div>
+    <ReactGameProvider>
+      <div className={styles.appWithDevtools}>
+        <GameShell />
+        <DevInfoPanel />
+      </div>
+    </ReactGameProvider>
   );
 };
 
