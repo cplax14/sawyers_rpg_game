@@ -1,8 +1,16 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { ReactGameProvider } from './contexts/ReactGameContext';
-import { MainMenu, CharacterSelection, WorldMap } from './components/organisms';
 import { LoadingSpinner } from './components/atoms';
 import { useGameState, useUI, useDataPreloader } from './hooks';
+import {
+  LazyMainMenu,
+  LazyCharacterSelection,
+  LazyWorldMap,
+  preloadMainMenu,
+  preloadCharacterSelection,
+  preloadWorldMap
+} from './components/lazy/LazyComponents';
+import { performanceMonitor } from './utils/performanceMonitor';
 import { ReactGameState } from './contexts/ReactGameContext';
 import { reactAppStyles } from './utils/temporaryStyles';
 // import styles from './ReactApp.module.css';  // Temporarily disabled due to PostCSS issues
@@ -76,6 +84,45 @@ const ReactApp: React.FC<ReactAppProps> = ({ className }) => {
     window.addEventListener('resize', debugSizing);
 
     return () => window.removeEventListener('resize', debugSizing);
+  }, []);
+
+  // Intelligent component preloading based on current screen
+  useEffect(() => {
+    const preloadComponents = async () => {
+      const { currentScreen } = gameState;
+
+      // Preload likely next screens
+      if (currentScreen === 'menu') {
+        // From menu, users likely go to character selection or world map
+        preloadCharacterSelection();
+        setTimeout(() => preloadWorldMap(), 1000);
+      } else if (currentScreen === 'character-selection') {
+        // From character selection, users go to world map
+        preloadWorldMap();
+      } else if (currentScreen === 'world-map') {
+        // From world map, users might go back to menu
+        preloadMainMenu();
+      }
+    };
+
+    preloadComponents();
+  }, [gameState.currentScreen]);
+
+  // Initialize performance monitoring in development
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      performanceMonitor.startMonitoring();
+
+      // Log performance report every 30 seconds in development
+      const reportInterval = setInterval(() => {
+        console.log(performanceMonitor.generateReport());
+      }, 30000);
+
+      return () => {
+        performanceMonitor.stopMonitoring();
+        clearInterval(reportInterval);
+      };
+    }
   }, []);
 
   return (
@@ -277,13 +324,13 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({ currentScreen, gameState })
   const renderScreen = () => {
     switch (currentScreen) {
       case 'menu':
-        return <MainMenu />;
+        return <LazyMainMenu />;
 
       case 'character-selection':
-        return <CharacterSelection />;
+        return <LazyCharacterSelection />;
 
       case 'world-map':
-        return <WorldMap />;
+        return <LazyWorldMap />;
 
       case 'area':
         return (
@@ -322,7 +369,7 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({ currentScreen, gameState })
       default:
         // Default to menu if screen is unknown
         console.warn(`Unknown screen: ${currentScreen}, defaulting to menu`);
-        return <MainMenu />;
+        return <LazyMainMenu />;
     }
   };
 

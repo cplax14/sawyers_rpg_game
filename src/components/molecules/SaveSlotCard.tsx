@@ -3,7 +3,7 @@
  * Displays save slot information with metadata and controls
  */
 
-import React, { useState } from 'react';
+import React, { useState, memo, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../atoms/Button';
 import { SaveSlotInfo } from '../../types/saveSystem';
@@ -20,7 +20,7 @@ interface SaveSlotCardProps {
   className?: string;
 }
 
-export const SaveSlotCard: React.FC<SaveSlotCardProps> = ({
+const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
   slotInfo,
   onLoad,
   onSave,
@@ -34,7 +34,8 @@ export const SaveSlotCard: React.FC<SaveSlotCardProps> = ({
   const { isMobile, isTablet } = useResponsive();
   const { animationConfig } = useReducedMotion();
 
-  const formatPlayTime = (totalPlayTime: number): string => {
+  // Memoize formatting functions
+  const formatPlayTime = useCallback((totalPlayTime: number): string => {
     const hours = Math.floor(totalPlayTime / 3600000);
     const minutes = Math.floor((totalPlayTime % 3600000) / 60000);
 
@@ -42,21 +43,36 @@ export const SaveSlotCard: React.FC<SaveSlotCardProps> = ({
       return `${hours}h ${minutes}m`;
     }
     return `${minutes}m`;
-  };
+  }, []);
 
-  const formatDate = (date: Date): string => {
+  const formatDate = useCallback((date: Date): string => {
     return new Intl.DateTimeFormat('en-US', {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
     }).format(date);
-  };
+  }, []);
 
-  const formatFileSize = (bytes: number): string => {
+  const formatFileSize = useCallback((bytes: number): string => {
     const mb = bytes / (1024 * 1024);
     return mb >= 1 ? `${mb.toFixed(1)}MB` : `${(bytes / 1024).toFixed(0)}KB`;
-  };
+  }, []);
+
+  // Memoize computed values
+  const isEmpty = useMemo(() => !slotInfo.metadata, [slotInfo.metadata]);
+  const formattedDate = useMemo(
+    () => slotInfo.metadata ? formatDate(new Date(slotInfo.metadata.lastModified)) : '',
+    [slotInfo.metadata, formatDate]
+  );
+  const formattedFileSize = useMemo(
+    () => slotInfo.metadata ? formatFileSize(slotInfo.metadata.fileSizeBytes) : '',
+    [slotInfo.metadata, formatFileSize]
+  );
+  const formattedPlayTime = useMemo(
+    () => slotInfo.metadata ? formatPlayTime(slotInfo.metadata.totalPlayTime) : '',
+    [slotInfo.metadata, formatPlayTime]
+  );
 
   const cardStyle: React.CSSProperties = {
     position: 'relative',
@@ -331,5 +347,26 @@ export const SaveSlotCard: React.FC<SaveSlotCardProps> = ({
     </motion.div>
   );
 };
+
+// Memoized SaveSlotCard for performance optimization
+export const SaveSlotCard = memo(SaveSlotCardComponent, (prevProps, nextProps) => {
+  // Custom comparison function for optimal re-render prevention
+  return (
+    prevProps.slotInfo.slotNumber === nextProps.slotInfo.slotNumber &&
+    prevProps.slotInfo.isEmpty === nextProps.slotInfo.isEmpty &&
+    prevProps.slotInfo.syncStatus === nextProps.slotInfo.syncStatus &&
+    prevProps.slotInfo.lastError === nextProps.slotInfo.lastError &&
+    prevProps.isSelected === nextProps.isSelected &&
+    prevProps.isLoading === nextProps.isLoading &&
+    prevProps.className === nextProps.className &&
+    // Deep compare metadata if both exist
+    ((!prevProps.slotInfo.metadata && !nextProps.slotInfo.metadata) ||
+     (prevProps.slotInfo.metadata?.lastModified === nextProps.slotInfo.metadata?.lastModified &&
+      prevProps.slotInfo.metadata?.fileSizeBytes === nextProps.slotInfo.metadata?.fileSizeBytes &&
+      prevProps.slotInfo.metadata?.totalPlayTime === nextProps.slotInfo.metadata?.totalPlayTime))
+  );
+});
+
+SaveSlotCard.displayName = 'SaveSlotCard';
 
 export default SaveSlotCard;

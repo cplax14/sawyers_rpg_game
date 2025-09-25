@@ -58,29 +58,54 @@ export default defineConfig({
     rollupOptions: {
       input: resolve(__dirname, 'index-react.html'),
       output: {
-        manualChunks: {
+        manualChunks: (id) => {
           // Vendor chunks
-          'react-vendor': ['react', 'react-dom'],
-          'animation-vendor': ['framer-motion'],
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'react-vendor';
+            }
+            if (id.includes('framer-motion')) {
+              return 'animation-vendor';
+            }
+            if (id.includes('uuid')) {
+              return 'utils-vendor';
+            }
+            return 'vendor';
+          }
 
-          // App chunks
-          'components-atoms': [
-            './src/components/atoms/index.ts'
-          ],
-          'components-molecules': [
-            './src/components/molecules/index.ts'
-          ],
-          'components-organisms': [
-            './src/components/organisms/index.ts'
-          ],
-          'game-state': [
-            './src/contexts/ReactGameContext.tsx',
-            './src/hooks/index.ts'
-          ],
-          'game-data': [
-            './src/utils/dataLoader.ts',
-            './src/utils/validation.ts'
-          ]
+          // Component chunks (lazy loaded)
+          if (id.includes('organisms/MainMenu')) {
+            return 'lazy-main-menu';
+          }
+          if (id.includes('organisms/CharacterSelection')) {
+            return 'lazy-character-selection';
+          }
+          if (id.includes('organisms/WorldMap')) {
+            return 'lazy-world-map';
+          }
+          if (id.includes('organisms/SaveLoadManager')) {
+            return 'lazy-save-system';
+          }
+          if (id.includes('molecules/SaveSlotCard')) {
+            return 'lazy-save-system';
+          }
+
+          // Core app chunks
+          if (id.includes('components/atoms')) {
+            return 'components-atoms';
+          }
+          if (id.includes('components/molecules')) {
+            return 'components-molecules';
+          }
+          if (id.includes('hooks') || id.includes('contexts')) {
+            return 'game-state';
+          }
+          if (id.includes('utils/saveSystemManager') || id.includes('utils/indexedDbManager')) {
+            return 'save-system-core';
+          }
+          if (id.includes('utils/dataLoader') || id.includes('types')) {
+            return 'game-data';
+          }
         }
       }
     }

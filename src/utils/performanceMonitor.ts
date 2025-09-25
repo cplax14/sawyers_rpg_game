@@ -1,339 +1,391 @@
 /**
- * Performance Monitor for Animation Systems
- * Tracks frame rates, animation performance, and provides optimization recommendations
+ * Performance Monitoring Utilities
+ * Tools for tracking and analyzing React app performance
  */
 
-export interface PerformanceMetrics {
-  fps: number;
-  averageFps: number;
-  minFps: number;
-  maxFps: number;
-  frameTime: number;
-  averageFrameTime: number;
-  animationCount: number;
-  memoryUsage?: number;
-  lastUpdate: number;
+import React from 'react';
+
+interface PerformanceMetrics {
+  componentRenders: Map<string, number>;
+  renderTimes: Map<string, number[]>;
+  memoryUsage: number[];
+  bundleSizes: Map<string, number>;
+  userInteractions: Array<{
+    type: string;
+    timestamp: number;
+    duration?: number;
+  }>;
+  webVitals: {
+    FCP?: number; // First Contentful Paint
+    LCP?: number; // Largest Contentful Paint
+    FID?: number; // First Input Delay
+    CLS?: number; // Cumulative Layout Shift
+    TTFB?: number; // Time to First Byte
+  };
 }
 
-export interface PerformanceThresholds {
-  targetFps: number;
-  minAcceptableFps: number;
-  maxFrameTime: number;
-  maxAnimations: number;
-  memoryWarningMB?: number;
-}
-
-export interface AnimationPerformanceData {
-  id: string;
-  type: string;
-  startTime: number;
-  endTime?: number;
-  duration: number;
-  complexity: 'low' | 'medium' | 'high';
-  elementCount: number;
-}
-
-export class PerformanceMonitor {
-  private frames: number[] = [];
-  private lastFrameTime = 0;
-  private isMonitoring = false;
-  private animationFrameId?: number;
-  private metricsCallback?: (metrics: PerformanceMetrics) => void;
-  private warningCallback?: (warning: string, metrics: PerformanceMetrics) => void;
-
-  private readonly maxFrameHistory = 120; // 2 seconds at 60fps
-  private activeAnimations = new Map<string, AnimationPerformanceData>();
-
-  public readonly thresholds: PerformanceThresholds = {
-    targetFps: 60,
-    minAcceptableFps: 45,
-    maxFrameTime: 16.67, // 60fps = 16.67ms per frame
-    maxAnimations: 50,
-    memoryWarningMB: 100
+class PerformanceMonitor {
+  private metrics: PerformanceMetrics = {
+    componentRenders: new Map(),
+    renderTimes: new Map(),
+    memoryUsage: [],
+    bundleSizes: new Map(),
+    userInteractions: [],
+    webVitals: {}
   };
 
-  constructor(thresholds?: Partial<PerformanceThresholds>) {
-    if (thresholds) {
-      Object.assign(this.thresholds, thresholds);
-    }
-  }
+  private observers: Map<string, PerformanceObserver | { disconnect: () => void }> = new Map();
+  private isMonitoring = false;
 
   /**
-   * Start monitoring performance metrics
+   * Start performance monitoring
    */
-  public startMonitoring(
-    metricsCallback?: (metrics: PerformanceMetrics) => void,
-    warningCallback?: (warning: string, metrics: PerformanceMetrics) => void
-  ): void {
+  startMonitoring(): void {
     if (this.isMonitoring) return;
 
     this.isMonitoring = true;
-    this.metricsCallback = metricsCallback;
-    this.warningCallback = warningCallback;
-    this.lastFrameTime = performance.now();
-    this.frames = [];
+    this.initializeWebVitalsTracking();
+    this.startMemoryTracking();
+    this.trackUserInteractions();
 
-    this.tick();
+    console.log('🚀 Performance monitoring started');
   }
 
   /**
-   * Stop monitoring performance metrics
+   * Stop performance monitoring
    */
-  public stopMonitoring(): void {
+  stopMonitoring(): void {
     this.isMonitoring = false;
-    if (this.animationFrameId) {
-      cancelAnimationFrame(this.animationFrameId);
-      this.animationFrameId = undefined;
+
+    // Clean up observers
+    this.observers.forEach(observer => observer.disconnect());
+    this.observers.clear();
+
+    console.log('⏹️ Performance monitoring stopped');
+  }
+
+  /**
+   * Track component render
+   */
+  trackComponentRender(componentName: string, renderTime?: number): void {
+    if (!this.isMonitoring) return;
+
+    // Increment render count
+    const currentCount = this.metrics.componentRenders.get(componentName) || 0;
+    this.metrics.componentRenders.set(componentName, currentCount + 1);
+
+    // Track render time if provided
+    if (renderTime !== undefined) {
+      const times = this.metrics.renderTimes.get(componentName) || [];
+      times.push(renderTime);
+      this.metrics.renderTimes.set(componentName, times);
     }
   }
 
   /**
-   * Register an animation start
+   * Track user interaction
    */
-  public startAnimation(data: Omit<AnimationPerformanceData, 'startTime' | 'endTime'>): void {
-    const animationData: AnimationPerformanceData = {
-      ...data,
-      startTime: performance.now()
-    };
+  trackUserInteraction(type: string, duration?: number): void {
+    if (!this.isMonitoring) return;
 
-    this.activeAnimations.set(data.id, animationData);
-
-    // Check if we exceed max animations
-    if (this.activeAnimations.size > this.thresholds.maxAnimations) {
-      this.warn(`Too many concurrent animations: ${this.activeAnimations.size}/${this.thresholds.maxAnimations}`);
-    }
-  }
-
-  /**
-   * Register an animation end
-   */
-  public endAnimation(id: string): void {
-    const animation = this.activeAnimations.get(id);
-    if (animation) {
-      animation.endTime = performance.now();
-      this.activeAnimations.delete(id);
-    }
+    this.metrics.userInteractions.push({
+      type,
+      timestamp: performance.now(),
+      duration
+    });
   }
 
   /**
    * Get current performance metrics
    */
-  public getMetrics(): PerformanceMetrics {
-    const now = performance.now();
-    const frameTime = this.frames.length > 0 ? now - this.lastFrameTime : 0;
-
-    const fps = this.frames.length > 0 ? 1000 / (this.frames.reduce((a, b) => a + b, 0) / this.frames.length) : 0;
-    const averageFps = fps;
-    const minFps = this.frames.length > 0 ? 1000 / Math.max(...this.frames) : 0;
-    const maxFps = this.frames.length > 0 ? 1000 / Math.min(...this.frames) : 0;
-    const averageFrameTime = this.frames.length > 0 ? this.frames.reduce((a, b) => a + b, 0) / this.frames.length : 0;
-
-    const metrics: PerformanceMetrics = {
-      fps: Math.round(fps * 100) / 100,
-      averageFps: Math.round(averageFps * 100) / 100,
-      minFps: Math.round(minFps * 100) / 100,
-      maxFps: Math.round(maxFps * 100) / 100,
-      frameTime: Math.round(frameTime * 100) / 100,
-      averageFrameTime: Math.round(averageFrameTime * 100) / 100,
-      animationCount: this.activeAnimations.size,
-      lastUpdate: now
-    };
-
-    // Add memory usage if available
-    if ('memory' in performance) {
-      const memory = (performance as any).memory;
-      metrics.memoryUsage = Math.round(memory.usedJSHeapSize / 1024 / 1024 * 100) / 100;
-    }
-
-    return metrics;
+  getMetrics(): PerformanceMetrics {
+    return { ...this.metrics };
   }
 
   /**
-   * Get performance recommendations based on current metrics
+   * Get performance summary
    */
-  public getRecommendations(): string[] {
-    const metrics = this.getMetrics();
-    const recommendations: string[] = [];
-
-    if (metrics.fps < this.thresholds.minAcceptableFps) {
-      recommendations.push('Frame rate is below acceptable threshold. Consider reducing animation complexity.');
-    }
-
-    if (metrics.frameTime > this.thresholds.maxFrameTime) {
-      recommendations.push('Frame time is too high. Optimize rendering or reduce concurrent animations.');
-    }
-
-    if (metrics.animationCount > this.thresholds.maxAnimations * 0.8) {
-      recommendations.push('High number of concurrent animations. Consider animation pooling or staggering.');
-    }
-
-    if (metrics.memoryUsage && this.thresholds.memoryWarningMB && metrics.memoryUsage > this.thresholds.memoryWarningMB) {
-      recommendations.push('High memory usage detected. Check for animation memory leaks.');
-    }
-
-    if (recommendations.length === 0) {
-      recommendations.push('Performance is within acceptable parameters.');
-    }
-
-    return recommendations;
-  }
-
-  /**
-   * Create a performance snapshot for debugging
-   */
-  public createSnapshot(): {
-    metrics: PerformanceMetrics;
-    activeAnimations: AnimationPerformanceData[];
-    recommendations: string[];
-    timestamp: number;
+  getPerformanceSummary(): {
+    totalRenders: number;
+    slowestComponents: Array<{ name: string; avgTime: number; renders: number }>;
+    memoryTrend: 'increasing' | 'decreasing' | 'stable';
+    interactionTypes: Record<string, number>;
+    webVitalsScore: 'good' | 'needs-improvement' | 'poor';
   } {
+    const totalRenders = Array.from(this.metrics.componentRenders.values()).reduce((sum, count) => sum + count, 0);
+
+    // Calculate average render times for each component
+    const slowestComponents = Array.from(this.metrics.renderTimes.entries())
+      .map(([name, times]) => ({
+        name,
+        avgTime: times.reduce((sum, time) => sum + time, 0) / times.length,
+        renders: this.metrics.componentRenders.get(name) || 0
+      }))
+      .sort((a, b) => b.avgTime - a.avgTime)
+      .slice(0, 5);
+
+    // Memory trend analysis
+    const memoryTrend = this.analyzeMemoryTrend();
+
+    // Interaction type analysis
+    const interactionTypes = this.metrics.userInteractions.reduce((acc, interaction) => {
+      acc[interaction.type] = (acc[interaction.type] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Web Vitals score
+    const webVitalsScore = this.calculateWebVitalsScore();
+
     return {
-      metrics: this.getMetrics(),
-      activeAnimations: Array.from(this.activeAnimations.values()),
-      recommendations: this.getRecommendations(),
-      timestamp: performance.now()
+      totalRenders,
+      slowestComponents,
+      memoryTrend,
+      interactionTypes,
+      webVitalsScore
     };
   }
 
   /**
-   * Check if the system supports advanced performance monitoring
+   * Generate performance report
    */
-  public static supportsAdvancedMetrics(): boolean {
-    return typeof performance !== 'undefined' &&
-           'memory' in performance &&
-           'mark' in performance &&
-           'measure' in performance;
-  }
-
-  /**
-   * Enable reduced motion based on user preferences
-   */
-  public static prefersReducedMotion(): boolean {
-    if (typeof window === 'undefined') return false;
-    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  }
-
-  private tick = (): void => {
-    if (!this.isMonitoring) return;
-
-    const now = performance.now();
-    const frameTime = now - this.lastFrameTime;
-
-    this.frames.push(frameTime);
-    if (this.frames.length > this.maxFrameHistory) {
-      this.frames.shift();
-    }
-
-    this.lastFrameTime = now;
-
+  generateReport(): string {
+    const summary = this.getPerformanceSummary();
     const metrics = this.getMetrics();
 
-    // Call callbacks
-    if (this.metricsCallback) {
-      this.metricsCallback(metrics);
-    }
+    let report = `
+🚀 Performance Report
+=====================
 
-    // Check for performance warnings
-    this.checkPerformanceWarnings(metrics);
+📊 Render Statistics:
+- Total Renders: ${summary.totalRenders}
+- Components Monitored: ${metrics.componentRenders.size}
 
-    this.animationFrameId = requestAnimationFrame(this.tick);
-  };
+🐌 Slowest Components:
+${summary.slowestComponents.map(comp =>
+  `- ${comp.name}: ${comp.avgTime.toFixed(2)}ms avg (${comp.renders} renders)`
+).join('\n')}
 
-  private checkPerformanceWarnings(metrics: PerformanceMetrics): void {
-    if (!this.warningCallback) return;
+🧠 Memory Usage:
+- Trend: ${summary.memoryTrend}
+- Samples: ${metrics.memoryUsage.length}
+- Latest: ${metrics.memoryUsage.length > 0 ?
+  `${(metrics.memoryUsage[metrics.memoryUsage.length - 1] / 1024 / 1024).toFixed(1)}MB` :
+  'N/A'}
 
-    if (metrics.fps < this.thresholds.minAcceptableFps) {
-      this.warn(`Low FPS detected: ${metrics.fps}fps (target: ${this.thresholds.targetFps}fps)`);
-    }
+👆 User Interactions:
+${Object.entries(summary.interactionTypes).map(([type, count]) =>
+  `- ${type}: ${count}`
+).join('\n')}
 
-    if (metrics.frameTime > this.thresholds.maxFrameTime * 2) {
-      this.warn(`High frame time detected: ${metrics.frameTime}ms (target: ${this.thresholds.maxFrameTime}ms)`);
-    }
+⚡ Web Vitals:
+- Score: ${summary.webVitalsScore}
+- FCP: ${metrics.webVitals.FCP ? `${metrics.webVitals.FCP.toFixed(1)}ms` : 'N/A'}
+- LCP: ${metrics.webVitals.LCP ? `${metrics.webVitals.LCP.toFixed(1)}ms` : 'N/A'}
+- FID: ${metrics.webVitals.FID ? `${metrics.webVitals.FID.toFixed(1)}ms` : 'N/A'}
+- CLS: ${metrics.webVitals.CLS ? metrics.webVitals.CLS.toFixed(3) : 'N/A'}
 
-    if (metrics.memoryUsage && this.thresholds.memoryWarningMB && metrics.memoryUsage > this.thresholds.memoryWarningMB) {
-      this.warn(`High memory usage: ${metrics.memoryUsage}MB`);
-    }
+💾 Bundle Analysis:
+${Array.from(metrics.bundleSizes.entries()).map(([name, size]) =>
+  `- ${name}: ${(size / 1024).toFixed(1)}KB`
+).join('\n')}
+`;
+
+    return report;
   }
 
-  private warn(message: string): void {
-    if (this.warningCallback) {
-      this.warningCallback(message, this.getMetrics());
+  /**
+   * Initialize Web Vitals tracking
+   */
+  private initializeWebVitalsTracking(): void {
+    // First Contentful Paint
+    if ('PerformanceObserver' in window) {
+      try {
+        const fcpObserver = new PerformanceObserver((list) => {
+          const entries = list.getEntries();
+          entries.forEach((entry) => {
+            if (entry.name === 'first-contentful-paint') {
+              this.metrics.webVitals.FCP = entry.startTime;
+            }
+          });
+        });
+
+        fcpObserver.observe({ entryTypes: ['paint'] });
+        this.observers.set('fcp', fcpObserver);
+
+        // Largest Contentful Paint
+        const lcpObserver = new PerformanceObserver((list) => {
+          const entries = list.getEntries();
+          const lastEntry = entries[entries.length - 1];
+          this.metrics.webVitals.LCP = lastEntry.startTime;
+        });
+
+        lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
+        this.observers.set('lcp', lcpObserver);
+
+        // First Input Delay
+        const fidObserver = new PerformanceObserver((list) => {
+          const entries = list.getEntries();
+          entries.forEach((entry: any) => {
+            this.metrics.webVitals.FID = entry.processingStart - entry.startTime;
+          });
+        });
+
+        fidObserver.observe({ entryTypes: ['first-input'] });
+        this.observers.set('fid', fidObserver);
+
+        // Cumulative Layout Shift
+        const clsObserver = new PerformanceObserver((list) => {
+          let cls = 0;
+          const entries = list.getEntries();
+          entries.forEach((entry: any) => {
+            if (!entry.hadRecentInput) {
+              cls += entry.value;
+            }
+          });
+          this.metrics.webVitals.CLS = cls;
+        });
+
+        clsObserver.observe({ entryTypes: ['layout-shift'] });
+        this.observers.set('cls', clsObserver);
+
+      } catch (error) {
+        console.warn('Performance Observer not fully supported:', error);
+      }
     }
-  }
-}
 
-/**
- * Global performance monitor instance
- */
-export const globalPerformanceMonitor = new PerformanceMonitor();
-
-/**
- * Utility function to measure animation performance
- */
-export function measureAnimation<T>(
-  id: string,
-  type: string,
-  complexity: 'low' | 'medium' | 'high',
-  elementCount: number,
-  fn: () => T
-): T {
-  globalPerformanceMonitor.startAnimation({
-    id,
-    type,
-    duration: 0, // Will be calculated
-    complexity,
-    elementCount
-  });
-
-  const result = fn();
-
-  globalPerformanceMonitor.endAnimation(id);
-
-  return result;
-}
-
-/**
- * Animation performance optimization utilities
- */
-export const AnimationOptimizer = {
-  /**
-   * Throttle animation updates to maintain target FPS
-   */
-  throttleToFps(callback: () => void, targetFps: number = 60): () => void {
-    let lastTime = 0;
-    const interval = 1000 / targetFps;
-
-    return () => {
-      const now = performance.now();
-      if (now - lastTime >= interval) {
-        lastTime = now;
-        callback();
+    // Time to First Byte
+    window.addEventListener('load', () => {
+      const navigationEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+      if (navigationEntry) {
+        this.metrics.webVitals.TTFB = navigationEntry.responseStart;
       }
-    };
-  },
-
-  /**
-   * Create a frame limiter for heavy animations
-   */
-  createFrameLimiter(maxFramesPerSecond: number = 30): (callback: () => void) => void {
-    let lastFrameTime = 0;
-    const frameInterval = 1000 / maxFramesPerSecond;
-
-    return (callback: () => void) => {
-      const now = performance.now();
-      if (now - lastFrameTime >= frameInterval) {
-        lastFrameTime = now;
-        requestAnimationFrame(callback);
-      }
-    };
-  },
-
-  /**
-   * Batch multiple animations to run in a single frame
-   */
-  batchAnimations(animations: (() => void)[]): void {
-    requestAnimationFrame(() => {
-      animations.forEach(animation => animation());
     });
   }
-};
+
+  /**
+   * Start memory tracking
+   */
+  private startMemoryTracking(): void {
+    const trackMemory = () => {
+      if ('memory' in performance) {
+        const memory = (performance as any).memory;
+        this.metrics.memoryUsage.push(memory.usedJSHeapSize);
+      }
+    };
+
+    // Track memory every 5 seconds
+    trackMemory();
+    const memoryInterval = setInterval(trackMemory, 5000);
+
+    // Store cleanup function
+    this.observers.set('memory', {
+      disconnect: () => clearInterval(memoryInterval)
+    });
+  }
+
+  /**
+   * Track user interactions
+   */
+  private trackUserInteractions(): void {
+    const interactionTypes = ['click', 'keydown', 'scroll', 'touchstart'];
+
+    interactionTypes.forEach(type => {
+      document.addEventListener(type, () => {
+        this.trackUserInteraction(type);
+      }, { passive: true });
+    });
+  }
+
+  /**
+   * Analyze memory trend
+   */
+  private analyzeMemoryTrend(): 'increasing' | 'decreasing' | 'stable' {
+    const usage = this.metrics.memoryUsage;
+    if (usage.length < 3) return 'stable';
+
+    const recent = usage.slice(-5);
+    const trend = recent[recent.length - 1] - recent[0];
+    const threshold = 1024 * 1024; // 1MB
+
+    if (trend > threshold) return 'increasing';
+    if (trend < -threshold) return 'decreasing';
+    return 'stable';
+  }
+
+  /**
+   * Calculate Web Vitals score
+   */
+  private calculateWebVitalsScore(): 'good' | 'needs-improvement' | 'poor' {
+    const { FCP, LCP, FID, CLS } = this.metrics.webVitals;
+    let score = 0;
+    let validMetrics = 0;
+
+    // FCP scoring (good: <1.8s, needs improvement: 1.8s-3s, poor: >3s)
+    if (FCP !== undefined) {
+      validMetrics++;
+      if (FCP < 1800) score += 3;
+      else if (FCP < 3000) score += 2;
+      else score += 1;
+    }
+
+    // LCP scoring (good: <2.5s, needs improvement: 2.5s-4s, poor: >4s)
+    if (LCP !== undefined) {
+      validMetrics++;
+      if (LCP < 2500) score += 3;
+      else if (LCP < 4000) score += 2;
+      else score += 1;
+    }
+
+    // FID scoring (good: <100ms, needs improvement: 100ms-300ms, poor: >300ms)
+    if (FID !== undefined) {
+      validMetrics++;
+      if (FID < 100) score += 3;
+      else if (FID < 300) score += 2;
+      else score += 1;
+    }
+
+    // CLS scoring (good: <0.1, needs improvement: 0.1-0.25, poor: >0.25)
+    if (CLS !== undefined) {
+      validMetrics++;
+      if (CLS < 0.1) score += 3;
+      else if (CLS < 0.25) score += 2;
+      else score += 1;
+    }
+
+    if (validMetrics === 0) return 'needs-improvement';
+
+    const avgScore = score / validMetrics;
+    if (avgScore >= 2.5) return 'good';
+    if (avgScore >= 1.5) return 'needs-improvement';
+    return 'poor';
+  }
+}
+
+// Create singleton instance
+export const performanceMonitor = new PerformanceMonitor();
+
+// React component wrapper for performance tracking
+export function withPerformanceTracking<P extends {}>(
+  WrappedComponent: React.ComponentType<P>,
+  componentName?: string
+) {
+  const ComponentWithTracking: React.FC<P> = (props) => {
+    const name = componentName || WrappedComponent.displayName || WrappedComponent.name || 'Component';
+
+    React.useEffect(() => {
+      const start = performance.now();
+
+      return () => {
+        const end = performance.now();
+        performanceMonitor.trackComponentRender(name, end - start);
+      };
+    });
+
+    return React.createElement(WrappedComponent, props);
+  };
+
+  ComponentWithTracking.displayName = `withPerformanceTracking(${name})`;
+  return ComponentWithTracking;
+}
+
+export default performanceMonitor;

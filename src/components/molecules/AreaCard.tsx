@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Card, Button, Tooltip } from '../atoms';
 import { cardStyles } from '../../utils/temporaryStyles';
@@ -57,24 +57,30 @@ const AreaCard: React.FC<AreaCardProps> = ({
   showDetails = true,
   size = 'md',
 }) => {
-  const isLocked = !area.unlocked;
-  const isAccessible = accessible && area.unlocked;
-  const meetsLevelRequirement = !area.unlockRequirements.level || playerLevel >= area.unlockRequirements.level;
+  // Memoize computed values that depend on props
+  const isLocked = useMemo(() => !area.unlocked, [area.unlocked]);
+  const isAccessible = useMemo(() => accessible && area.unlocked, [accessible, area.unlocked]);
+  const meetsLevelRequirement = useMemo(
+    () => !area.unlockRequirements.level || playerLevel >= area.unlockRequirements.level,
+    [area.unlockRequirements.level, playerLevel]
+  );
 
-  const handleClick = () => {
+  // Memoize event handlers to prevent unnecessary re-renders
+  const handleClick = useCallback(() => {
     if (isAccessible && onClick) {
       onClick(area);
     }
-  };
+  }, [isAccessible, onClick, area]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       handleClick();
     }
-  };
+  }, [handleClick]);
 
-  const getAreaIcon = () => {
+  // Memoize area icon (rarely changes)
+  const areaIcon = useMemo(() => {
     switch (area.type) {
       case 'town': return '🏘️';
       case 'wilderness': return '🌲';
@@ -82,9 +88,10 @@ const AreaCard: React.FC<AreaCardProps> = ({
       case 'special': return '✨';
       default: return '📍';
     }
-  };
+  }, [area.type]);
 
-  const getDifficultyColor = () => {
+  // Memoize difficulty color calculation
+  const difficultyColor = useMemo(() => {
     if (!area.recommendedLevel) return 'var(--text-secondary)';
 
     const levelDiff = area.recommendedLevel - playerLevel;
@@ -93,7 +100,7 @@ const AreaCard: React.FC<AreaCardProps> = ({
     if (levelDiff <= 2) return 'var(--primary-gold)';   // Appropriate
     if (levelDiff <= 5) return 'var(--warning-orange)'; // Harder
     return 'var(--danger-red)';                          // Much harder
-  };
+  }, [area.recommendedLevel, playerLevel]);
 
   const getUnlockTooltip = () => {
     if (area.unlocked) return null;
@@ -297,4 +304,21 @@ const AreaCard: React.FC<AreaCardProps> = ({
 
 AreaCard.displayName = 'AreaCard';
 
-export { AreaCard };
+// Memoized AreaCard for performance optimization
+const MemoizedAreaCard = memo(AreaCard, (prevProps, nextProps) => {
+  // Custom comparison function for optimal re-render prevention
+  return (
+    prevProps.area.id === nextProps.area.id &&
+    prevProps.selected === nextProps.selected &&
+    prevProps.accessible === nextProps.accessible &&
+    prevProps.playerLevel === nextProps.playerLevel &&
+    prevProps.completionRate === nextProps.completionRate &&
+    prevProps.showDetails === nextProps.showDetails &&
+    prevProps.size === nextProps.size &&
+    prevProps.className === nextProps.className
+  );
+});
+
+MemoizedAreaCard.displayName = 'AreaCard';
+
+export { MemoizedAreaCard as AreaCard };
