@@ -38,16 +38,6 @@ export const WorldMap: React.FC<WorldMapProps> = ({
   const { navigateToScreen } = useUI();
   const isMobile = useIsMobile();
 
-  // Debug logging
-  console.log('🗺️ WorldMap Debug:', {
-    areas: areas?.length || 0,
-    isLoading,
-    error,
-    currentAreaId,
-    unlockedAreas,
-    playerLevel,
-    player: player?.name || 'None'
-  });
 
   const [selectedArea, setSelectedArea] = useState<ReactArea | null>(null);
   const [filterType, setFilterType] = useState<AreaFilter['type']>('all');
@@ -330,7 +320,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({
             transition={{ delay: 0.4, duration: 0.5 }}
           >
             <div className={styles.areasGrid}>
-              <AnimatePresence mode="wait">
+              <AnimatePresence>
                 {filteredAreas.length > 0 ? (
                   filteredAreas.map((area, index) => {
                     const accessibility = getAreaAccessibility(area);

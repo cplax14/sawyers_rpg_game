@@ -7,6 +7,12 @@ import {
 } from '../types/game';
 import { gameDataLoader, LoadedGameData } from '../utils/dataLoader';
 
+declare global {
+  interface Window {
+    __GAME_DATA_WARNINGS_LOGGED?: boolean;
+  }
+}
+
 /**
  * Custom hooks for accessing transformed game data
  * Provides reactive data loading with caching and error handling
@@ -39,8 +45,10 @@ export const useGameData = (): UseGameDataResult => {
         setError(`Data loaded with ${gameData.errors.length} errors. Check console for details.`);
       }
 
-      if (gameData.warnings.length > 0) {
+      // Only log warnings once per session to avoid spam
+      if (gameData.warnings.length > 0 && !window.__GAME_DATA_WARNINGS_LOGGED) {
         console.info('Game data warnings:', gameData.warnings);
+        window.__GAME_DATA_WARNINGS_LOGGED = true;
       }
 
       setData(gameData);
@@ -69,15 +77,6 @@ export const useGameData = (): UseGameDataResult => {
  */
 export const useAreas = () => {
   const { data, isLoading, error } = useGameData();
-
-  // Debug logging for areas hook
-  console.log('🔍 useAreas Debug:', {
-    hasData: !!data,
-    areasCount: data?.areas?.length || 0,
-    isLoading,
-    error,
-    firstArea: data?.areas?.[0]?.name || 'None'
-  });
 
   const getAreaById = useCallback((id: string): ReactArea | undefined => {
     return data?.areas.find(area => area.id === id);

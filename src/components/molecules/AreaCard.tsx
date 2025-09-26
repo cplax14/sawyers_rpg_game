@@ -38,6 +38,8 @@ export interface AreaCardProps {
   completionRate?: number;
   /** Called when the area is clicked */
   onClick?: (area: Area) => void;
+  /** Called when the enter button is clicked */
+  onEnter?: (area: Area) => void;
   /** Custom className */
   className?: string;
   /** Show detailed information */
@@ -53,13 +55,14 @@ const AreaCard: React.FC<AreaCardProps> = ({
   playerLevel = 1,
   completionRate = 0,
   onClick,
+  onEnter,
   className = '',
   showDetails = true,
   size = 'md',
 }) => {
   // Memoize computed values that depend on props
-  const isLocked = useMemo(() => !area.unlocked, [area.unlocked]);
-  const isAccessible = useMemo(() => accessible && area.unlocked, [accessible, area.unlocked]);
+  const isLocked = useMemo(() => !accessible, [accessible]); // Use accessible prop instead of just area.unlocked
+  const isAccessible = useMemo(() => accessible, [accessible]); // Just use the accessible prop directly
   const meetsLevelRequirement = useMemo(
     () => !area.unlockRequirements.level || playerLevel >= area.unlockRequirements.level,
     [area.unlockRequirements.level, playerLevel]
@@ -71,6 +74,12 @@ const AreaCard: React.FC<AreaCardProps> = ({
       onClick(area);
     }
   }, [isAccessible, onClick, area]);
+
+  const handleEnter = useCallback(() => {
+    if (isAccessible && onEnter) {
+      onEnter(area);
+    }
+  }, [isAccessible, onEnter, area]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -282,7 +291,11 @@ const AreaCard: React.FC<AreaCardProps> = ({
               size={size === 'sm' ? 'sm' : 'md'}
               onClick={(e) => {
                 e.stopPropagation();
-                handleClick();
+                if (onEnter && !selected) {
+                  handleEnter(); // Use onEnter for entering areas
+                } else {
+                  handleClick(); // Use onClick for selection
+                }
               }}
             >
               {selected ? 'Current Area' : 'Enter Area'}

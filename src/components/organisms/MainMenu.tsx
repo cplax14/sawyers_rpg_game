@@ -414,7 +414,9 @@ export const MainMenu: React.FC<MainMenuProps> = ({
               </div>
 
               <div className={styles.saveSlotsList}>
-                {saveSlots.map((slot, index) => renderSaveSlot(slot, index))}
+                <AnimatePresence>
+                  {saveSlots.map((slot, index) => renderSaveSlot(slot, index))}
+                </AnimatePresence>
               </div>
 
               <div className={styles.loadMenuActions}>

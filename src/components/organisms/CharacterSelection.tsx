@@ -225,7 +225,7 @@ export const CharacterSelection: React.FC<CharacterSelectionProps> = ({
           <h2 className={styles.sectionTitle}>Choose Your Class</h2>
 
           <div className={styles.classGrid}>
-            <AnimatePresence mode="wait">
+            <AnimatePresence>
               {characterClasses.map((characterClass, index) => (
                 <motion.div
                   key={characterClass.id}

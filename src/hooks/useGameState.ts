@@ -169,8 +169,25 @@ export const useWorld = () => {
   }, [state.storyFlags]);
 
   const isAreaUnlocked = useCallback((areaId: string): boolean => {
-    return state.unlockedAreas.includes(areaId);
-  }, [state.unlockedAreas]);
+    // Check React state first
+    if (state.unlockedAreas.includes(areaId)) {
+      return true;
+    }
+
+    // Check legacy AreaData system with current state
+    if (typeof window !== 'undefined' && (window as any).AreaData) {
+      const AreaData = (window as any).AreaData;
+      const storyProgress = Object.keys(state.storyFlags).filter(flag => state.storyFlags[flag]);
+      const playerLevel = state.player?.level || 1;
+      const inventory: string[] = []; // TODO: Extract item IDs from inventory
+      const playerClass = state.player?.class || null;
+      const defeatedBosses: string[] = []; // TODO: Track defeated bosses
+
+      return AreaData.isAreaUnlocked(areaId, storyProgress, playerLevel, inventory, playerClass, defeatedBosses);
+    }
+
+    return false;
+  }, [state.unlockedAreas, state.storyFlags, state.player]);
 
   const isQuestCompleted = useCallback((questId: string): boolean => {
     return state.completedQuests.includes(questId);
@@ -425,6 +442,42 @@ export const useSettings = () => {
     settings,
     updateSettings,
     resetSettings
+  };
+};
+
+/**
+ * Hook for combat management
+ */
+export const useCombat = () => {
+  const { state, dispatch } = useGameState();
+
+  const startCombat = useCallback((species: string, level: number) => {
+    dispatch({
+      type: 'START_COMBAT',
+      payload: { species, level }
+    });
+  }, [dispatch]);
+
+  const endCombat = useCallback(() => {
+    dispatch({
+      type: 'END_COMBAT'
+    });
+  }, [dispatch]);
+
+  // Combat computed values
+  const currentEncounter = useMemo(() => {
+    return state.currentEncounter;
+  }, [state.currentEncounter]);
+
+  const isInCombat = useMemo(() => {
+    return state.currentEncounter !== null;
+  }, [state.currentEncounter]);
+
+  return {
+    currentEncounter,
+    isInCombat,
+    startCombat,
+    endCombat
   };
 };
 

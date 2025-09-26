@@ -22,6 +22,7 @@ export {
   useMonsters as useCapturedMonsters,
   useUI,
   useSettings,
+  useCombat,
   useSaveLoad
 } from './useGameState';
 
