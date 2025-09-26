@@ -87,14 +87,14 @@
   - [x] 3.6 Implement persistent authentication state across browser sessions
   - [x] 3.7 Add password reset functionality and user account management
 
-- [ ] 4.0 Cloud Save Synchronization Features
-  - [ ] 4.1 Create `src/hooks/useCloudSave.ts` hook for cloud save operations and sync status
-  - [ ] 4.2 Implement backup functionality to sync local saves to cloud storage
-  - [ ] 4.3 Implement restore functionality to download cloud saves to local slots
-  - [ ] 4.4 Add conflict resolution for when local and cloud saves differ (timestamp-based)
-  - [ ] 4.5 Create cloud save metadata tracking (last sync time, save version, device info)
-  - [ ] 4.6 Implement batch sync operations for multiple save slots
-  - [ ] 4.7 Add manual sync triggers and automatic sync on app startup/close
+- [x] 4.0 Cloud Save Synchronization Features
+  - [x] 4.1 Create `src/hooks/useCloudSave.ts` hook for cloud save operations and sync status
+  - [x] 4.2 Implement backup functionality to sync local saves to cloud storage
+  - [x] 4.3 Implement restore functionality to download cloud saves to local slots
+  - [x] 4.4 Add conflict resolution for when local and cloud saves differ (timestamp-based)
+  - [x] 4.5 Create cloud save metadata tracking (last sync time, save version, device info)
+  - [x] 4.6 Implement batch sync operations for multiple save slots
+  - [x] 4.7 Add manual sync triggers and automatic sync on app startup/close
 
 - [ ] 5.0 UI Enhancements for Cloud Features
   - [ ] 5.1 Add cloud sync indicators to existing `SaveSlotCard` component (synced, syncing, error states)
