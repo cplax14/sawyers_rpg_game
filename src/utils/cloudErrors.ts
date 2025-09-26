@@ -29,6 +29,7 @@ export enum CloudErrorCode {
   DATA_CORRUPTED = 'data/corrupted',
   DATA_CHECKSUM_MISMATCH = 'data/checksum-mismatch',
   DATA_VERSION_CONFLICT = 'data/version-conflict',
+  SAVE_VALIDATION_FAILED = 'save/validation-failed',
 
   // Operation errors
   OPERATION_CANCELLED = 'operation/cancelled',
@@ -266,6 +267,32 @@ export function createUserErrorMessage(error: CloudError): string {
     default:
       return baseMessage;
   }
+}
+
+/**
+ * Create a CloudError object
+ */
+export function createCloudError(
+  code: CloudErrorCode,
+  message: string,
+  options: {
+    severity?: ErrorSeverity;
+    retryable?: boolean;
+    userMessage?: string;
+    debugInfo?: any;
+    operationId?: string;
+  } = {}
+): CloudError {
+  return {
+    code,
+    message,
+    severity: options.severity || ErrorSeverity.MEDIUM,
+    retryable: options.retryable !== undefined ? options.retryable : true,
+    userMessage: options.userMessage || message,
+    debugInfo: options.debugInfo,
+    timestamp: new Date(),
+    operationId: options.operationId
+  };
 }
 
 /**

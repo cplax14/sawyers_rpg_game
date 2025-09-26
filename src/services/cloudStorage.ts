@@ -30,8 +30,14 @@ import { User } from 'firebase/auth';
 import { getFirebaseFirestore, getFirebaseStorage } from '../config/firebase';
 import { ReactGameState } from '../types/game';
 import { DataCompressor, CompressionResult, CompressionConfig } from '../utils/compression';
-import { convertFirebaseError, CloudError, logCloudError } from '../utils/cloudErrors';
+import { convertFirebaseError, CloudError, logCloudError, createCloudError, CloudErrorCode, ErrorSeverity } from '../utils/cloudErrors';
 import { retry, RetryConfig, RETRY_CONFIGS } from '../utils/retryManager';
+import {
+  validateDataIntegrity,
+  generateChecksum,
+  sanitizeGameStateForCloud,
+  DataIntegrityResult
+} from '../utils/dataIntegrity';
 
 // Cloud save data types
 export interface CloudSaveMetadata {
@@ -53,6 +59,8 @@ export interface CloudSaveMetadata {
   compressionAlgorithm: string;
   isCompressed: boolean;
   syncStatus: 'pending' | 'synced' | 'conflict' | 'error';
+  integrityValidated: boolean;
+  dataIntegrityResult?: DataIntegrityResult;
   deviceInfo?: {
     platform: string;
     userAgent: string;
@@ -95,6 +103,9 @@ export interface CloudStorageConfig {
   compressionEnabled: boolean;
   encryptionEnabled: boolean;
   checksumValidation: boolean;
+  dataIntegrityValidation: boolean;
+  strictIntegrityMode: boolean;
+  enableDataRecovery: boolean;
   compressionConfig?: CompressionConfig;
 }
 
@@ -131,6 +142,9 @@ export class CloudStorageService {
       compressionEnabled: true,
       encryptionEnabled: false, // TODO: Implement encryption
       checksumValidation: true,
+      dataIntegrityValidation: true,
+      strictIntegrityMode: false,
+      enableDataRecovery: true,
       compressionConfig: {
         algorithm: 'lz-string',
         level: 'balanced',
@@ -150,16 +164,36 @@ export class CloudStorageService {
   }
 
   /**
-   * Generate a simple checksum for data integrity
+   * Generate secure checksum for data integrity
    */
-  private generateChecksum(data: string): string {
-    let hash = 0;
-    for (let i = 0; i < data.length; i++) {
-      const char = data.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32-bit integer
+  private async generateSecureChecksum(data: any): Promise<string> {
+    return await generateChecksum(data);
+  }
+
+  /**
+   * Validate data integrity before cloud operations
+   */
+  private async validateDataIntegrityInternal(
+    gameState: ReactGameState,
+    expectedChecksum?: string
+  ): Promise<DataIntegrityResult> {
+    if (!this.config.dataIntegrityValidation) {
+      // Return basic validation if integrity checking is disabled
+      const checksum = await this.generateSecureChecksum(gameState);
+      return {
+        isValid: true,
+        checksum,
+        errors: [],
+        warnings: [],
+        corruptedFields: []
+      };
     }
-    return Math.abs(hash).toString(36);
+
+    return await validateDataIntegrity(gameState, expectedChecksum, undefined, {
+      deepValidation: true,
+      enableRecovery: this.config.enableDataRecovery,
+      strictMode: this.config.strictIntegrityMode
+    });
   }
 
   /**
@@ -188,7 +222,7 @@ export class CloudStorageService {
         isCompressed: false,
         metadata: {
           timestamp: new Date(),
-          checksum: this.generateChecksum(serialized),
+          checksum: await this.generateSecureChecksum(serialized),
           version: '1.0.0'
         }
       };
@@ -209,7 +243,7 @@ export class CloudStorageService {
         isCompressed: false,
         metadata: {
           timestamp: new Date(),
-          checksum: this.generateChecksum(serialized),
+          checksum: await this.generateSecureChecksum(serialized),
           version: '1.0.0'
         }
       };
@@ -256,8 +290,30 @@ export class CloudStorageService {
         throw new Error(`Invalid slot number: ${slotNumber}`);
       }
 
+      // Sanitize and validate data integrity before compression
+      const sanitizedGameState = sanitizeGameStateForCloud(gameState);
+      const integrityResult = await this.validateDataIntegrityInternal(sanitizedGameState);
+
+      if (!integrityResult.isValid && !integrityResult.recoveredData) {
+        throw createCloudError(
+          CloudErrorCode.SAVE_VALIDATION_FAILED,
+          'Game state failed integrity validation',
+          {
+            severity: ErrorSeverity.HIGH,
+            retryable: false,
+            debugInfo: {
+              errors: integrityResult.errors,
+              corruptedFields: integrityResult.corruptedFields
+            }
+          }
+        );
+      }
+
+      // Use recovered data if available
+      const finalGameState = integrityResult.recoveredData || sanitizedGameState;
+
       // Compress game state using advanced compression
-      const compressionResult = await this.compressGameStateData(gameState);
+      const compressionResult = await this.compressGameStateData(finalGameState);
 
       // Check size limits (use compressed size)
       if (compressionResult.compressedSize > this.config.maxSaveSize) {
@@ -285,6 +341,8 @@ export class CloudStorageService {
         compressionAlgorithm: compressionResult.algorithm,
         isCompressed: compressionResult.isCompressed,
         syncStatus: 'pending',
+        integrityValidated: integrityResult.isValid,
+        dataIntegrityResult: integrityResult,
         deviceInfo: this.createDeviceInfo()
       };
 
@@ -452,12 +510,33 @@ export class CloudStorageService {
 
         gameState = await this.decompressGameStateData(compressionResult);
 
-        // Validate checksum if enabled
-        if (this.config.checksumValidation && compressionResult.metadata.checksum) {
-          const serialized = JSON.stringify(gameState);
-          const calculatedChecksum = this.generateChecksum(serialized);
-          if (calculatedChecksum !== compressionResult.metadata.checksum) {
-            throw new Error(`Data integrity check failed: expected ${compressionResult.metadata.checksum}, got ${calculatedChecksum}`);
+        // Comprehensive data integrity validation
+        const integrityResult = await this.validateDataIntegrityInternal(
+          gameState,
+          compressionResult.metadata.checksum
+        );
+
+        if (!integrityResult.isValid) {
+          if (integrityResult.recoveredData) {
+            console.warn('Data corruption detected, but recovery was successful', {
+              errors: integrityResult.errors,
+              corruptedFields: integrityResult.corruptedFields
+            });
+            gameState = integrityResult.recoveredData;
+          } else {
+            throw createCloudError(
+              CloudErrorCode.SAVE_VALIDATION_FAILED,
+              'Downloaded data failed integrity validation',
+              {
+                severity: ErrorSeverity.HIGH,
+                retryable: false,
+                debugInfo: {
+                  errors: integrityResult.errors,
+                  corruptedFields: integrityResult.corruptedFields,
+                  checksumMismatch: !integrityResult.checksum
+                }
+              }
+            );
           }
         }
       } else {
@@ -474,12 +553,29 @@ export class CloudStorageService {
           gameState = JSON.parse(decompressedState);
         }
 
-        // Legacy checksum validation
-        if (this.config.checksumValidation && storedChecksum) {
-          const serialized = JSON.stringify(gameState);
-          const calculatedChecksum = this.generateChecksum(serialized);
-          if (calculatedChecksum !== storedChecksum) {
-            throw new Error('Data integrity check failed (legacy format)');
+        // Legacy data integrity validation
+        const integrityResult = await this.validateDataIntegrityInternal(gameState, storedChecksum);
+
+        if (!integrityResult.isValid) {
+          if (integrityResult.recoveredData) {
+            console.warn('Legacy data corruption detected, but recovery was successful', {
+              errors: integrityResult.errors,
+              corruptedFields: integrityResult.corruptedFields
+            });
+            gameState = integrityResult.recoveredData;
+          } else {
+            throw createCloudError(
+              CloudErrorCode.SAVE_VALIDATION_FAILED,
+              'Legacy downloaded data failed integrity validation',
+              {
+                severity: ErrorSeverity.HIGH,
+                retryable: false,
+                debugInfo: {
+                  errors: integrityResult.errors,
+                  corruptedFields: integrityResult.corruptedFields
+                }
+              }
+            );
           }
         }
       }
@@ -974,3 +1070,20 @@ export const createCloudStorageService = (config?: Partial<CloudStorageConfig>):
  * Default cloud storage service instance
  */
 export const cloudStorageService = createCloudStorageService();
+
+// Additional exports for useCloudSave compatibility
+export type SyncStatus = 'idle' | 'syncing' | 'completed' | 'error';
+
+export interface UploadProgress {
+  percentage: number;
+  bytesUploaded: number;
+  totalBytes: number;
+  status: string;
+}
+
+export interface DownloadProgress {
+  percentage: number;
+  bytesDownloaded: number;
+  totalBytes: number;
+  status: string;
+}
