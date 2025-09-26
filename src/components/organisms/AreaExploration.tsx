@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../atoms/Button';
 import { LoadingSpinner } from '../atoms/LoadingSpinner';
-import { useAreas, usePlayer, useWorld, useUI, useIsMobile } from '../../hooks';
+import { useAreas, usePlayer, useWorld, useUI, useCombat, useIsMobile } from '../../hooks';
 import { ReactArea } from '../../types/game';
 
 interface AreaExplorationProps {
@@ -22,6 +22,7 @@ export const AreaExploration: React.FC<AreaExplorationProps> = ({
   const { player, playerLevel } = usePlayer();
   const { currentAreaId, changeArea } = useWorld();
   const { navigateToScreen } = useUI();
+  const { startCombat } = useCombat();
   const isMobile = useIsMobile();
 
   const [isExploring, setIsExploring] = useState(false);
@@ -114,10 +115,11 @@ export const AreaExploration: React.FC<AreaExplorationProps> = ({
   }, [isExploring, generateExplorationResult]);
 
   const handleCombat = useCallback(() => {
-    // TODO: Navigate to combat screen with encounter data
-    console.log('Starting combat with:', currentEncounter);
-    navigateToScreen('combat');
-  }, [currentEncounter, navigateToScreen]);
+    if (currentEncounter) {
+      startCombat(currentEncounter.species, currentEncounter.level);
+      setCurrentEncounter(null);
+    }
+  }, [currentEncounter, startCombat]);
 
   const handleFlee = useCallback(() => {
     setCurrentEncounter(null);

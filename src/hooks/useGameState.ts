@@ -446,6 +446,42 @@ export const useSettings = () => {
 };
 
 /**
+ * Hook for combat management
+ */
+export const useCombat = () => {
+  const { state, dispatch } = useGameState();
+
+  const startCombat = useCallback((species: string, level: number) => {
+    dispatch({
+      type: 'START_COMBAT',
+      payload: { species, level }
+    });
+  }, [dispatch]);
+
+  const endCombat = useCallback(() => {
+    dispatch({
+      type: 'END_COMBAT'
+    });
+  }, [dispatch]);
+
+  // Combat computed values
+  const currentEncounter = useMemo(() => {
+    return state.currentEncounter;
+  }, [state.currentEncounter]);
+
+  const isInCombat = useMemo(() => {
+    return state.currentEncounter !== null;
+  }, [state.currentEncounter]);
+
+  return {
+    currentEncounter,
+    isInCombat,
+    startCombat,
+    endCombat
+  };
+};
+
+/**
  * Hook for save/load game state
  */
 export const useSaveLoad = () => {

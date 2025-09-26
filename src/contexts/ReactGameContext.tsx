@@ -125,6 +125,12 @@ export interface ReactGameState {
   currentScreen: 'menu' | 'character-selection' | 'world-map' | 'area' | 'combat' | 'inventory' | 'settings';
   error: string | null;
 
+  // Combat state
+  currentEncounter: {
+    species: string;
+    level: number;
+  } | null;
+
   // Game session data
   sessionStartTime: number;
   totalPlayTime: number; // in milliseconds
@@ -212,6 +218,8 @@ export type ReactGameAction =
   | { type: 'LOAD_GAME_DATA'; payload: Partial<ReactGameState> }
   | { type: 'SAVE_TO_SLOT'; payload: { slotId: number; data: SaveSlot } }
   | { type: 'LOAD_FROM_SLOT'; payload: number }
+  | { type: 'START_COMBAT'; payload: { species: string; level: number } }
+  | { type: 'END_COMBAT' }
   | { type: 'RESET_GAME' };
 
 // Default settings
@@ -251,6 +259,7 @@ const initialState: ReactGameState = {
   isLoading: false,
   currentScreen: 'menu',
   error: null,
+  currentEncounter: null,
   sessionStartTime: Date.now(),
   totalPlayTime: 0,
   settings: defaultSettings,
@@ -430,6 +439,19 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
     case 'LOAD_GAME_DATA':
       return { ...state, ...action.payload };
 
+    case 'START_COMBAT':
+      return {
+        ...state,
+        currentEncounter: action.payload,
+        currentScreen: 'combat'
+      };
+
+    case 'END_COMBAT':
+      return {
+        ...state,
+        currentEncounter: null
+      };
+
     case 'RESET_GAME':
       return { ...initialState, sessionStartTime: Date.now() };
 
@@ -459,6 +481,8 @@ interface ReactGameContextType {
   setCurrentScreen: (screen: ReactGameState['currentScreen']) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
+  startCombat: (species: string, level: number) => void;
+  endCombat: () => void;
   resetGame: () => void;
 
   // Computed properties
@@ -575,6 +599,14 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
     dispatch({ type: 'SET_ERROR', payload: { error } });
   };
 
+  const startCombat = (species: string, level: number) => {
+    dispatch({ type: 'START_COMBAT', payload: { species, level } });
+  };
+
+  const endCombat = () => {
+    dispatch({ type: 'END_COMBAT' });
+  };
+
   const resetGame = () => {
     dispatch({ type: 'RESET_GAME' });
   };
@@ -620,6 +652,8 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
     setCurrentScreen,
     setLoading,
     setError,
+    startCombat,
+    endCombat,
     resetGame,
     isPlayerCreated,
     canAccessArea,

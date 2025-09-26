@@ -11,6 +11,7 @@ import {
   preloadWorldMap
 } from './components/lazy/LazyComponents';
 import { AreaExploration } from './components/organisms/AreaExploration';
+import { Combat } from './components/organisms/Combat';
 import { performanceMonitor } from './utils/performanceMonitor';
 import { ReactGameState } from './contexts/ReactGameContext';
 import { reactAppStyles } from './utils/temporaryStyles';
@@ -338,12 +339,7 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({ currentScreen, gameState })
         return <AreaExploration />;
 
       case 'combat':
-        return (
-          <div className={styles.placeholderScreen}>
-            <h2>Combat Screen</h2>
-            <p>Combat system coming soon...</p>
-          </div>
-        );
+        return <Combat />;
 
       case 'inventory':
         return (
