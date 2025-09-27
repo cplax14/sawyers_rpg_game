@@ -416,7 +416,7 @@ export interface RaritySettings {
   reduceMotion: boolean;
 }
 
-export type ItemCategory = 'consumable' | 'equipment' | 'material' | 'quest' | 'misc';
+export type ItemCategory = 'consumables' | 'equipment' | 'materials' | 'quest' | 'misc';
 
 export type EquipmentSlot = 'weapon' | 'armor' | 'accessory';
 

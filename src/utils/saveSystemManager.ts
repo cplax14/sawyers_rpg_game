@@ -424,32 +424,92 @@ export class SaveSystemManager {
   private generatePlayerSummary(gameState: ReactGameState): SavePlayerSummary {
     const player = gameState.player;
 
+    // Get data from new experience system if available
+    const experienceData = gameState.experience?.level;
+    const creatureData = gameState.creatures;
+    const inventoryData = gameState.inventoryState;
+
     return {
       name: player?.name || 'Unknown',
       class: player?.class || 'Unknown',
-      level: player?.level || 1,
+      level: experienceData?.currentLevel || player?.level || 1,
       hp: player?.hp || 0,
       maxHp: player?.maxHp || 0,
-      experience: player?.experience || 0,
+      experience: experienceData?.totalExperience || player?.experience || 0,
       gold: player?.gold || 0,
       currentAreaName: gameState.currentArea || 'Unknown',
       questsCompleted: gameState.completedQuests?.length || 0,
-      monstersCaptured: gameState.capturedMonsters?.length || 0,
-      achievementsUnlocked: 0 // TODO: Calculate achievements
+      monstersCaptured: creatureData?.totalCaptured || gameState.capturedMonsters?.length || 0,
+      achievementsUnlocked: gameState.experience?.achievements?.filter(a => a.completed).length || 0
     };
   }
 
   private generateProgressSummary(gameState: ReactGameState): SaveProgressSummary {
+    const inventoryData = gameState.inventoryState;
+    const creatureData = gameState.creatures;
+    const experienceData = gameState.experience;
+
+    // Calculate completion metrics from new systems
+    const totalItems = inventoryData?.totalItems || gameState.inventory?.length || 0;
+    const uniqueCreatures = Object.keys(creatureData?.bestiary || {}).length;
+    const totalCreatures = creatureData?.totalDiscovered || 0;
+    const totalExperience = experienceData?.level?.totalExperience || 0;
+
     return {
-      overallCompletion: 0, // TODO: Calculate based on game state
-      storyCompletion: 0,
+      overallCompletion: this.calculateOverallCompletion(gameState),
+      storyCompletion: this.calculateStoryCompletion(gameState),
       areasDiscovered: gameState.unlockedAreas?.length || 0,
       totalAreas: 20, // TODO: Get from game data
-      uniqueMonstersEncountered: 0,
-      itemsCollected: gameState.inventory?.length || 0,
+      uniqueMonstersEncountered: uniqueCreatures,
+      itemsCollected: totalItems,
       deathCount: 0, // TODO: Track in game state
       saveCount: 1
     };
+  }
+
+  private calculateOverallCompletion(gameState: ReactGameState): number {
+    // Simple completion calculation based on multiple factors
+    let totalWeight = 0;
+    let completedWeight = 0;
+
+    // Story progression (weight: 40%)
+    const storyWeight = 40;
+    const storyCompletion = this.calculateStoryCompletion(gameState);
+    totalWeight += storyWeight;
+    completedWeight += (storyCompletion / 100) * storyWeight;
+
+    // Area discovery (weight: 20%)
+    const areaWeight = 20;
+    const areasDiscovered = gameState.unlockedAreas?.length || 0;
+    const totalAreas = 20; // TODO: Get from game data
+    const areaCompletion = Math.min(100, (areasDiscovered / totalAreas) * 100);
+    totalWeight += areaWeight;
+    completedWeight += (areaCompletion / 100) * areaWeight;
+
+    // Creature collection (weight: 20%)
+    if (gameState.creatures) {
+      const creatureWeight = 20;
+      const creatureCompletion = gameState.creatures.completionPercentage || 0;
+      totalWeight += creatureWeight;
+      completedWeight += (creatureCompletion / 100) * creatureWeight;
+    }
+
+    // Level progression (weight: 20%)
+    const levelWeight = 20;
+    const currentLevel = gameState.experience?.level?.currentLevel || gameState.player?.level || 1;
+    const maxLevel = 100; // TODO: Get from game configuration
+    const levelCompletion = Math.min(100, (currentLevel / maxLevel) * 100);
+    totalWeight += levelWeight;
+    completedWeight += (levelCompletion / 100) * levelWeight;
+
+    return totalWeight > 0 ? Math.round((completedWeight / totalWeight) * 100) : 0;
+  }
+
+  private calculateStoryCompletion(gameState: ReactGameState): number {
+    // Simple story completion based on completed quests
+    const completedQuests = gameState.completedQuests?.length || 0;
+    const totalQuests = 50; // TODO: Get from game data
+    return Math.min(100, (completedQuests / totalQuests) * 100);
   }
 
   private async captureScreenshot(): Promise<string> {
@@ -548,7 +608,15 @@ export class SaveSystemManager {
       currentSaveSlot: null,
       currentScreen: 'menu',
       isLoading: false,
-      error: null
+      error: null,
+      sessionStartTime: Date.now(),
+      totalPlayTime: legacyData.totalPlayTime || 0,
+      currentEncounter: null,
+      // Initialize new inventory system states to undefined
+      // They will be populated when the respective hooks are first used
+      inventoryState: undefined,
+      creatures: undefined,
+      experience: undefined
     };
 
     const metadata = this.generateSaveMetadata(0, 'Migrated Save', gameState);
