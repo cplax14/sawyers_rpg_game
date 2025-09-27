@@ -25,6 +25,9 @@ import {
 import { retry } from '../utils/retryManager';
 import { convertFirebaseError, logCloudError, CloudError } from '../utils/cloudErrors';
 
+// Re-export AuthError for external use
+export { AuthError } from 'firebase/auth';
+
 // Authentication result types
 export interface AuthResult {
   success: boolean;

@@ -1,314 +1,153 @@
 /**
- * Authentication Hook
- * Custom hook for authentication operations and user session management
+ * Auth Hook - Firebase Implementation
+ * Simple Firebase authentication hook
  */
 
-import { useContext, useCallback, useMemo } from 'react';
-import { AuthContext, AuthContextValue } from '../contexts/AuthContext';
-import { AuthResult, AuthError } from '../services/authentication';
+import { useState, useCallback, useEffect } from 'react';
+import {
+  User,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut as firebaseSignOut,
+  sendPasswordResetEmail,
+  updateProfile,
+  onAuthStateChanged
+} from 'firebase/auth';
+import { getFirebaseAuth } from '../config/firebase';
 
-/**
- * Authentication hook interface
- */
-export interface UseAuthReturn {
-  // State
-  user: AuthContextValue['state']['user'];
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  isInitialized: boolean;
-  error: AuthError | null;
+export const useAuth = () => {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [auth, setAuth] = useState<any>(null);
 
-  // Activity tracking
-  lastActivity: Date | null;
-  sessionDuration: number;
-  isActive: boolean;
+  // Initialize Firebase Auth safely
+  useEffect(() => {
+    try {
+      const firebaseAuth = getFirebaseAuth();
+      setAuth(firebaseAuth);
+    } catch (err) {
+      console.error('Failed to initialize Firebase Auth:', err);
+      setError('Authentication service unavailable');
+      setIsLoading(false);
+    }
+  }, []);
 
-  // Authentication operations
-  signUp: (email: string, password: string, displayName?: string) => Promise<AuthResult>;
-  signIn: (email: string, password: string) => Promise<AuthResult>;
-  signOut: () => Promise<AuthResult>;
+  // Listen for auth state changes
+  useEffect(() => {
+    if (!auth) return;
 
-  // Password management
-  sendPasswordReset: (email: string) => Promise<AuthResult>;
-  changePassword: (currentPassword: string, newPassword: string) => Promise<AuthResult>;
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+      setIsLoading(false);
+    });
 
-  // Email verification
-  resendEmailVerification: () => Promise<AuthResult>;
+    return () => unsubscribe();
+  }, [auth]);
 
-  // Profile management
-  updateProfile: (updates: { displayName?: string; photoURL?: string }) => Promise<AuthResult>;
+  const isAuthenticated = !!user;
 
-  // Account management
-  deleteAccount: (password: string) => Promise<AuthResult>;
+  const signIn = useCallback(async (email: string, password: string) => {
+    if (!auth) {
+      return { success: false, error: { code: 'auth-unavailable', message: 'Authentication service unavailable' } };
+    }
 
-  // Session management
-  refreshToken: () => Promise<AuthResult>;
-  getIdToken: (forceRefresh?: boolean) => Promise<string | null>;
+    setIsLoading(true);
+    setError(null);
 
-  // Utility functions
-  hasRole: (role: string) => boolean;
-  hasAnyRole: (roles: string[]) => boolean;
-  hasAllRoles: (roles: string[]) => boolean;
-  canAccess: (resource: string) => boolean;
+    try {
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      return { success: true, user: result.user };
+    } catch (err: any) {
+      const errorMessage = err.message || 'Sign in failed';
+      setError(errorMessage);
+      return { success: false, error: { code: err.code, message: errorMessage } };
+    } finally {
+      setIsLoading(false);
+    }
+  }, [auth]);
 
-  // Activity management
-  updateActivity: () => void;
-  isSessionExpired: () => boolean;
-  getTimeUntilExpiry: () => number;
+  const signUp = useCallback(async (email: string, password: string, displayName?: string) => {
+    if (!auth) {
+      return { success: false, error: { code: 'auth-unavailable', message: 'Authentication service unavailable' } };
+    }
 
-  // Error handling
-  clearError: () => void;
-  retryLastOperation: () => Promise<AuthResult | null>;
-}
+    setIsLoading(true);
+    setError(null);
 
-/**
- * Custom hook for authentication operations and user session management
- *
- * @returns Authentication state and operations
- *
- * @example
- * ```tsx
- * function LoginComponent() {
- *   const { user, isAuthenticated, signIn, signOut, error } = useAuth();
- *
- *   const handleLogin = async () => {
- *     const result = await signIn(email, password);
- *     if (!result.success) {
- *       console.error('Login failed:', result.error);
- *     }
- *   };
- *
- *   if (isAuthenticated) {
- *     return <button onClick={signOut}>Sign Out ({user?.displayName})</button>;
- *   }
- *
- *   return <button onClick={handleLogin}>Sign In</button>;
- * }
- * ```
- *
- * @example
- * ```tsx
- * function ProtectedComponent() {
- *   const { isAuthenticated, hasRole, canAccess } = useAuth();
- *
- *   if (!isAuthenticated) {
- *     return <div>Please log in</div>;
- *   }
- *
- *   if (!hasRole('premium') && !canAccess('premium-features')) {
- *     return <div>Upgrade to premium for access</div>;
- *   }
- *
- *   return <div>Premium content here</div>;
- * }
- * ```
- */
-export function useAuth(): UseAuthReturn {
-  const context = useContext(AuthContext);
+    try {
+      const result = await createUserWithEmailAndPassword(auth, email, password);
 
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+      // Update profile with display name if provided
+      if (displayName && result.user) {
+        await updateProfile(result.user, { displayName });
+      }
 
-  const {
-    state,
-    signUp,
-    signIn,
-    signOut,
-    sendPasswordReset,
-    changePassword,
-    resendEmailVerification,
-    updateProfile,
-    deleteAccount,
-    refreshToken,
-    getIdToken,
-    updateActivity,
-    clearError,
-    retryLastOperation
-  } = context;
+      return { success: true, user: result.user };
+    } catch (err: any) {
+      const errorMessage = err.message || 'Sign up failed';
+      setError(errorMessage);
+      return { success: false, error: { code: err.code, message: errorMessage } };
+    } finally {
+      setIsLoading(false);
+    }
+  }, [auth]);
 
-  // Computed values
-  const isAuthenticated = useMemo(() =>
-    state.user !== null && !state.error,
-    [state.user, state.error]
-  );
+  const sendPasswordReset = useCallback(async (email: string) => {
+    if (!auth) {
+      return { success: false, error: { code: 'auth-unavailable', message: 'Authentication service unavailable' } };
+    }
 
-  const sessionDuration = useMemo(() => {
-    if (!state.lastActivity || !state.user) return 0;
-    return Date.now() - state.lastActivity.getTime();
-  }, [state.lastActivity, state.user]);
+    setIsLoading(true);
+    setError(null);
 
-  const isActive = useMemo(() => {
-    if (!state.lastActivity) return false;
-    const inactiveThreshold = 30 * 60 * 1000; // 30 minutes
-    return Date.now() - state.lastActivity.getTime() < inactiveThreshold;
-  }, [state.lastActivity]);
+    try {
+      await sendPasswordResetEmail(auth, email);
+      return { success: true };
+    } catch (err: any) {
+      const errorMessage = err.message || 'Password reset failed';
+      setError(errorMessage);
+      return { success: false, error: { code: err.code, message: errorMessage } };
+    } finally {
+      setIsLoading(false);
+    }
+  }, [auth]);
 
-  // Role and permission utilities
-  const hasRole = useCallback((role: string): boolean => {
-    if (!state.user?.customClaims) return false;
-    const roles = state.user.customClaims.roles as string[] || [];
-    return roles.includes(role);
-  }, [state.user]);
+  const signOut = useCallback(async () => {
+    if (!auth) {
+      return { success: false, error: { code: 'auth-unavailable', message: 'Authentication service unavailable' } };
+    }
 
-  const hasAnyRole = useCallback((roles: string[]): boolean => {
-    return roles.some(role => hasRole(role));
-  }, [hasRole]);
+    setIsLoading(true);
+    setError(null);
 
-  const hasAllRoles = useCallback((roles: string[]): boolean => {
-    return roles.every(role => hasRole(role));
-  }, [hasRole]);
+    try {
+      await firebaseSignOut(auth);
+      return { success: true };
+    } catch (err: any) {
+      const errorMessage = err.message || 'Sign out failed';
+      setError(errorMessage);
+      return { success: false, error: { code: err.code, message: errorMessage } };
+    } finally {
+      setIsLoading(false);
+    }
+  }, [auth]);
 
-  const canAccess = useCallback((resource: string): boolean => {
-    if (!state.user?.customClaims) return false;
-    const permissions = state.user.customClaims.permissions as string[] || [];
-    return permissions.includes(resource) || permissions.includes('*');
-  }, [state.user]);
-
-  // Session management utilities
-  const isSessionExpired = useCallback((): boolean => {
-    if (!state.user?.tokenExpiry) return false;
-    return Date.now() >= state.user.tokenExpiry.getTime();
-  }, [state.user]);
-
-  const getTimeUntilExpiry = useCallback((): number => {
-    if (!state.user?.tokenExpiry) return 0;
-    return Math.max(0, state.user.tokenExpiry.getTime() - Date.now());
-  }, [state.user]);
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
 
   return {
-    // State
-    user: state.user,
     isAuthenticated,
-    isLoading: state.isLoading,
-    isInitialized: state.isInitialized,
-    error: state.error,
-
-    // Activity tracking
-    lastActivity: state.lastActivity,
-    sessionDuration,
-    isActive,
-
-    // Authentication operations
-    signUp,
-    signIn,
-    signOut,
-
-    // Password management
-    sendPasswordReset,
-    changePassword,
-
-    // Email verification
-    resendEmailVerification,
-
-    // Profile management
-    updateProfile,
-
-    // Account management
-    deleteAccount,
-
-    // Session management
-    refreshToken,
-    getIdToken,
-
-    // Utility functions
-    hasRole,
-    hasAnyRole,
-    hasAllRoles,
-    canAccess,
-
-    // Activity management
-    updateActivity,
-    isSessionExpired,
-    getTimeUntilExpiry,
-
-    // Error handling
-    clearError,
-    retryLastOperation
-  };
-}
-
-/**
- * Hook for checking authentication status only (lighter alternative)
- * Useful for components that only need to know if user is authenticated
- */
-export function useAuthStatus() {
-  const context = useContext(AuthContext);
-
-  if (!context) {
-    throw new Error('useAuthStatus must be used within an AuthProvider');
-  }
-
-  const { state } = context;
-
-  return {
-    isAuthenticated: state.user !== null && !state.error,
-    isLoading: state.isLoading,
-    isInitialized: state.isInitialized,
-    user: state.user,
-    error: state.error
-  };
-}
-
-/**
- * Hook for authentication operations only (no state)
- * Useful for components that only need to trigger auth operations
- */
-export function useAuthOperations() {
-  const context = useContext(AuthContext);
-
-  if (!context) {
-    throw new Error('useAuthOperations must be used within an AuthProvider');
-  }
-
-  const {
-    signUp,
-    signIn,
-    signOut,
-    sendPasswordReset,
-    changePassword,
-    resendEmailVerification,
-    updateProfile,
-    deleteAccount,
-    refreshToken,
-    updateActivity,
-    clearError,
-    retryLastOperation
-  } = context;
-
-  return {
-    signUp,
-    signIn,
-    signOut,
-    sendPasswordReset,
-    changePassword,
-    resendEmailVerification,
-    updateProfile,
-    deleteAccount,
-    refreshToken,
-    updateActivity,
-    clearError,
-    retryLastOperation
-  };
-}
-
-/**
- * Hook for user permissions and roles
- * Useful for authorization checks
- */
-export function useAuthPermissions() {
-  const { user, hasRole, hasAnyRole, hasAllRoles, canAccess } = useAuth();
-
-  return {
     user,
-    hasRole,
-    hasAnyRole,
-    hasAllRoles,
-    canAccess,
-    isAuthenticated: user !== null,
-    roles: user?.customClaims?.roles as string[] || [],
-    permissions: user?.customClaims?.permissions as string[] || []
+    isLoading,
+    error,
+    signIn,
+    signUp,
+    sendPasswordReset,
+    signOut,
+    clearError
   };
-}
+};
 
 export default useAuth;

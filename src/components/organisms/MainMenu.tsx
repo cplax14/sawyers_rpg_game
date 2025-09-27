@@ -3,9 +3,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../atoms/Button';
 import { LoadingSpinner } from '../atoms/LoadingSpinner';
 import { usePlayer, useUI, useSaveLoad, useDataPreloader, useResponsive, useReducedMotion, useSaveSystem } from '../../hooks';
+import { useAuth } from '../../hooks/useAuth';
+import { useCloudSave } from '../../hooks/useCloudSave';
 import { SaveSlot } from '../../types/game';
 import { mainMenuStyles } from '../../utils/temporaryStyles';
 import { SaveLoadManager } from './SaveLoadManager';
+import { AuthenticationModal } from '../molecules/AuthenticationModal';
+import { CloudSaveManager } from './CloudSaveManager';
 // import styles from './MainMenu.module.css'; // Temporarily disabled due to PostCSS parsing issues
 
 const styles = mainMenuStyles;
@@ -37,8 +41,14 @@ export const MainMenu: React.FC<MainMenuProps> = ({
     loadGame: loadGameNew
   } = useSaveSystem();
 
+  // Authentication and cloud save hooks
+  const { isAuthenticated, user, signOut } = useAuth();
+  const { isOnline, lastSyncTime, syncInProgress } = useCloudSave();
+
   const [showLoadMenu, setShowLoadMenu] = useState(false);
   const [showSaveManager, setShowSaveManager] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showCloudManager, setShowCloudManager] = useState(false);
   const [isPreloading, setIsPreloading] = useState(false);
   const [selectedSaveSlot, setSelectedSaveSlot] = useState<number | null>(null);
 
@@ -120,6 +130,31 @@ export const MainMenu: React.FC<MainMenuProps> = ({
     setShowSaveManager(false);
     navigateToScreen('world-map');
   }, [navigateToScreen]);
+
+  // Authentication handlers
+  const handleSignIn = useCallback(() => {
+    setShowAuthModal(true);
+  }, []);
+
+  const handleSignOut = useCallback(async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Sign out failed:', error);
+    }
+  }, [signOut]);
+
+  const handleAuthSuccess = useCallback(() => {
+    setShowAuthModal(false);
+  }, []);
+
+  const handleCloudSaves = useCallback(() => {
+    setShowCloudManager(true);
+  }, []);
+
+  const handleCloseCloudManager = useCallback(() => {
+    setShowCloudManager(false);
+  }, []);
 
   const formatPlayTime = useCallback((playTime: number): string => {
     const hours = Math.floor(playTime / 3600000);
@@ -243,9 +278,97 @@ export const MainMenu: React.FC<MainMenuProps> = ({
         {/* Background Elements */}
         <div className={styles.backgroundPattern} />
 
+        {/* Authentication Status Bar */}
+        <motion.div
+          style={{
+            position: 'absolute',
+            top: '20px',
+            right: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            zIndex: 10,
+            background: 'rgba(0, 0, 0, 0.3)',
+            padding: '8px 12px',
+            borderRadius: '8px',
+            backdropFilter: 'blur(10px)',
+            fontSize: '0.85rem'
+          }}
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.5 }}
+        >
+          {/* Network Status */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <div style={{
+              width: '6px',
+              height: '6px',
+              borderRadius: '50%',
+              background: isOnline ? '#4caf50' : '#f44336'
+            }} />
+            <span style={{ color: '#cccccc' }}>
+              {isOnline ? 'Online' : 'Offline'}
+            </span>
+          </div>
+
+          {/* Sync Status */}
+          {isAuthenticated && syncInProgress && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#2196f3' }}>
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              >
+                🔄
+              </motion.div>
+              <span>Syncing</span>
+            </div>
+          )}
+
+          {/* Last Sync Time */}
+          {isAuthenticated && lastSyncTime && !syncInProgress && (
+            <div style={{ color: '#cccccc', fontSize: '0.75rem' }}>
+              Last sync: {new Date(lastSyncTime).toLocaleTimeString()}
+            </div>
+          )}
+
+          {/* Authentication Status */}
+          {isAuthenticated ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span style={{ color: '#4caf50' }}>☁️</span>
+                <span style={{ color: '#ffffff', fontSize: '0.8rem' }}>
+                  {user?.email?.split('@')[0] || 'Signed In'}
+                </span>
+              </div>
+              <Button
+                variant="ghost"
+                size="small"
+                onClick={handleSignOut}
+                style={{ fontSize: '0.7rem', padding: '4px 8px' }}
+              >
+                Sign Out
+              </Button>
+            </div>
+          ) : (
+            <Button
+              variant="ghost"
+              size="small"
+              onClick={handleSignIn}
+              style={{ fontSize: '0.7rem', padding: '4px 8px', color: '#2196f3' }}
+            >
+              ☁️ Sign In
+            </Button>
+          )}
+        </motion.div>
+
         {/* Main Menu Content */}
         <AnimatePresence mode="wait">
-          {showSaveManager ? (
+          {showCloudManager ? (
+            <CloudSaveManager
+              isModal={true}
+              onClose={handleCloseCloudManager}
+            />
+          ) : showSaveManager ? (
             <SaveLoadManager
               mode="load"
               onClose={handleCloseSaveManager}
@@ -380,6 +503,23 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                 >
                   Settings
                 </Button>
+
+                {/* Cloud Save Button */}
+                {isAuthenticated && (
+                  <Button
+                    variant="accent"
+                    size={isMobile ? "md" : "large"}
+                    onClick={handleCloudSaves}
+                    className={styles.menuButton}
+                    touchFriendly={true}
+                    style={{
+                      background: 'linear-gradient(135deg, #2196f3, #1976d2)',
+                      border: '1px solid rgba(33, 150, 243, 0.5)'
+                    }}
+                  >
+                    ☁️ Cloud Saves
+                  </Button>
+                )}
               </motion.div>
 
               {/* Footer */}
@@ -438,6 +578,13 @@ export const MainMenu: React.FC<MainMenuProps> = ({
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Authentication Modal */}
+        <AuthenticationModal
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+          onSuccess={handleAuthSuccess}
+        />
       </div>
     </div>
   );

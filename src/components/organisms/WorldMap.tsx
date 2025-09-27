@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AreaCard } from '../molecules/AreaCard';
 import { Button } from '../atoms/Button';
 import { LoadingSpinner } from '../atoms/LoadingSpinner';
-import { useAreas, usePlayer, useWorld, useUI, useHorizontalSwipeNavigation, useIsMobile } from '../../hooks';
+import { useAreas, usePlayer, useWorld, useUI, useHorizontalSwipeNavigation, useIsMobile, useSaveSystem } from '../../hooks';
 import { ReactArea } from '../../types/game';
 import { worldMapStyles } from '../../utils/temporaryStyles';
 // import styles from './WorldMap.module.css'; // Temporarily disabled due to PostCSS parsing issues
@@ -36,12 +36,14 @@ export const WorldMap: React.FC<WorldMapProps> = ({
   const { player, playerLevel } = usePlayer();
   const { currentAreaId, unlockedAreas, changeArea, hasStoryFlag, isAreaUnlocked } = useWorld();
   const { navigateToScreen } = useUI();
+  const { saveGame, loadGame, getSaveSlots, isLoading: saveLoading } = useSaveSystem();
   const isMobile = useIsMobile();
 
 
   const [selectedArea, setSelectedArea] = useState<ReactArea | null>(null);
   const [filterType, setFilterType] = useState<AreaFilter['type']>('all');
   const [showUnlockedOnly, setShowUnlockedOnly] = useState(false);
+  const [showGameMenu, setShowGameMenu] = useState(false);
 
   // Get current area
   const currentArea = useMemo(() => {
@@ -146,6 +148,28 @@ export const WorldMap: React.FC<WorldMapProps> = ({
     setShowUnlockedOnly(prev => !prev);
   }, []);
 
+  const toggleGameMenu = useCallback(() => {
+    setShowGameMenu(prev => !prev);
+  }, []);
+
+  const handleSaveGame = useCallback(async (slotId: number) => {
+    try {
+      await saveGame(slotId, `World Map - ${currentArea?.name || 'Unknown Location'}`);
+      setShowGameMenu(false);
+    } catch (error) {
+      console.error('Failed to save game:', error);
+    }
+  }, [saveGame, currentArea]);
+
+  const handleLoadGame = useCallback(async (slotId: number) => {
+    try {
+      await loadGame(slotId);
+      setShowGameMenu(false);
+    } catch (error) {
+      console.error('Failed to load game:', error);
+    }
+  }, [loadGame]);
+
   const getAreaAccessibility = useCallback((area: ReactArea): {
     accessible: boolean;
     reason?: string;
@@ -242,10 +266,24 @@ export const WorldMap: React.FC<WorldMapProps> = ({
           transition={{ duration: 0.5 }}
         >
           <div className={styles.titleSection}>
-            <h1 className={styles.title}>World Map</h1>
-            <p className={styles.subtitle}>
-              Explore the vast world and discover new adventures
-            </p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+              <div>
+                <h1 className={styles.title}>World Map</h1>
+                <p className={styles.subtitle}>
+                  Explore the vast world and discover new adventures
+                </p>
+              </div>
+              <Button
+                variant="secondary"
+                onClick={toggleGameMenu}
+                style={{
+                  marginLeft: '1rem',
+                  minWidth: '120px'
+                }}
+              >
+                Game Menu
+              </Button>
+            </div>
           </div>
 
           {currentArea && (
@@ -488,6 +526,105 @@ export const WorldMap: React.FC<WorldMapProps> = ({
             )}
           </AnimatePresence>
         </div>
+
+        {/* Game Menu Overlay */}
+        <AnimatePresence>
+          {showGameMenu && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 1000
+              }}
+              onClick={toggleGameMenu}
+            >
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.8, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                style={{
+                  backgroundColor: '#1a1a2e',
+                  border: '2px solid #64748b',
+                  borderRadius: '12px',
+                  padding: '2rem',
+                  minWidth: '320px',
+                  maxWidth: '400px',
+                  boxShadow: '0 10px 25px rgba(0, 0, 0, 0.5)'
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <h2 style={{
+                  margin: '0 0 1.5rem 0',
+                  color: '#f4f4f4',
+                  textAlign: 'center',
+                  fontSize: '1.5rem'
+                }}>
+                  Game Menu
+                </h2>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <Button
+                    variant="primary"
+                    size="large"
+                    onClick={() => handleSaveGame(1)}
+                    disabled={saveLoading}
+                    style={{ width: '100%' }}
+                  >
+                    {saveLoading ? 'Saving...' : 'Quick Save'}
+                  </Button>
+
+                  <Button
+                    variant="secondary"
+                    size="large"
+                    onClick={() => navigateToScreen('save-load')}
+                    style={{ width: '100%' }}
+                  >
+                    Save & Load Game
+                  </Button>
+
+                  <Button
+                    variant="secondary"
+                    size="large"
+                    onClick={() => navigateToScreen('settings')}
+                    style={{ width: '100%' }}
+                  >
+                    Settings
+                  </Button>
+
+                  <Button
+                    variant="secondary"
+                    size="large"
+                    onClick={() => navigateToScreen('main-menu')}
+                    style={{ width: '100%' }}
+                  >
+                    Main Menu
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="large"
+                    onClick={toggleGameMenu}
+                    style={{ width: '100%', marginTop: '0.5rem' }}
+                  >
+                    Close
+                  </Button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

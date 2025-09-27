@@ -218,3 +218,7 @@ export interface Area {
   unlocked: boolean;
   position: { x: number; y: number };
 }
+
+// React-specific type aliases for cloud save integration
+export type ReactGameState = GameState;
+export type ReactPlayer = Player;
