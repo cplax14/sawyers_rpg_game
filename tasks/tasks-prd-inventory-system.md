@@ -52,7 +52,7 @@
 
 ## Tasks
 
-- [ ] 1.0 Core Type System and Data Structures
+- [x] 1.0 Core Type System and Data Structures
   - [x] 1.1 Create `src/types/inventory.ts` with base interfaces for items, equipment, and inventory containers
   - [x] 1.2 Create `src/types/creatures.ts` with creature collection, breeding, and combat integration types
   - [x] 1.3 Create `src/types/experience.ts` with XP tracking, leveling, and progression types
