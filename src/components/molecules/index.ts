@@ -3,6 +3,9 @@
 
 export * from './CharacterClassCard';
 export * from './AreaCard';
+export * from './AutoSaveIndicator';
+export * from './AutoSaveSettings';
+export * from './SaveRecoveryDialog';
 
 // TODO: Implement remaining molecules
 // export * from './NavigationBar';

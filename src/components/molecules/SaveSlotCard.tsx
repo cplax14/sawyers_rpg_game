@@ -6,7 +6,7 @@
 import React, { useState, memo, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../atoms/Button';
-import { SaveSlotInfo } from '../../types/saveSystem';
+import { SaveSlotInfo, SaveSyncStatus } from '../../types/saveSystem';
 import { useResponsive, useReducedMotion } from '../../hooks';
 
 interface SaveSlotCardProps {
@@ -15,6 +15,9 @@ interface SaveSlotCardProps {
   onSave?: () => void;
   onDelete?: () => void;
   onExport?: () => void;
+  onCloudSync?: () => void;
+  onCloudRestore?: () => void;
+  onConflictResolve?: () => void;
   isSelected?: boolean;
   isLoading?: boolean;
   className?: string;
@@ -26,6 +29,9 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
   onSave,
   onDelete,
   onExport,
+  onCloudSync,
+  onCloudRestore,
+  onConflictResolve,
   isSelected = false,
   isLoading = false,
   className = ''
@@ -33,6 +39,93 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
   const [showActions, setShowActions] = useState(false);
   const { isMobile, isTablet } = useResponsive();
   const { animationConfig } = useReducedMotion();
+
+  // Cloud sync status configuration
+  const getCloudSyncConfig = useCallback((status: SaveSyncStatus) => {
+    switch (status) {
+      case SaveSyncStatus.SYNCED:
+        return {
+          icon: '☁️',
+          color: '#4caf50',
+          background: 'rgba(76, 175, 80, 0.1)',
+          border: 'rgba(76, 175, 80, 0.3)',
+          text: 'Synced',
+          tooltip: 'Save is synchronized with cloud storage'
+        };
+      case SaveSyncStatus.LOCAL_ONLY:
+        return {
+          icon: '💾',
+          color: '#2196f3',
+          background: 'rgba(33, 150, 243, 0.1)',
+          border: 'rgba(33, 150, 243, 0.3)',
+          text: 'Local Only',
+          tooltip: 'Save exists only on this device'
+        };
+      case SaveSyncStatus.CLOUD_ONLY:
+        return {
+          icon: '☁️',
+          color: '#9c27b0',
+          background: 'rgba(156, 39, 176, 0.1)',
+          border: 'rgba(156, 39, 176, 0.3)',
+          text: 'Cloud Only',
+          tooltip: 'Save exists only in cloud storage'
+        };
+      case SaveSyncStatus.LOCAL_NEWER:
+        return {
+          icon: '⬆️',
+          color: '#ff9800',
+          background: 'rgba(255, 152, 0, 0.1)',
+          border: 'rgba(255, 152, 0, 0.3)',
+          text: 'Local Newer',
+          tooltip: 'Local version is newer than cloud'
+        };
+      case SaveSyncStatus.CLOUD_NEWER:
+        return {
+          icon: '⬇️',
+          color: '#607d8b',
+          background: 'rgba(96, 125, 139, 0.1)',
+          border: 'rgba(96, 125, 139, 0.3)',
+          text: 'Cloud Newer',
+          tooltip: 'Cloud version is newer than local'
+        };
+      case SaveSyncStatus.SYNCING:
+        return {
+          icon: '🔄',
+          color: '#2196f3',
+          background: 'rgba(33, 150, 243, 0.1)',
+          border: 'rgba(33, 150, 243, 0.3)',
+          text: 'Syncing...',
+          tooltip: 'Synchronization in progress'
+        };
+      case SaveSyncStatus.SYNC_FAILED:
+        return {
+          icon: '❌',
+          color: '#f44336',
+          background: 'rgba(244, 67, 54, 0.1)',
+          border: 'rgba(244, 67, 54, 0.3)',
+          text: 'Sync Failed',
+          tooltip: 'Synchronization failed - click to retry'
+        };
+      case SaveSyncStatus.CONFLICT:
+        return {
+          icon: '⚠️',
+          color: '#ff5722',
+          background: 'rgba(255, 87, 34, 0.1)',
+          border: 'rgba(255, 87, 34, 0.3)',
+          text: 'Conflict',
+          tooltip: 'Sync conflict detected - click to resolve'
+        };
+      default:
+        return {
+          icon: '❓',
+          color: '#9e9e9e',
+          background: 'rgba(158, 158, 158, 0.1)',
+          border: 'rgba(158, 158, 158, 0.3)',
+          text: 'Unknown',
+          tooltip: 'Unknown sync status'
+        };
+    }
+  }, []);
 
   // Memoize formatting functions
   const formatPlayTime = useCallback((totalPlayTime: number): string => {
@@ -73,6 +166,10 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
     () => slotInfo.metadata ? formatPlayTime(slotInfo.metadata.totalPlayTime) : '',
     [slotInfo.metadata, formatPlayTime]
   );
+  const cloudSyncConfig = useMemo(
+    () => getCloudSyncConfig(slotInfo.syncStatus),
+    [slotInfo.syncStatus, getCloudSyncConfig]
+  );
 
   const cardStyle: React.CSSProperties = {
     position: 'relative',
@@ -105,13 +202,27 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
     color: '#d4af37'
   };
 
-  const syncStatusStyle: React.CSSProperties = {
-    fontSize: '0.75rem',
-    padding: '2px 6px',
-    borderRadius: '4px',
-    background: slotInfo.syncStatus === 'synced' ? '#4caf50' : '#ff9800',
-    color: 'white'
-  };
+  // Cloud sync indicator click handler
+  const handleCloudSyncClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    switch (slotInfo.syncStatus) {
+      case SaveSyncStatus.SYNC_FAILED:
+        onCloudSync?.();
+        break;
+      case SaveSyncStatus.CONFLICT:
+        onConflictResolve?.();
+        break;
+      case SaveSyncStatus.CLOUD_NEWER:
+        onCloudRestore?.();
+        break;
+      case SaveSyncStatus.LOCAL_NEWER:
+        onCloudSync?.();
+        break;
+      default:
+        // For other states, show more details or status
+        break;
+    }
+  }, [slotInfo.syncStatus, onCloudSync, onCloudRestore, onConflictResolve]);
 
   return (
     <motion.div
@@ -162,9 +273,68 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
         <span style={slotNumberStyle}>Slot {slotInfo.slotNumber + 1}</span>
         {!slotInfo.isEmpty && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={syncStatusStyle}>
-              {slotInfo.syncStatus.replace('_', ' ')}
-            </span>
+            {/* Enhanced Cloud Sync Indicator */}
+            <motion.div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '4px 8px',
+                borderRadius: '6px',
+                border: `1px solid ${cloudSyncConfig.border}`,
+                background: cloudSyncConfig.background,
+                cursor: [SaveSyncStatus.SYNC_FAILED, SaveSyncStatus.CONFLICT, SaveSyncStatus.LOCAL_NEWER, SaveSyncStatus.CLOUD_NEWER].includes(slotInfo.syncStatus) ? 'pointer' : 'default',
+                fontSize: '0.75rem',
+                fontWeight: '500',
+                color: cloudSyncConfig.color,
+                transition: 'all 0.2s ease'
+              }}
+              whileHover={[SaveSyncStatus.SYNC_FAILED, SaveSyncStatus.CONFLICT, SaveSyncStatus.LOCAL_NEWER, SaveSyncStatus.CLOUD_NEWER].includes(slotInfo.syncStatus) ? {
+                scale: 1.05,
+                background: cloudSyncConfig.color + '20'
+              } : {}}
+              onClick={handleCloudSyncClick}
+              title={cloudSyncConfig.tooltip}
+            >
+              <span style={{ fontSize: '0.8rem' }}>{cloudSyncConfig.icon}</span>
+              <span>{cloudSyncConfig.text}</span>
+              {slotInfo.syncStatus === SaveSyncStatus.SYNCING && (
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  style={{ display: 'inline-block' }}
+                >
+                  🔄
+                </motion.div>
+              )}
+            </motion.div>
+
+            {/* Cloud Storage Availability Indicators */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+              {slotInfo.isLocalAvailable && (
+                <div
+                  style={{
+                    width: '6px',
+                    height: '6px',
+                    borderRadius: '50%',
+                    background: '#4caf50',
+                    title: 'Available locally'
+                  }}
+                />
+              )}
+              {slotInfo.isCloudAvailable && (
+                <div
+                  style={{
+                    width: '6px',
+                    height: '6px',
+                    borderRadius: '50%',
+                    background: '#2196f3',
+                    title: 'Available in cloud'
+                  }}
+                />
+              )}
+            </div>
+
             {slotInfo.metadata?.isFavorite && (
               <span style={{ color: '#d4af37', fontSize: '1.2rem' }}>★</span>
             )}
@@ -314,6 +484,53 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
                 Export
               </Button>
             )}
+
+            {/* Cloud-specific action buttons */}
+            {onCloudSync && [SaveSyncStatus.LOCAL_ONLY, SaveSyncStatus.LOCAL_NEWER, SaveSyncStatus.SYNC_FAILED].includes(slotInfo.syncStatus) && (
+              <Button
+                variant="ghost"
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onCloudSync();
+                }}
+                style={{ fontSize: '0.7rem', padding: '4px 6px', color: '#2196f3' }}
+                title="Upload to cloud"
+              >
+                ☁️↑
+              </Button>
+            )}
+
+            {onCloudRestore && [SaveSyncStatus.CLOUD_ONLY, SaveSyncStatus.CLOUD_NEWER].includes(slotInfo.syncStatus) && (
+              <Button
+                variant="ghost"
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onCloudRestore();
+                }}
+                style={{ fontSize: '0.7rem', padding: '4px 6px', color: '#9c27b0' }}
+                title="Download from cloud"
+              >
+                ☁️↓
+              </Button>
+            )}
+
+            {onConflictResolve && slotInfo.syncStatus === SaveSyncStatus.CONFLICT && (
+              <Button
+                variant="ghost"
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onConflictResolve();
+                }}
+                style={{ fontSize: '0.7rem', padding: '4px 6px', color: '#ff5722' }}
+                title="Resolve conflict"
+              >
+                ⚠️
+              </Button>
+            )}
+
             {onDelete && (
               <Button
                 variant="ghost"
@@ -356,14 +573,21 @@ export const SaveSlotCard = memo(SaveSlotCardComponent, (prevProps, nextProps) =
     prevProps.slotInfo.isEmpty === nextProps.slotInfo.isEmpty &&
     prevProps.slotInfo.syncStatus === nextProps.slotInfo.syncStatus &&
     prevProps.slotInfo.lastError === nextProps.slotInfo.lastError &&
+    prevProps.slotInfo.isLocalAvailable === nextProps.slotInfo.isLocalAvailable &&
+    prevProps.slotInfo.isCloudAvailable === nextProps.slotInfo.isCloudAvailable &&
     prevProps.isSelected === nextProps.isSelected &&
     prevProps.isLoading === nextProps.isLoading &&
     prevProps.className === nextProps.className &&
+    // Compare function references for cloud actions
+    prevProps.onCloudSync === nextProps.onCloudSync &&
+    prevProps.onCloudRestore === nextProps.onCloudRestore &&
+    prevProps.onConflictResolve === nextProps.onConflictResolve &&
     // Deep compare metadata if both exist
     ((!prevProps.slotInfo.metadata && !nextProps.slotInfo.metadata) ||
      (prevProps.slotInfo.metadata?.lastModified === nextProps.slotInfo.metadata?.lastModified &&
       prevProps.slotInfo.metadata?.fileSizeBytes === nextProps.slotInfo.metadata?.fileSizeBytes &&
-      prevProps.slotInfo.metadata?.totalPlayTime === nextProps.slotInfo.metadata?.totalPlayTime))
+      prevProps.slotInfo.metadata?.totalPlayTime === nextProps.slotInfo.metadata?.totalPlayTime &&
+      prevProps.slotInfo.metadata?.isFavorite === nextProps.slotInfo.metadata?.isFavorite))
   );
 });
 

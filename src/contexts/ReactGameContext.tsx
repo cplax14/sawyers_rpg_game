@@ -1,4 +1,12 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
+import { AutoSaveManager } from '../utils/autoSave';
+
+// Global type declaration for auto-save manager
+declare global {
+  interface Window {
+    gameAutoSaveManager?: AutoSaveManager;
+  }
+}
 
 // Enhanced TypeScript interfaces for the React rewrite
 export interface ReactPlayer {
@@ -154,6 +162,10 @@ export interface GameSettings {
   difficulty: 'easy' | 'normal' | 'hard' | 'nightmare';
   autoSave: boolean;
   autoSaveInterval: number; // in minutes
+  autoSaveMaxFailures: number; // max consecutive failures before disabling
+  autoSaveShowNotifications: boolean; // show auto-save notifications
+  autoSavePauseDuringCombat: boolean; // pause auto-save during combat
+  autoSaveOnlyWhenActive: boolean; // only auto-save when user is active
   showDamageNumbers: boolean;
   fastAnimations: boolean;
 
@@ -230,7 +242,11 @@ const defaultSettings: GameSettings = {
   soundEnabled: true,
   difficulty: 'normal',
   autoSave: true,
-  autoSaveInterval: 5,
+  autoSaveInterval: 3, // 3 minutes (converted to milliseconds: 180000)
+  autoSaveMaxFailures: 3,
+  autoSaveShowNotifications: true,
+  autoSavePauseDuringCombat: true,
+  autoSaveOnlyWhenActive: true,
   showDamageNumbers: true,
   fastAnimations: false,
   highContrast: false,
@@ -327,6 +343,12 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
       };
 
     case 'CHANGE_AREA':
+      // Trigger auto-save for area transition
+      setTimeout(() => {
+        if (window.gameAutoSaveManager) {
+          window.gameAutoSaveManager.forceSave();
+        }
+      }, 500); // Small delay to ensure area change is complete
       return { ...state, currentArea: action.payload.areaId };
 
     case 'SET_CURRENT_AREA':
@@ -347,6 +369,12 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
 
     case 'COMPLETE_QUEST':
       if (state.completedQuests.includes(action.payload.questId)) return state;
+      // Trigger auto-save for quest completion
+      setTimeout(() => {
+        if (window.gameAutoSaveManager) {
+          window.gameAutoSaveManager.forceSave();
+        }
+      }, 100);
       return {
         ...state,
         completedQuests: [...state.completedQuests, action.payload.questId],
@@ -452,6 +480,77 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         currentEncounter: null
       };
 
+    case 'LEVEL_UP_PLAYER':
+      if (!state.player) return state;
+      const levelUpPlayer = {
+        ...state.player,
+        level: state.player.level + 1,
+        experienceToNext: (state.player.level + 1) * 100, // Simple formula
+        maxHp: state.player.maxHp + 10,
+        maxMp: state.player.maxMp + 5,
+        hp: state.player.maxHp + 10, // Heal to full on level up
+        mp: state.player.maxMp + 5
+      };
+      // Trigger auto-save for level up
+      setTimeout(() => {
+        if (window.gameAutoSaveManager) {
+          window.gameAutoSaveManager.forceSave();
+        }
+      }, 100);
+      return {
+        ...state,
+        player: levelUpPlayer,
+      };
+
+    case 'ADD_EXPERIENCE':
+      if (!state.player) return state;
+      const newExp = state.player.experience + action.payload.experience;
+      let updatedPlayer = { ...state.player, experience: newExp };
+
+      // Check for level up
+      while (updatedPlayer.experience >= updatedPlayer.experienceToNext && updatedPlayer.level < 100) {
+        updatedPlayer = {
+          ...updatedPlayer,
+          level: updatedPlayer.level + 1,
+          experienceToNext: (updatedPlayer.level + 1) * 100,
+          maxHp: updatedPlayer.maxHp + 10,
+          maxMp: updatedPlayer.maxMp + 5,
+          hp: updatedPlayer.maxHp + 10,
+          mp: updatedPlayer.maxMp + 5
+        };
+        // Trigger auto-save for level up
+        setTimeout(() => {
+          if (window.gameAutoSaveManager) {
+            window.gameAutoSaveManager.forceSave();
+          }
+        }, 100);
+      }
+
+      return {
+        ...state,
+        player: updatedPlayer,
+      };
+
+    case 'ADD_GOLD':
+      if (!state.player) return state;
+      return {
+        ...state,
+        player: {
+          ...state.player,
+          gold: state.player.gold + action.payload.gold
+        },
+      };
+
+    case 'UPDATE_PLAYER_STATS':
+      if (!state.player) return state;
+      return {
+        ...state,
+        player: {
+          ...state.player,
+          stats: { ...state.player.stats, ...action.payload.stats }
+        },
+      };
+
     case 'RESET_GAME':
       return { ...initialState, sessionStartTime: Date.now() };
 
@@ -468,6 +567,10 @@ interface ReactGameContextType {
   // Helper functions
   createPlayer: (name: string, playerClass: string) => void;
   updatePlayer: (updates: Partial<ReactPlayer>) => void;
+  levelUpPlayer: (playerId: string) => void;
+  addExperience: (playerId: string, experience: number) => void;
+  addGold: (playerId: string, gold: number) => void;
+  updatePlayerStats: (playerId: string, stats: Partial<PlayerStats>) => void;
   navigateToArea: (areaId: string) => void;
   unlockArea: (areaId: string) => void;
   addItems: (items: ReactItem[]) => void;
@@ -528,6 +631,22 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
   // Helper functions
   const createPlayer = (name: string, playerClass: string) => {
     dispatch({ type: 'CREATE_PLAYER', payload: { name, class: playerClass } });
+  };
+
+  const levelUpPlayer = (playerId: string) => {
+    dispatch({ type: 'LEVEL_UP_PLAYER', payload: { playerId } });
+  };
+
+  const addExperience = (playerId: string, experience: number) => {
+    dispatch({ type: 'ADD_EXPERIENCE', payload: { playerId, experience } });
+  };
+
+  const addGold = (playerId: string, gold: number) => {
+    dispatch({ type: 'ADD_GOLD', payload: { playerId, gold } });
+  };
+
+  const updatePlayerStats = (playerId: string, stats: Partial<PlayerStats>) => {
+    dispatch({ type: 'UPDATE_PLAYER_STATS', payload: { playerId, stats } });
   };
 
   const updatePlayer = (updates: Partial<ReactPlayer>) => {
@@ -639,6 +758,10 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
     dispatch,
     createPlayer,
     updatePlayer,
+    levelUpPlayer,
+    addExperience,
+    addGold,
+    updatePlayerStats,
     navigateToArea,
     unlockArea,
     addItems,

@@ -483,33 +483,66 @@ export const useCombat = () => {
 
 /**
  * Hook for save/load game state
+ * Enhanced to work with auto-save system
  */
 export const useSaveLoad = () => {
   const { state, dispatch } = useGameState();
 
-  const saveGame = useCallback((slotIndex: number, saveName?: string) => {
-    dispatch({
-      type: 'SAVE_GAME',
-      payload: {
-        slotIndex,
-        saveName: saveName || `Save ${slotIndex + 1}`,
-        timestamp: Date.now()
+  const saveGame = useCallback(async (slotIndex: number, saveName?: string): Promise<boolean> => {
+    try {
+      // Update auto-save activity to show user interaction
+      if (typeof window !== 'undefined' && window.gameAutoSaveManager) {
+        window.gameAutoSaveManager.updateActivity();
       }
-    });
+
+      // For now, dispatch the action (will be enhanced when save system actions are implemented)
+      dispatch({
+        type: 'SAVE_GAME',
+        payload: {
+          slotIndex,
+          saveName: saveName || `Save ${slotIndex + 1}`,
+          timestamp: Date.now()
+        }
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Save failed:', error);
+      return false;
+    }
   }, [dispatch]);
 
-  const loadGame = useCallback((slotIndex: number) => {
-    dispatch({
-      type: 'LOAD_GAME',
-      payload: { slotIndex }
-    });
+  const loadGame = useCallback(async (slotIndex: number): Promise<boolean> => {
+    try {
+      // Update auto-save activity
+      if (typeof window !== 'undefined' && window.gameAutoSaveManager) {
+        window.gameAutoSaveManager.updateActivity();
+      }
+
+      dispatch({
+        type: 'LOAD_GAME',
+        payload: { slotIndex }
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Load failed:', error);
+      return false;
+    }
   }, [dispatch]);
 
-  const deleteSave = useCallback((slotIndex: number) => {
-    dispatch({
-      type: 'DELETE_SAVE',
-      payload: { slotIndex }
-    });
+  const deleteSave = useCallback(async (slotIndex: number): Promise<boolean> => {
+    try {
+      dispatch({
+        type: 'DELETE_SAVE',
+        payload: { slotIndex }
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Delete save failed:', error);
+      return false;
+    }
   }, [dispatch]);
 
   // Save/Load computed values
@@ -525,12 +558,36 @@ export const useSaveLoad = () => {
     return state.saveSlots.some(slot => slot.data !== null);
   }, [state.saveSlots]);
 
+  // Auto-save integration
+  const pauseAutoSave = useCallback(() => {
+    if (typeof window !== 'undefined' && window.gameAutoSaveManager) {
+      window.gameAutoSaveManager.pause();
+    }
+  }, []);
+
+  const resumeAutoSave = useCallback(() => {
+    if (typeof window !== 'undefined' && window.gameAutoSaveManager) {
+      window.gameAutoSaveManager.resume();
+    }
+  }, []);
+
+  const forceAutoSave = useCallback(async (): Promise<boolean> => {
+    if (typeof window !== 'undefined' && window.gameAutoSaveManager) {
+      return await window.gameAutoSaveManager.forceSave();
+    }
+    return false;
+  }, []);
+
   return {
     saveSlots,
     currentSaveSlot,
     hasAnySaves,
     saveGame,
     loadGame,
-    deleteSave
+    deleteSave,
+    // Auto-save integration functions
+    pauseAutoSave,
+    resumeAutoSave,
+    forceAutoSave
   };
 };

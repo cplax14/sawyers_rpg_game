@@ -9,7 +9,9 @@ import { Button } from '../atoms/Button';
 import { LoadingSpinner } from '../atoms/LoadingSpinner';
 import { SaveSlotCard } from '../molecules/SaveSlotCard';
 import { useSaveSystem, useGameState, useResponsive, useReducedMotion } from '../../hooks';
-import { SaveOperationOptions } from '../../types/saveSystem';
+import { useAuth } from '../../hooks/useAuth';
+import { useCloudSave } from '../../hooks/useCloudSave';
+import { SaveOperationOptions, SaveSyncStatus } from '../../types/saveSystem';
 
 interface SaveLoadManagerProps {
   mode: 'save' | 'load' | 'manage';
@@ -46,9 +48,22 @@ export const SaveLoadManager: React.FC<SaveLoadManagerProps> = ({
   const { isMobile, isTablet } = useResponsive();
   const { animationConfig } = useReducedMotion();
 
+  // Cloud save hooks
+  const { isAuthenticated } = useAuth();
+  const {
+    isOnline,
+    syncInProgress,
+    backupToCloud,
+    restoreFromCloud,
+    resolveConflict,
+    triggerFullSync
+  } = useCloudSave();
+
   const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
   const [saveName, setSaveName] = useState('');
   const [showConfirmDelete, setShowConfirmDelete] = useState<number | null>(null);
+  const [cloudOperations, setCloudOperations] = useState<Map<number, { type: string; progress: number; status: string }>>(new Map());
+  const [showCloudOptions, setShowCloudOptions] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSave = useCallback(async (slotNumber: number) => {
@@ -128,6 +143,101 @@ export const SaveLoadManager: React.FC<SaveLoadManagerProps> = ({
 
     fileInputRef.current.click();
   }, [isInitialized, importSave, refreshSlots]);
+
+  // Cloud save handlers
+  const trackCloudOperation = useCallback((slotNumber: number, type: string, progress: number, status: string) => {
+    setCloudOperations(prev => new Map(prev.set(slotNumber, { type, progress, status })));
+  }, []);
+
+  const handleCloudBackup = useCallback(async (slotNumber: number) => {
+    if (!isAuthenticated || !isOnline) return;
+
+    trackCloudOperation(slotNumber, 'backup', 0, 'Starting backup...');
+
+    try {
+      await backupToCloud(slotNumber, {
+        overwriteNewer: false,
+        progressCallback: (progress) => {
+          trackCloudOperation(slotNumber, 'backup', progress.percentage, progress.status);
+        }
+      });
+
+      trackCloudOperation(slotNumber, 'backup', 100, 'Backup completed');
+      setTimeout(() => {
+        setCloudOperations(prev => {
+          const newMap = new Map(prev);
+          newMap.delete(slotNumber);
+          return newMap;
+        });
+      }, 3000);
+
+      await refreshSlots();
+    } catch (error) {
+      trackCloudOperation(slotNumber, 'backup', 0, `Backup failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }, [isAuthenticated, isOnline, backupToCloud, refreshSlots, trackCloudOperation]);
+
+  const handleCloudRestore = useCallback(async (slotNumber: number) => {
+    if (!isAuthenticated || !isOnline) return;
+
+    trackCloudOperation(slotNumber, 'restore', 0, 'Starting restore...');
+
+    try {
+      await restoreFromCloud(slotNumber, {
+        overwriteLocal: true,
+        progressCallback: (progress) => {
+          trackCloudOperation(slotNumber, 'restore', progress.percentage, progress.status);
+        }
+      });
+
+      trackCloudOperation(slotNumber, 'restore', 100, 'Restore completed');
+      setTimeout(() => {
+        setCloudOperations(prev => {
+          const newMap = new Map(prev);
+          newMap.delete(slotNumber);
+          return newMap;
+        });
+      }, 3000);
+
+      await refreshSlots();
+    } catch (error) {
+      trackCloudOperation(slotNumber, 'restore', 0, `Restore failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }, [isAuthenticated, isOnline, restoreFromCloud, refreshSlots, trackCloudOperation]);
+
+  const handleConflictResolve = useCallback(async (slotNumber: number) => {
+    if (!isAuthenticated || !isOnline) return;
+
+    trackCloudOperation(slotNumber, 'resolve', 0, 'Resolving conflict...');
+
+    try {
+      await resolveConflict(slotNumber, 'keep-newest');
+      trackCloudOperation(slotNumber, 'resolve', 100, 'Conflict resolved');
+
+      setTimeout(() => {
+        setCloudOperations(prev => {
+          const newMap = new Map(prev);
+          newMap.delete(slotNumber);
+          return newMap;
+        });
+      }, 3000);
+
+      await refreshSlots();
+    } catch (error) {
+      trackCloudOperation(slotNumber, 'resolve', 0, `Resolution failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }, [isAuthenticated, isOnline, resolveConflict, refreshSlots, trackCloudOperation]);
+
+  const handleFullCloudSync = useCallback(async () => {
+    if (!isAuthenticated || !isOnline) return;
+
+    try {
+      await triggerFullSync();
+      await refreshSlots();
+    } catch (error) {
+      console.error('Full sync failed:', error);
+    }
+  }, [isAuthenticated, isOnline, triggerFullSync, refreshSlots]);
 
   if (!isInitialized) {
     return (
@@ -223,6 +333,127 @@ export const SaveLoadManager: React.FC<SaveLoadManagerProps> = ({
         <span>{saveSlots.filter(slot => !slot.isEmpty).length} / {saveSlots.length} slots</span>
       </div>
 
+      {/* Cloud Status & Controls */}
+      {isAuthenticated && (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '12px 16px',
+          background: isOnline ? 'rgba(76, 175, 80, 0.1)' : 'rgba(244, 67, 54, 0.1)',
+          border: `1px solid ${isOnline ? 'rgba(76, 175, 80, 0.3)' : 'rgba(244, 67, 54, 0.3)'}`,
+          borderRadius: '8px',
+          fontSize: '0.85rem'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <div style={{
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                background: isOnline ? '#4caf50' : '#f44336'
+              }} />
+              <span style={{ color: isOnline ? '#4caf50' : '#f44336' }}>
+                Cloud {isOnline ? 'Connected' : 'Offline'}
+              </span>
+            </div>
+            {syncInProgress && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#2196f3' }}>
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                >
+                  🔄
+                </motion.div>
+                <span>Syncing...</span>
+              </div>
+            )}
+          </div>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <Button
+              variant="ghost"
+              size="small"
+              onClick={() => setShowCloudOptions(!showCloudOptions)}
+              disabled={!isOnline}
+              style={{ fontSize: '0.75rem', padding: '4px 8px' }}
+            >
+              {showCloudOptions ? '▼ Hide' : '▶ Show'} Cloud Options
+            </Button>
+            <Button
+              variant="primary"
+              size="small"
+              onClick={handleFullCloudSync}
+              disabled={!isOnline || syncInProgress}
+              style={{ fontSize: '0.75rem', padding: '4px 8px' }}
+            >
+              🔄 Sync All
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Cloud Options Panel */}
+      <AnimatePresence>
+        {isAuthenticated && showCloudOptions && (
+          <motion.div
+            style={{
+              background: 'rgba(0, 0, 0, 0.3)',
+              borderRadius: '8px',
+              padding: '16px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px'
+            }}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div style={{ color: '#ffffff', fontWeight: '600', marginBottom: '8px' }}>
+              Bulk Cloud Operations
+            </div>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <Button
+                variant="secondary"
+                size="small"
+                onClick={() => {
+                  saveSlots.filter(slot => !slot.isEmpty && slot.isLocalAvailable && !slot.isCloudAvailable)
+                           .forEach(slot => handleCloudBackup(slot.slotNumber));
+                }}
+                disabled={!isOnline || syncInProgress}
+                style={{ fontSize: '0.75rem' }}
+              >
+                ☁️↑ Backup All Local
+              </Button>
+              <Button
+                variant="secondary"
+                size="small"
+                onClick={() => {
+                  saveSlots.filter(slot => slot.syncStatus === SaveSyncStatus.CLOUD_NEWER)
+                           .forEach(slot => handleCloudRestore(slot.slotNumber));
+                }}
+                disabled={!isOnline || syncInProgress}
+                style={{ fontSize: '0.75rem' }}
+              >
+                ☁️↓ Download All Newer
+              </Button>
+              <Button
+                variant="warning"
+                size="small"
+                onClick={() => {
+                  saveSlots.filter(slot => slot.syncStatus === SaveSyncStatus.CONFLICT)
+                           .forEach(slot => handleConflictResolve(slot.slotNumber));
+                }}
+                disabled={!isOnline || syncInProgress}
+                style={{ fontSize: '0.75rem' }}
+              >
+                ⚠️ Resolve All Conflicts
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Progress Indicator */}
       <AnimatePresence>
         {(saveProgress.isActive || loadProgress.isActive) && (
@@ -308,18 +539,91 @@ export const SaveLoadManager: React.FC<SaveLoadManagerProps> = ({
         flex: 1,
         overflowY: 'auto'
       }}>
-        {saveSlots.map((slot, index) => (
-          <SaveSlotCard
-            key={slot.slotNumber}
-            slotInfo={slot}
-            isSelected={selectedSlot === slot.slotNumber}
-            isLoading={isLoading}
-            onLoad={mode !== 'save' ? () => handleLoad(slot.slotNumber) : undefined}
-            onSave={mode === 'save' || slot.isEmpty ? () => handleSave(slot.slotNumber) : undefined}
-            onDelete={mode === 'manage' && !slot.isEmpty ? () => setShowConfirmDelete(slot.slotNumber) : undefined}
-            onExport={mode === 'manage' && !slot.isEmpty ? () => handleExport(slot.slotNumber) : undefined}
-          />
-        ))}
+        {saveSlots.map((slot, index) => {
+          const cloudOperation = cloudOperations.get(slot.slotNumber);
+          const isCloudOperating = cloudOperation !== undefined;
+
+          return (
+            <div key={slot.slotNumber} style={{ position: 'relative' }}>
+              <SaveSlotCard
+                slotInfo={slot}
+                isSelected={selectedSlot === slot.slotNumber}
+                isLoading={isLoading || isCloudOperating}
+                onLoad={mode !== 'save' ? () => handleLoad(slot.slotNumber) : undefined}
+                onSave={mode === 'save' || slot.isEmpty ? () => handleSave(slot.slotNumber) : undefined}
+                onDelete={mode === 'manage' && !slot.isEmpty ? () => setShowConfirmDelete(slot.slotNumber) : undefined}
+                onExport={mode === 'manage' && !slot.isEmpty ? () => handleExport(slot.slotNumber) : undefined}
+                onCloudSync={isAuthenticated && isOnline ? () => handleCloudBackup(slot.slotNumber) : undefined}
+                onCloudRestore={isAuthenticated && isOnline ? () => handleCloudRestore(slot.slotNumber) : undefined}
+                onConflictResolve={isAuthenticated && isOnline ? () => handleConflictResolve(slot.slotNumber) : undefined}
+              />
+
+              {/* Cloud Operation Progress Overlay */}
+              {cloudOperation && (
+                <motion.div
+                  style={{
+                    position: 'absolute',
+                    bottom: '0',
+                    left: '0',
+                    right: '0',
+                    background: 'rgba(0, 0, 0, 0.9)',
+                    padding: '8px 12px',
+                    borderRadius: '0 0 8px 8px',
+                    fontSize: '0.75rem',
+                    zIndex: 5
+                  }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                >
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '4px'
+                  }}>
+                    <span style={{ color: '#ffffff', textTransform: 'capitalize' }}>
+                      {cloudOperation.type}ing...
+                    </span>
+                    <span style={{ color: '#2196f3' }}>
+                      {cloudOperation.progress}%
+                    </span>
+                  </div>
+
+                  {cloudOperation.progress > 0 && cloudOperation.progress < 100 && (
+                    <div style={{
+                      width: '100%',
+                      height: '3px',
+                      background: 'rgba(255, 255, 255, 0.2)',
+                      borderRadius: '2px',
+                      overflow: 'hidden',
+                      marginBottom: '4px'
+                    }}>
+                      <motion.div
+                        style={{
+                          height: '100%',
+                          background: '#2196f3',
+                          borderRadius: '2px'
+                        }}
+                        initial={{ width: 0 }}
+                        animate={{ width: `${cloudOperation.progress}%` }}
+                        transition={{ duration: 0.3 }}
+                      />
+                    </div>
+                  )}
+
+                  <div style={{
+                    color: cloudOperation.status.includes('failed') ? '#f44336' :
+                          cloudOperation.status.includes('completed') ? '#4caf50' : '#cccccc',
+                    fontSize: '0.7rem'
+                  }}>
+                    {cloudOperation.status}
+                  </div>
+                </motion.div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {/* Action Buttons */}
