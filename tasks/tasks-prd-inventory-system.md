@@ -96,25 +96,25 @@
 
 - [x] 4.0 Items and Consumables System
 
-- [ ] 5.0 Creature Collection System
+- [x] 5.0 Creature Collection System
   - [x] 5.1 Create `src/components/organisms/CreatureScreen.tsx` with bestiary view and collection management
   - [x] 5.2 Create `src/components/molecules/CreatureCard.tsx` with expandable details and action buttons
   - [x] 5.3 Create `src/utils/creatureUtils.ts` for breeding, combat calculations, and management
   - [x] 5.4 Implement creature display in card-based view with discovery completion percentage
   - [x] 5.5 Add creature release functionality (return to wild)
-  - [ ] 5.6 Implement creature combat integration as companions/summons
-  - [ ] 5.7 Add basic creature breeding functionality with simple trait mixing
-  - [ ] 5.8 Create creature trading mechanisms with NPCs
+  - [x] 5.6 Implement creature combat integration as companions/summons
+  - [x] 5.7 Add basic creature breeding functionality with simple trait mixing
+  - [x] 5.8 Create creature trading mechanisms with NPCs
 
 - [ ] 6.0 Character Progression and Stats Tracking
-  - [ ] 6.1 Create `src/components/organisms/StatsScreen.tsx` with character progression dashboard
-  - [ ] 6.2 Create `src/components/molecules/ExperienceBar.tsx` with activity breakdown tooltips
-  - [ ] 6.3 Create `src/utils/experienceUtils.ts` for XP calculations and activity tracking
-  - [ ] 6.4 Implement current level, XP, and next level requirements display
-  - [ ] 6.5 Add XP breakdown by activity type (combat, quests, exploration, creature capture)
-  - [ ] 6.6 Create XP history and leveling statistics tracking
-  - [ ] 6.7 Implement automatic leveling with prominent notifications
-  - [ ] 6.8 Add character stats display affected by equipment and level progression
+  - [x] 6.1 Create `src/components/organisms/StatsScreen.tsx` with character progression dashboard
+  - [x] 6.2 Create `src/components/molecules/ExperienceBar.tsx` with activity breakdown tooltips
+  - [x] 6.3 Create `src/utils/experienceUtils.ts` for XP calculations and activity tracking
+  - [x] 6.4 Implement current level, XP, and next level requirements display
+  - [x] 6.5 Add XP breakdown by activity type (combat, quests, exploration, creature capture)
+  - [x] 6.6 Create XP history and leveling statistics tracking
+  - [x] 6.7 Implement automatic leveling with prominent notifications
+  - [x] 6.8 Add character stats display affected by equipment and level progression
 
 - [ ] 7.0 User Interface Integration and Polish
   - [ ] 7.1 Create `src/components/organisms/InventoryManager.tsx` with tabbed interface for all sections
