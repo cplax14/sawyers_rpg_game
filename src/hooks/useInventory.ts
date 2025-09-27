@@ -69,7 +69,7 @@ const convertToEnhancedItem = (reactItem: ReactItem): EnhancedItem => {
 
 export const useInventory = () => {
   const gameState = useGameState();
-  const { saveToSlot } = useSaveSystem();
+  const { saveGame } = useSaveSystem();
 
   // Enhanced inventory state
   const [inventoryState, setInventoryState] = useState<InventoryState>(() => {
@@ -848,7 +848,7 @@ export const useInventory = () => {
   useEffect(() => {
     const saveInventory = async () => {
       try {
-        await saveToSlot(0); // Auto-save to slot 0
+        await saveGame(gameState, { slot: 0 }); // Auto-save to slot 0
       } catch (error) {
         console.error('Failed to auto-save inventory:', error);
       }
@@ -857,7 +857,7 @@ export const useInventory = () => {
     // Save after significant changes
     const timer = setTimeout(saveInventory, 1000);
     return () => clearTimeout(timer);
-  }, [inventoryState, saveToSlot]);
+  }, [inventoryState, saveGame, gameState]);
 
   // Computed values
   const statistics = useMemo(() => ({
