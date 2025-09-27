@@ -277,7 +277,7 @@ export function useCreatures(): UseCreaturesReturn {
     let baseRate = 0.3; // 30% base capture rate
 
     // Adjust for creature level vs player level
-    const levelDifference = gameState.playerStats.level - monster.level;
+    const levelDifference = (gameState.player?.level || 1) - monster.level;
     if (levelDifference > 0) {
       baseRate += levelDifference * 0.05; // +5% per level advantage
     } else {
@@ -308,7 +308,7 @@ export function useCreatures(): UseCreaturesReturn {
     }
 
     return Math.max(0.01, Math.min(0.95, baseRate)); // Clamp between 1% and 95%
-  }, [gameState.playerStats.level]);
+  }, [gameState.player?.level]);
 
   // Convert Monster to EnhancedCreature
   const enhanceCreature = useCallback((monster: Monster, location: string): EnhancedCreature => {
@@ -402,7 +402,7 @@ export function useCreatures(): UseCreaturesReturn {
       const attempt: CreatureCaptureAttempt = {
         creature: monster,
         captureRate,
-        playerLevel: gameState.playerStats.level,
+        playerLevel: gameState.player?.level || 1,
         itemUsed,
         success,
         message: success ? `Successfully captured ${monster.name}!` : `${monster.name} broke free!`
@@ -456,7 +456,7 @@ export function useCreatures(): UseCreaturesReturn {
     } finally {
       setIsLoading(false);
     }
-  }, [calculateCaptureRate, gameState.playerStats.level, gameState.currentLocation, collection, enhanceCreature, saveCollection, removeItem, emitEvent]);
+  }, [calculateCaptureRate, gameState.player?.level, gameState.currentLocation, collection, enhanceCreature, saveCollection, removeItem, emitEvent]);
 
   // Release creature
   const releaseCreature = useCallback(async (creatureId: string): Promise<CreatureOperationResult> => {
