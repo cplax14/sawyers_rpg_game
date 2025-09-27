@@ -2,7 +2,8 @@ import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../atoms/Button';
 import { LoadingSpinner } from '../atoms/LoadingSpinner';
-import { usePlayer, useWorld, useUI, useCombat, useInventory, useIsMobile, useCreatures, useGameData } from '../../hooks';
+import { usePlayer, useWorld, useUI, useCombat, useInventory, useIsMobile, useCreatures } from '../../hooks';
+import { useMonsters } from '../../hooks/useGameData';
 import { ReactMonster, ReactPlayer } from '../../types/game';
 
 interface CombatProps {
@@ -45,8 +46,8 @@ export const Combat: React.FC<CombatProps> = ({
   const { navigateToScreen } = useUI();
   const { captureCreature, activeTeam } = useCreatures();
   const { currentEncounter, endCombat } = useCombat();
-  const { inventory, getItemsByType, useItem } = useInventory();
-  const { createMonsterInstance } = useGameData();
+  const { legacyInventory: inventory, getItemsByCategory, useItem } = useInventory();
+  const { createMonsterInstance } = useMonsters();
   const isMobile = useIsMobile();
 
   // Generate enemy monster
