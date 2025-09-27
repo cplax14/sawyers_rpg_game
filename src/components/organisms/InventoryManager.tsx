@@ -11,7 +11,7 @@ import { CombatRestrictionBanner } from '../molecules/CombatRestrictionBanner';
 import { InventoryPauseIndicator } from '../molecules/GamePauseIndicator';
 import { InventoryFeedback } from '../molecules/InventoryFeedback';
 import { useInventory } from '../../hooks/useInventory';
-import { usePlayer } from '../../hooks/usePlayer';
+import { usePlayer } from '../../hooks/useGameState';
 import { useResponsiveInventory } from '../../hooks/useResponsiveInventory';
 import { useInventoryKeyboardShortcuts } from '../../hooks/useInventoryKeyboardShortcuts';
 import { useCombatInventoryRestrictions, isTabAllowedInCombat } from '../../hooks/useCombatInventoryRestrictions';

@@ -245,7 +245,7 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
 
   const {
     validateEquipment,
-    canEquipItem,
+    canEquipItem: canEquipItemValidation,
     getRestrictionMessage,
     playerInfo
   } = useEquipmentValidation();

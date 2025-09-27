@@ -49,7 +49,7 @@ export const usePlayer = () => {
       type: 'UPDATE_PLAYER_STATS',
       payload: { playerId: state.player.id, stats }
     });
-  }, [dispatch, state.player]);
+  }, [dispatch, state.player?.id]);
 
   const levelUpPlayer = useCallback(() => {
     if (!state.player) return;
@@ -58,7 +58,7 @@ export const usePlayer = () => {
       type: 'LEVEL_UP_PLAYER',
       payload: { playerId: state.player.id }
     });
-  }, [dispatch, state.player]);
+  }, [dispatch, state.player?.id]);
 
   const addExperience = useCallback((experience: number) => {
     if (!state.player) return;
@@ -67,7 +67,7 @@ export const usePlayer = () => {
       type: 'ADD_EXPERIENCE',
       payload: { playerId: state.player.id, experience }
     });
-  }, [dispatch, state.player]);
+  }, [dispatch, state.player?.id]);
 
   const addGold = useCallback((gold: number) => {
     if (!state.player) return;
@@ -76,7 +76,7 @@ export const usePlayer = () => {
       type: 'ADD_GOLD',
       payload: { playerId: state.player.id, gold }
     });
-  }, [dispatch, state.player]);
+  }, [dispatch, state.player?.id]);
 
   // Player computed values
   const playerLevel = useMemo(() => {
