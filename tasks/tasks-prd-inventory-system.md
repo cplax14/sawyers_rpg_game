@@ -30,12 +30,20 @@
 - `src/hooks/useCreatures.test.ts` - Unit tests for useCreatures hook
 - `src/hooks/useExperience.ts` - Custom hook for experience tracking and leveling system
 - `src/hooks/useExperience.test.ts` - Unit tests for useExperience hook
+- `src/components/organisms/EquipmentScreen.tsx` - Equipment management screen with paper doll view and stat comparisons ✅
+- `src/components/molecules/EquipmentSlot.tsx` - Individual equipment slot component with drag-drop and comparison tooltips ✅
+- `src/components/molecules/StatComparison.tsx` - Side-by-side stat comparison component for equipment ✅
+- `src/components/molecules/ConfirmationDialog.tsx` - Reusable confirmation dialog component ✅
+- `src/components/molecules/EquipmentSelectionModal.tsx` - Equipment selection modal with compatibility checks ✅
+- `src/components/molecules/StatPreviewTooltip.tsx` - Enhanced tooltip with stat previews and visual indicators ✅
+- `src/components/molecules/EquipmentRestrictions.tsx` - Equipment restriction validation component ✅
+- `src/hooks/useEquipmentValidation.ts` - Equipment validation logic and player context management ✅
 - `src/types/inventory.ts` - Type definitions for inventory, equipment, and item systems
 - `src/types/creatures.ts` - Type definitions for creature collection, breeding, and combat
 - `src/types/experience.ts` - Type definitions for experience tracking and progression
 - `src/utils/itemUtils.ts` - Utility functions for item operations, filtering, and comparisons
 - `src/utils/itemUtils.test.ts` - Unit tests for item utility functions
-- `src/utils/equipmentUtils.ts` - Utility functions for equipment stats calculations and compatibility
+- `src/utils/equipmentUtils.ts` - Utility functions for equipment stats calculations and compatibility ✅
 - `src/utils/equipmentUtils.test.ts` - Unit tests for equipment utility functions
 - `src/utils/creatureUtils.ts` - Utility functions for creature breeding, combat calculations, and management
 - `src/utils/creatureUtils.test.ts` - Unit tests for creature utility functions
@@ -60,38 +68,40 @@
   - [x] 1.5 Define item rarity system with color coding (Common-green, Rare-blue, Epic-purple, Legendary-orange)
   - [x] 1.6 Create type definitions for inventory management operations and state transitions
 
-- [ ] 2.0 Inventory Foundation and State Management
-  - [ ] 2.1 Create `src/hooks/useInventory.ts` with core inventory state management and item operations
-  - [ ] 2.2 Create `src/hooks/useEquipment.ts` for equipment management and stat calculations
-  - [ ] 2.3 Create `src/hooks/useCreatures.ts` for creature collection management and combat integration
-  - [ ] 2.4 Create `src/hooks/useExperience.ts` for experience tracking and leveling system
-  - [ ] 2.5 Integrate inventory state with existing ReactGameContext
-  - [ ] 2.6 Implement inventory persistence through existing save system integration
+- [x] 2.0 Inventory Foundation and State Management
+  - [x] 2.1 Create `src/hooks/useInventory.ts` with core inventory state management and item operations
+  - [x] 2.2 Create `src/hooks/useEquipment.ts` for equipment management and stat calculations
+  - [x] 2.3 Create `src/hooks/useCreatures.ts` for creature collection management and combat integration
+  - [x] 2.4 Create `src/hooks/useExperience.ts` for experience tracking and leveling system
+  - [x] 2.5 Integrate inventory state with existing ReactGameContext
+  - [x] 2.6 Implement inventory persistence through existing save system integration
 
-- [ ] 3.0 Equipment Management System
-  - [ ] 3.1 Create `src/components/organisms/EquipmentScreen.tsx` with paper doll view and equipment slots
-  - [ ] 3.2 Create `src/components/molecules/EquipmentSlot.tsx` with drag-drop functionality and tooltips
-  - [ ] 3.3 Create `src/components/molecules/StatComparison.tsx` for side-by-side equipment stat comparisons
-  - [ ] 3.4 Create `src/utils/equipmentUtils.ts` for stat calculations and equipment compatibility checks
-  - [ ] 3.5 Implement click-to-equip functionality with confirmation dialogs
-  - [ ] 3.6 Add visual indicators for stat improvements/decreases when comparing equipment
-  - [ ] 3.7 Implement equipment restriction validation (class, level, compatibility)
+- [x] 3.0 Equipment Management System
+  - [x] 3.1 Create `src/components/organisms/EquipmentScreen.tsx` with paper doll view and equipment slots
+  - [x] 3.2 Create `src/components/molecules/EquipmentSlot.tsx` with drag-drop functionality and tooltips
+  - [x] 3.3 Create `src/components/molecules/StatComparison.tsx` for side-by-side equipment stat comparisons
+  - [x] 3.4 Create `src/utils/equipmentUtils.ts` for stat calculations and equipment compatibility checks
+  - [x] 3.5 Implement click-to-equip functionality with confirmation dialogs
+  - [x] 3.6 Add visual indicators for stat improvements/decreases when comparing equipment
+  - [x] 3.7 Implement equipment restriction validation (class, level, compatibility)
 
 - [ ] 4.0 Items and Consumables System
-  - [ ] 4.1 Create `src/components/organisms/InventoryScreen.tsx` with categorized grid view and search
-  - [ ] 4.2 Create `src/components/molecules/ItemCard.tsx` with rarity indicators and action buttons
-  - [ ] 4.3 Create `src/utils/itemUtils.ts` for item operations, filtering, and stacking logic
-  - [ ] 4.4 Implement consumable item usage with immediate effect and quantity updates
-  - [ ] 4.5 Add item categorization system (consumables, materials, quest items, misc)
-  - [ ] 4.6 Implement search/filter functionality for large inventories
-  - [ ] 4.7 Add item stacking for identical consumables with quantity counters
+  - [x] 4.1 Create `src/components/organisms/InventoryScreen.tsx` with categorized grid view and search
+  - [x] 4.2 Create `src/components/molecules/ItemCard.tsx` with rarity indicators and action buttons
+  - [x] 4.3 Create `src/utils/itemUtils.ts` for item operations, filtering, and stacking logic
+  - [x] 4.4 Implement consumable item usage with immediate effect and quantity updates
+  - [x] 4.5 Add item categorization system (consumables, materials, quest items, misc)
+  - [x] 4.6 Implement search/filter functionality for large inventories
+  - [x] 4.7 Add item stacking for identical consumables with quantity counters
+
+- [x] 4.0 Items and Consumables System
 
 - [ ] 5.0 Creature Collection System
-  - [ ] 5.1 Create `src/components/organisms/CreatureScreen.tsx` with bestiary view and collection management
-  - [ ] 5.2 Create `src/components/molecules/CreatureCard.tsx` with expandable details and action buttons
-  - [ ] 5.3 Create `src/utils/creatureUtils.ts` for breeding, combat calculations, and management
-  - [ ] 5.4 Implement creature display in card-based view with discovery completion percentage
-  - [ ] 5.5 Add creature release functionality (return to wild)
+  - [x] 5.1 Create `src/components/organisms/CreatureScreen.tsx` with bestiary view and collection management
+  - [x] 5.2 Create `src/components/molecules/CreatureCard.tsx` with expandable details and action buttons
+  - [x] 5.3 Create `src/utils/creatureUtils.ts` for breeding, combat calculations, and management
+  - [x] 5.4 Implement creature display in card-based view with discovery completion percentage
+  - [x] 5.5 Add creature release functionality (return to wild)
   - [ ] 5.6 Implement creature combat integration as companions/summons
   - [ ] 5.7 Add basic creature breeding functionality with simple trait mixing
   - [ ] 5.8 Create creature trading mechanisms with NPCs

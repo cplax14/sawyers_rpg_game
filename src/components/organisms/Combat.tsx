@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../atoms/Button';
 import { LoadingSpinner } from '../atoms/LoadingSpinner';
-import { usePlayer, useWorld, useUI, useMonsters, useCombat, useInventory, useIsMobile } from '../../hooks';
+import { usePlayer, useWorld, useUI, useCombat, useInventory, useIsMobile, useCreatures, useGameData } from '../../hooks';
 import { ReactMonster, ReactPlayer } from '../../types/game';
 
 interface CombatProps {
@@ -17,7 +17,7 @@ interface CombatState {
   playerMp: number;
   battleLog: BattleLogEntry[];
   isAnimating: boolean;
-  actionMode: 'main' | 'magic' | 'items';
+  actionMode: 'main' | 'magic' | 'items' | 'companions';
 }
 
 interface BattleLogEntry {
@@ -43,9 +43,10 @@ export const Combat: React.FC<CombatProps> = ({
 }) => {
   const { player, playerLevel, addExperience, addGold } = usePlayer();
   const { navigateToScreen } = useUI();
-  const { createMonsterInstance, captureMonster } = useMonsters();
+  const { captureCreature, activeTeam } = useCreatures();
   const { currentEncounter, endCombat } = useCombat();
   const { inventory, getItemsByType, useItem } = useInventory();
+  const { createMonsterInstance } = useGameData();
   const isMobile = useIsMobile();
 
   // Generate enemy monster
@@ -369,7 +370,7 @@ export const Combat: React.FC<CombatProps> = ({
 
       // Add monster to player's collection
       if (enemy) {
-        captureMonster(enemy);
+        await captureCreature(enemy);
       }
 
       setCombatState(prev => ({ ...prev, phase: 'captured' }));
@@ -380,7 +381,7 @@ export const Combat: React.FC<CombatProps> = ({
 
     await new Promise(resolve => setTimeout(resolve, 1500));
     setCombatState(prev => ({ ...prev, isAnimating: false }));
-  }, [combatState, addBattleLog, enemy, playerLevel, captureMonster]);
+  }, [combatState, addBattleLog, enemy, playerLevel, captureCreature]);
 
   // Execute Flee Action
   const executeFlee = useCallback(async () => {
@@ -411,6 +412,39 @@ export const Combat: React.FC<CombatProps> = ({
     await new Promise(resolve => setTimeout(resolve, 1000));
     setCombatState(prev => ({ ...prev, isAnimating: false }));
   }, [combatState, addBattleLog, enemy, playerLevel, player]);
+
+  // Execute Companion Action
+  const executeCompanionAction = useCallback(async (creature: any) => {
+    if (combatState.isAnimating || combatState.phase !== 'player-turn') return;
+
+    setCombatState(prev => ({ ...prev, isAnimating: true }));
+
+    // Calculate companion damage with creature stats
+    const companionAttack = creature.currentStats?.attack || creature.baseStats?.attack || 10;
+    const companionLevel = creature.level || 1;
+    const accuracy = 85 + (creature.currentStats?.accuracy || creature.baseStats?.accuracy || 85) - 85;
+    const accuracyRoll = Math.random() * 100;
+
+    if (accuracyRoll <= accuracy) {
+      // Calculate damage with variance
+      const baseDamage = companionAttack + Math.floor(Math.random() * 6) - 2;
+      const damage = calculateDamage(baseDamage, companionLevel, enemy?.currentStats.defense || 5);
+
+      addBattleLog(`${creature.name} attacks for ${damage} damage!`, 'action');
+
+      setCombatState(prev => ({
+        ...prev,
+        enemyHp: Math.max(0, prev.enemyHp - damage),
+        phase: prev.enemyHp - damage <= 0 ? 'victory' : 'enemy-turn'
+      }));
+    } else {
+      addBattleLog(`${creature.name}'s attack missed!`, 'action');
+      setCombatState(prev => ({ ...prev, phase: 'enemy-turn' }));
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setCombatState(prev => ({ ...prev, isAnimating: false }));
+  }, [combatState, addBattleLog, calculateDamage, enemy]);
 
   const executeEnemyTurn = useCallback(async () => {
     if (combatState.phase !== 'enemy-turn' || !enemy) return;
@@ -700,9 +734,9 @@ export const Combat: React.FC<CombatProps> = ({
               <>
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(5, 1fr)',
+                  gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(6, 1fr)',
                   gap: '0.5rem',
-                  maxWidth: '800px',
+                  maxWidth: '900px',
                   margin: '0 auto'
                 }}>
                   {/* Attack */}
@@ -768,6 +802,29 @@ export const Combat: React.FC<CombatProps> = ({
                     <span style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Items</span>
                     <span style={{ fontSize: '0.7rem', opacity: 0.8 }}>
                       {getCombatItems().length} available
+                    </span>
+                  </Button>
+
+                  {/* Companions */}
+                  <Button
+                    variant="primary"
+                    size="md"
+                    disabled={combatState.isAnimating || !activeTeam || activeTeam.length === 0}
+                    onClick={() => setCombatState(prev => ({ ...prev, actionMode: 'companions' }))}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '0.25rem',
+                      padding: '0.75rem',
+                      minHeight: '80px',
+                      opacity: (!activeTeam || activeTeam.length === 0) ? 0.5 : 1
+                    }}
+                  >
+                    <span style={{ fontSize: '1.5rem' }}>🐾</span>
+                    <span style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Companions</span>
+                    <span style={{ fontSize: '0.7rem', opacity: 0.8 }}>
+                      {activeTeam?.length || 0} ready
                     </span>
                   </Button>
 
@@ -946,6 +1003,78 @@ export const Combat: React.FC<CombatProps> = ({
                   opacity: 0.7
                 }}>
                   Select an item to use
+                </p>
+              </>
+            )}
+
+            {/* Companions Menu */}
+            {combatState.actionMode === 'companions' && (
+              <>
+                <div style={{ marginBottom: '1rem' }}>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setCombatState(prev => ({ ...prev, actionMode: 'main' }))}
+                  >
+                    ← Back
+                  </Button>
+                </div>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+                  gap: '0.5rem',
+                  maxWidth: '600px',
+                  margin: '0 auto'
+                }}>
+                  {activeTeam?.map((creature) => (
+                    <Button
+                      key={creature.id}
+                      variant="primary"
+                      size="md"
+                      disabled={combatState.isAnimating}
+                      onClick={() => {
+                        executeCompanionAction(creature);
+                        setCombatState(prev => ({ ...prev, actionMode: 'main' }));
+                      }}
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '0.25rem',
+                        padding: '0.75rem',
+                        minHeight: '80px'
+                      }}
+                    >
+                      <span style={{ fontSize: '1.5rem' }}>
+                        {creature.types?.[0] === 'fire' ? '🔥' :
+                         creature.types?.[0] === 'water' ? '💧' :
+                         creature.types?.[0] === 'earth' ? '🌍' :
+                         creature.types?.[0] === 'air' ? '💨' : '⚡'}
+                      </span>
+                      <span style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>{creature.name}</span>
+                      <span style={{ fontSize: '0.7rem', opacity: 0.8 }}>
+                        Lv.{creature.level}
+                      </span>
+                    </Button>
+                  )) || []}
+                  {(!activeTeam || activeTeam.length === 0) && (
+                    <div style={{
+                      gridColumn: '1 / -1',
+                      textAlign: 'center',
+                      padding: '2rem',
+                      color: 'rgba(255, 255, 255, 0.6)'
+                    }}>
+                      No companions in your active team
+                    </div>
+                  )}
+                </div>
+                <p style={{
+                  textAlign: 'center',
+                  margin: '0.5rem 0 0',
+                  fontSize: '0.9rem',
+                  opacity: 0.7
+                }}>
+                  Select a companion to attack
                 </p>
               </>
             )}
