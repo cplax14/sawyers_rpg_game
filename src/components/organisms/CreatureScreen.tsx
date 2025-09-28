@@ -3,8 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../atoms/Button';
 import { LoadingSpinner } from '../atoms/LoadingSpinner';
 import { CreatureCard } from '../molecules/CreatureCard';
+import { VirtualizedGrid } from '../atoms/VirtualizedGrid';
 import { useCreatures } from '../../hooks/useCreatures';
-import { useGameState } from '../../contexts/ReactGameContext';
+import { useVirtualizedGrid } from '../../hooks/useVirtualizedGrid';
+import { useGameState } from '../../hooks';
 import { useResponsive } from '../../hooks';
 import { EnhancedCreature, CreatureType, CreatureElement, CreatureRarity } from '../../types/creatures';
 import { checkBreedingCompatibility, breedCreatures, generateNPCTraders, canMakeTrade, executeNPCTrade } from '../../utils/creatureUtils';
@@ -80,7 +82,9 @@ const creatureStyles = {
   navButton: {
     padding: '0.75rem 1.5rem',
     borderRadius: '8px',
-    border: '1px solid rgba(212, 175, 55, 0.3)',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'rgba(212, 175, 55, 0.3)',
     background: 'rgba(255, 255, 255, 0.05)',
     color: '#f4f4f4',
     cursor: 'pointer',
@@ -111,7 +115,9 @@ const creatureStyles = {
     width: '100%',
     padding: '0.75rem 2.5rem 0.75rem 1rem',
     borderRadius: '8px',
-    border: '1px solid rgba(212, 175, 55, 0.3)',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'rgba(212, 175, 55, 0.3)',
     background: 'rgba(255, 255, 255, 0.05)',
     color: '#f4f4f4',
     fontSize: '0.9rem',
@@ -146,7 +152,9 @@ const creatureStyles = {
   filterTab: {
     padding: '0.5rem 1rem',
     borderRadius: '20px',
-    border: '1px solid rgba(212, 175, 55, 0.3)',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'rgba(212, 175, 55, 0.3)',
     background: 'rgba(255, 255, 255, 0.05)',
     color: '#f4f4f4',
     cursor: 'pointer',
@@ -174,7 +182,9 @@ const creatureStyles = {
   sortSelect: {
     padding: '0.5rem',
     borderRadius: '6px',
-    border: '1px solid rgba(212, 175, 55, 0.3)',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'rgba(212, 175, 55, 0.3)',
     background: 'rgba(255, 255, 255, 0.05)',
     color: '#f4f4f4',
     fontSize: '0.8rem',
@@ -261,17 +271,17 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
   const { isMobile, isTablet } = useResponsive();
 
   const {
-    collection,
-    filteredCreatures,
-    filteredBestiary,
-    activeTeam,
-    isLoading,
-    error,
+    collection = [],
+    filteredCreatures = [],
+    filteredBestiary = [],
+    activeTeam = [],
+    isLoading = false,
+    error = null,
     getCollectionStats,
     searchCreatures,
     filterCreatures,
     sortCreatures
-  } = useCreatures();
+  } = useCreatures() || {};
 
   // Local state
   const [viewMode, setViewMode] = useState<ViewMode>('bestiary');
@@ -366,6 +376,56 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
 
     return data;
   }, [currentData, searchQuery, selectedType, sortBy, sortOrder]);
+
+  // Virtualized grid configuration for creatures
+  const CREATURE_CARD_HEIGHT = isMobile ? 220 : 260;
+  const CREATURE_MIN_WIDTH = isMobile ? 280 : 300;
+  const CREATURE_GRID_CONTAINER_HEIGHT = 500;
+
+  const creatureVirtualGridSettings = useVirtualizedGrid({
+    itemCount: filteredAndSortedData.length,
+    containerHeight: CREATURE_GRID_CONTAINER_HEIGHT,
+    minItemWidth: CREATURE_MIN_WIDTH,
+    itemHeight: CREATURE_CARD_HEIGHT,
+    gap: isMobile ? 12 : 16,
+    threshold: 50 // Enable virtualization for 50+ creatures
+  });
+
+  // Creature rendering function for virtualized grid
+  const renderCreature = useCallback((creature: EnhancedCreature, index: number) => (
+    <CreatureCard
+      creature={creature}
+      viewMode={viewMode}
+      size={isMobile ? 'sm' : 'md'}
+      showActions={viewMode !== 'breeding' && viewMode !== 'trading'}
+      showDetails={true}
+      onClick={viewMode === 'breeding' ? () => handleCreatureSelect(creature) :
+              viewMode === 'trading' ? () => handleTradeCreatureSelect(creature) : undefined}
+      className={viewMode === 'breeding' ?
+        (selectedParent1?.id === creature.id || selectedParent2?.id === creature.id ?
+          'breeding-selected' : 'breeding-selectable') :
+        viewMode === 'trading' ?
+          (selectedTradeCreature?.id === creature.id ? 'trading-selected' : 'trading-selectable') : ''}
+      onRelease={(creature) => {
+        console.log('Releasing creature:', creature.name);
+      }}
+      onAddToTeam={(creature) => {
+        console.log('Adding to team:', creature.name);
+      }}
+      onRemoveFromTeam={(creature) => {
+        console.log('Removing from team:', creature.name);
+      }}
+      onRename={(creature) => {
+        console.log('Renaming creature:', creature.name);
+      }}
+      onInspect={(creature) => {
+        console.log('Inspecting creature:', creature.name);
+      }}
+    />
+  ), [viewMode, isMobile, selectedParent1?.id, selectedParent2?.id, selectedTradeCreature?.id, handleCreatureSelect, handleTradeCreatureSelect]);
+
+  // Creature key function for virtualized grid
+  const getCreatureKey = useCallback((creature: EnhancedCreature, index: number) => creature.creatureId, []);
 
   // Handle search input
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -485,16 +545,24 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
   // Get collection statistics
   const stats = useMemo(() => {
     if (getCollectionStats) {
-      return getCollectionStats();
+      const collectionStats = getCollectionStats();
+      // Ensure completionPercentage is always a number
+      return {
+        discovered: collectionStats.discovered || 0,
+        captured: collectionStats.captured || 0,
+        total: collectionStats.total || 100,
+        completionPercentage: collectionStats.completionPercentage || 0,
+        teamSize: activeTeam?.length || 0
+      };
     }
     return {
       discovered: 0,
       captured: 0,
       total: 100, // Default total
       completionPercentage: 0,
-      teamSize: activeTeam.length
+      teamSize: activeTeam?.length || 0
     };
-  }, [getCollectionStats, activeTeam.length]);
+  }, [getCollectionStats, activeTeam?.length]);
 
   // Get view mode info
   const getViewModeInfo = (mode: ViewMode) => {
@@ -724,11 +792,11 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
                 <div
                   style={{
                     ...creatureStyles.progressBarFill,
-                    width: `${stats.completionPercentage}%`
+                    width: `${stats.completionPercentage || 0}%`
                   }}
                 />
               </div>
-              <span>{stats.completionPercentage.toFixed(1)}%</span>
+              <span>{(stats.completionPercentage || 0).toFixed(1)}%</span>
             </div>
           )}
 
@@ -741,28 +809,47 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
           )}
         </motion.div>
 
-        {/* Creatures Grid */}
-        <div style={{
-          ...creatureStyles.creatureGrid,
-          ...(isMobile ? creatureStyles.mobileCreatureGrid : {})
-        }}>
-          <AnimatePresence>
-            {filteredAndSortedData.length === 0 ? (
-              <motion.div
-                style={creatureStyles.emptyState}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
-                {searchQuery ?
-                  `No creatures found matching "${searchQuery}"` :
-                  viewMode === 'bestiary' ? 'No creatures discovered yet' :
-                  viewMode === 'collection' ? 'No creatures captured yet' :
-                  'No creatures in your team'
-                }
-              </motion.div>
-            ) : (
-              filteredAndSortedData.map((creature, index) => (
+        {/* Creatures Grid - Virtualized for performance */}
+        {filteredAndSortedData.length === 0 ? (
+          <motion.div
+            style={creatureStyles.emptyState}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            {searchQuery ?
+              `No creatures found matching "${searchQuery}"` :
+              viewMode === 'bestiary' ? 'No creatures discovered yet' :
+              viewMode === 'collection' ? 'No creatures captured yet' :
+              'No creatures in your team'
+            }
+          </motion.div>
+        ) : creatureVirtualGridSettings.shouldVirtualize ? (
+          // Use virtualized grid for large creature collections
+          <VirtualizedGrid
+            items={filteredAndSortedData}
+            itemHeight={creatureVirtualGridSettings.itemHeight}
+            itemsPerRow={creatureVirtualGridSettings.itemsPerRow}
+            containerHeight={creatureVirtualGridSettings.containerHeight}
+            renderItem={renderCreature}
+            getItemKey={getCreatureKey}
+            gap={creatureVirtualGridSettings.gap}
+            overscan={creatureVirtualGridSettings.overscan}
+            style={{
+              borderRadius: '8px',
+              background: 'rgba(255, 255, 255, 0.02)'
+            }}
+          />
+        ) : (
+          // Use regular grid for small creature collections
+          <div style={{
+            ...creatureStyles.creatureGrid,
+            ...(isMobile ? creatureStyles.mobileCreatureGrid : {}),
+            height: CREATURE_GRID_CONTAINER_HEIGHT,
+            maxHeight: CREATURE_GRID_CONTAINER_HEIGHT
+          }}>
+            <AnimatePresence>
+              {filteredAndSortedData.map((creature, index) => (
                 <motion.div
                   key={creature.creatureId}
                   initial={{ opacity: 0, y: 20 }}
@@ -774,40 +861,12 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
                   }}
                   layout
                 >
-                  <CreatureCard
-                    creature={creature}
-                    viewMode={viewMode}
-                    size={isMobile ? 'sm' : 'md'}
-                    showActions={viewMode !== 'breeding' && viewMode !== 'trading'}
-                    showDetails={true}
-                    onClick={viewMode === 'breeding' ? () => handleCreatureSelect(creature) :
-                            viewMode === 'trading' ? () => handleTradeCreatureSelect(creature) : undefined}
-                    className={viewMode === 'breeding' ?
-                      (selectedParent1?.id === creature.id || selectedParent2?.id === creature.id ?
-                        'breeding-selected' : 'breeding-selectable') :
-                      viewMode === 'trading' ?
-                        (selectedTradeCreature?.id === creature.id ? 'trading-selected' : 'trading-selectable') : ''}
-                    onRelease={(creature) => {
-                      console.log('Releasing creature:', creature.name);
-                    }}
-                    onAddToTeam={(creature) => {
-                      console.log('Adding to team:', creature.name);
-                    }}
-                    onRemoveFromTeam={(creature) => {
-                      console.log('Removing from team:', creature.name);
-                    }}
-                    onRename={(creature) => {
-                      console.log('Renaming creature:', creature.name);
-                    }}
-                    onInspect={(creature) => {
-                      console.log('Inspecting creature:', creature.name);
-                    }}
-                  />
+                  {renderCreature(creature, index)}
                 </motion.div>
-              ))
-            )}
-          </AnimatePresence>
-        </div>
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
 
         {/* Breeding Panel */}
         {viewMode === 'breeding' && (

@@ -3,9 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../atoms/Button';
 import { LoadingSpinner } from '../atoms/LoadingSpinner';
 import { ItemCard } from '../molecules/ItemCard';
+import { VirtualizedGrid } from '../atoms/VirtualizedGrid';
 import { useInventory } from '../../hooks/useInventory';
 import { useGameState } from '../../contexts/ReactGameContext';
 import { useResponsive } from '../../hooks';
+import { useVirtualizedGrid } from '../../hooks/useVirtualizedGrid';
 import { EnhancedItem, ItemCategory, ItemType } from '../../types/inventory';
 
 interface InventoryScreenProps {
@@ -120,7 +122,7 @@ const inventoryStyles = {
   },
   filterTabActive: {
     background: 'rgba(212, 175, 55, 0.2)',
-    borderColor: '#d4af37',
+    border: '1px solid #d4af37',
     color: '#d4af37'
   },
   sortContainer: {
@@ -236,7 +238,7 @@ const inventoryStyles = {
   },
   rarityChipActive: {
     background: 'rgba(212, 175, 55, 0.3)',
-    borderColor: '#d4af37',
+    border: '1px solid #d4af37',
     color: '#d4af37'
   },
   numberInput: {
@@ -377,6 +379,46 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
 
     return items;
   }, [selectedCategory, searchQuery, sortBy, sortOrder, rarityFilter, valueFilter, usableOnly, stackableOnly, getFilteredItems, getItemsByCategory, searchItems]);
+
+  // Virtualized grid configuration
+  const ITEM_CARD_HEIGHT = isMobile ? 200 : 240;
+  const ITEM_MIN_WIDTH = isMobile ? 250 : 280;
+  const GRID_CONTAINER_HEIGHT = 500; // Fixed height for the grid container
+
+  const virtualGridSettings = useVirtualizedGrid({
+    itemCount: filteredItems.length,
+    containerHeight: GRID_CONTAINER_HEIGHT,
+    minItemWidth: ITEM_MIN_WIDTH,
+    itemHeight: ITEM_CARD_HEIGHT,
+    gap: isMobile ? 12 : 16,
+    threshold: 50 // Enable virtualization for 50+ items
+  });
+
+  // Item rendering function for virtualized grid
+  const renderItem = useCallback((item: EnhancedItem, index: number) => (
+    <ItemCard
+      item={item}
+      size={isMobile ? 'sm' : 'md'}
+      showActions={true}
+      showQuantity={true}
+      showDescription={true}
+      onUse={(item) => {
+        console.log('Using item:', item.name);
+      }}
+      onSell={(item) => {
+        console.log('Selling item:', item.name);
+      }}
+      onDrop={(item) => {
+        console.log('Dropping item:', item.name);
+      }}
+      onInspect={(item) => {
+        console.log('Inspecting item:', item.name);
+      }}
+    />
+  ), [isMobile]);
+
+  // Item key function for virtualized grid
+  const getItemKey = useCallback((item: EnhancedItem, index: number) => item.id, []);
 
   // Handle search input
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -699,7 +741,7 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
                   style={{
                     ...inventoryStyles.filterToggle,
                     background: 'rgba(34, 197, 94, 0.1)',
-                    borderColor: 'rgba(34, 197, 94, 0.3)',
+                    border: '1px solid rgba(34, 197, 94, 0.3)',
                     color: '#22c55e'
                   }}
                 >
@@ -729,26 +771,45 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
           </span>
         </motion.div>
 
-        {/* Items Grid */}
-        <div style={{
-          ...inventoryStyles.itemGrid,
-          ...(isMobile ? inventoryStyles.mobileItemGrid : {})
-        }}>
-          <AnimatePresence>
-            {filteredItems.length === 0 ? (
-              <motion.div
-                style={inventoryStyles.emptyState}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
-                {searchQuery ?
-                  `No items found matching "${searchQuery}"` :
-                  `No items in ${ITEM_CATEGORIES.find(c => c.id === selectedCategory)?.name} category`
-                }
-              </motion.div>
-            ) : (
-              filteredItems.map((item, index) => (
+        {/* Items Grid - Virtualized for performance */}
+        {filteredItems.length === 0 ? (
+          <motion.div
+            style={inventoryStyles.emptyState}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            {searchQuery ?
+              `No items found matching "${searchQuery}"` :
+              `No items in ${ITEM_CATEGORIES.find(c => c.id === selectedCategory)?.name} category`
+            }
+          </motion.div>
+        ) : virtualGridSettings.shouldVirtualize ? (
+          // Use virtualized grid for large inventories
+          <VirtualizedGrid
+            items={filteredItems}
+            itemHeight={virtualGridSettings.itemHeight}
+            itemsPerRow={virtualGridSettings.itemsPerRow}
+            containerHeight={virtualGridSettings.containerHeight}
+            renderItem={renderItem}
+            getItemKey={getItemKey}
+            gap={virtualGridSettings.gap}
+            overscan={virtualGridSettings.overscan}
+            style={{
+              borderRadius: '8px',
+              background: 'rgba(255, 255, 255, 0.02)'
+            }}
+          />
+        ) : (
+          // Use regular grid for small inventories
+          <div style={{
+            ...inventoryStyles.itemGrid,
+            ...(isMobile ? inventoryStyles.mobileItemGrid : {}),
+            height: GRID_CONTAINER_HEIGHT,
+            maxHeight: GRID_CONTAINER_HEIGHT
+          }}>
+            <AnimatePresence>
+              {filteredItems.map((item, index) => (
                 <motion.div
                   key={item.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -760,30 +821,12 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
                   }}
                   layout
                 >
-                  <ItemCard
-                    item={item}
-                    size={isMobile ? 'sm' : 'md'}
-                    showActions={true}
-                    showQuantity={true}
-                    showDescription={true}
-                    onUse={(item) => {
-                      console.log('Using item:', item.name);
-                    }}
-                    onSell={(item) => {
-                      console.log('Selling item:', item.name);
-                    }}
-                    onDrop={(item) => {
-                      console.log('Dropping item:', item.name);
-                    }}
-                    onInspect={(item) => {
-                      console.log('Inspecting item:', item.name);
-                    }}
-                  />
+                  {renderItem(item, index)}
                 </motion.div>
-              ))
-            )}
-          </AnimatePresence>
-        </div>
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
       </div>
     </div>
   );
