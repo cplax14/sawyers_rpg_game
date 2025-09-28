@@ -31,13 +31,13 @@
   - [x] 1.6 Add missing monster species loot tables using level-appropriate templates
   - [x] 1.7 Validate loot table gold ranges match level progression and economic balance
 
-- [ ] 2.0 Enhance Area Exploration Loot Systems
-  - [ ] 2.1 Review and expand existing area loot tables to ensure comprehensive coverage
-  - [ ] 2.2 Implement area-specific loot themes (forest herbs, cave minerals, etc.)
-  - [ ] 2.3 Add exploration type modifiers for thorough vs. quick exploration rewards
-  - [ ] 2.4 Balance area gold multipliers and experience bonuses across difficulty progression
-  - [ ] 2.5 Create loot preview system showing potential area rewards to players
-  - [ ] 2.6 Add rare area-exclusive items for exploration incentivization
+- [x] 2.0 Enhance Area Exploration Loot Systems
+  - [x] 2.1 Review and expand existing area loot tables to ensure comprehensive coverage
+  - [x] 2.2 Implement area-specific loot themes (forest herbs, cave minerals, etc.)
+  - [x] 2.3 Add exploration type modifiers for thorough vs. quick exploration rewards
+  - [x] 2.4 Balance area gold multipliers and experience bonuses across difficulty progression
+  - [x] 2.5 Create loot preview system showing potential area rewards to players
+  - [x] 2.6 Add rare area-exclusive items for exploration incentivization
 
 - [ ] 3.0 Optimize Drop Rate Algorithms and Level Scaling
   - [ ] 3.1 Fine-tune LootSystem.calculateLevelScaling() to prevent over-farming while maintaining fairness

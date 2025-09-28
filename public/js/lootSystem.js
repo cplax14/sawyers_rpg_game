@@ -200,9 +200,16 @@ const LootSystem = {
 
             // Generate area-specific loot
             for (const lootEntry of areaLootConfig.lootTable) {
+                // Check if this loot entry has exploration type restrictions
+                if (lootEntry.explorationTypes && !lootEntry.explorationTypes.includes(explorationType)) {
+                    continue; // Skip items that require different exploration types
+                }
+
                 const modifiedEntry = {
                     ...lootEntry,
-                    dropChance: lootEntry.dropChance * explorationModifiers.dropChanceMultiplier
+                    dropChance: lootEntry.dropChance * explorationModifiers.dropChanceMultiplier,
+                    // Apply rarity bonus to rarity weights
+                    rarityWeights: this.applyRarityBonus(lootEntry.rarityWeights || {}, explorationModifiers.rarityBonus)
                 };
 
                 const dropResult = this.rollForLoot(modifiedEntry, playerLevel, areaLootConfig.recommendedLevel);
@@ -795,13 +802,119 @@ const LootSystem = {
      */
     getExplorationModifiers: function(explorationType) {
         const modifiers = {
-            standard: { dropChanceMultiplier: 1.0, goldMultiplier: 1.0 },
-            thorough: { dropChanceMultiplier: 1.3, goldMultiplier: 1.2 },
-            quick: { dropChanceMultiplier: 0.7, goldMultiplier: 0.8 },
-            treasure_hunt: { dropChanceMultiplier: 1.5, goldMultiplier: 2.0 }
+            // Standard exploration - balanced rewards
+            standard: {
+                dropChanceMultiplier: 1.0,
+                goldMultiplier: 1.0,
+                rarityBonus: 0.0,
+                timeMultiplier: 1.0,
+                description: "Normal exploration pace with balanced rewards"
+            },
+
+            // Thorough exploration - higher drop rates, better rarity
+            thorough: {
+                dropChanceMultiplier: 1.4,
+                goldMultiplier: 1.3,
+                rarityBonus: 0.1, // 10% better rarity chances
+                timeMultiplier: 2.0,
+                description: "Careful, detailed exploration with higher reward chances"
+            },
+
+            // Quick exploration - lower rewards but faster
+            quick: {
+                dropChanceMultiplier: 0.6,
+                goldMultiplier: 0.7,
+                rarityBonus: -0.05, // 5% worse rarity chances
+                timeMultiplier: 0.5,
+                description: "Fast exploration with reduced rewards"
+            },
+
+            // Treasure hunting - focused on valuable items
+            treasure_hunt: {
+                dropChanceMultiplier: 1.2,
+                goldMultiplier: 2.5,
+                rarityBonus: 0.15, // 15% better rarity chances
+                timeMultiplier: 1.5,
+                description: "Focused search for valuable treasures and rare items"
+            },
+
+            // Stealth exploration - avoids encounters, different loot
+            stealth: {
+                dropChanceMultiplier: 0.8,
+                goldMultiplier: 1.1,
+                rarityBonus: 0.05,
+                timeMultiplier: 1.2,
+                description: "Careful exploration avoiding confrontation"
+            },
+
+            // Resource gathering - focused on materials
+            resource_gathering: {
+                dropChanceMultiplier: 1.6,
+                goldMultiplier: 0.9,
+                rarityBonus: -0.1, // Lower rarity but more quantity
+                timeMultiplier: 1.8,
+                description: "Systematic collection of materials and resources"
+            },
+
+            // Combat patrol - looking for fights
+            combat_patrol: {
+                dropChanceMultiplier: 0.9,
+                goldMultiplier: 1.1,
+                rarityBonus: 0.0,
+                timeMultiplier: 1.1,
+                description: "Aggressive exploration seeking combat encounters"
+            }
         };
 
         return modifiers[explorationType] || modifiers.standard;
+    },
+
+    /**
+     * Apply rarity bonus to rarity weights
+     */
+    applyRarityBonus: function(rarityWeights, rarityBonus) {
+        if (!rarityBonus || rarityBonus === 0) {
+            return rarityWeights;
+        }
+
+        const adjustedWeights = { ...rarityWeights };
+
+        // Apply bonus by shifting weights toward higher rarities
+        if (rarityBonus > 0) {
+            // Positive bonus - increase higher rarity weights
+            const rarityOrder = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
+
+            for (let i = rarityOrder.length - 1; i >= 0; i--) {
+                const rarity = rarityOrder[i];
+                if (adjustedWeights[rarity]) {
+                    // Higher rarities get more benefit from the bonus
+                    const multiplier = 1 + (rarityBonus * (i + 1) * 0.5);
+                    adjustedWeights[rarity] *= multiplier;
+                }
+            }
+        } else {
+            // Negative bonus - increase lower rarity weights
+            const rarityOrder = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
+
+            for (let i = 0; i < rarityOrder.length; i++) {
+                const rarity = rarityOrder[i];
+                if (adjustedWeights[rarity]) {
+                    // Lower rarities get more benefit from negative bonus
+                    const multiplier = 1 + (Math.abs(rarityBonus) * (5 - i) * 0.3);
+                    adjustedWeights[rarity] *= multiplier;
+                }
+            }
+        }
+
+        // Normalize weights to prevent overflow
+        const totalWeight = Object.values(adjustedWeights).reduce((sum, weight) => sum + weight, 0);
+        if (totalWeight > 0) {
+            for (const rarity in adjustedWeights) {
+                adjustedWeights[rarity] /= totalWeight;
+            }
+        }
+
+        return adjustedWeights;
     },
 
     /**

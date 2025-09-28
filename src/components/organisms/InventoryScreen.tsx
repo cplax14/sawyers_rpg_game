@@ -406,12 +406,12 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
       });
       setFilteredItems(baseItems); // Fallback to unfiltered items
     }
-  }, [selectedCategory, searchQuery, sortBy, sortOrder, rarityFilter, valueFilter, usableOnly, stackableOnly, getFilteredItems, getItemsByCategory, filterItems]);
+  }, [selectedCategory, searchQuery, sortBy, sortOrder, rarityFilter, valueFilter, usableOnly, stackableOnly]);
 
   // Update filtered items when dependencies change
   React.useEffect(() => {
     updateFilteredItems();
-  }, [updateFilteredItems]);
+  }, [selectedCategory, searchQuery, sortBy, sortOrder, rarityFilter, valueFilter, usableOnly, stackableOnly]);
 
   // Virtualized grid configuration
   const ITEM_CARD_HEIGHT = isMobile ? 200 : 240;
@@ -553,7 +553,7 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
   // Performance tracking for component renders
   React.useEffect(() => {
     performanceMonitor.trackComponentRender('InventoryScreen');
-  });
+  }, []); // Empty dependency array to run only once
 
   // Item rendering function for virtualized grid (fallback)
   const renderItem = renderItemOptimized;
