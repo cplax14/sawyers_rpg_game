@@ -10,6 +10,10 @@ import { useVirtualizedGrid } from '../../hooks/useVirtualizedGrid';
 import { useLazyCreatureLoading } from '../../hooks/useLazyLoading';
 import { useGameState } from '../../hooks';
 import { useResponsive } from '../../hooks';
+import { useOptimizedCreatureRendering } from '../../hooks/useOptimizedRendering';
+import { useSmartCreatureFiltering, useSmartAggregations } from '../../hooks/useDataComputationCache';
+import { useCreatureCache } from '../../hooks/useSmartCache';
+import { performanceMonitor } from '../../utils/performanceMonitor';
 import { EnhancedCreature, CreatureType, CreatureElement, CreatureRarity } from '../../types/creatures';
 import { checkBreedingCompatibility, breedCreatures, generateNPCTraders, canMakeTrade, executeNPCTrade } from '../../utils/creatureUtils';
 

@@ -576,6 +576,18 @@ export const WorldMap: React.FC<WorldMapProps> = ({
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   <Button
+                    variant="secondary"
+                    size="large"
+                    onClick={() => {
+                      navigateToScreen('inventory');
+                      setShowGameMenu(false);
+                    }}
+                    style={{ width: '100%' }}
+                  >
+                    🎒 Inventory
+                  </Button>
+
+                  <Button
                     variant="primary"
                     size="large"
                     onClick={() => handleSaveGame(1)}

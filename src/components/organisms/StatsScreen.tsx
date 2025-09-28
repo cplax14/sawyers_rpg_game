@@ -4,7 +4,7 @@ import { Button } from '../atoms/Button';
 import { LoadingSpinner } from '../atoms/LoadingSpinner';
 import { ExperienceBar } from '../molecules/ExperienceBar';
 import { useExperience } from '../../hooks/useExperience';
-import { usePlayer } from '../../hooks/usePlayer';
+import { usePlayer } from '../../hooks/useGameState';
 import { useEquipment } from '../../hooks/useEquipment';
 import { useResponsive } from '../../hooks';
 import { ExperienceSource } from '../../types/experience';
@@ -32,7 +32,7 @@ const statsStyles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: '1.5rem 2rem',
+    padding: '1rem 2rem',
     background: 'rgba(0, 0, 0, 0.3)',
     borderBottom: '2px solid rgba(255, 255, 255, 0.1)',
     backdropFilter: 'blur(10px)'
@@ -40,16 +40,18 @@ const statsStyles = {
   navigation: {
     display: 'flex',
     gap: '0.5rem',
-    padding: '1rem 2rem',
+    padding: '0.75rem 2rem',
     background: 'rgba(0, 0, 0, 0.2)',
     borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
     overflowX: 'auto' as const
   },
   navButton: {
     background: 'rgba(255, 255, 255, 0.1)',
-    border: '1px solid rgba(255, 255, 255, 0.2)',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'rgba(255, 255, 255, 0.2)',
     borderRadius: '8px',
-    padding: '0.75rem 1rem',
+    padding: '0.5rem 0.75rem',
     color: '#f4f4f4',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
@@ -66,16 +68,16 @@ const statsStyles = {
   },
   content: {
     flex: 1,
-    padding: '1.5rem 2rem',
+    padding: '1rem 2rem',
     overflowY: 'auto' as const,
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: '1.5rem'
+    gap: '1rem'
   },
   card: {
     background: 'rgba(255, 255, 255, 0.05)',
     borderRadius: '12px',
-    padding: '1.5rem',
+    padding: '1rem',
     border: '1px solid rgba(255, 255, 255, 0.1)',
     backdropFilter: 'blur(8px)'
   },

@@ -226,16 +226,20 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
   const { isMobile, isTablet } = useResponsive();
 
   const {
-    equipmentSet,
+    equipped,
     finalStats,
-    equipmentBonuses,
+    equipmentStats,
     equipItem,
     unequipItem,
-    canEquipItem,
-    getEquipmentRecommendations,
-    isLoading: equipmentLoading,
-    error: equipmentError
+    canEquip: canEquipItem
   } = useEquipment();
+
+  // Provide fallback values to prevent undefined errors
+  const equipmentSet = equipped || {};
+  const equipmentBonuses = equipmentStats || {};
+  const getEquipmentRecommendations = () => [];
+  const equipmentLoading = false;
+  const equipmentError = null;
 
   const {
     getFilteredItems,

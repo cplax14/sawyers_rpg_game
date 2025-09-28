@@ -97,7 +97,7 @@ export const useEquipment = () => {
       speed: Math.floor((10 + level * 2) * modifier.speed),
       accuracy: Math.floor((10 + level * 2) * modifier.accuracy)
     };
-  }, [gameState.state.player]);
+  }, [gameState.state.player?.id, gameState.state.player?.level, gameState.state.player?.class]);
 
   // Calculate equipment stat bonuses
   const calculateEquipmentStats = useCallback((): Partial<PlayerStats> => {
@@ -192,7 +192,7 @@ export const useEquipment = () => {
       evasion: createStatCalculation(baseStats.speed / 2, 0, 'speed'),
       resistance: createStatCalculation(baseStats.magicDefense / 2, 0, 'magicDefense')
     };
-  }, [getBaseStats, calculateEquipmentStats, gameState.state.player]);
+  }, [getBaseStats, calculateEquipmentStats, gameState.state.player?.id, gameState.state.player?.level]);
 
   // Check equipment compatibility
   const checkCompatibility = useCallback((
@@ -294,7 +294,7 @@ export const useEquipment = () => {
     }
 
     return { canEquip, reasons, warnings, suggestions };
-  }, [gameState.state.player, equipmentState.equipped, calculateFinalStats]);
+  }, [gameState.state.player?.id, gameState.state.player?.level, gameState.state.player?.class, equipmentState.equipped, calculateFinalStats]);
 
   // Compare two pieces of equipment
   const compareEquipment = useCallback((
@@ -423,7 +423,7 @@ export const useEquipment = () => {
         errors: [error instanceof Error ? error.message : 'Unknown error']
       };
     }
-  }, [equipmentState.equipped, checkCompatibility, compareEquipment, addItem, removeItem, gameState]);
+  }, [equipmentState.equipped, checkCompatibility, compareEquipment, addItem, removeItem, gameState.dispatch, gameState.state.player?.id]);
 
   // Unequip item
   const unequipItem = useCallback(async (slot: EquipmentSlot): Promise<EquipItemResult> => {
@@ -544,7 +544,7 @@ export const useEquipment = () => {
       ...prev,
       statCalculations: newStats
     }));
-  }, [equipmentState.equipped, calculateFinalStats]);
+  }, [equipmentState.equipped]);
 
   // Auto-update player stats in game state
   useEffect(() => {
@@ -563,7 +563,7 @@ export const useEquipment = () => {
         payload: { playerId: gameState.state.player.id, stats: finalStats }
       });
     }
-  }, [equipmentState.statCalculations, gameState]);
+  }, [equipmentState.statCalculations, gameState.dispatch, gameState.state.player?.id]);
 
   // Equipment summary for display
   const equipmentSummary = useMemo(() => {

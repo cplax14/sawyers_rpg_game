@@ -160,9 +160,9 @@ export const useResponsiveInventory = (customBreakpoints?: Partial<BreakpointCon
         gridColumns: isSmallHeight ? 6 : 4,
         gridGap: '0.75rem',
         itemSize: 'medium',
-        modalPadding: '1.5rem',
-        modalMaxWidth: '90vw',
-        modalHeight: '90vh',
+        modalPadding: '1rem',
+        modalMaxWidth: '95vw',
+        modalHeight: '95vh',
         showTabLabels: true,
         showTabShortcuts: false,
         compactTabs: false,
@@ -180,9 +180,9 @@ export const useResponsiveInventory = (customBreakpoints?: Partial<BreakpointCon
       gridColumns: 'auto',
       gridGap: '1rem',
       itemSize: 'large',
-      modalPadding: '2rem',
-      modalMaxWidth: '1200px',
-      modalHeight: '80vh',
+      modalPadding: '1rem',
+      modalMaxWidth: '95vw',
+      modalHeight: '95vh',
       showTabLabels: true,
       showTabShortcuts: true,
       compactTabs: false,
@@ -260,22 +260,22 @@ export const useResponsiveInventory = (customBreakpoints?: Partial<BreakpointCon
 
     if (isTablet) {
       return {
-        width: '90vw',
-        height: '90vh',
-        maxWidth: '800px',
-        maxHeight: '600px',
+        width: '95vw',
+        height: '95vh',
+        maxWidth: '1200px',
+        maxHeight: '90vh',
         borderRadius: '12px',
-        margin: '2rem'
+        margin: '1rem'
       };
     }
 
     return {
-      width: 'auto',
-      height: 'auto',
-      maxWidth: '1200px',
-      maxHeight: '80vh',
+      width: '95vw',
+      height: '95vh',
+      maxWidth: '95vw',
+      maxHeight: '95vh',
       borderRadius: '16px',
-      margin: '2rem'
+      margin: '1rem'
     };
   };
 
