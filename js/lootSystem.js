@@ -541,9 +541,9 @@ const LootSystem = {
             }
         }
 
-        // Add default weights if none specified - use target distribution
+        // Add default weights if none specified - use phase-based distribution
         if (Object.keys(adjustedWeights).length === 0) {
-            Object.assign(adjustedWeights, this.getDefaultRarityWeights());
+            Object.assign(adjustedWeights, this.getPhaseBasedRarityWeights(playerLevel, contentLevel));
         }
 
         // Normalize weights to ensure they sum to 1.0 for consistent distribution
@@ -1035,6 +1035,48 @@ const LootSystem = {
             epic: 0.018,
             legendary: 0.002
         };
+    },
+
+    /**
+     * Get phase-based progression rarity weights optimized for learning curve
+     * Implements 80%+ basic reward frequency for early game (levels 1-10)
+     */
+    getPhaseBasedRarityWeights: function(playerLevel, contentLevel = null) {
+        // Use player level as primary determinant, content level for fine-tuning
+        const effectiveLevel = playerLevel;
+
+        // Define progression phases with learning-focused distributions
+        if (effectiveLevel <= 10) {
+            // Early Game Phase (Levels 1-10): Learning Focus with 80%+ Basic Rewards
+            // Emphasize common/uncommon items for skill learning and resource management
+            return {
+                common: 0.65,       // 65% common items (healing, materials, basic equipment)
+                uncommon: 0.28,     // 28% uncommon (better equipment, learning spells) = 93% basic total
+                rare: 0.06,         // 6% rare (special equipment, advanced spells)
+                epic: 0.01,         // 1% epic (rare progression items)
+                legendary: 0.00     // 0% legendary (none in early game for balance)
+            };
+        } else if (effectiveLevel <= 20) {
+            // Mid Game Phase (Levels 11-20): Strategic Equipment Variety
+            // Balanced distribution with equipment diversity and spell variety
+            return {
+                common: 0.50,       // 50% common (consumables, materials, basic equipment)
+                uncommon: 0.35,     // 35% uncommon (strategic equipment, diverse spells)
+                rare: 0.12,         // 12% rare (significant upgrades, class specialization)
+                epic: 0.025,        // 2.5% epic (powerful equipment, advanced spells)
+                legendary: 0.005    // 0.5% legendary (very rare progression items)
+            };
+        } else {
+            // Late Game Phase (Levels 21-30+): Rare/Epic/Legendary Focus
+            // Higher rarity distribution for endgame progression and prestige
+            return {
+                common: 0.35,       // 35% common (materials, consumables)
+                uncommon: 0.30,     // 30% uncommon (utility items, materials)
+                rare: 0.25,         // 25% rare (significant equipment, spells)
+                epic: 0.08,         // 8% epic (powerful endgame items)
+                legendary: 0.02     // 2% legendary (prestige items, ultimate equipment)
+            };
+        }
     },
 
     /**

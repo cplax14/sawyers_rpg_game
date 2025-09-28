@@ -134,6 +134,1826 @@ const LootSystem = {
     },
 
     /**
+     * Get phase-based progression rarity weights optimized for learning curve
+     * Implements 80%+ basic reward frequency for early game (levels 1-10)
+     */
+    getPhaseBasedRarityWeights: function(playerLevel, contentLevel = null) {
+        // Use player level as primary determinant, content level for fine-tuning
+        const effectiveLevel = playerLevel;
+
+        // Define progression phases with learning-focused distributions
+        if (effectiveLevel <= 10) {
+            // Early Game Phase (Levels 1-10): Learning Focus with 80%+ Basic Rewards
+            // Emphasize common/uncommon items for skill learning and resource management
+            return {
+                common: 0.65,       // 65% common items (healing, materials, basic equipment)
+                uncommon: 0.28,     // 28% uncommon (better equipment, learning spells) = 93% basic total
+                rare: 0.06,         // 6% rare (special equipment, advanced spells)
+                epic: 0.01,         // 1% epic (rare progression items)
+                legendary: 0.00     // 0% legendary (none in early game for balance)
+            };
+        } else if (effectiveLevel <= 20) {
+            // Mid Game Phase (Levels 11-20): Strategic Equipment Variety
+            // Balanced distribution with equipment diversity and spell variety
+            return {
+                common: 0.50,       // 50% common (consumables, materials, basic equipment)
+                uncommon: 0.35,     // 35% uncommon (strategic equipment, diverse spells)
+                rare: 0.12,         // 12% rare (significant upgrades, class specialization)
+                epic: 0.025,        // 2.5% epic (powerful equipment, advanced spells)
+                legendary: 0.005    // 0.5% legendary (very rare progression items)
+            };
+        } else {
+            // Late Game Phase (Levels 21-30+): Rare/Epic/Legendary Focus
+            // Higher rarity distribution for endgame progression and prestige
+            return {
+                common: 0.35,       // 35% common (materials, consumables)
+                uncommon: 0.30,     // 30% uncommon (utility items, materials)
+                rare: 0.25,         // 25% rare (significant equipment, spells)
+                epic: 0.08,         // 8% epic (powerful endgame items)
+                legendary: 0.02     // 2% legendary (prestige items, ultimate equipment)
+            };
+        }
+    },
+
+    /**
+     * Get early game learning-focused item type priorities
+     * Ensures 80%+ basic reward frequency with educational value
+     */
+    getEarlyGameItemTypePriorities: function(playerLevel, encounterType = 'general') {
+        if (playerLevel > 10) {
+            return null; // Only applies to early game
+        }
+
+        // Define learning-focused item priorities for early game
+        const priorities = {
+            // High priority: Essential learning items (60% of drops)
+            essential: {
+                weight: 0.60,
+                items: [
+                    'healing_potion',      // Resource management learning
+                    'mana_potion',         // Magic resource understanding
+                    'iron_sword',          // Basic weapon progression
+                    'leather_armor',       // Defense concept introduction
+                    'spell_scroll'         // Magic system introduction
+                ]
+            },
+
+            // Medium priority: Skill development items (25% of drops)
+            development: {
+                weight: 0.25,
+                items: [
+                    'oak_staff',           // Caster weapon option
+                    'steel_dagger',        // Alternative weapon type
+                    'health_ring',         // Accessory concept
+                    'nature_charm',        // Elemental resistance intro
+                    'cloth_robe',          // Caster armor option
+                    'spell_book'           // Advanced magic learning
+                ]
+            },
+
+            // Low priority: Exploration rewards (15% of drops)
+            exploration: {
+                weight: 0.15,
+                items: [
+                    'material',            // Crafting system preview
+                    'gold',                // Economy introduction
+                    'stamina_potion',      // Advanced resource management
+                    'leather_scraps',      // Material variety
+                    'iron_ore'             // Resource gathering concept
+                ]
+            }
+        };
+
+        return priorities;
+    },
+
+    /**
+     * Select learning-appropriate item for early game players
+     * Implements educational progression and resource management teaching
+     */
+    selectEarlyGameLearningItem: function(playerLevel, rarity = 'common', encounterContext = {}) {
+        const priorities = this.getEarlyGameItemTypePriorities(playerLevel, encounterContext.type);
+        if (!priorities) {
+            return null; // Not early game
+        }
+
+        // Determine priority tier based on random roll weighted by learning needs
+        const roll = Math.random();
+        let selectedTier = null;
+
+        if (roll < priorities.essential.weight) {
+            selectedTier = priorities.essential;
+        } else if (roll < priorities.essential.weight + priorities.development.weight) {
+            selectedTier = priorities.development;
+        } else {
+            selectedTier = priorities.exploration;
+        }
+
+        // Select random item from the chosen tier
+        const selectedItemType = selectedTier.items[Math.floor(Math.random() * selectedTier.items.length)];
+
+        // Apply learning-focused modifications based on player level
+        const learningModifications = this.getEarlyGameLearningModifications(playerLevel, selectedItemType, rarity);
+
+        return {
+            itemType: selectedItemType,
+            modifications: learningModifications,
+            learningValue: this.calculateLearningValue(selectedItemType, playerLevel),
+            tier: selectedTier === priorities.essential ? 'essential' :
+                  selectedTier === priorities.development ? 'development' : 'exploration'
+        };
+    },
+
+    /**
+     * Get learning-focused modifications for early game items
+     */
+    getEarlyGameLearningModifications: function(playerLevel, itemType, rarity) {
+        const modifications = {
+            dropChanceBonus: 0,
+            quantityBonus: 0,
+            valueAdjustment: 1.0,
+            learningHints: []
+        };
+
+        // Essential learning items get significant bonuses
+        const essentialItems = ['healing_potion', 'mana_potion', 'iron_sword', 'leather_armor', 'spell_scroll'];
+        if (essentialItems.includes(itemType)) {
+            modifications.dropChanceBonus = 0.25; // +25% drop chance
+            modifications.learningHints.push(`Essential for level ${playerLevel} progression`);
+
+            // Consumables get quantity bonuses to teach resource management
+            if (['healing_potion', 'mana_potion'].includes(itemType)) {
+                modifications.quantityBonus = Math.min(3, Math.floor(playerLevel / 3) + 1);
+                modifications.learningHints.push('Use wisely - resources are limited');
+            }
+        }
+
+        // Equipment items get progression hints
+        const equipmentItems = ['iron_sword', 'leather_armor', 'oak_staff', 'steel_dagger', 'health_ring'];
+        if (equipmentItems.includes(itemType)) {
+            modifications.learningHints.push('Equip in inventory to improve combat effectiveness');
+            if (playerLevel <= 3) {
+                modifications.learningHints.push('Try different equipment types to find your playstyle');
+            }
+        }
+
+        // Spell learning items get magic system introduction
+        const spellItems = ['spell_scroll', 'spell_book'];
+        if (spellItems.includes(itemType)) {
+            modifications.learningHints.push('Learn spells to unlock new combat abilities');
+            if (playerLevel <= 5) {
+                modifications.learningHints.push('Start with basic spells like Heal or Magic Bolt');
+            }
+        }
+
+        return modifications;
+    },
+
+    /**
+     * Calculate learning value score for educational progression
+     */
+    calculateLearningValue: function(itemType, playerLevel) {
+        const learningScores = {
+            // Core survival items - highest learning value
+            'healing_potion': 10,
+            'mana_potion': 9,
+
+            // Equipment progression - high learning value
+            'iron_sword': 8,
+            'leather_armor': 8,
+            'oak_staff': 7,
+
+            // System introduction - medium-high learning value
+            'spell_scroll': 7,
+            'health_ring': 6,
+            'steel_dagger': 6,
+
+            // Variety and options - medium learning value
+            'cloth_robe': 5,
+            'nature_charm': 5,
+            'spell_book': 5,
+
+            // Advanced concepts - lower early game learning value
+            'material': 3,
+            'gold': 2,
+            'stamina_potion': 4
+        };
+
+        const baseScore = learningScores[itemType] || 3;
+
+        // Adjust based on player level - some items more valuable at different stages
+        let levelAdjustment = 1.0;
+        if (playerLevel <= 3) {
+            // Very early game - prioritize survival
+            if (['healing_potion', 'iron_sword', 'leather_armor'].includes(itemType)) {
+                levelAdjustment = 1.3;
+            }
+        } else if (playerLevel <= 6) {
+            // Early-mid game - prioritize variety and magic
+            if (['spell_scroll', 'oak_staff', 'mana_potion'].includes(itemType)) {
+                levelAdjustment = 1.2;
+            }
+        } else {
+            // Late early game - prioritize optimization and materials
+            if (['spell_book', 'material', 'stamina_potion'].includes(itemType)) {
+                levelAdjustment = 1.1;
+            }
+        }
+
+        return Math.round(baseScore * levelAdjustment);
+    },
+
+    /**
+     * Apply early game learning enhancements to loot items
+     * Implements 80%+ basic reward frequency with educational focus for levels 1-10
+     */
+    applyEarlyGameLearningEnhancements: function(item, itemType, rarity, playerLevel, contentLevel) {
+        // Get learning modifications for this item type
+        const modifications = this.getEarlyGameLearningModifications(playerLevel, itemType, rarity);
+
+        // Apply quantity bonuses for consumables to teach resource management
+        if (modifications.quantityBonus > 0 && item.stackable) {
+            const baseQuantity = item.quantity || 1;
+            item.quantity = baseQuantity + modifications.quantityBonus;
+
+            // Add learning metadata
+            if (!item.learningInfo) item.learningInfo = {};
+            item.learningInfo.quantityBonus = modifications.quantityBonus;
+            item.learningInfo.purpose = 'resource_management_teaching';
+        }
+
+        // Apply value adjustments for early game balance
+        if (modifications.valueAdjustment !== 1.0) {
+            item.value = Math.round((item.value || item.baseValue || 10) * modifications.valueAdjustment);
+        }
+
+        // Add learning hints for educational progression
+        if (modifications.learningHints.length > 0) {
+            if (!item.learningInfo) item.learningInfo = {};
+            item.learningInfo.hints = modifications.learningHints;
+            item.learningInfo.playerLevel = playerLevel;
+            item.learningInfo.isEarlyGame = true;
+        }
+
+        // Add early game progression markers
+        item.earlyGameItem = true;
+        item.learningValue = this.calculateLearningValue(itemType, playerLevel);
+
+        // Special early game enhancements by item type
+        this.applyItemTypeSpecificEarlyGameEnhancements(item, itemType, playerLevel, rarity);
+    },
+
+    /**
+     * Apply item type specific early game enhancements
+     */
+    applyItemTypeSpecificEarlyGameEnhancements: function(item, itemType, playerLevel, rarity) {
+        // Healing potions: Enhanced early game effectiveness
+        if (itemType === 'healing_potion') {
+            if (playerLevel <= 3) {
+                // Very early game - more reliable healing
+                if (item.healAmount) {
+                    item.healAmount = Math.round(item.healAmount * 1.2);
+                }
+                item.description = (item.description || 'Restores health') + ' (Enhanced for new adventurers)';
+            }
+        }
+
+        // Weapons: Early game damage consistency
+        else if (['iron_sword', 'oak_staff', 'steel_dagger'].includes(itemType)) {
+            if (playerLevel <= 5) {
+                // Reduce damage variance for more predictable early combat
+                if (item.damage && Array.isArray(item.damage)) {
+                    const avgDamage = (item.damage[0] + item.damage[1]) / 2;
+                    const variance = 0.15; // 15% variance instead of default
+                    item.damage = [
+                        Math.round(avgDamage * (1 - variance)),
+                        Math.round(avgDamage * (1 + variance))
+                    ];
+                }
+                item.description = (item.description || 'A reliable weapon') + ' (Balanced for learning combat)';
+            }
+        }
+
+        // Armor: Early game protection emphasis
+        else if (['leather_armor', 'cloth_robe'].includes(itemType)) {
+            if (playerLevel <= 4) {
+                // Slight armor bonus for survivability learning
+                if (item.armor) {
+                    item.armor = Math.round(item.armor * 1.1);
+                }
+                item.description = (item.description || 'Provides protection') + ' (Reinforced for new adventurers)';
+            }
+        }
+
+        // Spell scrolls: Early game spell accessibility
+        else if (itemType === 'spell_scroll') {
+            if (playerLevel <= 6) {
+                // Reduce mana costs for early learning
+                if (item.manaCost) {
+                    item.manaCost = Math.max(1, Math.round(item.manaCost * 0.8));
+                }
+                if (!item.learningInfo) item.learningInfo = {};
+                item.learningInfo.reducedManaCost = true;
+            }
+        }
+
+        // Materials: Early game crafting introduction
+        else if (itemType === 'material' || item.category === 'material') {
+            if (playerLevel <= 8) {
+                // Add crafting introduction hints
+                if (!item.learningInfo) item.learningInfo = {};
+                item.learningInfo.craftingPreview = true;
+                item.description = (item.description || 'A useful material') + ' (Future crafting component)';
+            }
+        }
+    },
+
+    /**
+     * Get mid-game strategic equipment and spell priorities (levels 11-20)
+     * Emphasizes equipment variety and spell diversity for strategic depth
+     */
+    getMidGameStrategicPriorities: function(playerLevel, playerClass = null, encounterType = 'general') {
+        if (playerLevel < 11 || playerLevel > 20) {
+            return null; // Only applies to mid-game
+        }
+
+        // Define strategic equipment categories for mid-game depth
+        const priorities = {
+            // Strategic Equipment: Class-specific and tactical options (40% of drops)
+            strategicEquipment: {
+                weight: 0.40,
+                categories: {
+                    weapons: [
+                        'steel_sword',         // Upgraded melee option
+                        'crystal_staff',       // Advanced caster weapon
+                        'elvish_bow',          // Precision ranged weapon
+                        'blessed_mace',        // Holy damage option
+                        'poisoned_blade',      // Status effect weapon
+                        'great_axe',           // High damage two-hander
+                        'shadow_blade',        // Stealth/critical weapon
+                        'war_hammer'           // Armor penetration option
+                    ],
+                    armor: [
+                        'chain_mail',          // Balanced protection
+                        'mage_robes',          // Caster-specific armor
+                        'scale_mail',          // Physical damage resistance
+                        'plate_armor',         // Heavy protection
+                        'stealth_cloak',       // Mobility and stealth
+                        'ranger_cloak',        // Environmental protection
+                        'battle_vest'          // Combat-focused armor
+                    ],
+                    accessories: [
+                        'strength_band',       // Physical damage boost
+                        'mana_crystal',        // Magical power enhancement
+                        'precision_ring',      // Accuracy improvement
+                        'holy_symbol',         // Divine magic focus
+                        'power_ring',          // General stat boost
+                        'stealth_cloak',       // Evasion and stealth
+                        'eagle_eye_ring'       // Critical hit enhancement
+                    ]
+                }
+            },
+
+            // Spell Diversity: Various magical schools and utilities (35% of drops)
+            spellDiversity: {
+                weight: 0.35,
+                categories: {
+                    combat: [
+                        'fireball',            // AoE fire damage
+                        'ice_shard',           // Single target ice + slow
+                        'lightning_bolt',      // Fast electric damage
+                        'earth_spike',         // Earth damage + knockdown
+                        'shadow_strike',       // Dark magic + confusion
+                        'holy_light',          // Light damage vs undead
+                        'wind_slash'           // Air magic + positioning
+                    ],
+                    utility: [
+                        'heal',                // Improved healing
+                        'mana_restore',        // Resource management
+                        'shield',              // Defensive magic
+                        'haste',               // Speed enhancement
+                        'detect_magic',        // Information gathering
+                        'purify',              // Status cleansing
+                        'teleport'             // Tactical positioning
+                    ],
+                    enhancement: [
+                        'weapon_enchant',      // Temporary weapon boost
+                        'armor_blessing',      // Defensive enhancement
+                        'elemental_ward',      // Resistance magic
+                        'strength_boost',      // Physical enhancement
+                        'mind_clarity',        // Mental enhancement
+                        'nature_bond'          // Environmental magic
+                    ]
+                }
+            },
+
+            // Advanced Consumables: Strategic depth items (15% of drops)
+            advancedConsumables: {
+                weight: 0.15,
+                items: [
+                    'greater_healing_potion',  // Improved healing
+                    'greater_mana_potion',     // Enhanced mana restore
+                    'stamina_elixir',          // Endurance enhancement
+                    'antidote',                // Status effect cure
+                    'strength_potion',         // Temporary stat boost
+                    'invisibility_potion',     // Stealth option
+                    'fire_resistance_potion',  // Elemental protection
+                    'speed_potion'             // Mobility enhancement
+                ]
+            },
+
+            // Materials and Crafting: Preparation for advanced systems (10% of drops)
+            craftingMaterials: {
+                weight: 0.10,
+                items: [
+                    'refined_metal',           // Advanced weapon materials
+                    'enchanted_cloth',         // Magical armor components
+                    'elemental_crystal',       // Spell enhancement materials
+                    'rare_herbs',              // Advanced alchemy
+                    'precious_gems',           // Jewelry crafting
+                    'ancient_runes',           // Enchantment materials
+                    'dragon_scale',            // Legendary materials
+                    'mystical_essence'         // Pure magical energy
+                ]
+            }
+        };
+
+        return priorities;
+    },
+
+    /**
+     * Select strategic equipment for mid-game players
+     * Implements class-based preferences and tactical variety
+     */
+    selectMidGameStrategicEquipment: function(playerLevel, playerClass, encounterContext = {}) {
+        const priorities = this.getMidGameStrategicPriorities(playerLevel, playerClass, encounterContext.type);
+        if (!priorities) {
+            return null; // Not mid-game
+        }
+
+        // Weight selection based on player class preferences
+        const classWeights = this.getMidGameClassWeights(playerClass);
+
+        // Determine equipment category based on strategic needs
+        const roll = Math.random();
+        let selectedCategory = null;
+
+        if (roll < priorities.strategicEquipment.weight) {
+            selectedCategory = this.selectStrategicEquipmentCategory(playerClass, classWeights);
+        } else if (roll < priorities.strategicEquipment.weight + priorities.spellDiversity.weight) {
+            selectedCategory = this.selectSpellDiversityCategory(playerClass, classWeights);
+        } else if (roll < priorities.strategicEquipment.weight + priorities.spellDiversity.weight + priorities.advancedConsumables.weight) {
+            selectedCategory = priorities.advancedConsumables;
+        } else {
+            selectedCategory = priorities.craftingMaterials;
+        }
+
+        return this.selectItemFromCategory(selectedCategory, playerClass, playerLevel);
+    },
+
+    /**
+     * Get class-based weights for mid-game strategic selection
+     */
+    getMidGameClassWeights: function(playerClass) {
+        const classPreferences = {
+            knight: {
+                weapons: 0.4,      // Heavy weapon focus
+                armor: 0.35,       // Protection priority
+                accessories: 0.15,
+                spells: 0.1        // Limited magic
+            },
+            wizard: {
+                weapons: 0.15,     // Staff/wand focus
+                armor: 0.2,        // Robes and light armor
+                accessories: 0.25, // Magical accessories
+                spells: 0.4        // Heavy spell focus
+            },
+            rogue: {
+                weapons: 0.35,     // Stealth weapons
+                armor: 0.2,        // Light, mobile armor
+                accessories: 0.3,  // Utility accessories
+                spells: 0.15       // Some utility magic
+            },
+            ranger: {
+                weapons: 0.3,      // Ranged and nature weapons
+                armor: 0.25,       // Environmental protection
+                accessories: 0.25, // Survival accessories
+                spells: 0.2        // Nature magic
+            },
+            warrior: {
+                weapons: 0.4,      // Combat weapon variety
+                armor: 0.3,        // Battle-tested protection
+                accessories: 0.2,  // Combat accessories
+                spells: 0.1        // Minimal magic
+            },
+            paladin: {
+                weapons: 0.3,      // Holy and defensive weapons
+                armor: 0.3,        // Divine protection
+                accessories: 0.2,  // Holy symbols and rings
+                spells: 0.2        // Divine magic
+            }
+        };
+
+        return classPreferences[playerClass] || {
+            weapons: 0.25,
+            armor: 0.25,
+            accessories: 0.25,
+            spells: 0.25
+        };
+    },
+
+    /**
+     * Select strategic equipment category based on class preferences
+     */
+    selectStrategicEquipmentCategory: function(playerClass, classWeights) {
+        const roll = Math.random();
+        const totalNonSpell = classWeights.weapons + classWeights.armor + classWeights.accessories;
+
+        if (roll < classWeights.weapons / totalNonSpell) {
+            return { type: 'weapons', items: this.getMidGameStrategicPriorities().strategicEquipment.categories.weapons };
+        } else if (roll < (classWeights.weapons + classWeights.armor) / totalNonSpell) {
+            return { type: 'armor', items: this.getMidGameStrategicPriorities().strategicEquipment.categories.armor };
+        } else {
+            return { type: 'accessories', items: this.getMidGameStrategicPriorities().strategicEquipment.categories.accessories };
+        }
+    },
+
+    /**
+     * Select spell diversity category based on class and tactical needs
+     */
+    selectSpellDiversityCategory: function(playerClass, classWeights) {
+        const spellCategories = this.getMidGameStrategicPriorities().spellDiversity.categories;
+
+        // Class-based spell preferences
+        const classSpellPrefs = {
+            wizard: { combat: 0.5, utility: 0.3, enhancement: 0.2 },
+            paladin: { combat: 0.3, utility: 0.4, enhancement: 0.3 },
+            ranger: { combat: 0.3, utility: 0.5, enhancement: 0.2 },
+            rogue: { combat: 0.4, utility: 0.4, enhancement: 0.2 },
+            knight: { combat: 0.2, utility: 0.5, enhancement: 0.3 },
+            warrior: { combat: 0.6, utility: 0.3, enhancement: 0.1 }
+        };
+
+        const prefs = classSpellPrefs[playerClass] || { combat: 0.4, utility: 0.4, enhancement: 0.2 };
+        const roll = Math.random();
+
+        if (roll < prefs.combat) {
+            return { type: 'combat_spells', items: spellCategories.combat };
+        } else if (roll < prefs.combat + prefs.utility) {
+            return { type: 'utility_spells', items: spellCategories.utility };
+        } else {
+            return { type: 'enhancement_spells', items: spellCategories.enhancement };
+        }
+    },
+
+    /**
+     * Select specific item from category with class and level considerations
+     */
+    selectItemFromCategory: function(category, playerClass, playerLevel) {
+        if (!category || !category.items || category.items.length === 0) {
+            return null;
+        }
+
+        // Apply level-based filtering for progression appropriateness
+        const levelAppropriateItems = category.items.filter(item =>
+            this.isMidGameLevelAppropriate(item, playerLevel)
+        );
+
+        if (levelAppropriateItems.length === 0) {
+            return category.items[0]; // Fallback to first item
+        }
+
+        // Select with slight class-based weighting
+        const selectedItem = levelAppropriateItems[Math.floor(Math.random() * levelAppropriateItems.length)];
+
+        return {
+            itemType: selectedItem,
+            category: category.type,
+            strategicValue: this.calculateStrategicValue(selectedItem, playerClass, playerLevel),
+            classAlignment: this.calculateClassAlignment(selectedItem, playerClass)
+        };
+    },
+
+    /**
+     * Check if item is appropriate for mid-game level progression
+     */
+    isMidGameLevelAppropriate: function(itemType, playerLevel) {
+        // Define level gates for strategic progression
+        const levelGates = {
+            // Early mid-game (11-13): Basic strategic options
+            11: ['steel_sword', 'chain_mail', 'crystal_staff', 'fireball', 'heal', 'greater_healing_potion'],
+
+            // Mid mid-game (14-17): Advanced tactical options
+            14: ['elvish_bow', 'mage_robes', 'blessed_mace', 'ice_shard', 'shield', 'strength_potion'],
+
+            // Late mid-game (18-20): Sophisticated strategic tools
+            18: ['great_axe', 'plate_armor', 'shadow_blade', 'lightning_bolt', 'teleport', 'dragon_scale']
+        };
+
+        // Check if item is unlocked at current level
+        for (const [level, items] of Object.entries(levelGates)) {
+            if (playerLevel >= parseInt(level) && items.includes(itemType)) {
+                return true;
+            }
+        }
+
+        // Default: allow basic items for any mid-game level
+        const basicMidGameItems = ['steel_sword', 'chain_mail', 'crystal_staff', 'fireball', 'heal'];
+        return basicMidGameItems.includes(itemType);
+    },
+
+    /**
+     * Calculate strategic value of item for mid-game progression
+     */
+    calculateStrategicValue: function(itemType, playerClass, playerLevel) {
+        const baseValues = {
+            // Weapons: High strategic value for tactical variety
+            'steel_sword': 8, 'crystal_staff': 8, 'elvish_bow': 9, 'blessed_mace': 7,
+            'great_axe': 9, 'shadow_blade': 10, 'poisoned_blade': 8, 'war_hammer': 8,
+
+            // Armor: Medium-high value for survivability and class synergy
+            'chain_mail': 7, 'mage_robes': 7, 'plate_armor': 9, 'stealth_cloak': 8,
+            'scale_mail': 7, 'ranger_cloak': 6, 'battle_vest': 6,
+
+            // Accessories: High value for build diversity
+            'strength_band': 8, 'mana_crystal': 9, 'precision_ring': 7, 'holy_symbol': 7,
+            'power_ring': 8, 'eagle_eye_ring': 8,
+
+            // Spells: Very high value for tactical depth
+            'fireball': 9, 'ice_shard': 8, 'lightning_bolt': 9, 'teleport': 10,
+            'shield': 8, 'haste': 9, 'weapon_enchant': 8, 'heal': 7
+        };
+
+        const baseValue = baseValues[itemType] || 5;
+
+        // Adjust for class alignment
+        const classAlignment = this.calculateClassAlignment(itemType, playerClass);
+        const classMultiplier = 1.0 + (classAlignment * 0.3); // Up to +30% for perfect alignment
+
+        // Adjust for level progression (higher level = more value for advanced items)
+        const levelProgression = (playerLevel - 10) / 10; // 0.1 to 1.0 for levels 11-20
+        const advancedItems = ['shadow_blade', 'teleport', 'dragon_scale', 'plate_armor'];
+        const levelMultiplier = advancedItems.includes(itemType) ? 1.0 + levelProgression * 0.2 : 1.0;
+
+        return Math.round(baseValue * classMultiplier * levelMultiplier);
+    },
+
+    /**
+     * Calculate how well item aligns with player class (0.0 to 1.0)
+     */
+    calculateClassAlignment: function(itemType, playerClass) {
+        const alignments = {
+            knight: {
+                'steel_sword': 1.0, 'blessed_mace': 0.9, 'chain_mail': 1.0, 'plate_armor': 1.0,
+                'strength_band': 0.8, 'holy_symbol': 0.7, 'heal': 0.6, 'shield': 0.9
+            },
+            wizard: {
+                'crystal_staff': 1.0, 'mage_robes': 1.0, 'mana_crystal': 1.0, 'fireball': 1.0,
+                'ice_shard': 0.9, 'lightning_bolt': 0.9, 'teleport': 1.0, 'weapon_enchant': 0.8
+            },
+            rogue: {
+                'shadow_blade': 1.0, 'poisoned_blade': 1.0, 'stealth_cloak': 1.0, 'precision_ring': 0.9,
+                'eagle_eye_ring': 0.8, 'haste': 0.8
+            },
+            ranger: {
+                'elvish_bow': 1.0, 'ranger_cloak': 1.0, 'nature_bond': 1.0, 'eagle_eye_ring': 0.9,
+                'precision_ring': 0.8
+            },
+            warrior: {
+                'great_axe': 1.0, 'war_hammer': 1.0, 'battle_vest': 0.9, 'strength_band': 1.0,
+                'power_ring': 0.8
+            },
+            paladin: {
+                'blessed_mace': 1.0, 'holy_symbol': 1.0, 'chain_mail': 0.8, 'heal': 1.0,
+                'shield': 0.9, 'purify': 0.9
+            }
+        };
+
+        const classAlignments = alignments[playerClass] || {};
+        return classAlignments[itemType] || 0.3; // Default moderate alignment
+    },
+
+    /**
+     * Apply mid-game strategic enhancements to loot items
+     * Implements strategic equipment variety and spell diversity for levels 11-20
+     */
+    applyMidGameStrategicEnhancements: function(item, itemType, rarity, playerLevel, contentLevel, areaName) {
+        // Add mid-game progression markers
+        item.midGameItem = true;
+        item.strategicValue = this.calculateStrategicValue(itemType, item.playerClass, playerLevel);
+
+        // Apply class-based strategic bonuses
+        if (item.playerClass) {
+            const classAlignment = this.calculateClassAlignment(itemType, item.playerClass);
+
+            // Strong class alignment gets bonuses
+            if (classAlignment >= 0.8) {
+                this.applyClassAlignmentBonus(item, classAlignment, itemType);
+            }
+        }
+
+        // Apply strategic depth enhancements by item category
+        this.applyStrategicDepthEnhancements(item, itemType, playerLevel, rarity);
+
+        // Add mid-game tactical metadata
+        if (!item.tacticalInfo) item.tacticalInfo = {};
+        item.tacticalInfo.strategicValue = item.strategicValue;
+        item.tacticalInfo.gamePhase = 'mid_game';
+        item.tacticalInfo.levelRange = '11-20';
+
+        // Add build diversity hints for strategic options
+        this.addBuildDiversityHints(item, itemType, playerLevel);
+    },
+
+    /**
+     * Apply class alignment bonuses for strategic depth
+     */
+    applyClassAlignmentBonus: function(item, alignment, itemType) {
+        // Weapons: Enhanced damage/accuracy for class synergy
+        if (item.damage || item.attackBonus) {
+            const damageBonus = Math.round(alignment * 15); // Up to +15% for perfect alignment
+            if (Array.isArray(item.damage)) {
+                item.damage = item.damage.map(dmg => Math.round(dmg * (1 + damageBonus / 100)));
+            } else if (item.damage) {
+                item.damage = Math.round(item.damage * (1 + damageBonus / 100));
+            }
+
+            if (!item.classEnhancements) item.classEnhancements = {};
+            item.classEnhancements.damageBonus = `+${damageBonus}% class synergy`;
+        }
+
+        // Armor: Enhanced protection for class-appropriate gear
+        if (item.armor || item.defenseBonus) {
+            const armorBonus = Math.round(alignment * 12); // Up to +12% for perfect alignment
+            if (item.armor) {
+                item.armor = Math.round(item.armor * (1 + armorBonus / 100));
+            }
+
+            if (!item.classEnhancements) item.classEnhancements = {};
+            item.classEnhancements.armorBonus = `+${armorBonus}% class synergy`;
+        }
+
+        // Accessories: Enhanced special effects
+        if (item.specialEffects || item.statBonus) {
+            const effectBonus = Math.round(alignment * 20); // Up to +20% for perfect alignment
+
+            if (!item.classEnhancements) item.classEnhancements = {};
+            item.classEnhancements.effectBonus = `+${effectBonus}% enhanced effects`;
+        }
+
+        // Spells: Reduced mana cost and improved effectiveness
+        if (item.manaCost) {
+            const manaCostReduction = alignment * 0.15; // Up to -15% mana cost
+            item.manaCost = Math.max(1, Math.round(item.manaCost * (1 - manaCostReduction)));
+
+            if (!item.classEnhancements) item.classEnhancements = {};
+            item.classEnhancements.manaCostReduction = `${Math.round(manaCostReduction * 100)}% reduced mana cost`;
+        }
+    },
+
+    /**
+     * Apply strategic depth enhancements by item category
+     */
+    applyStrategicDepthEnhancements: function(item, itemType, playerLevel, rarity) {
+        // Strategic weapons: Add tactical options
+        const strategicWeapons = ['shadow_blade', 'poisoned_blade', 'blessed_mace', 'elvish_bow', 'great_axe'];
+        if (strategicWeapons.includes(itemType)) {
+            if (!item.tacticalOptions) item.tacticalOptions = [];
+
+            const weaponTactics = {
+                'shadow_blade': ['stealth_attack', 'critical_strike', 'shadow_step'],
+                'poisoned_blade': ['poison_application', 'damage_over_time', 'status_infliction'],
+                'blessed_mace': ['undead_bonus', 'holy_damage', 'blessing_aura'],
+                'elvish_bow': ['precision_shot', 'nature_affinity', 'silent_shot'],
+                'great_axe': ['cleave_attack', 'armor_penetration', 'intimidation']
+            };
+
+            item.tacticalOptions = weaponTactics[itemType] || ['enhanced_combat'];
+        }
+
+        // Advanced spells: Add spell combinations and strategic casting
+        const advancedSpells = ['teleport', 'lightning_bolt', 'weapon_enchant', 'shield', 'haste'];
+        if (advancedSpells.includes(itemType)) {
+            if (!item.spellEnhancements) item.spellEnhancements = {};
+
+            // Add mid-game spell combinations
+            const spellCombos = {
+                'teleport': ['escape_tactics', 'positioning', 'surprise_attack'],
+                'lightning_bolt': ['chain_lightning', 'storm_mastery', 'electric_field'],
+                'weapon_enchant': ['elemental_weapon', 'damage_amplification', 'spell_blade'],
+                'shield': ['defensive_mastery', 'spell_reflection', 'barrier_tactics'],
+                'haste': ['speed_tactics', 'action_economy', 'combat_mobility']
+            };
+
+            item.spellEnhancements.combinations = spellCombos[itemType] || ['strategic_casting'];
+            item.spellEnhancements.midGameBonus = true;
+        }
+
+        // Advanced consumables: Add strategic timing and effects
+        const advancedConsumables = ['greater_healing_potion', 'strength_potion', 'invisibility_potion'];
+        if (advancedConsumables.includes(itemType)) {
+            if (!item.strategicUse) item.strategicUse = {};
+
+            const consumableTactics = {
+                'greater_healing_potion': ['combat_sustain', 'emergency_recovery', 'tactical_healing'],
+                'strength_potion': ['damage_window', 'boss_preparation', 'decisive_moment'],
+                'invisibility_potion': ['stealth_approach', 'escape_route', 'positioning_advantage']
+            };
+
+            item.strategicUse.tactics = consumableTactics[itemType] || ['tactical_consumption'];
+            item.strategicUse.timing = 'pre_combat_or_emergency';
+        }
+    },
+
+    /**
+     * Add build diversity hints for strategic character development
+     */
+    addBuildDiversityHints: function(item, itemType, playerLevel) {
+        if (!item.buildDiversityHints) item.buildDiversityHints = [];
+
+        // Equipment diversity hints
+        const equipmentHints = {
+            'steel_sword': 'Consider combining with shield for defensive builds or dual-wielding for offense',
+            'crystal_staff': 'Pairs well with mana-boosting accessories and elemental spell combinations',
+            'elvish_bow': 'Excellent for ranger builds focused on precision and nature magic',
+            'shadow_blade': 'Perfect for stealth builds combining agility and dark magic',
+            'mage_robes': 'Enhances spellcaster builds with mana efficiency and spell power',
+            'plate_armor': 'Ideal for tank builds prioritizing survivability and protection',
+            'stealth_cloak': 'Enables stealth builds with evasion and surprise attack tactics'
+        };
+
+        // Spell diversity hints
+        const spellHints = {
+            'fireball': 'Core combat spell - pairs well with other elemental magic for combo attacks',
+            'teleport': 'Game-changing utility - opens tactical positioning and escape strategies',
+            'shield': 'Essential defensive spell - combines well with melee combat styles',
+            'haste': 'Versatile enhancement - benefits both combat and exploration activities',
+            'weapon_enchant': 'Hybrid option - bridges physical combat with magical enhancement'
+        };
+
+        const hint = equipmentHints[itemType] || spellHints[itemType];
+        if (hint) {
+            item.buildDiversityHints.push(hint);
+        }
+
+        // Add level-appropriate build progression hints
+        if (playerLevel >= 15) {
+            item.buildDiversityHints.push('Consider specializing in a focused build or developing hybrid capabilities');
+        }
+
+        if (playerLevel >= 18) {
+            item.buildDiversityHints.push('Prepare for late-game content with strategic equipment combinations');
+        }
+    },
+
+    /**
+     * Get late-game prestige item priorities (levels 21-30+)
+     * Emphasizes rare/epic/legendary items and prestige content for endgame progression
+     */
+    getLateGamePrestigePriorities: function(playerLevel, playerClass = null, encounterType = 'general') {
+        if (playerLevel < 21) {
+            return null; // Only applies to late-game
+        }
+
+        // Define prestige item categories for endgame depth
+        const priorities = {
+            // Legendary Equipment: Ultimate gear with unique properties (25% of drops)
+            legendaryEquipment: {
+                weight: 0.25,
+                categories: {
+                    weapons: [
+                        'dragonbane_sword',      // Anti-dragon legendary weapon
+                        'staff_of_eternity',     // Ultimate caster weapon
+                        'void_bow',              // Reality-warping ranged weapon
+                        'demon_slayer',          // Anti-evil legendary blade
+                        'world_ender',           // Apocalyptic two-hander
+                        'time_ripper',           // Temporal manipulation weapon
+                        'soul_reaper',           // Life-draining scythe
+                        'god_hammer'             // Divine smithing weapon
+                    ],
+                    armor: [
+                        'dragon_scale_armor',    // Ultimate physical protection
+                        'archmage_robes',        // Supreme magical armor
+                        'shadow_lord_cloak',     // Stealth mastery armor
+                        'paladin_aegis',         // Divine protection set
+                        'titan_plate',           // Legendary heavy armor
+                        'void_shroud',           // Reality-bending protection
+                        'phoenix_mantle',        // Resurrection armor
+                        'storm_mail'             // Elemental mastery armor
+                    ],
+                    accessories: [
+                        'ring_of_omnipotence',   // Ultimate power ring
+                        'amulet_of_immortality', // Death prevention charm
+                        'crown_of_dominion',     // Leadership and control
+                        'gauntlets_of_creation', // Reality manipulation
+                        'boots_of_transcendence',// Dimensional travel
+                        'belt_of_infinity',      // Limitless resources
+                        'cloak_of_shadows',      // Ultimate stealth
+                        'pendant_of_wishes'      // Wish-granting artifact
+                    ]
+                }
+            },
+
+            // Epic Spells: Master-tier magic with game-changing effects (20% of drops)
+            epicSpells: {
+                weight: 0.20,
+                categories: {
+                    devastation: [
+                        'meteor_storm',          // Area devastation spell
+                        'time_stop',            // Temporal manipulation
+                        'reality_tear',         // Space-time damage
+                        'soul_burn',            // Spiritual destruction
+                        'dimension_rift',       // Planar manipulation
+                        'apocalypse',           // World-ending magic
+                        'void_storm'            // Nihility magic
+                    ],
+                    mastery: [
+                        'perfect_heal',         // Ultimate restoration
+                        'mass_resurrection',    // Group revival magic
+                        'mind_control',         // Mental domination
+                        'shape_reality',        // Reality alteration
+                        'summon_avatar',        // Divine manifestation
+                        'transcendence',        // Ascension magic
+                        'omniscience'           // All-knowing spell
+                    ],
+                    utility: [
+                        'plane_shift',          // Dimensional travel
+                        'time_travel',          // Temporal navigation
+                        'clone_self',           // Perfect duplication
+                        'wish',                 // Reality-bending desire
+                        'gate',                 // Portal creation
+                        'prophecy',             // Future sight
+                        'divine_intervention'   // God-tier assistance
+                    ]
+                }
+            },
+
+            // Prestige Consumables: Legendary potions and artifacts (20% of drops)
+            prestigeConsumables: {
+                weight: 0.20,
+                items: [
+                    'elixir_of_immortality',    // Permanent life extension
+                    'potion_of_godhood',        // Temporary divine powers
+                    'essence_of_time',          // Temporal manipulation drink
+                    'vial_of_creation',         // World-building essence
+                    'draught_of_omniscience',   // All-knowledge potion
+                    'philter_of_transcendence', // Ascension catalyst
+                    'nectar_of_rebirth',        // Perfect resurrection
+                    'ambrosia_of_power',        // Ultimate enhancement
+                    'tears_of_phoenix',         // Legendary healing
+                    'blood_of_titans'           // Primordial strength
+                ]
+            },
+
+            // Rare Materials: Legendary crafting components (15% of drops)
+            rareMaterials: {
+                weight: 0.15,
+                items: [
+                    'primordial_essence',       // Pure creation material
+                    'crystallized_time',        // Temporal crafting component
+                    'void_metal',               // Reality-bending material
+                    'dragon_heart',             // Ultimate fire material
+                    'star_fragment',            // Cosmic crafting component
+                    'god_bone',                 // Divine material
+                    'shadow_silk',              // Stealth crafting material
+                    'phoenix_feather',          // Resurrection component
+                    'titan_blood',              // Strength enhancement material
+                    'dream_crystal'             // Mind-affecting material
+                ]
+            },
+
+            // Prestige Artifacts: Unique items with special mechanics (10% of drops)
+            prestigeArtifacts: {
+                weight: 0.10,
+                items: [
+                    'orb_of_destinies',         // Fate manipulation artifact
+                    'mirror_of_souls',          // Soul-viewing artifact
+                    'hourglass_of_eternity',    // Time control artifact
+                    'codex_of_creation',        // Reality-writing book
+                    'crown_of_kingship',        // Leadership artifact
+                    'chalice_of_renewal',       // Endless healing artifact
+                    'key_of_all_doors',         // Universal access artifact
+                    'seed_of_worlds',           // World-creation artifact
+                    'throne_of_judgment',       // Justice artifact
+                    'seal_of_binding'           // Ultimate containment
+                ]
+            },
+
+            // Trophy Items: Prestige markers and achievements (10% of drops)
+            trophyItems: {
+                weight: 0.10,
+                items: [
+                    'dragon_slayer_trophy',     // Dragon-killing achievement
+                    'demon_lord_crown',         // Evil conquest trophy
+                    'hero_of_realms_medal',     // Multi-world heroism
+                    'master_of_magic_staff',    // Magical mastery trophy
+                    'champion_of_light_halo',   // Good alignment prestige
+                    'shadow_emperor_ring',      // Dark mastery trophy
+                    'world_savior_cloak',       // Ultimate heroism
+                    'god_slayer_blade',         // Deicide achievement
+                    'reality_architect_tools',  // Creation mastery
+                    'eternal_guardian_shield'   // Protection mastery
+                ]
+            }
+        };
+
+        return priorities;
+    },
+
+    /**
+     * Select prestige item for late-game players
+     * Implements rarity-focused progression and prestige mechanics
+     */
+    selectLateGamePrestigeItem: function(playerLevel, playerClass, rarity = 'rare', encounterContext = {}) {
+        const priorities = this.getLateGamePrestigePriorities(playerLevel, playerClass, encounterContext.type);
+        if (!priorities) {
+            return null; // Not late-game
+        }
+
+        // Weight selection based on rarity tier - higher rarities get better categories
+        const rarityWeights = this.getLateGameRarityWeights(rarity, playerLevel);
+
+        // Determine prestige category based on rarity and player progression
+        const selectedCategory = this.selectPrestigeCategoryByRarity(priorities, rarity, rarityWeights);
+
+        return this.selectPrestigeItemFromCategory(selectedCategory, playerClass, playerLevel, rarity);
+    },
+
+    /**
+     * Get late-game rarity-based category weights
+     */
+    getLateGameRarityWeights: function(rarity, playerLevel) {
+        // Rarity determines access to prestige categories
+        const rarityAccess = {
+            common: {
+                rareMaterials: 0.6,        // Mostly materials for common drops
+                prestigeConsumables: 0.3,   // Some consumables
+                trophyItems: 0.1,          // Minimal trophies
+                legendaryEquipment: 0.0,   // No legendary access
+                epicSpells: 0.0,           // No epic spells
+                prestigeArtifacts: 0.0     // No artifacts
+            },
+            uncommon: {
+                rareMaterials: 0.4,
+                prestigeConsumables: 0.4,
+                trophyItems: 0.15,
+                legendaryEquipment: 0.05,  // Minimal legendary access
+                epicSpells: 0.0,
+                prestigeArtifacts: 0.0
+            },
+            rare: {
+                rareMaterials: 0.25,
+                prestigeConsumables: 0.3,
+                trophyItems: 0.2,
+                legendaryEquipment: 0.15,  // Some legendary access
+                epicSpells: 0.1,           // Limited epic spells
+                prestigeArtifacts: 0.0     // No artifacts yet
+            },
+            epic: {
+                rareMaterials: 0.15,
+                prestigeConsumables: 0.2,
+                trophyItems: 0.15,
+                legendaryEquipment: 0.25,  // Good legendary access
+                epicSpells: 0.2,           // Good epic spell access
+                prestigeArtifacts: 0.05    // Minimal artifact access
+            },
+            legendary: {
+                rareMaterials: 0.1,
+                prestigeConsumables: 0.15,
+                trophyItems: 0.1,
+                legendaryEquipment: 0.35,  // High legendary access
+                epicSpells: 0.2,           // High epic spell access
+                prestigeArtifacts: 0.1     // Some artifact access
+            }
+        };
+
+        return rarityAccess[rarity] || rarityAccess.rare;
+    },
+
+    /**
+     * Select prestige category based on rarity and weights
+     */
+    selectPrestigeCategoryByRarity: function(priorities, rarity, weights) {
+        const roll = Math.random();
+        let cumulativeWeight = 0;
+
+        // Check each category based on rarity access weights
+        for (const [categoryName, weight] of Object.entries(weights)) {
+            cumulativeWeight += weight;
+            if (roll <= cumulativeWeight && priorities[categoryName]) {
+                return {
+                    name: categoryName,
+                    data: priorities[categoryName],
+                    rarity: rarity,
+                    accessLevel: weight
+                };
+            }
+        }
+
+        // Fallback to rare materials
+        return {
+            name: 'rareMaterials',
+            data: priorities.rareMaterials,
+            rarity: rarity,
+            accessLevel: weights.rareMaterials || 0.1
+        };
+    },
+
+    /**
+     * Select specific prestige item from category with late-game considerations
+     */
+    selectPrestigeItemFromCategory: function(category, playerClass, playerLevel, rarity) {
+        if (!category || !category.data) {
+            return null;
+        }
+
+        let items = [];
+
+        // Handle different category structures
+        if (category.data.categories) {
+            // Multi-category structure (legendary equipment, epic spells)
+            const subCategory = this.selectPrestigeSubCategory(category.data.categories, playerClass);
+            items = subCategory.items;
+        } else if (category.data.items) {
+            // Simple item list structure
+            items = category.data.items;
+        }
+
+        if (items.length === 0) {
+            return null;
+        }
+
+        // Apply level-based filtering for prestige progression
+        const levelAppropriateItems = items.filter(item =>
+            this.isLateGameLevelAppropriate(item, playerLevel)
+        );
+
+        if (levelAppropriateItems.length === 0) {
+            return items[0]; // Fallback to first item
+        }
+
+        // Select with class-based and prestige weighting
+        const selectedItem = this.selectPrestigeItemWithWeighting(levelAppropriateItems, playerClass, rarity);
+
+        return {
+            itemType: selectedItem,
+            category: category.name,
+            rarity: rarity,
+            prestigeValue: this.calculatePrestigeValue(selectedItem, playerClass, playerLevel, rarity),
+            classAlignment: this.calculateClassAlignment(selectedItem, playerClass),
+            isPrestigeItem: true,
+            requiredLevel: Math.max(21, playerLevel - 5) // Prestige items have level requirements
+        };
+    },
+
+    /**
+     * Select prestige sub-category based on class preferences
+     */
+    selectPrestigeSubCategory: function(categories, playerClass) {
+        // Class-based prestige preferences for late game
+        const classPrestigePrefs = {
+            knight: { weapons: 0.4, armor: 0.4, accessories: 0.2 },
+            wizard: { weapons: 0.2, armor: 0.3, accessories: 0.5 },
+            rogue: { weapons: 0.5, armor: 0.2, accessories: 0.3 },
+            ranger: { weapons: 0.4, armor: 0.3, accessories: 0.3 },
+            warrior: { weapons: 0.5, armor: 0.3, accessories: 0.2 },
+            paladin: { weapons: 0.3, armor: 0.4, accessories: 0.3 }
+        };
+
+        const prefs = classPrestigePrefs[playerClass] || { weapons: 0.33, armor: 0.33, accessories: 0.34 };
+        const roll = Math.random();
+
+        if (roll < prefs.weapons && categories.weapons) {
+            return { type: 'weapons', items: categories.weapons };
+        } else if (roll < prefs.weapons + prefs.armor && categories.armor) {
+            return { type: 'armor', items: categories.armor };
+        } else if (categories.accessories) {
+            return { type: 'accessories', items: categories.accessories };
+        }
+
+        // Fallback to first available category
+        const firstCategory = Object.keys(categories)[0];
+        return { type: firstCategory, items: categories[firstCategory] };
+    },
+
+    /**
+     * Check if item is appropriate for late-game level progression
+     */
+    isLateGameLevelAppropriate: function(itemType, playerLevel) {
+        // Define prestige level gates for endgame progression
+        const prestigeGates = {
+            // Early late-game (21-25): Basic prestige items
+            21: ['dragon_scale_armor', 'staff_of_eternity', 'meteor_storm', 'elixir_of_immortality', 'dragon_heart'],
+
+            // Mid late-game (26-30): Advanced prestige items
+            26: ['void_bow', 'archmage_robes', 'time_stop', 'potion_of_godhood', 'crystallized_time'],
+
+            // Ultimate late-game (30+): Ultimate prestige items
+            30: ['world_ender', 'ring_of_omnipotence', 'reality_tear', 'nectar_of_rebirth', 'primordial_essence']
+        };
+
+        // Check if item is unlocked at current level
+        for (const [level, items] of Object.entries(prestigeGates)) {
+            if (playerLevel >= parseInt(level) && items.includes(itemType)) {
+                return true;
+            }
+        }
+
+        // Default: allow basic prestige items for any late-game level
+        const basicPrestigeItems = ['dragon_scale_armor', 'staff_of_eternity', 'meteor_storm', 'dragon_heart'];
+        return basicPrestigeItems.includes(itemType);
+    },
+
+    /**
+     * Select prestige item with class and rarity weighting
+     */
+    selectPrestigeItemWithWeighting: function(items, playerClass, rarity) {
+        // For prestige items, use simple random selection with slight class bias
+        // (Prestige items are inherently valuable regardless of class)
+        return items[Math.floor(Math.random() * items.length)];
+    },
+
+    /**
+     * Calculate prestige value for endgame progression
+     */
+    calculatePrestigeValue: function(itemType, playerClass, playerLevel, rarity) {
+        const basePrestigeValues = {
+            // Legendary weapons: Maximum prestige
+            'dragonbane_sword': 100, 'staff_of_eternity': 100, 'void_bow': 95, 'world_ender': 100,
+            'demon_slayer': 90, 'time_ripper': 95, 'soul_reaper': 85, 'god_hammer': 100,
+
+            // Legendary armor: High prestige
+            'dragon_scale_armor': 95, 'archmage_robes': 90, 'shadow_lord_cloak': 85, 'titan_plate': 95,
+            'paladin_aegis': 90, 'void_shroud': 95, 'phoenix_mantle': 90, 'storm_mail': 85,
+
+            // Epic spells: Very high prestige
+            'meteor_storm': 90, 'time_stop': 100, 'reality_tear': 100, 'apocalypse': 95,
+            'perfect_heal': 85, 'mass_resurrection': 90, 'shape_reality': 100, 'wish': 100,
+
+            // Prestige artifacts: Ultimate prestige
+            'orb_of_destinies': 100, 'mirror_of_souls': 95, 'hourglass_of_eternity': 100,
+            'codex_of_creation': 100, 'throne_of_judgment': 95, 'seed_of_worlds': 100
+        };
+
+        const baseValue = basePrestigeValues[itemType] || 50;
+
+        // Rarity multiplier for prestige scaling
+        const rarityMultipliers = {
+            common: 0.5,
+            uncommon: 0.7,
+            rare: 1.0,
+            epic: 1.5,
+            legendary: 2.0
+        };
+
+        const rarityMultiplier = rarityMultipliers[rarity] || 1.0;
+
+        // Level progression bonus (higher level = more prestige value)
+        const levelBonus = Math.min(2.0, 1.0 + ((playerLevel - 20) * 0.05)); // Up to +100% at level 40
+
+        return Math.round(baseValue * rarityMultiplier * levelBonus);
+    },
+
+    /**
+     * Apply late-game prestige enhancements to loot items
+     * Implements rare/epic/legendary focus and prestige mechanics for levels 21-30+
+     */
+    applyLateGamePrestigeEnhancements: function(item, itemType, rarity, playerLevel, contentLevel, areaName) {
+        // Add late-game prestige markers
+        item.lateGameItem = true;
+        item.prestigeValue = this.calculatePrestigeValue(itemType, item.playerClass, playerLevel, rarity);
+
+        // Apply rarity-based prestige bonuses
+        this.applyRarityBasedPrestigeBonuses(item, rarity, playerLevel);
+
+        // Apply prestige-tier enhancements based on item category
+        this.applyPrestigeTierEnhancements(item, itemType, playerLevel, rarity);
+
+        // Add late-game prestige metadata
+        if (!item.prestigeInfo) item.prestigeInfo = {};
+        item.prestigeInfo.prestigeValue = item.prestigeValue;
+        item.prestigeInfo.gamePhase = 'late_game';
+        item.prestigeInfo.levelRange = '21-30+';
+        item.prestigeInfo.rarityTier = rarity;
+
+        // Add prestige achievement hints for endgame progression
+        this.addPrestigeAchievementHints(item, itemType, playerLevel, rarity);
+    },
+
+    /**
+     * Apply rarity-based prestige bonuses for endgame items
+     */
+    applyRarityBasedPrestigeBonuses: function(item, rarity, playerLevel) {
+        const rarityBonuses = {
+            rare: { multiplier: 1.2, specialEffects: 1 },
+            epic: { multiplier: 1.5, specialEffects: 2 },
+            legendary: { multiplier: 2.0, specialEffects: 3 }
+        };
+
+        const bonus = rarityBonuses[rarity];
+        if (!bonus) return;
+
+        // Enhanced stats for prestige items
+        if (item.damage) {
+            if (Array.isArray(item.damage)) {
+                item.damage = item.damage.map(dmg => Math.round(dmg * bonus.multiplier));
+            } else {
+                item.damage = Math.round(item.damage * bonus.multiplier);
+            }
+        }
+
+        if (item.armor) {
+            item.armor = Math.round(item.armor * bonus.multiplier);
+        }
+
+        if (item.healAmount) {
+            item.healAmount = Math.round(item.healAmount * bonus.multiplier);
+        }
+
+        // Add special effects based on rarity
+        if (!item.prestigeEffects) item.prestigeEffects = [];
+
+        const rarityEffects = {
+            rare: ['enhanced_durability', 'improved_efficiency'],
+            epic: ['rare_proc_effect', 'enhanced_stats', 'special_ability'],
+            legendary: ['legendary_aura', 'reality_bending', 'divine_blessing', 'unique_mechanics']
+        };
+
+        const effects = rarityEffects[rarity] || [];
+        const numEffects = Math.min(bonus.specialEffects, effects.length);
+
+        for (let i = 0; i < numEffects; i++) {
+            if (!item.prestigeEffects.includes(effects[i])) {
+                item.prestigeEffects.push(effects[i]);
+            }
+        }
+
+        // Add prestige enhancement markers
+        if (!item.prestigeEnhancements) item.prestigeEnhancements = {};
+        item.prestigeEnhancements.rarityMultiplier = bonus.multiplier;
+        item.prestigeEnhancements.effectCount = numEffects;
+        item.prestigeEnhancements.prestigeTier = rarity;
+    },
+
+    /**
+     * Apply prestige-tier enhancements based on item category
+     */
+    applyPrestigeTierEnhancements: function(item, itemType, playerLevel, rarity) {
+        // Legendary weapons: Ultimate combat capabilities
+        const legendaryWeapons = ['dragonbane_sword', 'staff_of_eternity', 'void_bow', 'world_ender', 'demon_slayer'];
+        if (legendaryWeapons.includes(itemType)) {
+            if (!item.legendaryProperties) item.legendaryProperties = {};
+
+            const weaponProperties = {
+                'dragonbane_sword': ['dragon_slaying', 'fire_immunity', 'scale_penetration'],
+                'staff_of_eternity': ['infinite_mana', 'spell_amplification', 'reality_weaving'],
+                'void_bow': ['reality_piercing', 'dimensional_arrows', 'void_strike'],
+                'world_ender': ['apocalyptic_damage', 'reality_breaking', 'existence_threat'],
+                'demon_slayer': ['evil_bane', 'holy_blessing', 'soul_protection']
+            };
+
+            item.legendaryProperties.abilities = weaponProperties[itemType] || ['legendary_power'];
+            item.legendaryProperties.tier = 'ultimate_weapon';
+        }
+
+        // Epic spells: Reality-altering magic
+        const epicSpells = ['meteor_storm', 'time_stop', 'reality_tear', 'apocalypse', 'wish'];
+        if (epicSpells.includes(itemType)) {
+            if (!item.epicSpellProperties) item.epicSpellProperties = {};
+
+            const spellProperties = {
+                'meteor_storm': ['area_devastation', 'fire_mastery', 'celestial_power'],
+                'time_stop': ['temporal_control', 'action_freedom', 'reality_pause'],
+                'reality_tear': ['space_rending', 'dimensional_damage', 'existence_threat'],
+                'apocalypse': ['world_ending', 'ultimate_destruction', 'divine_wrath'],
+                'wish': ['reality_alteration', 'desire_manifestation', 'omnipotent_magic']
+            };
+
+            item.epicSpellProperties.effects = spellProperties[itemType] || ['epic_magic'];
+            item.epicSpellProperties.tier = 'reality_altering';
+
+            // Reduce mana cost scaling for epic spells
+            if (item.manaCost) {
+                const epicReduction = 0.3; // 30% reduction for epic tier
+                item.manaCost = Math.max(1, Math.round(item.manaCost * (1 - epicReduction)));
+            }
+        }
+
+        // Prestige artifacts: Unique mechanics and world-changing effects
+        const prestigeArtifacts = ['orb_of_destinies', 'mirror_of_souls', 'hourglass_of_eternity'];
+        if (prestigeArtifacts.includes(itemType)) {
+            if (!item.artifactProperties) item.artifactProperties = {};
+
+            const artifactProperties = {
+                'orb_of_destinies': ['fate_manipulation', 'destiny_control', 'probability_alteration'],
+                'mirror_of_souls': ['soul_viewing', 'spiritual_insight', 'inner_truth'],
+                'hourglass_of_eternity': ['time_control', 'temporal_manipulation', 'chronos_mastery']
+            };
+
+            item.artifactProperties.powers = artifactProperties[itemType] || ['artifact_power'];
+            item.artifactProperties.tier = 'world_changing';
+            item.artifactProperties.uniqueness = 'one_of_a_kind';
+        }
+
+        // Prestige consumables: Permanent or game-changing effects
+        const prestigeConsumables = ['elixir_of_immortality', 'potion_of_godhood', 'nectar_of_rebirth'];
+        if (prestigeConsumables.includes(itemType)) {
+            if (!item.prestigeConsumableProperties) item.prestigeConsumableProperties = {};
+
+            const consumableProperties = {
+                'elixir_of_immortality': ['permanent_life_extension', 'death_immunity', 'eternal_youth'],
+                'potion_of_godhood': ['temporary_divinity', 'god_powers', 'reality_control'],
+                'nectar_of_rebirth': ['perfect_resurrection', 'soul_restoration', 'life_renewal']
+            };
+
+            item.prestigeConsumableProperties.effects = consumableProperties[itemType] || ['prestige_effect'];
+            item.prestigeConsumableProperties.permanence = itemType === 'elixir_of_immortality' ? 'permanent' : 'temporary';
+            item.prestigeConsumableProperties.tier = 'life_changing';
+        }
+    },
+
+    /**
+     * Add prestige achievement hints for endgame progression goals
+     */
+    addPrestigeAchievementHints: function(item, itemType, playerLevel, rarity) {
+        if (!item.prestigeAchievementHints) item.prestigeAchievementHints = [];
+
+        // Rarity-based achievement hints
+        const rarityHints = {
+            rare: [
+                'First step into legendary territory - collect more rare items to unlock epic tier access',
+                'Rare items unlock advanced combat strategies and build optimization'
+            ],
+            epic: [
+                'Epic tier achieved - you\'re approaching true mastery of the game systems',
+                'Epic items enable world-changing abilities and ultimate build combinations'
+            ],
+            legendary: [
+                'Legendary mastery - you possess items of mythical power and ultimate prestige',
+                'Legendary items mark you as a true champion of the realms'
+            ]
+        };
+
+        // Item-specific achievement hints
+        const itemHints = {
+            'dragonbane_sword': 'The ultimate anti-dragon weapon - seek out ancient dragons for legendary battles',
+            'staff_of_eternity': 'Master of infinite magical power - reshape reality with your will',
+            'meteor_storm': 'Command celestial devastation - rain destruction from the heavens',
+            'orb_of_destinies': 'Controller of fate itself - the multiverse bends to your desire',
+            'elixir_of_immortality': 'Transcend mortality - you have achieved the impossible dream'
+        };
+
+        // Add appropriate hints
+        if (rarityHints[rarity]) {
+            const rarityHint = rarityHints[rarity][Math.floor(Math.random() * rarityHints[rarity].length)];
+            item.prestigeAchievementHints.push(rarityHint);
+        }
+
+        if (itemHints[itemType]) {
+            item.prestigeAchievementHints.push(itemHints[itemType]);
+        }
+
+        // Add level-appropriate prestige goals
+        if (playerLevel >= 25) {
+            item.prestigeAchievementHints.push('Approach ultimate mastery - collect legendary items to complete your ascension');
+        }
+
+        if (playerLevel >= 30) {
+            item.prestigeAchievementHints.push('You have reached the pinnacle of power - few can match your legendary status');
+        }
+    },
+
+    /**
+     * Level-appropriate safety net mechanics for healing item availability
+     * Ensures players always have access to adequate healing resources
+     */
+    getSafetyNetHealingRequirements: function(playerLevel, playerClass = null, encounterContext = {}) {
+        // Define minimum healing requirements by level progression
+        const healingRequirements = {
+            // Early game (1-10): Basic survival safety net
+            early: {
+                levelRange: [1, 10],
+                minimumHealingChance: 0.35,     // 35% chance for healing items
+                recommendedPotions: ['healing_potion', 'minor_healing_potion'],
+                emergencyThreshold: 0.25,       // 25% chance minimum in emergency
+                quantityBonus: 2,               // +2 extra potions in safety net
+                healingPotency: 'basic'
+            },
+
+            // Mid game (11-20): Strategic healing support
+            mid: {
+                levelRange: [11, 20],
+                minimumHealingChance: 0.30,     // 30% chance for healing items
+                recommendedPotions: ['healing_potion', 'greater_healing_potion'],
+                emergencyThreshold: 0.20,       // 20% chance minimum in emergency
+                quantityBonus: 1,               // +1 extra potion in safety net
+                healingPotency: 'improved'
+            },
+
+            // Late game (21-30+): Prestige healing assurance
+            late: {
+                levelRange: [21, 50],
+                minimumHealingChance: 0.25,     // 25% chance for healing items
+                recommendedPotions: ['greater_healing_potion', 'superior_healing_potion', 'tears_of_phoenix'],
+                emergencyThreshold: 0.15,       // 15% chance minimum in emergency
+                quantityBonus: 0,               // No bonus needed (self-sufficient)
+                healingPotency: 'advanced'
+            }
+        };
+
+        // Determine current progression phase
+        let currentPhase = 'early';
+        if (playerLevel >= 21) {
+            currentPhase = 'late';
+        } else if (playerLevel >= 11) {
+            currentPhase = 'mid';
+        }
+
+        return healingRequirements[currentPhase];
+    },
+
+    /**
+     * Check if player needs safety net healing intervention
+     * Monitors loot generation to ensure adequate healing item availability
+     */
+    checkHealingSafetyNet: function(playerLevel, recentLootHistory = [], encounterContext = {}) {
+        const requirements = this.getSafetyNetHealingRequirements(playerLevel, encounterContext.playerClass, encounterContext);
+
+        // Analyze recent loot history for healing item frequency
+        const healingAnalysis = this.analyzeRecentHealingLoot(recentLootHistory, requirements);
+
+        // Determine if safety net intervention is needed
+        const needsIntervention = this.evaluateHealingIntervention(healingAnalysis, requirements, encounterContext);
+
+        return {
+            needsIntervention,
+            requirements,
+            analysis: healingAnalysis,
+            interventionType: needsIntervention ? this.getInterventionType(healingAnalysis, requirements) : null
+        };
+    },
+
+    /**
+     * Analyze recent loot history for healing item patterns
+     */
+    analyzeRecentHealingLoot: function(lootHistory, requirements) {
+        // Look at last 10-20 loot drops for healing pattern analysis
+        const recentDrops = lootHistory.slice(-20);
+        const healingItems = ['healing_potion', 'minor_healing_potion', 'greater_healing_potion', 'superior_healing_potion', 'tears_of_phoenix'];
+
+        let healingDrops = 0;
+        let totalDrops = recentDrops.length;
+        let lastHealingDropIndex = -1;
+        let healingQuantity = 0;
+
+        recentDrops.forEach((drop, index) => {
+            if (healingItems.includes(drop.itemType)) {
+                healingDrops++;
+                healingQuantity += drop.quantity || 1;
+                lastHealingDropIndex = index;
+            }
+        });
+
+        const healingFrequency = totalDrops > 0 ? healingDrops / totalDrops : 0;
+        const dropsSinceLastHealing = lastHealingDropIndex >= 0 ? (recentDrops.length - 1 - lastHealingDropIndex) : totalDrops;
+
+        return {
+            healingFrequency,
+            healingDrops,
+            totalDrops,
+            healingQuantity,
+            dropsSinceLastHealing,
+            averageQuantityPerDrop: healingDrops > 0 ? healingQuantity / healingDrops : 0,
+            isHealingDrought: dropsSinceLastHealing >= 8 // 8+ drops without healing
+        };
+    },
+
+    /**
+     * Evaluate if healing intervention is needed
+     */
+    evaluateHealingIntervention: function(analysis, requirements, encounterContext) {
+        // Multiple criteria for intervention
+        const criteria = {
+            // Frequency too low
+            frequencyBelowMinimum: analysis.healingFrequency < requirements.minimumHealingChance,
+
+            // Extended drought without healing
+            extendedDrought: analysis.isHealingDrought,
+
+            // Emergency context (player in dangerous situation)
+            emergencyContext: encounterContext.isEmergency && analysis.healingFrequency < requirements.emergencyThreshold,
+
+            // Low overall healing availability
+            lowHealing: analysis.totalDrops >= 10 && analysis.healingDrops <= 1,
+
+            // Recent dangerous encounters without healing support
+            dangerousWithoutHealing: encounterContext.recentDifficultEncounters && analysis.dropsSinceLastHealing >= 5
+        };
+
+        // Intervention needed if any major criteria met
+        return criteria.frequencyBelowMinimum ||
+               criteria.extendedDrought ||
+               criteria.emergencyContext ||
+               criteria.lowHealing ||
+               criteria.dangerousWithoutHealing;
+    },
+
+    /**
+     * Determine type of safety net intervention needed
+     */
+    getInterventionType: function(analysis, requirements) {
+        // Different intervention strategies based on situation severity
+        if (analysis.isHealingDrought && analysis.dropsSinceLastHealing >= 12) {
+            return 'emergency_healing_boost';      // Immediate healing guaranteed
+        } else if (analysis.healingFrequency < requirements.emergencyThreshold) {
+            return 'healing_frequency_boost';      // Increase healing drop rates
+        } else if (analysis.averageQuantityPerDrop < 1.5) {
+            return 'healing_quantity_boost';       // Increase healing quantities
+        } else {
+            return 'gentle_healing_nudge';         // Subtle healing increase
+        }
+    },
+
+    /**
+     * Apply safety net healing adjustments to loot generation
+     * Modifies drop chances and quantities to ensure healing availability
+     */
+    applySafetyNetHealing: function(lootEntry, playerLevel, encounterContext = {}) {
+        const safetyNet = this.checkHealingSafetyNet(playerLevel, encounterContext.recentLootHistory || [], encounterContext);
+
+        if (!safetyNet.needsIntervention) {
+            return lootEntry; // No modification needed
+        }
+
+        // Create modified loot entry with healing safety net
+        const modifiedEntry = { ...lootEntry };
+
+        // Apply intervention based on type
+        switch (safetyNet.interventionType) {
+            case 'emergency_healing_boost':
+                modifiedEntry = this.applyEmergencyHealingBoost(modifiedEntry, safetyNet.requirements);
+                break;
+
+            case 'healing_frequency_boost':
+                modifiedEntry = this.applyHealingFrequencyBoost(modifiedEntry, safetyNet.requirements);
+                break;
+
+            case 'healing_quantity_boost':
+                modifiedEntry = this.applyHealingQuantityBoost(modifiedEntry, safetyNet.requirements);
+                break;
+
+            case 'gentle_healing_nudge':
+                modifiedEntry = this.applyGentleHealingNudge(modifiedEntry, safetyNet.requirements);
+                break;
+        }
+
+        // Add safety net metadata for tracking
+        modifiedEntry.safetyNetApplied = true;
+        modifiedEntry.interventionType = safetyNet.interventionType;
+        modifiedEntry.originalDropChance = lootEntry.dropChance;
+
+        return modifiedEntry;
+    },
+
+    /**
+     * Apply emergency healing boost - guarantees healing items
+     */
+    applyEmergencyHealingBoost: function(lootEntry, requirements) {
+        // Force healing item generation
+        const healingPotions = requirements.recommendedPotions;
+        const selectedHealing = healingPotions[Math.floor(Math.random() * healingPotions.length)];
+
+        return {
+            ...lootEntry,
+            itemType: selectedHealing,
+            dropChance: 1.0,                    // 100% drop chance
+            quantity: 2 + requirements.quantityBonus, // Extra healing
+            rarityWeights: { common: 0.7, uncommon: 0.3 }, // Favor common/uncommon for reliability
+            safetyNetBoost: 'emergency'
+        };
+    },
+
+    /**
+     * Apply healing frequency boost - increases healing drop rates
+     */
+    applyHealingFrequencyBoost: function(lootEntry, requirements) {
+        if (this.isHealingItem(lootEntry.itemType)) {
+            // Boost existing healing items
+            return {
+                ...lootEntry,
+                dropChance: Math.min(0.9, (lootEntry.dropChance || 0.5) * 1.5), // +50% drop chance
+                quantity: (lootEntry.quantity || 1) + requirements.quantityBonus,
+                safetyNetBoost: 'frequency'
+            };
+        } else {
+            // Add healing alternative to non-healing loot
+            const roll = Math.random();
+            if (roll < 0.3) { // 30% chance to replace with healing
+                const healingPotions = requirements.recommendedPotions;
+                const selectedHealing = healingPotions[Math.floor(Math.random() * healingPotions.length)];
+
+                return {
+                    ...lootEntry,
+                    itemType: selectedHealing,
+                    dropChance: 0.7,
+                    quantity: 1 + requirements.quantityBonus,
+                    safetyNetBoost: 'frequency_replacement'
+                };
+            }
+        }
+
+        return lootEntry;
+    },
+
+    /**
+     * Apply healing quantity boost - increases healing quantities
+     */
+    applyHealingQuantityBoost: function(lootEntry, requirements) {
+        if (this.isHealingItem(lootEntry.itemType)) {
+            return {
+                ...lootEntry,
+                quantity: (lootEntry.quantity || 1) + requirements.quantityBonus + 1,
+                dropChance: Math.min(0.8, (lootEntry.dropChance || 0.5) * 1.2), // Slight boost
+                safetyNetBoost: 'quantity'
+            };
+        }
+
+        return lootEntry;
+    },
+
+    /**
+     * Apply gentle healing nudge - subtle healing improvement
+     */
+    applyGentleHealingNudge: function(lootEntry, requirements) {
+        if (this.isHealingItem(lootEntry.itemType)) {
+            return {
+                ...lootEntry,
+                dropChance: Math.min(0.7, (lootEntry.dropChance || 0.5) * 1.15), // +15% drop chance
+                safetyNetBoost: 'gentle'
+            };
+        }
+
+        return lootEntry;
+    },
+
+    /**
+     * Check if item type is a healing item
+     */
+    isHealingItem: function(itemType) {
+        const healingItems = [
+            'healing_potion', 'minor_healing_potion', 'greater_healing_potion',
+            'superior_healing_potion', 'tears_of_phoenix', 'nectar_of_rebirth',
+            'elixir_of_immortality', 'perfect_heal'
+        ];
+
+        return healingItems.includes(itemType);
+    },
+
+    /**
+     * Get level-appropriate healing recommendations for players
+     */
+    getHealingRecommendations: function(playerLevel, currentHealth, maxHealth, inventoryHealing = []) {
+        const requirements = this.getSafetyNetHealingRequirements(playerLevel);
+        const healthPercentage = currentHealth / maxHealth;
+
+        const recommendations = {
+            urgency: 'none',
+            recommendedActions: [],
+            healingNeeds: requirements,
+            currentStatus: 'adequate'
+        };
+
+        // Assess current healing situation
+        if (healthPercentage <= 0.25) {
+            recommendations.urgency = 'critical';
+            recommendations.currentStatus = 'emergency';
+            recommendations.recommendedActions.push('Use healing immediately');
+            recommendations.recommendedActions.push('Seek safe area for recovery');
+        } else if (healthPercentage <= 0.50) {
+            recommendations.urgency = 'high';
+            recommendations.currentStatus = 'concerning';
+            recommendations.recommendedActions.push('Consider using healing soon');
+            recommendations.recommendedActions.push('Avoid risky encounters');
+        } else if (healthPercentage <= 0.75) {
+            recommendations.urgency = 'moderate';
+            recommendations.currentStatus = 'monitor';
+            recommendations.recommendedActions.push('Keep healing items ready');
+        }
+
+        // Assess healing inventory
+        const healingCount = inventoryHealing.length;
+        if (healingCount === 0) {
+            recommendations.recommendedActions.push('Priority: Find healing items');
+            recommendations.currentStatus = 'critical_shortage';
+        } else if (healingCount <= 2) {
+            recommendations.recommendedActions.push('Seek additional healing items');
+            recommendations.currentStatus = 'low_supplies';
+        }
+
+        return recommendations;
+    },
+
+    /**
      * Initialize loot generation cache for performance
      */
     initializeLootCache: function() {
@@ -208,7 +2028,8 @@ const LootSystem = {
                     dropResult.rarity,
                     playerLevel,
                     monsterLoot.level,
-                    areaName
+                    areaName,
+                    dropResult.buildDiversityInfo
                 );
 
                 if (item) {
@@ -321,7 +2142,8 @@ const LootSystem = {
                     dropResult.rarity,
                     playerLevel,
                     areaLootConfig.recommendedLevel,
-                    areaName
+                    areaName,
+                    dropResult.buildDiversityInfo
                 );
 
                 if (!item) {
@@ -331,7 +2153,8 @@ const LootSystem = {
                         'common',
                         playerLevel,
                         areaLootConfig.recommendedLevel,
-                        areaName
+                        areaName,
+                        null  // No build diversity for fallback items
                     );
                 }
 
@@ -358,8 +2181,11 @@ const LootSystem = {
      * Optimized to consistently hit 75%+ meaningful loot target
      */
     rollForLoot: function(lootEntry, playerLevel, contentLevel, encounterContext = {}) {
-        // Base drop chance
-        const baseChance = lootEntry.dropChance || 0.5;
+        // Apply safety net healing adjustments first
+        const adjustedLootEntry = this.applySafetyNetHealing(lootEntry, playerLevel, encounterContext);
+
+        // Base drop chance (potentially modified by safety net)
+        const baseChance = adjustedLootEntry.dropChance || 0.5;
 
         // Level scaling bonus/penalty
         const levelDifference = playerLevel - contentLevel;
@@ -369,7 +2195,7 @@ const LootSystem = {
         let finalDropChance = this.optimizeForMeaningfulLoot(
             baseChance,
             levelScaling,
-            lootEntry,
+            adjustedLootEntry,
             encounterContext
         );
 
@@ -387,20 +2213,45 @@ const LootSystem = {
             };
         }
 
-        // Determine rarity with meaningful loot bonuses
+        // Determine rarity with meaningful loot bonuses (use adjusted entry)
         const rarity = this.rollForRarity(
-            lootEntry.rarityWeights || {},
+            adjustedLootEntry.rarityWeights || {},
             playerLevel,
             contentLevel,
             encounterContext
         );
+
+        // Apply build diversity enhancements if player context is available
+        let buildDiversityInfo = null;
+        if (encounterContext.playerClass || encounterContext.currentEquipment || encounterContext.recentLootHistory) {
+            // Calculate build diversity profile
+            const diversityProfile = this.getBuildDiversityPreferences(
+                playerLevel,
+                encounterContext.playerClass,
+                encounterContext.recentLootHistory || [],
+                encounterContext.currentEquipment || {}
+            );
+
+            // Determine if this loot should promote build diversity (30% chance)
+            const shouldPromoteDiversity = Math.random() < 0.3;
+            if (shouldPromoteDiversity) {
+                buildDiversityInfo = {
+                    diversityProfile,
+                    diversityPromoted: true,
+                    diversityWeights: diversityProfile.diversityWeights
+                };
+            }
+        }
 
         return {
             dropped: true,
             rarity,
             dropChance: finalDropChance,
             levelScaling,
-            meaningful: this.isMeaningfulLoot(lootEntry, rarity, playerLevel)
+            meaningful: this.isMeaningfulLoot(adjustedLootEntry, rarity, playerLevel),
+            adjustedLootEntry,  // Include the safety net adjustments
+            safetyNetApplied: adjustedLootEntry.safetyNetApplied || false,
+            buildDiversityInfo  // Include build diversity information for item generation
         };
     },
 
@@ -615,8 +2466,9 @@ const LootSystem = {
             }
         }
 
-        // Ensure we have all rarities for consistent distribution
-        const finalWeights = { ...this.getDefaultRarityWeights(), ...adjustedWeights };
+        // Use phase-based progression weights for consistent learning curve
+        const phaseBaseWeights = this.getPhaseBasedRarityWeights(playerLevel, contentLevel);
+        const finalWeights = { ...phaseBaseWeights, ...adjustedWeights };
 
         // Weighted random selection
         const totalWeight = Object.values(finalWeights).reduce((sum, weight) => sum + weight, 0);
@@ -636,7 +2488,7 @@ const LootSystem = {
     /**
      * Generate a specific loot item with properties
      */
-    generateLootItem: function(itemType, rarity, playerLevel, contentLevel, areaName = null) {
+    generateLootItem: function(itemType, rarity, playerLevel, contentLevel, areaName = null, buildDiversityInfo = null) {
         try {
             const tierInfo = this.rarityTiers[rarity];
             if (!tierInfo) {
@@ -680,12 +2532,27 @@ const LootSystem = {
                 this.applyAreaSpecificBonuses(item, areaName);
             }
 
+            // Apply early game learning enhancements (levels 1-10)
+            if (playerLevel <= 10) {
+                this.applyEarlyGameLearningEnhancements(item, itemType, rarity, playerLevel, contentLevel);
+            }
+
+            // Apply mid-game strategic enhancements (levels 11-20)
+            if (playerLevel >= 11 && playerLevel <= 20) {
+                this.applyMidGameStrategicEnhancements(item, itemType, rarity, playerLevel, contentLevel, areaName);
+            }
+
+            // Apply late-game prestige enhancements (levels 21-30+)
+            if (playerLevel >= 21) {
+                this.applyLateGamePrestigeEnhancements(item, itemType, rarity, playerLevel, contentLevel, areaName);
+            }
+
             // Special handling for spell scrolls and learning materials
             if (itemType === 'spell_scroll' || itemType === 'spell_book' || itemType === 'spell_tome' || itemType === 'ancient_tome') {
                 this.generateSpellLearningItem(item, itemType, rarity, playerLevel, contentLevel, areaName);
             }
 
-            // Enhanced handling for consumables with learning curve support\n            if (item.type === 'consumable' || itemType === 'consumable' || itemType === 'potion' || \n                itemType === 'healing_potion' || itemType === 'mana_potion' || \n                (item.category && ['healing', 'restoration', 'enhancement', 'utility', 'cure', 'revival'].includes(item.category))) {\n                this.enhanceConsumableForLearning(item, playerLevel, rarity, areaName);\n            }\n\n            // Enhanced handling for materials with crafting system preparation\n            if (item.type === 'material' || itemType === 'material' || itemType === 'crafting_material' ||\n                (item.category && ['natural', 'monster_part', 'mineral', 'magical', 'crafting'].includes(item.category))) {\n                this.enhanceMaterialForCrafting(item, playerLevel, rarity, areaName, null);\n            }\n\n            return item;
+            // Enhanced handling for consumables with learning curve support\n            if (item.type === 'consumable' || itemType === 'consumable' || itemType === 'potion' || \n                itemType === 'healing_potion' || itemType === 'mana_potion' || \n                (item.category && ['healing', 'restoration', 'enhancement', 'utility', 'cure', 'revival'].includes(item.category))) {\n                this.enhanceConsumableForLearning(item, playerLevel, rarity, areaName);\n            }\n\n            // Enhanced handling for materials with crafting system preparation\n            if (item.type === 'material' || itemType === 'material' || itemType === 'crafting_material' ||\n                (item.category && ['natural', 'monster_part', 'mineral', 'magical', 'crafting'].includes(item.category))) {\n                this.enhanceMaterialForCrafting(item, playerLevel, rarity, areaName, null);\n            }\n\n            // Apply build diversity enhancements if requested\n            if (buildDiversityInfo && buildDiversityInfo.diversityPromoted && buildDiversityInfo.diversityProfile) {\n                const playerClass = buildDiversityInfo.diversityProfile.playerClass ||\n                    (typeof GameState !== 'undefined' && GameState.player && GameState.player.class);\n                this.applyBuildDiversityEnhancements(item, playerLevel, playerClass, buildDiversityInfo.diversityProfile);\n            }\n\n            return item;
 
         } catch (error) {
             console.error('❌ Error generating loot item:', error);
@@ -3319,6 +5186,1222 @@ const LootSystem = {
             status,
             nextResetTime
         };
+    },
+
+    // === Build Diversity Support System ===
+    // Implements varied equipment and spell availability to support different character build paths
+    // Prevents homogeneous gameplay by ensuring diverse loot options across encounters
+
+    /**
+     * Get build diversity preferences based on player profile and recent loot history
+     * Analyzes player's current equipment and recent drops to promote build variety
+     */
+    getBuildDiversityPreferences: function(playerLevel, playerClass = null, recentLootHistory = [], currentEquipment = {}) {
+        const diversityProfile = {
+            // Base build archetypes to support
+            supportedBuilds: this.getSupportedBuildArchetypes(playerLevel, playerClass),
+
+            // Equipment categories that need more representation
+            underrepresentedCategories: this.analyzeEquipmentGaps(currentEquipment, recentLootHistory),
+
+            // Spell schools that could use more variety
+            spellDiversityNeeds: this.analyzeSpellDiversity(currentEquipment, recentLootHistory, playerClass),
+
+            // Build synergy opportunities
+            synergyOpportunities: this.identifyBuildSynergies(currentEquipment, playerLevel, playerClass),
+
+            // Diversity weighting preferences
+            diversityWeights: this.calculateDiversityWeights(recentLootHistory, playerLevel)
+        };
+
+        return diversityProfile;
+    },
+
+    /**
+     * Get supported build archetypes for the current player level and class
+     */
+    getSupportedBuildArchetypes: function(playerLevel, playerClass = null) {
+        const baseBuilds = {
+            // Universal build types available to all classes
+            universal: [
+                'balanced', 'defensive', 'offensive', 'utility'
+            ],
+
+            // Early game (1-10): Simple, focused builds
+            early: {
+                warrior: ['melee_damage', 'tank', 'weapon_specialist'],
+                mage: ['elemental_damage', 'support_caster', 'scholar'],
+                rogue: ['stealth', 'ranged_damage', 'skill_specialist'],
+                cleric: ['healer', 'divine_warrior', 'support'],
+                general: ['combat_focused', 'exploration_focused', 'resource_focused']
+            },
+
+            // Mid game (11-20): Hybrid and specialized builds
+            mid: {
+                warrior: ['berserker', 'paladin', 'weapon_master', 'guardian', 'duelist'],
+                mage: ['elementalist', 'battlemage', 'enchanter', 'summoner', 'arcane_scholar'],
+                rogue: ['assassin', 'ranger', 'trickster', 'shadow_dancer', 'treasure_hunter'],
+                cleric: ['battle_cleric', 'divine_healer', 'protector', 'crusader', 'miracle_worker'],
+                general: ['hybrid_specialist', 'area_master', 'artifact_collector', 'skill_diversifier']
+            },
+
+            // Late game (21-30+): Advanced and prestige builds
+            late: {
+                warrior: ['legend_warrior', 'immortal_guardian', 'weapon_saint', 'battle_lord', 'champion'],
+                mage: ['archmage', 'elemental_lord', 'reality_bender', 'spell_weaver', 'cosmic_scholar'],
+                rogue: ['shadow_master', 'phantom_lord', 'perfect_assassin', 'treasure_legend', 'skill_transcendent'],
+                cleric: ['divine_avatar', 'miracle_saint', 'holy_warrior', 'celestial_guide', 'faith_incarnate'],
+                general: ['transcendent_master', 'world_shaper', 'legend_collector', 'ultimate_hybrid']
+            }
+        };
+
+        // Determine phase and return appropriate builds
+        let phase = 'early';
+        if (playerLevel >= 21) phase = 'late';
+        else if (playerLevel >= 11) phase = 'mid';
+
+        const availableBuilds = [...baseBuilds.universal];
+
+        if (playerClass && baseBuilds[phase][playerClass]) {
+            availableBuilds.push(...baseBuilds[phase][playerClass]);
+        }
+
+        // Add general builds for the phase
+        if (baseBuilds[phase].general) {
+            availableBuilds.push(...baseBuilds[phase].general);
+        }
+
+        return {
+            phase,
+            availableBuilds,
+            recommendedCount: Math.min(3 + Math.floor(playerLevel / 5), availableBuilds.length)
+        };
+    },
+
+    /**
+     * Analyze current equipment to identify gaps in build diversity
+     */
+    analyzeEquipmentGaps: function(currentEquipment = {}, recentLootHistory = []) {
+        const equipmentCategories = {
+            weapons: ['sword', 'axe', 'mace', 'dagger', 'bow', 'staff', 'wand', 'spear'],
+            armor: ['light_armor', 'medium_armor', 'heavy_armor', 'robes', 'leather'],
+            accessories: ['ring', 'amulet', 'cloak', 'belt', 'boots', 'gloves'],
+            tools: ['lockpicks', 'rope', 'torch', 'healing_kit', 'trap_kit'],
+            consumables: ['potions', 'scrolls', 'food', 'reagents', 'ammunition']
+        };
+
+        const gaps = {
+            underrepresented: [],
+            missing: [],
+            overrepresented: []
+        };
+
+        // Analyze current equipment distribution
+        const currentDistribution = this.categorizeEquipment(currentEquipment);
+
+        // Analyze recent loot history (last 20 items)
+        const recentDistribution = this.categorizeRecentLoot(recentLootHistory.slice(-20));
+
+        // Identify gaps and overrepresentation
+        Object.keys(equipmentCategories).forEach(category => {
+            const currentCount = currentDistribution[category] || 0;
+            const recentCount = recentDistribution[category] || 0;
+            const totalRelevant = currentCount + recentCount;
+
+            // Expected distribution (should be roughly balanced)
+            const expectedRatio = 1.0 / Object.keys(equipmentCategories).length;
+            const actualRatio = totalRelevant / Math.max(1, Object.keys(currentEquipment).length + recentLootHistory.length);
+
+            if (actualRatio < expectedRatio * 0.5) {
+                gaps.underrepresented.push({
+                    category,
+                    deficit: expectedRatio - actualRatio,
+                    priority: 'high'
+                });
+            } else if (actualRatio < expectedRatio * 0.8) {
+                gaps.underrepresented.push({
+                    category,
+                    deficit: expectedRatio - actualRatio,
+                    priority: 'medium'
+                });
+            } else if (actualRatio > expectedRatio * 1.5) {
+                gaps.overrepresented.push({
+                    category,
+                    excess: actualRatio - expectedRatio,
+                    reduceChance: true
+                });
+            }
+
+            if (currentCount === 0 && recentCount === 0) {
+                gaps.missing.push(category);
+            }
+        });
+
+        return gaps;
+    },
+
+    /**
+     * Analyze spell diversity to identify magical build opportunities
+     */
+    analyzeSpellDiversity: function(currentEquipment = {}, recentLootHistory = [], playerClass = null) {
+        const spellSchools = {
+            elemental: ['fire', 'ice', 'lightning', 'earth', 'air', 'water'],
+            divine: ['healing', 'protection', 'blessing', 'smite', 'guidance'],
+            arcane: ['enchantment', 'illusion', 'transmutation', 'divination', 'force'],
+            nature: ['growth', 'animal', 'weather', 'plant', 'earth_magic'],
+            shadow: ['stealth', 'fear', 'corruption', 'death', 'darkness'],
+            utility: ['teleport', 'detect', 'repair', 'create', 'transform']
+        };
+
+        const diversity = {
+            currentSchools: [],
+            missingSchools: [],
+            dominantSchools: [],
+            recommendedExpansion: []
+        };
+
+        // Analyze current spell access
+        const spellAccess = this.categorizeSpellAccess(currentEquipment, recentLootHistory);
+
+        // Identify school representation
+        Object.keys(spellSchools).forEach(school => {
+            const schoolSpells = spellAccess.filter(spell =>
+                spellSchools[school].some(type => spell.includes(type))
+            );
+
+            if (schoolSpells.length > 0) {
+                diversity.currentSchools.push({
+                    school,
+                    spellCount: schoolSpells.length,
+                    spells: schoolSpells
+                });
+
+                if (schoolSpells.length >= 3) {
+                    diversity.dominantSchools.push(school);
+                }
+            } else {
+                diversity.missingSchools.push(school);
+            }
+        });
+
+        // Recommend expansion based on class and current gaps
+        if (playerClass) {
+            const classAffinities = this.getClassSpellAffinities(playerClass);
+            diversity.recommendedExpansion = diversity.missingSchools
+                .filter(school => classAffinities.includes(school))
+                .concat(diversity.missingSchools.filter(school => !classAffinities.includes(school)).slice(0, 2));
+        } else {
+            // General recommendation: expand into 2-3 missing schools
+            diversity.recommendedExpansion = diversity.missingSchools.slice(0, 3);
+        }
+
+        return diversity;
+    },
+
+    /**
+     * Identify potential build synergies based on current equipment
+     */
+    identifyBuildSynergies: function(currentEquipment = {}, playerLevel, playerClass = null) {
+        const synergies = {
+            discovered: [],
+            potential: [],
+            recommendations: []
+        };
+
+        // Define synergy patterns
+        const synergyPatterns = {
+            'elemental_mastery': {
+                requires: ['elemental_weapon', 'elemental_armor', 'elemental_accessory'],
+                bonus: 'Enhanced elemental damage and resistance',
+                threshold: 2
+            },
+            'stealth_specialist': {
+                requires: ['light_armor', 'stealth_accessories', 'stealth_weapons'],
+                bonus: 'Improved stealth and critical strike chance',
+                threshold: 2
+            },
+            'heavy_defender': {
+                requires: ['heavy_armor', 'shield', 'defensive_accessories'],
+                bonus: 'Massive damage reduction and threat generation',
+                threshold: 3
+            },
+            'spell_warrior': {
+                requires: ['magical_weapon', 'spell_armor', 'mana_accessories'],
+                bonus: 'Balanced magical and physical combat effectiveness',
+                threshold: 2
+            },
+            'treasure_hunter': {
+                requires: ['lockpicks', 'detection_items', 'carrying_capacity'],
+                bonus: 'Enhanced exploration and loot discovery',
+                threshold: 2
+            }
+        };
+
+        // Analyze current equipment for synergies
+        const equipmentTypes = this.categorizeEquipmentBySynergy(currentEquipment);
+
+        Object.keys(synergyPatterns).forEach(synergyName => {
+            const pattern = synergyPatterns[synergyName];
+            const matchCount = pattern.requires.filter(req => equipmentTypes.includes(req)).length;
+
+            if (matchCount >= pattern.threshold) {
+                synergies.discovered.push({
+                    name: synergyName,
+                    completion: matchCount / pattern.requires.length,
+                    bonus: pattern.bonus,
+                    active: true
+                });
+            } else if (matchCount > 0) {
+                synergies.potential.push({
+                    name: synergyName,
+                    completion: matchCount / pattern.requires.length,
+                    missing: pattern.requires.filter(req => !equipmentTypes.includes(req)),
+                    bonus: pattern.bonus
+                });
+            }
+        });
+
+        // Generate recommendations
+        synergies.recommendations = synergies.potential
+            .filter(syn => syn.completion >= 0.5)
+            .map(syn => ({
+                synergy: syn.name,
+                nextItems: syn.missing.slice(0, 2),
+                priority: syn.completion > 0.7 ? 'high' : 'medium'
+            }));
+
+        return synergies;
+    },
+
+    /**
+     * Calculate diversity weights to promote varied loot generation
+     */
+    calculateDiversityWeights: function(recentLootHistory = [], playerLevel) {
+        const baseWeights = {
+            weapons: 0.25,
+            armor: 0.25,
+            accessories: 0.20,
+            spells: 0.15,
+            consumables: 0.10,
+            tools: 0.05
+        };
+
+        // Analyze recent loot to adjust weights
+        const recentCategories = this.categorizeRecentLoot(recentLootHistory.slice(-15));
+        const adjustedWeights = {...baseWeights};
+
+        // Reduce weights for overrepresented categories
+        Object.keys(recentCategories).forEach(category => {
+            const recentCount = recentCategories[category] || 0;
+            const recentRatio = recentCount / Math.max(1, recentLootHistory.length);
+
+            if (recentRatio > baseWeights[category] * 1.5) {
+                // Reduce weight for overrepresented categories
+                adjustedWeights[category] *= 0.7;
+                console.log(`🎲 Reducing ${category} weight due to overrepresentation`);
+            } else if (recentRatio < baseWeights[category] * 0.5) {
+                // Increase weight for underrepresented categories
+                adjustedWeights[category] *= 1.3;
+                console.log(`🎲 Increasing ${category} weight due to underrepresentation`);
+            }
+        });
+
+        // Level-based adjustments
+        if (playerLevel <= 10) {
+            // Early game: more weapons and basic equipment
+            adjustedWeights.weapons *= 1.2;
+            adjustedWeights.consumables *= 1.1;
+        } else if (playerLevel >= 21) {
+            // Late game: more spells and accessories
+            adjustedWeights.spells *= 1.3;
+            adjustedWeights.accessories *= 1.2;
+        }
+
+        return this.normalizeWeights(adjustedWeights);
+    },
+
+    /**
+     * Select items that promote build diversity
+     */
+    selectBuildDiversityItem: function(playerLevel, playerClass = null, encounterContext = {}) {
+        const diversityProfile = this.getBuildDiversityPreferences(
+            playerLevel,
+            playerClass,
+            encounterContext.recentLootHistory || [],
+            encounterContext.currentEquipment || {}
+        );
+
+        // Use diversity weights to select item category
+        const categoryWeights = diversityProfile.diversityWeights;
+        const selectedCategory = this.weightedRandomSelect(categoryWeights);
+
+        // Select specific item within category that promotes diversity
+        let selectedItem = null;
+
+        switch (selectedCategory) {
+            case 'weapons':
+                selectedItem = this.selectDiverseWeapon(playerLevel, playerClass, diversityProfile);
+                break;
+            case 'armor':
+                selectedItem = this.selectDiverseArmor(playerLevel, playerClass, diversityProfile);
+                break;
+            case 'accessories':
+                selectedItem = this.selectDiverseAccessory(playerLevel, playerClass, diversityProfile);
+                break;
+            case 'spells':
+                selectedItem = this.selectDiverseSpell(playerLevel, playerClass, diversityProfile);
+                break;
+            case 'consumables':
+                selectedItem = this.selectDiverseConsumable(playerLevel, playerClass, diversityProfile);
+                break;
+            case 'tools':
+                selectedItem = this.selectDiverseTool(playerLevel, playerClass, diversityProfile);
+                break;
+        }
+
+        // Add build diversity metadata
+        if (selectedItem) {
+            selectedItem.buildDiversityInfo = {
+                category: selectedCategory,
+                diversityReason: this.getBuildDiversityReason(selectedCategory, diversityProfile),
+                synergyPotential: this.evaluateSynergyPotential(selectedItem, diversityProfile),
+                buildSupport: this.identifyBuildSupport(selectedItem, diversityProfile.supportedBuilds)
+            };
+        }
+
+        return selectedItem;
+    },
+
+    /**
+     * Apply build diversity enhancements to generated items
+     */
+    applyBuildDiversityEnhancements: function(item, playerLevel, playerClass, diversityProfile) {
+        if (!item || !diversityProfile) return item;
+
+        // Add build diversity hints
+        if (!item.buildDiversityHints) item.buildDiversityHints = [];
+
+        // Determine if this item supports underrepresented builds
+        const supportedBuilds = this.identifyBuildSupport(item, diversityProfile.supportedBuilds);
+        if (supportedBuilds.length > 0) {
+            item.buildDiversityHints.push(`Supports ${supportedBuilds.slice(0, 2).join(' and ')} builds`);
+        }
+
+        // Add synergy opportunity hints
+        if (diversityProfile.synergyOpportunities.recommendations.length > 0) {
+            const relevantSynergies = diversityProfile.synergyOpportunities.recommendations
+                .filter(rec => this.itemSupportsSynergy(item, rec.synergy))
+                .slice(0, 1);
+
+            if (relevantSynergies.length > 0) {
+                item.buildDiversityHints.push(`Contributes to ${relevantSynergies[0].synergy} synergy`);
+            }
+        }
+
+        // Add diversity value bonus for underrepresented categories
+        const gaps = diversityProfile.underrepresentedCategories;
+        const itemCategory = this.categorizeItem(item);
+        const relevantGap = gaps.find(gap => gap.category === itemCategory);
+
+        if (relevantGap) {
+            // Slight value bonus for addressing diversity gaps
+            const diversityBonus = relevantGap.priority === 'high' ? 1.15 : 1.1;
+            if (item.value) item.value = Math.floor(item.value * diversityBonus);
+            item.buildDiversityHints.push('Addresses equipment variety gap');
+        }
+
+        return item;
+    },
+
+    // === Helper Functions for Build Diversity ===
+
+    categorizeEquipment: function(equipment) {
+        const distribution = {};
+        Object.values(equipment).forEach(item => {
+            if (!item || !item.type) return;
+            const category = this.categorizeItem(item);
+            distribution[category] = (distribution[category] || 0) + 1;
+        });
+        return distribution;
+    },
+
+    categorizeRecentLoot: function(lootHistory) {
+        const distribution = {};
+        lootHistory.forEach(item => {
+            if (!item || !item.type) return;
+            const category = this.categorizeItem(item);
+            distribution[category] = (distribution[category] || 0) + 1;
+        });
+        return distribution;
+    },
+
+    categorizeItem: function(item) {
+        if (!item.type) return 'unknown';
+
+        const weaponTypes = ['sword', 'axe', 'mace', 'dagger', 'bow', 'staff', 'wand', 'spear'];
+        const armorTypes = ['armor', 'helmet', 'shield', 'robes'];
+        const accessoryTypes = ['ring', 'amulet', 'cloak', 'belt', 'boots', 'gloves'];
+        const spellTypes = ['scroll', 'book', 'tome', 'orb'];
+        const consumableTypes = ['potion', 'food', 'reagent'];
+        const toolTypes = ['lockpicks', 'rope', 'torch', 'kit'];
+
+        if (weaponTypes.some(type => item.type.includes(type))) return 'weapons';
+        if (armorTypes.some(type => item.type.includes(type))) return 'armor';
+        if (accessoryTypes.some(type => item.type.includes(type))) return 'accessories';
+        if (spellTypes.some(type => item.type.includes(type))) return 'spells';
+        if (consumableTypes.some(type => item.type.includes(type))) return 'consumables';
+        if (toolTypes.some(type => item.type.includes(type))) return 'tools';
+
+        return 'other';
+    },
+
+    categorizeSpellAccess: function(equipment, recentLoot) {
+        const spells = [];
+
+        [...Object.values(equipment), ...recentLoot].forEach(item => {
+            if (item && item.type && (item.type.includes('scroll') || item.type.includes('book') || item.type.includes('tome'))) {
+                if (item.spell || item.name) {
+                    spells.push(item.spell || item.name);
+                }
+            }
+        });
+
+        return spells;
+    },
+
+    getClassSpellAffinities: function(playerClass) {
+        const affinities = {
+            warrior: ['divine', 'elemental'],
+            mage: ['arcane', 'elemental', 'utility'],
+            rogue: ['shadow', 'utility'],
+            cleric: ['divine', 'nature']
+        };
+
+        return affinities[playerClass] || ['elemental', 'utility'];
+    },
+
+    categorizeEquipmentBySynergy: function(equipment) {
+        const types = [];
+        Object.values(equipment).forEach(item => {
+            if (!item) return;
+
+            // Analyze item properties for synergy categorization
+            if (item.elementalDamage || item.type?.includes('elemental')) types.push('elemental_weapon', 'elemental_armor', 'elemental_accessory');
+            if (item.stealth || item.type?.includes('light')) types.push('light_armor', 'stealth_accessories', 'stealth_weapons');
+            if (item.defense >= 10 || item.type?.includes('heavy')) types.push('heavy_armor', 'shield', 'defensive_accessories');
+            if (item.magicalPower || item.type?.includes('magical')) types.push('magical_weapon', 'spell_armor', 'mana_accessories');
+            if (item.type?.includes('lockpicks') || item.exploration) types.push('lockpicks', 'detection_items', 'carrying_capacity');
+        });
+
+        return [...new Set(types)];
+    },
+
+    selectDiverseWeapon: function(playerLevel, playerClass, diversityProfile) {
+        // Implementation would select weapons that address diversity gaps
+        return this.selectItemFromCategory('weapons', playerClass, playerLevel);
+    },
+
+    selectDiverseArmor: function(playerLevel, playerClass, diversityProfile) {
+        // Implementation would select armor that addresses diversity gaps
+        return this.selectItemFromCategory('armor', playerClass, playerLevel);
+    },
+
+    selectDiverseAccessory: function(playerLevel, playerClass, diversityProfile) {
+        // Implementation would select accessories that address diversity gaps
+        return this.selectItemFromCategory('accessories', playerClass, playerLevel);
+    },
+
+    selectDiverseSpell: function(playerLevel, playerClass, diversityProfile) {
+        // Select spells from underrepresented schools
+        const missingSchools = diversityProfile.spellDiversityNeeds.missingSchools;
+        if (missingSchools.length > 0) {
+            const targetSchool = missingSchools[Math.floor(Math.random() * missingSchools.length)];
+            return this.selectSpellFromSchool(targetSchool, playerLevel, playerClass);
+        }
+        return this.selectItemFromCategory('spells', playerClass, playerLevel);
+    },
+
+    selectDiverseConsumable: function(playerLevel, playerClass, diversityProfile) {
+        // Implementation would select consumables that address diversity gaps
+        return this.selectItemFromCategory('consumables', playerClass, playerLevel);
+    },
+
+    selectDiverseTool: function(playerLevel, playerClass, diversityProfile) {
+        // Implementation would select tools that address diversity gaps
+        return this.selectItemFromCategory('tools', playerClass, playerLevel);
+    },
+
+    selectSpellFromSchool: function(school, playerLevel, playerClass) {
+        // Placeholder - would select appropriate spell from the specified school
+        return {
+            type: 'scroll',
+            name: `${school} spell scroll`,
+            school: school,
+            level: Math.min(playerLevel, 10),
+            value: 50 + playerLevel * 5
+        };
+    },
+
+    getBuildDiversityReason: function(category, diversityProfile) {
+        const gaps = diversityProfile.underrepresentedCategories;
+        const relevantGap = gaps.find(gap => gap.category === category);
+
+        if (relevantGap) {
+            return `Addresses ${relevantGap.priority} priority gap in ${category}`;
+        }
+        return `Promotes ${category} variety`;
+    },
+
+    evaluateSynergyPotential: function(item, diversityProfile) {
+        const synergies = diversityProfile.synergyOpportunities.recommendations;
+        const supportedSynergies = synergies.filter(syn => this.itemSupportsSynergy(item, syn.synergy));
+
+        return {
+            count: supportedSynergies.length,
+            synergies: supportedSynergies.map(syn => syn.synergy),
+            highestPriority: supportedSynergies.find(syn => syn.priority === 'high')?.synergy || null
+        };
+    },
+
+    identifyBuildSupport: function(item, supportedBuilds) {
+        if (!item || !supportedBuilds.availableBuilds) return [];
+
+        // Simple mapping - would be more sophisticated in full implementation
+        const buildMap = {
+            'sword': ['melee_damage', 'warrior', 'weapon_specialist'],
+            'staff': ['mage', 'elemental_damage', 'arcane'],
+            'bow': ['ranged_damage', 'rogue', 'ranger'],
+            'armor': ['defensive', 'tank', 'guardian'],
+            'scroll': ['caster', 'utility', 'scholar']
+        };
+
+        const itemBuildSupport = [];
+        Object.keys(buildMap).forEach(itemType => {
+            if (item.type?.includes(itemType) || item.name?.toLowerCase().includes(itemType)) {
+                buildMap[itemType].forEach(build => {
+                    if (supportedBuilds.availableBuilds.includes(build)) {
+                        itemBuildSupport.push(build);
+                    }
+                });
+            }
+        });
+
+        return [...new Set(itemBuildSupport)];
+    },
+
+    itemSupportsSynergy: function(item, synergyName) {
+        // Simple check - would be more sophisticated in full implementation
+        const synergyMap = {
+            'elemental_mastery': ['elemental', 'fire', 'ice', 'lightning'],
+            'stealth_specialist': ['stealth', 'light', 'dagger', 'bow'],
+            'heavy_defender': ['heavy', 'armor', 'shield', 'defense'],
+            'spell_warrior': ['magical', 'mana', 'hybrid'],
+            'treasure_hunter': ['lockpicks', 'detection', 'exploration']
+        };
+
+        const keywords = synergyMap[synergyName] || [];
+        return keywords.some(keyword =>
+            item.type?.includes(keyword) ||
+            item.name?.toLowerCase().includes(keyword) ||
+            Object.values(item).some(val =>
+                typeof val === 'string' && val.toLowerCase().includes(keyword)
+            )
+        );
+    },
+
+    normalizeWeights: function(weights) {
+        const total = Object.values(weights).reduce((sum, weight) => sum + weight, 0);
+        const normalized = {};
+        Object.keys(weights).forEach(key => {
+            normalized[key] = weights[key] / total;
+        });
+        return normalized;
+    },
+
+    weightedRandomSelect: function(weights) {
+        const random = Math.random();
+        let cumulative = 0;
+
+        for (const [key, weight] of Object.entries(weights)) {
+            cumulative += weight;
+            if (random <= cumulative) {
+                return key;
+            }
+        }
+
+        // Fallback
+        return Object.keys(weights)[0];
+    },
+
+    // === Progression Gate Mechanics ===
+    // Implements loot-based area access requirements to gate progression
+    // Ensures players have appropriate equipment before accessing challenging content
+
+    /**
+     * Define progression gate requirements for area access
+     * Returns the loot-based requirements players must meet to access specific areas
+     */
+    getProgressionGateRequirements: function(areaName, recommendedLevel = 1) {
+        const gateRequirements = {
+            // Early game areas (levels 1-10): Minimal requirements
+            forest_clearing: {
+                minLevel: 1,
+                requiredItems: [],
+                recommendedItems: ['any_weapon'],
+                description: 'No special requirements'
+            },
+
+            abandoned_shack: {
+                minLevel: 2,
+                requiredItems: ['any_weapon'],
+                recommendedItems: ['healing_potion', 'any_armor'],
+                description: 'Requires any weapon for basic combat'
+            },
+
+            // Mid game areas (levels 11-20): Equipment and progression requirements
+            dark_forest: {
+                minLevel: 8,
+                requiredItems: ['any_weapon', 'any_armor'],
+                recommendedItems: ['torch', 'healing_potion', 'lockpicks'],
+                lootRequirements: {
+                    totalItems: 5,
+                    rarityDistribution: { common: 3, uncommon: 1 }
+                },
+                description: 'Requires weapon and armor. Recommended: torch for visibility, healing supplies'
+            },
+
+            mountain_cave: {
+                minLevel: 12,
+                requiredItems: ['any_weapon', 'medium_armor_or_better'],
+                recommendedItems: ['torch', 'rope', 'healing_kit'],
+                lootRequirements: {
+                    totalItems: 8,
+                    rarityDistribution: { common: 4, uncommon: 3, rare: 1 },
+                    equipmentTypes: ['weapons', 'armor']
+                },
+                description: 'Dangerous cave requiring proper armor and equipment for survival'
+            },
+
+            haunted_ruins: {
+                minLevel: 15,
+                requiredItems: ['magical_weapon_or_spell', 'protective_gear'],
+                recommendedItems: ['holy_water', 'spell_components', 'restoration_items'],
+                lootRequirements: {
+                    totalItems: 10,
+                    rarityDistribution: { common: 5, uncommon: 3, rare: 2 },
+                    spellAccess: ['divine', 'arcane'],
+                    equipmentTypes: ['weapons', 'armor', 'accessories']
+                },
+                description: 'Cursed ruins requiring magical defenses and supernatural countermeasures'
+            },
+
+            // Late game areas (levels 21-30+): Strict progression requirements
+            dragon_lair: {
+                minLevel: 22,
+                requiredItems: ['legendary_weapon_or_epic', 'fire_resistance', 'flight_or_climbing'],
+                recommendedItems: ['dragon_ward', 'treasure_detection', 'emergency_escape'],
+                lootRequirements: {
+                    totalItems: 15,
+                    rarityDistribution: { common: 6, uncommon: 5, rare: 3, epic: 1 },
+                    synergyRequirements: ['elemental_mastery', 'heavy_defender'],
+                    equipmentTypes: ['weapons', 'armor', 'accessories', 'spells'],
+                    minEquipmentLevel: 20
+                },
+                description: 'Ancient dragon requires legendary equipment and elemental protection'
+            },
+
+            void_portal: {
+                minLevel: 28,
+                requiredItems: ['artifact_weapon', 'void_protection', 'reality_anchor'],
+                recommendedItems: ['planar_navigation', 'soul_protection', 'emergency_return'],
+                lootRequirements: {
+                    totalItems: 20,
+                    rarityDistribution: { uncommon: 8, rare: 6, epic: 4, legendary: 2 },
+                    synergyRequirements: ['spell_warrior', 'treasure_hunter'],
+                    equipmentTypes: ['weapons', 'armor', 'accessories', 'spells', 'tools'],
+                    minEquipmentLevel: 25,
+                    buildRequirements: ['transcendent_master', 'world_shaper']
+                },
+                description: 'Interdimensional portal requiring mastery of multiple disciplines and legendary artifacts'
+            }
+        };
+
+        // Return specific area requirements or default
+        return gateRequirements[areaName] || {
+            minLevel: Math.max(1, recommendedLevel - 2),
+            requiredItems: [],
+            recommendedItems: [],
+            description: 'Standard exploration requirements'
+        };
+    },
+
+    /**
+     * Check if player meets progression gate requirements for an area
+     */
+    checkProgressionGateAccess: function(areaName, playerLevel, playerInventory = {}, playerEquipment = {}, playerClass = null) {
+        const requirements = this.getProgressionGateRequirements(areaName, playerLevel);
+
+        const accessCheck = {
+            hasAccess: true,
+            failures: [],
+            warnings: [],
+            requirements: requirements,
+            playerReadiness: 'excellent'
+        };
+
+        // Check minimum level requirement
+        if (playerLevel < requirements.minLevel) {
+            accessCheck.hasAccess = false;
+            accessCheck.failures.push(`Minimum level ${requirements.minLevel} required (current: ${playerLevel})`);
+        }
+
+        // Check required items
+        if (requirements.requiredItems && requirements.requiredItems.length > 0) {
+            const missingRequired = this.checkRequiredItems(requirements.requiredItems, playerInventory, playerEquipment);
+            if (missingRequired.length > 0) {
+                accessCheck.hasAccess = false;
+                accessCheck.failures.push(`Missing required items: ${missingRequired.join(', ')}`);
+            }
+        }
+
+        // Check loot progression requirements
+        if (requirements.lootRequirements) {
+            const lootCheck = this.checkLootProgressionRequirements(
+                requirements.lootRequirements,
+                playerInventory,
+                playerEquipment,
+                playerClass
+            );
+
+            if (!lootCheck.meetsRequirements) {
+                accessCheck.hasAccess = false;
+                accessCheck.failures.push(...lootCheck.failures);
+            }
+
+            accessCheck.warnings.push(...lootCheck.warnings);
+        }
+
+        // Check recommended items (warnings only)
+        if (requirements.recommendedItems && requirements.recommendedItems.length > 0) {
+            const missingRecommended = this.checkRequiredItems(requirements.recommendedItems, playerInventory, playerEquipment);
+            if (missingRecommended.length > 0) {
+                accessCheck.warnings.push(`Recommended items missing: ${missingRecommended.join(', ')}`);
+            }
+        }
+
+        // Determine player readiness level
+        if (accessCheck.failures.length > 0) {
+            accessCheck.playerReadiness = 'blocked';
+        } else if (accessCheck.warnings.length > 2) {
+            accessCheck.playerReadiness = 'unprepared';
+        } else if (accessCheck.warnings.length > 0) {
+            accessCheck.playerReadiness = 'adequate';
+        } else {
+            accessCheck.playerReadiness = 'excellent';
+        }
+
+        return accessCheck;
+    },
+
+    /**
+     * Check if player has required items
+     */
+    checkRequiredItems: function(requiredItems, inventory, equipment) {
+        const missing = [];
+
+        requiredItems.forEach(requirement => {
+            if (!this.playerHasRequirement(requirement, inventory, equipment)) {
+                missing.push(requirement);
+            }
+        });
+
+        return missing;
+    },
+
+    /**
+     * Check if player meets loot progression requirements
+     */
+    checkLootProgressionRequirements: function(lootRequirements, inventory, equipment, playerClass) {
+        const check = {
+            meetsRequirements: true,
+            failures: [],
+            warnings: []
+        };
+
+        // Count total items
+        const totalItems = Object.keys(inventory).length + Object.keys(equipment).length;
+        if (lootRequirements.totalItems && totalItems < lootRequirements.totalItems) {
+            check.meetsRequirements = false;
+            check.failures.push(`Need ${lootRequirements.totalItems} total items (have ${totalItems})`);
+        }
+
+        // Check rarity distribution
+        if (lootRequirements.rarityDistribution) {
+            const rarityCheck = this.checkRarityDistribution(lootRequirements.rarityDistribution, inventory, equipment);
+            if (!rarityCheck.meetsRequirements) {
+                check.meetsRequirements = false;
+                check.failures.push(...rarityCheck.failures);
+            }
+        }
+
+        // Check equipment type requirements
+        if (lootRequirements.equipmentTypes) {
+            const typeCheck = this.checkEquipmentTypeRequirements(lootRequirements.equipmentTypes, inventory, equipment);
+            if (!typeCheck.meetsRequirements) {
+                check.meetsRequirements = false;
+                check.failures.push(...typeCheck.failures);
+            }
+        }
+
+        // Check spell access requirements
+        if (lootRequirements.spellAccess) {
+            const spellCheck = this.checkSpellAccessRequirements(lootRequirements.spellAccess, inventory, equipment);
+            if (!spellCheck.meetsRequirements) {
+                check.meetsRequirements = false;
+                check.failures.push(...spellCheck.failures);
+            }
+        }
+
+        // Check synergy requirements
+        if (lootRequirements.synergyRequirements) {
+            const synergyCheck = this.checkSynergyRequirements(lootRequirements.synergyRequirements, equipment);
+            if (!synergyCheck.meetsRequirements) {
+                check.failures.push(...synergyCheck.failures);
+                // Synergy requirements are often warnings rather than hard blocks
+                if (synergyCheck.failures.length > 1) {
+                    check.meetsRequirements = false;
+                } else {
+                    check.warnings.push(...synergyCheck.failures);
+                }
+            }
+        }
+
+        // Check minimum equipment level
+        if (lootRequirements.minEquipmentLevel) {
+            const levelCheck = this.checkMinimumEquipmentLevel(lootRequirements.minEquipmentLevel, equipment);
+            if (!levelCheck.meetsRequirements) {
+                check.meetsRequirements = false;
+                check.failures.push(...levelCheck.failures);
+            }
+        }
+
+        // Check build requirements
+        if (lootRequirements.buildRequirements) {
+            const buildCheck = this.checkBuildRequirements(lootRequirements.buildRequirements, inventory, equipment, playerClass);
+            if (!buildCheck.meetsRequirements) {
+                check.warnings.push(...buildCheck.failures); // Usually warnings for build requirements
+            }
+        }
+
+        return check;
+    },
+
+    /**
+     * Check if player has a specific requirement
+     */
+    playerHasRequirement: function(requirement, inventory, equipment) {
+        // Handle different requirement types
+        switch (requirement) {
+            case 'any_weapon':
+                return this.hasItemOfType(['weapon', 'sword', 'axe', 'mace', 'dagger', 'bow', 'staff', 'wand'], inventory, equipment);
+
+            case 'any_armor':
+                return this.hasItemOfType(['armor', 'helmet', 'shield', 'robes'], inventory, equipment);
+
+            case 'medium_armor_or_better':
+                return this.hasItemWithMinimumDefense(5, inventory, equipment);
+
+            case 'magical_weapon_or_spell':
+                return this.hasItemOfType(['magical_weapon', 'spell', 'scroll', 'book', 'tome'], inventory, equipment) ||
+                       this.hasItemWithProperty('magical', inventory, equipment);
+
+            case 'protective_gear':
+                return this.hasItemWithMinimumDefense(3, inventory, equipment) ||
+                       this.hasItemOfType(['shield', 'cloak', 'amulet'], inventory, equipment);
+
+            case 'legendary_weapon_or_epic':
+                return this.hasItemWithMinimumRarity(['epic', 'legendary'], inventory, equipment);
+
+            case 'fire_resistance':
+                return this.hasItemWithProperty('fire_resistance', inventory, equipment) ||
+                       this.hasItemWithProperty('elemental_resistance', inventory, equipment);
+
+            case 'artifact_weapon':
+                return this.hasItemWithMinimumRarity(['legendary'], inventory, equipment) &&
+                       this.hasItemOfType(['weapon'], inventory, equipment);
+
+            case 'void_protection':
+                return this.hasItemWithProperty('void_protection', inventory, equipment) ||
+                       this.hasItemWithProperty('planar_protection', inventory, equipment);
+
+            default:
+                // Check for item by name or type
+                return this.hasItemByName(requirement, inventory, equipment);
+        }
+    },
+
+    /**
+     * Check rarity distribution requirements
+     */
+    checkRarityDistribution: function(requiredDistribution, inventory, equipment) {
+        const check = { meetsRequirements: true, failures: [] };
+        const playerItems = [...Object.values(inventory), ...Object.values(equipment)];
+        const rarityCount = {};
+
+        // Count player's items by rarity
+        playerItems.forEach(item => {
+            if (item && item.rarity) {
+                rarityCount[item.rarity] = (rarityCount[item.rarity] || 0) + 1;
+            }
+        });
+
+        // Check each required rarity count
+        Object.keys(requiredDistribution).forEach(rarity => {
+            const required = requiredDistribution[rarity];
+            const actual = rarityCount[rarity] || 0;
+
+            if (actual < required) {
+                check.meetsRequirements = false;
+                check.failures.push(`Need ${required} ${rarity} items (have ${actual})`);
+            }
+        });
+
+        return check;
+    },
+
+    /**
+     * Check equipment type requirements
+     */
+    checkEquipmentTypeRequirements: function(requiredTypes, inventory, equipment) {
+        const check = { meetsRequirements: true, failures: [] };
+        const playerItems = [...Object.values(inventory), ...Object.values(equipment)];
+        const typePresence = {};
+
+        // Check what types player has
+        playerItems.forEach(item => {
+            if (item && item.type) {
+                const category = this.categorizeItem(item);
+                typePresence[category] = true;
+            }
+        });
+
+        // Check each required type
+        requiredTypes.forEach(requiredType => {
+            if (!typePresence[requiredType]) {
+                check.meetsRequirements = false;
+                check.failures.push(`Need at least one ${requiredType} item`);
+            }
+        });
+
+        return check;
+    },
+
+    /**
+     * Check spell access requirements
+     */
+    checkSpellAccessRequirements: function(requiredSchools, inventory, equipment) {
+        const check = { meetsRequirements: true, failures: [] };
+        const spellAccess = this.categorizeSpellAccess(equipment, Object.values(inventory));
+        const availableSchools = new Set();
+
+        // Determine what spell schools player has access to
+        spellAccess.forEach(spell => {
+            // Simple school detection - would be more sophisticated in full implementation
+            if (spell.includes('fire') || spell.includes('ice') || spell.includes('lightning')) {
+                availableSchools.add('elemental');
+            }
+            if (spell.includes('heal') || spell.includes('bless') || spell.includes('holy')) {
+                availableSchools.add('divine');
+            }
+            if (spell.includes('arcane') || spell.includes('magic') || spell.includes('enchant')) {
+                availableSchools.add('arcane');
+            }
+        });
+
+        // Check each required school
+        requiredSchools.forEach(school => {
+            if (!availableSchools.has(school)) {
+                check.meetsRequirements = false;
+                check.failures.push(`Need access to ${school} magic`);
+            }
+        });
+
+        return check;
+    },
+
+    /**
+     * Check synergy requirements
+     */
+    checkSynergyRequirements: function(requiredSynergies, equipment) {
+        const check = { meetsRequirements: true, failures: [] };
+        const synergies = this.identifyBuildSynergies(equipment, 1); // Level doesn't matter for synergy detection
+
+        const activeSynergyNames = synergies.discovered.map(s => s.name);
+        const potentialSynergyNames = synergies.potential.map(s => s.name);
+
+        requiredSynergies.forEach(requiredSynergy => {
+            if (!activeSynergyNames.includes(requiredSynergy) && !potentialSynergyNames.includes(requiredSynergy)) {
+                check.meetsRequirements = false;
+                check.failures.push(`Need ${requiredSynergy} equipment synergy`);
+            }
+        });
+
+        return check;
+    },
+
+    /**
+     * Check minimum equipment level requirement
+     */
+    checkMinimumEquipmentLevel: function(minLevel, equipment) {
+        const check = { meetsRequirements: true, failures: [] };
+        const equipmentLevels = Object.values(equipment)
+            .filter(item => item && item.level)
+            .map(item => item.level);
+
+        if (equipmentLevels.length === 0) {
+            check.meetsRequirements = false;
+            check.failures.push('No leveled equipment found');
+            return check;
+        }
+
+        const averageLevel = equipmentLevels.reduce((sum, level) => sum + level, 0) / equipmentLevels.length;
+
+        if (averageLevel < minLevel) {
+            check.meetsRequirements = false;
+            check.failures.push(`Average equipment level ${averageLevel.toFixed(1)} below required ${minLevel}`);
+        }
+
+        return check;
+    },
+
+    /**
+     * Check build requirements
+     */
+    checkBuildRequirements: function(requiredBuilds, inventory, equipment, playerClass) {
+        const check = { meetsRequirements: true, failures: [] };
+
+        // Get player's current build support
+        const allItems = [...Object.values(inventory), ...Object.values(equipment)];
+        const supportedBuilds = new Set();
+
+        allItems.forEach(item => {
+            if (item) {
+                const builds = this.identifyBuildSupport(item, { availableBuilds: requiredBuilds });
+                builds.forEach(build => supportedBuilds.add(build));
+            }
+        });
+
+        // Check if player supports at least one required build
+        const hasAnyRequired = requiredBuilds.some(build => supportedBuilds.has(build));
+
+        if (!hasAnyRequired) {
+            check.meetsRequirements = false;
+            check.failures.push(`Equipment doesn't support required builds: ${requiredBuilds.join(', ')}`);
+        }
+
+        return check;
+    },
+
+    // === Helper Functions for Progression Gates ===
+
+    hasItemOfType: function(types, inventory, equipment) {
+        const allItems = [...Object.values(inventory), ...Object.values(equipment)];
+        return allItems.some(item =>
+            item && item.type && types.some(type => item.type.includes(type))
+        );
+    },
+
+    hasItemWithMinimumDefense: function(minDefense, inventory, equipment) {
+        const allItems = [...Object.values(inventory), ...Object.values(equipment)];
+        return allItems.some(item =>
+            item && item.defense && item.defense >= minDefense
+        );
+    },
+
+    hasItemWithProperty: function(property, inventory, equipment) {
+        const allItems = [...Object.values(inventory), ...Object.values(equipment)];
+        return allItems.some(item =>
+            item && (item[property] || (item.properties && item.properties.includes(property)))
+        );
+    },
+
+    hasItemWithMinimumRarity: function(rarities, inventory, equipment) {
+        const allItems = [...Object.values(inventory), ...Object.values(equipment)];
+        return allItems.some(item =>
+            item && item.rarity && rarities.includes(item.rarity)
+        );
+    },
+
+    hasItemByName: function(itemName, inventory, equipment) {
+        const allItems = [...Object.values(inventory), ...Object.values(equipment)];
+        return allItems.some(item =>
+            item && (item.name === itemName || item.type === itemName || item.itemId === itemName)
+        );
+    },
+
+    /**
+     * Get progression recommendations for a player trying to access an area
+     */
+    getProgressionRecommendations: function(areaName, accessCheck, playerLevel, playerClass = null) {
+        if (accessCheck.hasAccess) {
+            return {
+                message: 'You are ready to explore this area!',
+                recommendations: [],
+                priority: 'ready'
+            };
+        }
+
+        const recommendations = {
+            message: 'You need to improve your equipment and preparation before accessing this area.',
+            recommendations: [],
+            priority: 'blocked'
+        };
+
+        // Generate specific recommendations based on failures
+        accessCheck.failures.forEach(failure => {
+            if (failure.includes('level')) {
+                recommendations.recommendations.push({
+                    type: 'level',
+                    suggestion: 'Gain more experience by exploring lower-level areas',
+                    priority: 'high'
+                });
+            } else if (failure.includes('weapon')) {
+                recommendations.recommendations.push({
+                    type: 'equipment',
+                    suggestion: 'Acquire a suitable weapon from combat or merchant',
+                    priority: 'high'
+                });
+            } else if (failure.includes('armor')) {
+                recommendations.recommendations.push({
+                    type: 'equipment',
+                    suggestion: 'Find better armor to increase your defense',
+                    priority: 'high'
+                });
+            } else if (failure.includes('rarity')) {
+                recommendations.recommendations.push({
+                    type: 'loot',
+                    suggestion: 'Collect more rare and powerful items before attempting this area',
+                    priority: 'medium'
+                });
+            } else if (failure.includes('magic')) {
+                recommendations.recommendations.push({
+                    type: 'spell',
+                    suggestion: 'Learn spells or acquire magical items for supernatural threats',
+                    priority: 'high'
+                });
+            }
+        });
+
+        // Add general preparation suggestions
+        if (recommendations.recommendations.length === 0) {
+            recommendations.recommendations.push({
+                type: 'general',
+                suggestion: 'Continue exploring and collecting equipment to meet area requirements',
+                priority: 'medium'
+            });
+        }
+
+        return recommendations;
     },
 
     /**
