@@ -149,7 +149,7 @@
 - [ ] 8.0 Testing and Performance Optimization
   - [x] 8.1 Create unit tests for all inventory hooks (`useInventory.test.ts`, `useEquipment.test.ts`, etc.)
   - [x] 8.2 Create unit tests for all inventory components (`InventoryManager.test.tsx`, `EquipmentScreen.test.tsx`, etc.)
-  - [ ] 8.3 Create unit tests for all utility functions (`itemUtils.test.ts`, `equipmentUtils.test.ts`, etc.)
+  - [x] 8.3 Create unit tests for all utility functions (`itemUtils.test.ts`, `equipmentUtils.test.ts`, etc.)
   - [ ] 8.4 Implement performance optimization for large inventories (virtualization for 1000+ items)
   - [ ] 8.5 Add lazy loading for creature collections and inventory items
   - [ ] 8.6 Create integration tests for inventory system with existing combat and save systems
