@@ -2552,7 +2552,7 @@ const LootSystem = {
                 this.generateSpellLearningItem(item, itemType, rarity, playerLevel, contentLevel, areaName);
             }
 
-            // Enhanced handling for consumables with learning curve support\n            if (item.type === 'consumable' || itemType === 'consumable' || itemType === 'potion' || \n                itemType === 'healing_potion' || itemType === 'mana_potion' || \n                (item.category && ['healing', 'restoration', 'enhancement', 'utility', 'cure', 'revival'].includes(item.category))) {\n                this.enhanceConsumableForLearning(item, playerLevel, rarity, areaName);\n            }\n\n            // Enhanced handling for materials with crafting system preparation\n            if (item.type === 'material' || itemType === 'material' || itemType === 'crafting_material' ||\n                (item.category && ['natural', 'monster_part', 'mineral', 'magical', 'crafting'].includes(item.category))) {\n                this.enhanceMaterialForCrafting(item, playerLevel, rarity, areaName, null);\n            }\n\n            // Apply build diversity enhancements if requested\n            if (buildDiversityInfo && buildDiversityInfo.diversityPromoted && buildDiversityInfo.diversityProfile) {\n                const playerClass = buildDiversityInfo.diversityProfile.playerClass ||\n                    (typeof GameState !== 'undefined' && GameState.player && GameState.player.class);\n                this.applyBuildDiversityEnhancements(item, playerLevel, playerClass, buildDiversityInfo.diversityProfile);\n            }\n\n            return item;
+            // Enhanced handling for consumables with learning curve support\n            if (item.type === 'consumable' || itemType === 'consumable' || itemType === 'potion' || \n                itemType === 'healing_potion' || itemType === 'mana_potion' || \n                (item.category && ['healing', 'restoration', 'enhancement', 'utility', 'cure', 'revival'].includes(item.category))) {\n                this.enhanceConsumableForLearning(item, playerLevel, rarity, areaName);\n            }\n\n            // Enhanced handling for materials with crafting system preparation\n            if (item.type === 'material' || itemType === 'material' || itemType === 'crafting_material' ||\n                (item.category && ['natural', 'monster_part', 'mineral', 'magical', 'crafting'].includes(item.category))) {\n                this.enhanceMaterialForCrafting(item, playerLevel, rarity, areaName, null);\n            }\n\n            // Apply build diversity enhancements if requested\n            if (buildDiversityInfo && buildDiversityInfo.diversityPromoted && buildDiversityInfo.diversityProfile) {\n                const playerClass = buildDiversityInfo.diversityProfile.playerClass ||\n                    (typeof GameState !== 'undefined' && GameState.player && GameState.player.class);\n                this.applyBuildDiversityEnhancements(item, playerLevel, playerClass, buildDiversityInfo.diversityProfile);\n            }\n\n            // Trigger special notifications for rare and legendary items\n            this.triggerSpecialLootNotifications(item, playerLevel, contentLevel, areaName);\n\n            return item;
 
         } catch (error) {
             console.error('❌ Error generating loot item:', error);
@@ -6402,6 +6402,387 @@ const LootSystem = {
         }
 
         return recommendations;
+    },
+
+    // === Special Loot Notifications System ===
+    // Implements automatic special notifications for rare and legendary item drops
+    // Integrates with NotificationBridge for enhanced player feedback
+
+    /**
+     * Trigger special notifications for rare and legendary items
+     * @param {Object} item - The generated loot item
+     * @param {number} playerLevel - Current player level
+     * @param {number} contentLevel - Level of the content that generated the item
+     * @param {string} areaName - Area where the item was found
+     */
+    triggerSpecialLootNotifications: function(item, playerLevel, contentLevel, areaName = null) {
+        if (!item || !item.rarity) return;
+
+        // Check if we have access to notification system
+        const hasNotificationSystem = this.getNotificationBridge();
+        if (!hasNotificationSystem) return;
+
+        const rarity = item.rarity.toLowerCase();
+
+        // Define which rarities trigger special notifications
+        const specialRarities = ['rare', 'epic', 'legendary'];
+        if (!specialRarities.includes(rarity)) return;
+
+        // Check for special circumstances
+        const specialCircumstances = this.analyzeSpecialCircumstances(item, playerLevel, areaName);
+
+        // Trigger appropriate special notification
+        this.showSpecialRarityNotification(item, specialCircumstances, areaName);
+    },
+
+    /**
+     * Analyze special circumstances surrounding the loot drop
+     * @param {Object} item - The loot item
+     * @param {number} playerLevel - Current player level
+     * @param {string} areaName - Area where item was found
+     * @returns {Object} Special circumstances detected
+     */
+    analyzeSpecialCircumstances: function(item, playerLevel, areaName) {
+        const circumstances = {
+            isFirstOfRarity: false,
+            isProgressionSignificant: false,
+            hasBuildSynergy: false,
+            isAreaSpecial: false,
+            isLevelMilestone: false,
+            achievementType: null
+        };
+
+        // Check if this is the first item of this rarity
+        circumstances.isFirstOfRarity = this.checkFirstOfRarity(item.rarity);
+
+        // Check if this item has progression significance
+        circumstances.isProgressionSignificant = this.checkProgressionSignificance(item, playerLevel);
+
+        // Check for build synergy implications
+        circumstances.hasBuildSynergy = this.checkBuildSynergyPotential(item);
+
+        // Check if the area is special for this item type
+        circumstances.isAreaSpecial = this.checkAreaSpecialness(item, areaName);
+
+        // Check for level milestones
+        circumstances.isLevelMilestone = this.checkLevelMilestone(item, playerLevel);
+
+        // Determine the most significant achievement type
+        circumstances.achievementType = this.determineAchievementType(circumstances, item);
+
+        return circumstances;
+    },
+
+    /**
+     * Check if this is the first item of its rarity the player has found
+     * @param {string} rarity - Item rarity
+     * @returns {boolean} True if this is the first of its rarity
+     */
+    checkFirstOfRarity: function(rarity) {
+        // Check player's loot history or achievement flags
+        if (typeof GameState !== 'undefined' && GameState.player && GameState.player.achievements) {
+            const rarityFlag = `first_${rarity}_item`;
+            if (!GameState.player.achievements[rarityFlag]) {
+                // Mark this achievement
+                GameState.player.achievements[rarityFlag] = true;
+                return true;
+            }
+        }
+        return false;
+    },
+
+    /**
+     * Check if the item has progression significance
+     * @param {Object} item - The loot item
+     * @param {number} playerLevel - Current player level
+     * @returns {boolean} True if progression significant
+     */
+    checkProgressionSignificance: function(item, playerLevel) {
+        // Check if item could unlock new areas
+        if (item.rarity === 'legendary' || item.rarity === 'epic') {
+            return true;
+        }
+
+        // Check if item is significantly higher level than player
+        if (item.level && item.level > playerLevel + 3) {
+            return true;
+        }
+
+        // Check for special item properties
+        const specialProperties = ['progression_key', 'area_unlock', 'quest_item', 'artifact'];
+        return specialProperties.some(prop => item[prop] || (item.properties && item.properties.includes(prop)));
+    },
+
+    /**
+     * Check if the item has build synergy potential
+     * @param {Object} item - The loot item
+     * @returns {boolean} True if it enables new synergies
+     */
+    checkBuildSynergyPotential: function(item) {
+        // Check build diversity information
+        if (item.buildDiversityInfo && item.buildDiversityInfo.synergyPotential) {
+            return item.buildDiversityInfo.synergyPotential.count > 0;
+        }
+
+        // Check for synergy-enabling properties
+        const synergyProperties = ['elemental', 'magical', 'stealth', 'heavy_defense', 'treasure_hunter'];
+        return synergyProperties.some(prop =>
+            item[prop] ||
+            (item.type && item.type.includes(prop)) ||
+            (item.properties && item.properties.includes(prop))
+        );
+    },
+
+    /**
+     * Check if the area is special for this item type
+     * @param {Object} item - The loot item
+     * @param {string} areaName - Area name
+     * @returns {boolean} True if area/item combination is special
+     */
+    checkAreaSpecialness: function(item, areaName) {
+        if (!areaName) return false;
+
+        // Define special area/item combinations
+        const specialCombinations = {
+            'dragon_lair': ['legendary', 'epic'],
+            'void_portal': ['legendary'],
+            'haunted_ruins': ['epic', 'rare'],
+            'ancient_temple': ['legendary', 'epic'],
+            'treasure_vault': ['epic', 'rare']
+        };
+
+        if (specialCombinations[areaName]) {
+            return specialCombinations[areaName].includes(item.rarity);
+        }
+
+        return false;
+    },
+
+    /**
+     * Check for level milestone achievements
+     * @param {Object} item - The loot item
+     * @param {number} playerLevel - Current player level
+     * @returns {boolean} True if this represents a level milestone
+     */
+    checkLevelMilestone: function(item, playerLevel) {
+        // Check for milestone levels (every 5 levels)
+        const isMilestoneLevel = playerLevel % 5 === 0;
+
+        // High rarity items at milestone levels are special
+        if (isMilestoneLevel && (item.rarity === 'legendary' || item.rarity === 'epic')) {
+            return true;
+        }
+
+        // First rare+ item at new level tiers
+        const tierBreakpoints = [10, 20, 30];
+        const isNewTier = tierBreakpoints.some(tier => playerLevel >= tier && playerLevel < tier + 2);
+
+        return isNewTier && ['rare', 'epic', 'legendary'].includes(item.rarity);
+    },
+
+    /**
+     * Determine the most significant achievement type
+     * @param {Object} circumstances - Special circumstances object
+     * @param {Object} item - The loot item
+     * @returns {string} Achievement type
+     */
+    determineAchievementType: function(circumstances, item) {
+        // Priority order for achievement types
+        if (circumstances.isFirstOfRarity && item.rarity === 'legendary') {
+            return 'first_legendary';
+        }
+
+        if (circumstances.isFirstOfRarity && item.rarity === 'epic') {
+            return 'first_epic';
+        }
+
+        if (circumstances.isFirstOfRarity && item.rarity === 'rare') {
+            return 'first_rare';
+        }
+
+        if (circumstances.hasBuildSynergy) {
+            return 'build_synergy';
+        }
+
+        if (circumstances.isProgressionSignificant) {
+            return 'progression_gate';
+        }
+
+        if (circumstances.isAreaSpecial) {
+            return 'area_special';
+        }
+
+        if (circumstances.isLevelMilestone) {
+            return 'level_milestone';
+        }
+
+        // Default special notification for rare+ items
+        if (item.rarity === 'legendary') return 'legendary_find';
+        if (item.rarity === 'epic') return 'epic_find';
+        if (item.rarity === 'rare') return 'rare_find';
+
+        return 'rare_find';
+    },
+
+    /**
+     * Show special rarity notification with enhanced presentation
+     * @param {Object} item - The loot item
+     * @param {Object} circumstances - Special circumstances
+     * @param {string} areaName - Area where item was found
+     */
+    showSpecialRarityNotification: function(item, circumstances, areaName) {
+        const notificationBridge = this.getNotificationBridge();
+        if (!notificationBridge) return;
+
+        // Add special notification metadata to the item
+        item.specialNotification = {
+            circumstances,
+            areaName,
+            timestamp: Date.now()
+        };
+
+        // Determine notification message and type based on circumstances
+        const notificationInfo = this.buildSpecialNotificationMessage(item, circumstances, areaName);
+
+        // Show the special notification
+        if (notificationBridge.showSpecialLootNotification) {
+            notificationBridge.showSpecialLootNotification(item, circumstances.achievementType);
+        } else {
+            // Fallback to regular loot notification
+            const rarityType = `loot_${item.rarity}`;
+            notificationBridge.showNotification(notificationInfo.message, rarityType);
+        }
+
+        // Log special loot event for analytics
+        this.logSpecialLootEvent(item, circumstances, areaName);
+    },
+
+    /**
+     * Build special notification message
+     * @param {Object} item - The loot item
+     * @param {Object} circumstances - Special circumstances
+     * @param {string} areaName - Area name
+     * @returns {Object} Notification information
+     */
+    buildSpecialNotificationMessage: function(item, circumstances, areaName) {
+        let message = '';
+        let title = '';
+        let priority = 'high';
+
+        switch (circumstances.achievementType) {
+            case 'first_legendary':
+                title = '🌟 FIRST LEGENDARY DISCOVERY! 🌟';
+                message = `Congratulations! You've found your first legendary item:\n\n${item.name || item.type}\n\nLegendary items are extremely rare and possess incredible power. This marks a major milestone in your adventure!`;
+                priority = 'critical';
+                break;
+
+            case 'first_epic':
+                title = '⭐ FIRST EPIC DISCOVERY! ⭐';
+                message = `Outstanding! You've found your first epic item:\n\n${item.name || item.type}\n\nEpic items are rare treasures with exceptional capabilities. Your journey into greatness has begun!`;
+                priority = 'critical';
+                break;
+
+            case 'first_rare':
+                title = '💎 FIRST RARE DISCOVERY! 💎';
+                message = `Excellent! You've found your first rare item:\n\n${item.name || item.type}\n\nRare items are significant upgrades that will serve you well. Keep exploring to find even greater treasures!`;
+                priority = 'high';
+                break;
+
+            case 'build_synergy':
+                title = '⚡ SYNERGY ACTIVATED! ⚡';
+                message = `The ${item.name || item.type} completes an equipment synergy!\n\nYour combined equipment now provides enhanced bonuses. Check your character sheet for new synergy effects!`;
+                priority = 'high';
+                break;
+
+            case 'progression_gate':
+                title = '🗝️ PROGRESSION ITEM FOUND! 🗝️';
+                message = `The ${item.name || item.type} may unlock new possibilities!\n\nThis ${item.rarity} item could be the key to accessing new areas or advancing your quest. Guard it well!`;
+                priority = 'high';
+                break;
+
+            case 'area_special':
+                title = '🏛️ AREA TREASURE! 🏛️';
+                message = `You've discovered a special ${item.rarity} treasure in ${areaName}!\n\n${item.name || item.type}\n\nThis area holds unique rewards for brave explorers!`;
+                priority = 'high';
+                break;
+
+            case 'level_milestone':
+                title = '🎉 MILESTONE REWARD! 🎉';
+                message = `A ${item.rarity} reward for reaching your current level!\n\n${item.name || item.type}\n\nYour growing power attracts greater treasures!`;
+                priority = 'medium';
+                break;
+
+            default:
+                title = `✨ ${item.rarity.toUpperCase()} DISCOVERY! ✨`;
+                message = `You've found a ${item.rarity} item: ${item.name || item.type}`;
+                if (areaName) message += ` in ${areaName}`;
+                message += '!\n\nContinue your adventures to discover even greater treasures!';
+                priority = 'medium';
+        }
+
+        return { title, message, priority };
+    },
+
+    /**
+     * Get notification bridge instance
+     * @returns {Object|null} NotificationBridge instance or null
+     */
+    getNotificationBridge: function() {
+        // Try multiple ways to access the notification system
+        if (typeof window !== 'undefined') {
+            // Check for NotificationManager on UI object
+            if (window.ui && window.ui.notificationManager) {
+                return window.ui.notificationManager.getBridge();
+            }
+
+            // Check for global NotificationBridge
+            if (window.NotificationBridge) {
+                return new window.NotificationBridge();
+            }
+
+            // Check for NotificationManager
+            if (window.NotificationManager) {
+                return new window.NotificationManager();
+            }
+        }
+
+        return null;
+    },
+
+    /**
+     * Log special loot event for analytics and player history
+     * @param {Object} item - The loot item
+     * @param {Object} circumstances - Special circumstances
+     * @param {string} areaName - Area name
+     */
+    logSpecialLootEvent: function(item, circumstances, areaName) {
+        const logEntry = {
+            timestamp: Date.now(),
+            itemName: item.name || item.type,
+            rarity: item.rarity,
+            level: item.level,
+            value: item.value,
+            area: areaName,
+            achievementType: circumstances.achievementType,
+            circumstances: circumstances,
+            playerLevel: (typeof GameState !== 'undefined' && GameState.player) ? GameState.player.level : null
+        };
+
+        // Store in player's special loot history
+        if (typeof GameState !== 'undefined' && GameState.player) {
+            if (!GameState.player.specialLootHistory) {
+                GameState.player.specialLootHistory = [];
+            }
+            GameState.player.specialLootHistory.push(logEntry);
+
+            // Keep only the last 50 special loot events
+            if (GameState.player.specialLootHistory.length > 50) {
+                GameState.player.specialLootHistory = GameState.player.specialLootHistory.slice(-50);
+            }
+        }
+
+        // Console log for debugging
+        console.log('🌟 Special Loot Event:', logEntry);
     },
 
     /**

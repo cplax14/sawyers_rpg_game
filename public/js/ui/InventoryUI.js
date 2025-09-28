@@ -35,6 +35,282 @@ class InventoryUI extends BaseUIModule {
             // Defer errors to when the scene is actually shown
             console.warn('InventoryUI: container #inventory not found at init');
         }
+
+        // Add tooltip CSS styles
+        this.addTooltipStyles();
+    }
+
+    /**
+     * Add CSS styles for equipment comparison tooltips
+     */
+    addTooltipStyles() {
+        if (document.getElementById('equipment-tooltip-styles')) return;
+
+        const styles = document.createElement('style');
+        styles.id = 'equipment-tooltip-styles';
+        styles.textContent = `
+            .equipment-comparison-tooltip {
+                position: fixed;
+                background: var(--background-primary, #2c1810);
+                border: 2px solid var(--primary-gold, #d4af37);
+                border-radius: 8px;
+                padding: 16px;
+                min-width: 320px;
+                max-width: 500px;
+                font-family: var(--font-primary, 'Georgia', serif);
+                font-size: 14px;
+                color: var(--text-primary, #f4e4bc);
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+                z-index: 10000;
+                pointer-events: none;
+                animation: tooltipFadeIn 0.2s ease-out;
+            }
+
+            @keyframes tooltipFadeIn {
+                from {
+                    opacity: 0;
+                    transform: scale(0.95);
+                }
+                to {
+                    opacity: 1;
+                    transform: scale(1);
+                }
+            }
+
+            .tooltip-header {
+                text-align: center;
+                margin-bottom: 12px;
+                padding-bottom: 8px;
+                border-bottom: 1px solid var(--primary-gold, #d4af37);
+            }
+
+            .tooltip-title {
+                font-weight: bold;
+                font-size: 16px;
+                color: var(--primary-gold, #d4af37);
+            }
+
+            .comparison-items {
+                display: flex;
+                gap: 16px;
+                margin-bottom: 12px;
+                align-items: stretch;
+            }
+
+            .comparison-item {
+                flex: 1;
+                padding: 12px;
+                border-radius: 6px;
+                background: rgba(255, 255, 255, 0.05);
+            }
+
+            .comparison-item.new-item {
+                border-left: 3px solid #4caf50;
+            }
+
+            .comparison-item.current-item {
+                border-left: 3px solid #2196f3;
+            }
+
+            .comparison-item.empty {
+                border-left: 3px solid #9e9e9e;
+                opacity: 0.7;
+            }
+
+            .comparison-vs {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                color: var(--primary-gold, #d4af37);
+                min-width: 30px;
+                font-size: 12px;
+            }
+
+            .item-header {
+                margin-bottom: 8px;
+            }
+
+            .item-name {
+                font-weight: bold;
+                display: block;
+                margin-bottom: 4px;
+            }
+
+            .item-rarity {
+                font-size: 12px;
+                padding: 2px 6px;
+                border-radius: 3px;
+                font-weight: bold;
+            }
+
+            .item-rarity.rarity-common {
+                background: #9e9e9e;
+                color: white;
+            }
+
+            .item-rarity.rarity-uncommon {
+                background: #4caf50;
+                color: white;
+            }
+
+            .item-rarity.rarity-rare {
+                background: #2196f3;
+                color: white;
+            }
+
+            .item-rarity.rarity-epic {
+                background: #9c27b0;
+                color: white;
+            }
+
+            .item-rarity.rarity-legendary {
+                background: #ff9800;
+                color: white;
+                text-shadow: 0 0 4px rgba(255, 152, 0, 0.7);
+            }
+
+            .equipped-label {
+                font-size: 11px;
+                color: var(--text-secondary, #b8860b);
+                font-style: italic;
+                margin-left: 8px;
+            }
+
+            .item-stats {
+                margin: 8px 0;
+            }
+
+            .stat-line {
+                display: flex;
+                justify-content: space-between;
+                margin: 4px 0;
+                font-size: 13px;
+            }
+
+            .stat-name {
+                color: var(--text-secondary, #b8860b);
+            }
+
+            .stat-value {
+                font-weight: bold;
+            }
+
+            .stat-value.new {
+                color: #4caf50;
+            }
+
+            .stat-value.current {
+                color: #2196f3;
+            }
+
+            .item-description {
+                font-size: 12px;
+                color: var(--text-secondary, #b8860b);
+                font-style: italic;
+                margin-top: 8px;
+                padding-top: 8px;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .empty-slot-message {
+                color: var(--text-secondary, #b8860b);
+                font-style: italic;
+                text-align: center;
+                padding: 8px;
+            }
+
+            .stat-changes {
+                margin: 12px 0;
+                padding: 8px;
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 4px;
+            }
+
+            .changes-title {
+                font-weight: bold;
+                margin-bottom: 6px;
+                color: var(--primary-gold, #d4af37);
+                font-size: 13px;
+            }
+
+            .stat-change {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                margin: 3px 0;
+                font-size: 12px;
+            }
+
+            .stat-change.improvement {
+                color: #4caf50;
+            }
+
+            .stat-change.downgrade {
+                color: #f44336;
+            }
+
+            .change-icon {
+                font-size: 10px;
+                font-weight: bold;
+            }
+
+            .change-value {
+                font-weight: bold;
+                margin-left: auto;
+            }
+
+            .no-changes {
+                text-align: center;
+                color: var(--text-secondary, #b8860b);
+                font-style: italic;
+                font-size: 12px;
+            }
+
+            .tooltip-footer {
+                margin-top: 12px;
+                padding-top: 8px;
+                border-top: 1px solid var(--primary-gold, #d4af37);
+                text-align: center;
+            }
+
+            .upgrade-recommendation {
+                font-size: 13px;
+                font-weight: bold;
+            }
+
+            .recommendation.upgrade {
+                color: #4caf50;
+            }
+
+            .recommendation.downgrade {
+                color: #f44336;
+            }
+
+            .recommendation.mixed {
+                color: #ff9800;
+            }
+
+            .recommendation.neutral {
+                color: var(--text-secondary, #b8860b);
+            }
+
+            .equipment-indicator {
+                font-size: 12px;
+                margin-left: 8px;
+                opacity: 0.7;
+            }
+
+            .inventory-row.equipment-item {
+                cursor: help;
+                position: relative;
+            }
+
+            .inventory-row.equipment-item:hover {
+                background: rgba(255, 255, 255, 0.1);
+            }
+        `;
+        document.head.appendChild(styles);
     }
 
     // Attach event listeners
@@ -245,6 +521,13 @@ class InventoryUI extends BaseUIModule {
             row.className = 'inventory-row';
             row.setAttribute('data-item-id', itemId);
 
+            // Check if this is an equipment item for comparison tooltip
+            const isEquipment = this.isEquipmentItem(itemId);
+            if (isEquipment) {
+                row.classList.add('equipment-item');
+                this.attachComparisonTooltip(row, itemId);
+            }
+
             const name = document.createElement('span');
             name.className = 'item-name';
             name.textContent = this.formatItemName(itemId);
@@ -252,6 +535,15 @@ class InventoryUI extends BaseUIModule {
             const count = document.createElement('span');
             count.className = 'item-qty';
             count.textContent = `x${qty}`;
+
+            // Add equipment indicator for easy identification
+            if (isEquipment) {
+                const equipIcon = document.createElement('span');
+                equipIcon.className = 'equipment-indicator';
+                equipIcon.textContent = '⚔️';
+                equipIcon.title = 'Equipment item - hover for comparison';
+                row.appendChild(equipIcon);
+            }
 
             row.appendChild(name);
             row.appendChild(count);
@@ -1156,6 +1448,298 @@ class InventoryUI extends BaseUIModule {
         this.updateCharacterStatsDisplay();
         this.refreshInventoryList();
         try { window.SaveSystem?.autoSave?.(); } catch (_) {}
+    }
+
+    // ================================================
+    // LOOT COMPARISON TOOLTIP SYSTEM
+    // ================================================
+
+    /**
+     * Check if an item is equipment that can be compared
+     */
+    isEquipmentItem(itemId) {
+        if (typeof window.ItemData === 'undefined' || !window.ItemData.getItem) {
+            return false;
+        }
+
+        const item = window.ItemData.getItem(itemId);
+        return item && ['weapon', 'armor', 'accessory'].includes(item.type);
+    }
+
+    /**
+     * Attach comparison tooltip to an inventory row for equipment items
+     */
+    attachComparisonTooltip(row, itemId) {
+        if (!this.isEquipmentItem(itemId)) return;
+
+        let tooltip = null;
+        let showTimeout = null;
+        let hideTimeout = null;
+
+        // Mouse enter - show tooltip with delay
+        this.addEventListener(row, 'mouseenter', (e) => {
+            clearTimeout(hideTimeout);
+            showTimeout = setTimeout(() => {
+                tooltip = this.createComparisonTooltip(itemId);
+                if (tooltip) {
+                    document.body.appendChild(tooltip);
+                    this.positionTooltip(tooltip, e);
+                }
+            }, 500); // 500ms delay before showing
+        });
+
+        // Mouse move - update tooltip position
+        this.addEventListener(row, 'mousemove', (e) => {
+            if (tooltip) {
+                this.positionTooltip(tooltip, e);
+            }
+        });
+
+        // Mouse leave - hide tooltip
+        this.addEventListener(row, 'mouseleave', () => {
+            clearTimeout(showTimeout);
+            if (tooltip) {
+                hideTimeout = setTimeout(() => {
+                    if (tooltip && tooltip.parentNode) {
+                        tooltip.parentNode.removeChild(tooltip);
+                    }
+                    tooltip = null;
+                }, 100); // Small delay to prevent flickering
+            }
+        });
+    }
+
+    /**
+     * Create the comparison tooltip element
+     */
+    createComparisonTooltip(itemId) {
+        const item = window.ItemData.getItem(itemId);
+        if (!item) return null;
+
+        const gs = this.getGameState();
+        if (!gs) return null;
+
+        // Get currently equipped item in the same slot
+        const currentItem = gs.player?.equipment?.[item.type];
+        const currentItemData = currentItem ? window.ItemData.getItem(currentItem) : null;
+
+        // Create tooltip container
+        const tooltip = document.createElement('div');
+        tooltip.className = 'equipment-comparison-tooltip';
+        tooltip.innerHTML = this.buildComparisonContent(item, currentItemData, itemId, currentItem);
+
+        return tooltip;
+    }
+
+    /**
+     * Build the content for the comparison tooltip
+     */
+    buildComparisonContent(newItem, currentItem, newItemId, currentItemId) {
+        const newStats = this.getItemStats(newItem);
+        const currentStats = currentItem ? this.getItemStats(currentItem) : {};
+
+        // Calculate stat differences
+        const statComparison = this.compareStats(newStats, currentStats);
+
+        return `
+            <div class="tooltip-header">
+                <div class="tooltip-title">Equipment Comparison</div>
+            </div>
+
+            <div class="comparison-items">
+                <div class="comparison-item new-item">
+                    <div class="item-header">
+                        <span class="item-name">${newItem.name || newItemId}</span>
+                        <span class="item-rarity rarity-${(newItem.rarity || 'common').toLowerCase()}">${newItem.rarity || 'Common'}</span>
+                    </div>
+                    <div class="item-stats">
+                        ${this.formatItemStats(newStats, 'new')}
+                    </div>
+                    ${newItem.description ? `<div class="item-description">${newItem.description}</div>` : ''}
+                </div>
+
+                ${currentItem ? `
+                    <div class="comparison-vs">VS</div>
+                    <div class="comparison-item current-item">
+                        <div class="item-header">
+                            <span class="item-name">${currentItem.name || currentItemId}</span>
+                            <span class="item-rarity rarity-${(currentItem.rarity || 'common').toLowerCase()}">${currentItem.rarity || 'Common'}</span>
+                            <span class="equipped-label">(Equipped)</span>
+                        </div>
+                        <div class="item-stats">
+                            ${this.formatItemStats(currentStats, 'current')}
+                        </div>
+                    </div>
+                ` : `
+                    <div class="comparison-vs">VS</div>
+                    <div class="comparison-item current-item empty">
+                        <div class="item-header">
+                            <span class="item-name">No ${newItem.type} equipped</span>
+                        </div>
+                        <div class="empty-slot-message">Equipping this item will provide new bonuses</div>
+                    </div>
+                `}
+            </div>
+
+            <div class="stat-changes">
+                <div class="changes-title">Stat Changes:</div>
+                ${this.formatStatChanges(statComparison)}
+            </div>
+
+            <div class="tooltip-footer">
+                <div class="upgrade-recommendation">
+                    ${this.getUpgradeRecommendation(statComparison, newItem, currentItem)}
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Get item stats for comparison
+     */
+    getItemStats(item) {
+        if (!item) return {};
+
+        return {
+            attack: item.stats?.attack || item.attack || 0,
+            defense: item.stats?.defense || item.defense || 0,
+            magic: item.stats?.magic || item.magic || 0,
+            speed: item.stats?.speed || item.speed || 0,
+            hp: item.stats?.hp || item.hp || 0,
+            mana: item.stats?.mana || item.mana || 0
+        };
+    }
+
+    /**
+     * Compare stats between new and current items
+     */
+    compareStats(newStats, currentStats) {
+        const comparison = {};
+        const statKeys = ['attack', 'defense', 'magic', 'speed', 'hp', 'mana'];
+
+        statKeys.forEach(stat => {
+            const newValue = newStats[stat] || 0;
+            const currentValue = currentStats[stat] || 0;
+            const difference = newValue - currentValue;
+
+            if (difference !== 0) {
+                comparison[stat] = {
+                    new: newValue,
+                    current: currentValue,
+                    difference: difference,
+                    isImprovement: difference > 0
+                };
+            }
+        });
+
+        return comparison;
+    }
+
+    /**
+     * Format item stats for display
+     */
+    formatItemStats(stats, itemType) {
+        const statLabels = {
+            attack: 'Attack',
+            defense: 'Defense',
+            magic: 'Magic',
+            speed: 'Speed',
+            hp: 'HP',
+            mana: 'Mana'
+        };
+
+        const formattedStats = Object.entries(stats)
+            .filter(([_, value]) => value > 0)
+            .map(([stat, value]) => {
+                return `<div class="stat-line">
+                    <span class="stat-name">${statLabels[stat] || stat}:</span>
+                    <span class="stat-value ${itemType}">${value}</span>
+                </div>`;
+            })
+            .join('');
+
+        return formattedStats || '<div class="stat-line">No stat bonuses</div>';
+    }
+
+    /**
+     * Format stat changes for comparison
+     */
+    formatStatChanges(statComparison) {
+        if (Object.keys(statComparison).length === 0) {
+            return '<div class="no-changes">No stat changes</div>';
+        }
+
+        const changes = Object.entries(statComparison)
+            .map(([stat, data]) => {
+                const icon = data.isImprovement ? '▲' : '▼';
+                const className = data.isImprovement ? 'improvement' : 'downgrade';
+                const sign = data.difference > 0 ? '+' : '';
+
+                return `<div class="stat-change ${className}">
+                    <span class="change-icon">${icon}</span>
+                    <span class="stat-name">${stat.charAt(0).toUpperCase() + stat.slice(1)}:</span>
+                    <span class="change-value">${sign}${data.difference}</span>
+                </div>`;
+            })
+            .join('');
+
+        return changes;
+    }
+
+    /**
+     * Generate upgrade recommendation
+     */
+    getUpgradeRecommendation(statComparison, newItem, currentItem) {
+        if (!currentItem) {
+            return '<span class="recommendation upgrade">🔺 Recommended: Provides stat bonuses</span>';
+        }
+
+        const improvements = Object.values(statComparison).filter(change => change.isImprovement).length;
+        const downgrades = Object.values(statComparison).filter(change => !change.isImprovement).length;
+
+        if (improvements > downgrades) {
+            return '<span class="recommendation upgrade">🔺 Recommended: Overall stat improvement</span>';
+        } else if (downgrades > improvements) {
+            return '<span class="recommendation downgrade">🔻 Consider carefully: Some stats will decrease</span>';
+        } else if (improvements === downgrades && improvements > 0) {
+            return '<span class="recommendation mixed">⚖️ Mixed: Balanced trade-offs in stats</span>';
+        } else {
+            return '<span class="recommendation neutral">➖ Equivalent: Similar stat distribution</span>';
+        }
+    }
+
+    /**
+     * Position tooltip relative to mouse cursor
+     */
+    positionTooltip(tooltip, event) {
+        if (!tooltip) return;
+
+        const mouseX = event.clientX;
+        const mouseY = event.clientY;
+        const tooltipRect = tooltip.getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+
+        // Default position: right and below cursor
+        let x = mouseX + 15;
+        let y = mouseY + 15;
+
+        // Adjust if tooltip would go off-screen horizontally
+        if (x + tooltipRect.width > viewportWidth) {
+            x = mouseX - tooltipRect.width - 15;
+        }
+
+        // Adjust if tooltip would go off-screen vertically
+        if (y + tooltipRect.height > viewportHeight) {
+            y = mouseY - tooltipRect.height - 15;
+        }
+
+        // Ensure tooltip doesn't go off the left or top edges
+        x = Math.max(5, x);
+        y = Math.max(5, y);
+
+        tooltip.style.left = `${x}px`;
+        tooltip.style.top = `${y}px`;
     }
 
     // Optional: provide minimal info for debugging
