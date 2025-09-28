@@ -12,6 +12,7 @@ import {
 } from './components/lazy/LazyComponents';
 import { AreaExploration } from './components/organisms/AreaExploration';
 import { Combat } from './components/organisms/Combat';
+import InventoryManager from './components/organisms/InventoryManager';
 import { performanceMonitor } from './utils/performanceMonitor';
 import { ReactGameState } from './contexts/ReactGameContext';
 import { reactAppStyles } from './utils/temporaryStyles';
@@ -324,6 +325,8 @@ interface ScreenRouterProps {
 }
 
 const ScreenRouter: React.FC<ScreenRouterProps> = ({ currentScreen, gameState }) => {
+  const { navigateToScreen } = useUI();
+
   const renderScreen = () => {
     switch (currentScreen) {
       case 'menu':
@@ -343,11 +346,10 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({ currentScreen, gameState })
 
       case 'inventory':
         return (
-          <div className={styles.placeholderScreen}>
-            <h2>Inventory Screen</h2>
-            <p>Inventory management coming soon...</p>
-            <p>Items: {gameState.inventory.length}</p>
-          </div>
+          <InventoryManager
+            isOpen={true}
+            onClose={() => navigateToScreen('area')}
+          />
         );
 
       case 'settings':

@@ -184,13 +184,23 @@ export const AreaExploration: React.FC<AreaExplorationProps> = ({
               {currentArea.description}
             </p>
           </div>
-          <Button
-            variant="secondary"
-            onClick={handleBackToWorldMap}
-            style={{ minWidth: '120px' }}
-          >
-            ← World Map
-          </Button>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <Button
+              variant="secondary"
+              onClick={() => navigateToScreen('inventory')}
+              style={{ minWidth: '100px', padding: '0.5rem 0.75rem' }}
+              title="Open Inventory"
+            >
+              🎒 Inventory
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={handleBackToWorldMap}
+              style={{ minWidth: '120px' }}
+            >
+              ← World Map
+            </Button>
+          </div>
         </div>
       </motion.div>
 

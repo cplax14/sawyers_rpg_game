@@ -5,7 +5,29 @@
  */
 
 import { useMemo, useCallback, useRef, useEffect } from 'react';
-import { ReactArea, ReactMonster, ReactItem } from '../types/game';
+// Type imports (fallback interfaces since we may not have all React types)
+interface ReactArea {
+  id: string;
+  type: string;
+  connections: string[];
+  unlocked: boolean;
+}
+
+interface ReactMonster {
+  id: string;
+  species: string;
+  level: number;
+  types: string[];
+  rarity: string;
+}
+
+interface ReactItem {
+  id: string;
+  type: string;
+  value: number;
+  quantity?: number;
+  consumable?: boolean;
+}
 
 /**
  * Debounce utility for expensive operations

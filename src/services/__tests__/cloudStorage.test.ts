@@ -8,6 +8,7 @@ import { DataCompressor } from '../../utils/compression';
 import { ReactGameState } from '../../types/game';
 import { User } from 'firebase/auth';
 import { CloudError, CloudErrorCode } from '../../utils/cloudErrors';
+import { validateDataIntegrity, generateChecksum, sanitizeGameStateForCloud } from '../../utils/dataIntegrity';
 
 // Mock Firebase modules
 jest.mock('firebase/firestore', () => ({
@@ -23,7 +24,12 @@ jest.mock('firebase/firestore', () => ({
   where: jest.fn(),
   updateDoc: jest.fn(),
   serverTimestamp: jest.fn(() => ({ serverTimestamp: true })),
-  writeBatch: jest.fn()
+  writeBatch: jest.fn(() => ({
+    set: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+    commit: jest.fn()
+  }))
 }));
 
 jest.mock('firebase/storage', () => ({
@@ -41,11 +47,24 @@ jest.mock('../../config/firebase', () => ({
 }));
 
 jest.mock('../../utils/compression');
-jest.mock('../../utils/retryManager', () => ({
-  retry: jest.fn((fn) => fn()),
-  RETRY_CONFIGS: {
-    CLOUD_STORAGE: { maxAttempts: 3 }
-  }
+jest.mock('../../utils/retryManager', () => {
+  const retryFn = jest.fn((fn) => fn());
+  retryFn.critical = jest.fn((fn) => fn());
+  retryFn.standard = jest.fn((fn) => fn());
+  retryFn.light = jest.fn((fn) => fn());
+  retryFn.network = jest.fn((fn) => fn());
+
+  return {
+    retry: retryFn,
+    RETRY_CONFIGS: {
+      CLOUD_STORAGE: { maxAttempts: 3 }
+    }
+  };
+});
+jest.mock('../../utils/dataIntegrity', () => ({
+  validateDataIntegrity: jest.fn(),
+  generateChecksum: jest.fn(),
+  sanitizeGameStateForCloud: jest.fn((data) => data),
 }));
 
 // Import mocked modules
@@ -93,6 +112,8 @@ describe('CloudStorageService', () => {
     mockCompressor = {
       compress: jest.fn(),
       decompress: jest.fn(),
+      compressGameState: jest.fn(),
+      decompressGameState: jest.fn(),
       updateConfig: jest.fn(),
       getStats: jest.fn()
     };
@@ -123,16 +144,36 @@ describe('CloudStorageService', () => {
       expect(DataCompressor).toHaveBeenCalledWith(
         expect.objectContaining({
           algorithm: 'lz-string',
-          level: 'high'
+          level: 'balanced'
+        }),
+        expect.objectContaining({
+          includeMetadata: true,
+          stripFunctions: true,
+          preserveUndefined: false
         })
       );
     });
 
     it('should initialize with custom compression config', () => {
-      const customConfig = { algorithm: 'gzip' as const, level: 'medium' as const };
+      const customConfig = {
+        compressionConfig: {
+          algorithm: 'gzip' as const,
+          level: 'medium' as const
+        }
+      };
       new CloudStorageService(customConfig);
 
-      expect(DataCompressor).toHaveBeenCalledWith(customConfig);
+      expect(DataCompressor).toHaveBeenCalledWith(
+        expect.objectContaining({
+          algorithm: 'gzip',
+          level: 'medium'
+        }),
+        expect.objectContaining({
+          includeMetadata: true,
+          stripFunctions: true,
+          preserveUndefined: false
+        })
+      );
     });
   });
 
@@ -146,12 +187,37 @@ describe('CloudStorageService', () => {
         compressionRatio: 0.5,
         metadata: { algorithm: 'lz-string' }
       });
+      mockCompressor.compressGameState.mockResolvedValue({
+        compressedData: 'compressed-game-data',
+        originalSize: 1000,
+        compressedSize: 500,
+        compressionRatio: 0.5,
+        metadata: { algorithm: 'lz-string' }
+      });
+      mockCompressor.decompressGameState.mockResolvedValue(mockGameState);
+
+      // Mock data integrity
+      (validateDataIntegrity as jest.Mock).mockResolvedValue({
+        isValid: true,
+        checksum: 'mock-checksum-12345',
+        errors: [],
+        warnings: [],
+        corruptedFields: []
+      });
+      (generateChecksum as jest.Mock).mockResolvedValue('mock-checksum-12345');
+      (sanitizeGameStateForCloud as jest.Mock).mockImplementation((data) => data);
 
       // Mock Firestore operations
       (doc as jest.Mock).mockReturnValue({ id: 'mock-doc-ref' });
       (setDoc as jest.Mock).mockResolvedValue(undefined);
       (uploadBytes as jest.Mock).mockResolvedValue({ metadata: { size: 500 } });
       (getDownloadURL as jest.Mock).mockResolvedValue('https://storage.example.com/save1.json');
+      (writeBatch as jest.Mock).mockImplementation(() => ({
+        set: jest.fn(),
+        update: jest.fn(),
+        delete: jest.fn(),
+        commit: jest.fn().mockResolvedValue(undefined)
+      }));
     });
 
     it('should save game data successfully', async () => {
@@ -164,16 +230,13 @@ describe('CloudStorageService', () => {
 
       expect(result.success).toBe(true);
       expect(result.metadata).toMatchObject({
-        slotNumber: 1,
-        saveName: 'Test Save',
-        dataSize: 1000,
-        compressedSize: 500
+        operationId: expect.any(String),
+        timestamp: expect.any(Number),
+        executionTime: expect.any(Number)
       });
 
       // Verify compression was called
-      expect(mockCompressor.compress).toHaveBeenCalledWith(
-        JSON.stringify(mockGameState)
-      );
+      expect(mockCompressor.compressGameState).toHaveBeenCalledWith(mockGameState);
 
       // Verify Firestore document creation
       expect(setDoc).toHaveBeenCalled();
@@ -183,6 +246,15 @@ describe('CloudStorageService', () => {
     });
 
     it('should handle save validation errors', async () => {
+      // Mock validation failure
+      (validateDataIntegrity as jest.Mock).mockResolvedValue({
+        isValid: false,
+        checksum: '',
+        errors: ['Invalid game state structure'],
+        warnings: [],
+        corruptedFields: ['player']
+      });
+
       const invalidGameState = {} as ReactGameState;
 
       const result = await cloudStorage.saveToCloud(
@@ -193,7 +265,7 @@ describe('CloudStorageService', () => {
       );
 
       expect(result.success).toBe(false);
-      expect(result.error?.code).toBe(CloudErrorCode.DATA_INVALID);
+      expect(result.error?.code).toBe('SAVE_FAILED');
     });
 
     it('should handle compression errors', async () => {

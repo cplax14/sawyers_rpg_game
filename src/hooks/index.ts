@@ -18,7 +18,7 @@ export {
   useGameState,
   usePlayer,
   useWorld,
-  useInventory,
+  useInventory as useGameInventory,
   useMonsters as useCapturedMonsters,
   useUI,
   useSettings,
@@ -76,6 +76,27 @@ export {
   useReducedMotion,
   useOptimizedImages
 } from './usePerformance';
+
+// Inventory System Hooks
+export {
+  useInventory
+} from './useInventory';
+
+export {
+  useEquipment
+} from './useEquipment';
+
+export {
+  useCreatures
+} from './useCreatures';
+
+export {
+  useExperience
+} from './useExperience';
+
+export {
+  useEquipmentValidation
+} from './useEquipmentValidation';
 
 // Re-export hook result types for convenience
 export type {

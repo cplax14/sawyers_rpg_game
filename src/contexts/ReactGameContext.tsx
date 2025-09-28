@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { AutoSaveManager } from '../utils/autoSave';
+import { InventoryState } from '../types/inventory';
+import { CreatureCollection } from '../types/creatures';
+import { ExperienceState } from '../types/experience';
 
 // Global type declaration for auto-save manager
 declare global {
@@ -124,9 +127,14 @@ export interface ReactGameState {
   completedQuests: string[];
   storyFlags: Record<string, boolean>;
 
-  // Collections
+  // Legacy collections (for backward compatibility)
   inventory: ReactItem[];
   capturedMonsters: ReactMonster[];
+
+  // New inventory system states
+  inventoryState?: InventoryState;
+  creatures?: CreatureCollection;
+  experience?: ExperienceState;
 
   // UI state
   isLoading: boolean;
@@ -232,7 +240,11 @@ export type ReactGameAction =
   | { type: 'LOAD_FROM_SLOT'; payload: number }
   | { type: 'START_COMBAT'; payload: { species: string; level: number } }
   | { type: 'END_COMBAT' }
-  | { type: 'RESET_GAME' };
+  | { type: 'RESET_GAME' }
+  // New inventory system actions
+  | { type: 'UPDATE_INVENTORY_STATE'; payload: InventoryState }
+  | { type: 'UPDATE_CREATURE_COLLECTION'; payload: CreatureCollection }
+  | { type: 'UPDATE_EXPERIENCE_STATE'; payload: ExperienceState };
 
 // Default settings
 const defaultSettings: GameSettings = {
@@ -554,6 +566,25 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
     case 'RESET_GAME':
       return { ...initialState, sessionStartTime: Date.now() };
 
+    // New inventory system action handlers
+    case 'UPDATE_INVENTORY_STATE':
+      return {
+        ...state,
+        inventoryState: action.payload
+      };
+
+    case 'UPDATE_CREATURE_COLLECTION':
+      return {
+        ...state,
+        creatures: action.payload
+      };
+
+    case 'UPDATE_EXPERIENCE_STATE':
+      return {
+        ...state,
+        experience: action.payload
+      };
+
     default:
       return state;
   }
@@ -587,6 +618,12 @@ interface ReactGameContextType {
   startCombat: (species: string, level: number) => void;
   endCombat: () => void;
   resetGame: () => void;
+
+  // New inventory system functions
+  updateGameState: (updates: Partial<ReactGameState>) => Promise<void>;
+  updateInventoryState: (inventoryState: InventoryState) => void;
+  updateCreatureCollection: (creatures: CreatureCollection) => void;
+  updateExperienceState: (experience: ExperienceState) => void;
 
   // Computed properties
   isPlayerCreated: boolean;
@@ -730,6 +767,23 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
     dispatch({ type: 'RESET_GAME' });
   };
 
+  // New inventory system functions
+  const updateGameState = async (updates: Partial<ReactGameState>) => {
+    dispatch({ type: 'LOAD_GAME_DATA', payload: updates });
+  };
+
+  const updateInventoryState = (inventoryState: InventoryState) => {
+    dispatch({ type: 'UPDATE_INVENTORY_STATE', payload: inventoryState });
+  };
+
+  const updateCreatureCollection = (creatures: CreatureCollection) => {
+    dispatch({ type: 'UPDATE_CREATURE_COLLECTION', payload: creatures });
+  };
+
+  const updateExperienceState = (experience: ExperienceState) => {
+    dispatch({ type: 'UPDATE_EXPERIENCE_STATE', payload: experience });
+  };
+
   // Computed properties
   const isPlayerCreated = state.player !== null;
 
@@ -778,6 +832,10 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
     startCombat,
     endCombat,
     resetGame,
+    updateGameState,
+    updateInventoryState,
+    updateCreatureCollection,
+    updateExperienceState,
     isPlayerCreated,
     canAccessArea,
     getInventoryByType,
@@ -852,5 +910,41 @@ export const useReactGameSettings = () => {
   return {
     settings: state.settings,
     updateSettings,
+  };
+};
+
+// Hook for accessing inventory system state and hooks
+export const useGameState = () => {
+  const {
+    state,
+    updateGameState,
+    updateInventoryState,
+    updateCreatureCollection,
+    updateExperienceState
+  } = useReactGame();
+
+  return {
+    gameState: state,
+    updateGameState,
+    updateInventoryState,
+    updateCreatureCollection,
+    updateExperienceState,
+    // Convenience getters for new systems
+    inventoryState: state.inventoryState,
+    creatureCollection: state.creatures,
+    experienceState: state.experience,
+    // Legacy compatibility
+    playerStats: state.player ? {
+      level: state.player.level,
+      experience: state.player.experience,
+      maxHealth: state.player.maxHp,
+      maxMana: state.player.maxMp,
+      attack: state.player.stats.attack,
+      defense: state.player.stats.defense,
+      magicAttack: state.player.stats.magicAttack,
+      magicDefense: state.player.stats.magicDefense,
+      speed: state.player.stats.speed
+    } : undefined,
+    currentLocation: state.currentArea
   };
 };
