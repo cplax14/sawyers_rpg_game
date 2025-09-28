@@ -314,6 +314,288 @@ describe('LootSystem Equipment Resolver Tests', () => {
     });
 });
 
+// Test enhanced equipment abstractions
+describe('Enhanced Equipment Abstraction Tests', () => {
+    beforeAll(() => {
+        if (typeof LootSystem === 'undefined') {
+            console.warn('LootSystem not loaded - skipping enhanced equipment tests');
+        }
+    });
+
+    describe('Class-Specific Equipment Resolution', () => {
+        it('should resolve knight equipment abstractions', () => {
+            if (typeof LootSystem === 'undefined') return;
+
+            const knightEntry = { equipmentTypes: ['knight_weapons', 'knight_armor'] };
+            const resolved = LootSystem.resolveConcreteItemId(knightEntry);
+            assertTruthy(resolved, 'Should resolve knight equipment to a concrete item');
+
+            const expectedItems = ['iron_sword', 'steel_sword', 'blessed_mace', 'chain_mail', 'plate_armor'];
+            assertArrayContains(expectedItems, resolved, 'Should return a knight equipment item');
+        });
+
+        it('should resolve wizard equipment abstractions', () => {
+            if (typeof LootSystem === 'undefined') return;
+
+            const wizardEntry = { itemType: 'wizard_equipment' };
+            const resolved = LootSystem.resolveConcreteItemId(wizardEntry);
+            assertTruthy(resolved, 'Should resolve wizard equipment to a concrete item');
+
+            const expectedItems = ['oak_staff', 'crystal_staff', 'cloth_robe', 'mage_robes'];
+            assertArrayContains(expectedItems, resolved, 'Should return a wizard equipment item');
+        });
+
+        it('should resolve rogue equipment abstractions', () => {
+            if (typeof LootSystem === 'undefined') return;
+
+            const rogueEntry = { equipmentTypes: ['rogue_weapons', 'rogue_armor'] };
+            const resolved = LootSystem.resolveConcreteItemId(rogueEntry);
+            assertTruthy(resolved, 'Should resolve rogue equipment to a concrete item');
+
+            const expectedItems = ['steel_dagger', 'poisoned_blade', 'leather_armor', 'leather_vest'];
+            assertArrayContains(expectedItems, resolved, 'Should return a rogue equipment item');
+        });
+    });
+
+    describe('Environmental Equipment Resolution', () => {
+        it('should resolve basic weapons', () => {
+            if (typeof LootSystem === 'undefined') return;
+
+            const basicEntry = { equipmentTypes: ['basic_weapon'] };
+            const resolved = LootSystem.resolveConcreteItemId(basicEntry);
+            assertTruthy(resolved, 'Should resolve basic weapons to a concrete item');
+
+            const expectedItems = ['iron_sword', 'oak_staff', 'steel_dagger', 'hunting_bow'];
+            assertArrayContains(expectedItems, resolved, 'Should return a basic weapon item');
+        });
+
+        it('should resolve advanced weapons', () => {
+            if (typeof LootSystem === 'undefined') return;
+
+            const advancedEntry = { equipmentTypes: ['advanced_weapon'] };
+            const resolved = LootSystem.resolveConcreteItemId(advancedEntry);
+            assertTruthy(resolved, 'Should resolve advanced weapons to a concrete item');
+
+            const expectedItems = ['steel_sword', 'crystal_staff', 'poisoned_blade', 'elvish_bow'];
+            assertArrayContains(expectedItems, resolved, 'Should return an advanced weapon item');
+        });
+
+        it('should resolve metal equipment', () => {
+            if (typeof LootSystem === 'undefined') return;
+
+            const metalEntry = { equipmentTypes: ['metal_equipment'] };
+            const resolved = LootSystem.resolveConcreteItemId(metalEntry);
+            assertTruthy(resolved, 'Should resolve metal equipment to a concrete item');
+
+            const expectedItems = ['iron_sword', 'steel_sword', 'chain_mail', 'plate_armor'];
+            assertArrayContains(expectedItems, resolved, 'Should return a metal equipment item');
+        });
+    });
+
+    describe('Advanced Equipment Resolution', () => {
+        it('should handle multiple equipmentTypes and select randomly', () => {
+            if (typeof LootSystem === 'undefined') return;
+
+            const mixedEntry = { equipmentTypes: ['beginner_weapons', 'nature_accessory'] };
+            const resolved = LootSystem.resolveConcreteItemId(mixedEntry);
+            assertTruthy(resolved, 'Should resolve mixed equipment types to a concrete item');
+
+            const expectedItems = ['iron_sword', 'steel_dagger', 'oak_staff', 'hunting_bow', 'nature_charm', 'health_ring'];
+            assertArrayContains(expectedItems, resolved, 'Should return an item from either category');
+        });
+
+        it('should return null for unknown equipment types', () => {
+            if (typeof LootSystem === 'undefined') return;
+
+            const unknownEntry = { equipmentTypes: ['completely_unknown_type'] };
+            const resolved = LootSystem.resolveConcreteItemId(unknownEntry);
+            assertEqual(resolved, null, 'Should return null for unknown equipment types');
+        });
+
+        it('should prioritize items array over equipment types', () => {
+            if (typeof LootSystem === 'undefined') return;
+
+            const priorityEntry = {
+                items: ['iron_sword'],
+                equipmentTypes: ['wizard_weapons']
+            };
+            const resolved = LootSystem.resolveConcreteItemId(priorityEntry);
+            assertEqual(resolved, 'iron_sword', 'Should prioritize explicit items array');
+        });
+    });
+
+    describe('Material and Theme-Based Equipment', () => {
+        it('should resolve crystal equipment', () => {
+            if (typeof LootSystem === 'undefined') return;
+
+            const crystalEntry = { itemType: 'crystal_equipment' };
+            const resolved = LootSystem.resolveConcreteItemId(crystalEntry);
+            assertTruthy(resolved, 'Should resolve crystal equipment to a concrete item');
+
+            const expectedItems = ['crystal_staff', 'mana_crystal'];
+            assertArrayContains(expectedItems, resolved, 'Should return a crystal equipment item');
+        });
+
+        it('should resolve stealth gear', () => {
+            if (typeof LootSystem === 'undefined') return;
+
+            const stealthEntry = { itemType: 'stealth_gear' };
+            const resolved = LootSystem.resolveConcreteItemId(stealthEntry);
+            assertTruthy(resolved, 'Should resolve stealth gear to a concrete item');
+
+            const expectedItems = ['stealth_cloak', 'poisoned_blade', 'leather_vest'];
+            assertArrayContains(expectedItems, resolved, 'Should return a stealth gear item');
+        });
+
+        it('should resolve leather equipment', () => {
+            if (typeof LootSystem === 'undefined') return;
+
+            const leatherEntry = { itemType: 'leather_equipment' };
+            const resolved = LootSystem.resolveConcreteItemId(leatherEntry);
+            assertTruthy(resolved, 'Should resolve leather equipment to a concrete item');
+
+            const expectedItems = ['leather_armor', 'leather_vest'];
+            assertArrayContains(expectedItems, resolved, 'Should return a leather equipment item');
+        });
+    });
+});
+
+// Test performance requirements
+describe('LootSystem Performance Tests', () => {
+    beforeAll(() => {
+        if (typeof LootSystem === 'undefined') {
+            console.warn('LootSystem not loaded - skipping performance tests');
+        }
+    });
+
+    it('should generate monster loot within 50ms requirement', () => {
+        if (typeof LootSystem === 'undefined') return;
+
+        const testIterations = 20;
+        const maxAllowedTime = 50; // 50ms requirement
+        let totalTime = 0;
+        let maxTime = 0;
+        let violations = 0;
+
+        for (let i = 0; i < testIterations; i++) {
+            const startTime = performance.now();
+
+            // Test with various scenarios
+            const monsters = ['wolf', 'goblin', 'skeleton'];
+            const monster = monsters[i % monsters.length];
+            const playerLevel = 1 + (i * 2); // Vary levels 1-39
+
+            LootSystem.generateMonsterLoot(monster, playerLevel, 'test_area');
+
+            const endTime = performance.now();
+            const executionTime = endTime - startTime;
+
+            totalTime += executionTime;
+            maxTime = Math.max(maxTime, executionTime);
+
+            if (executionTime > maxAllowedTime) {
+                violations++;
+            }
+        }
+
+        const averageTime = totalTime / testIterations;
+
+        console.log(`Monster loot performance: avg=${averageTime.toFixed(2)}ms, max=${maxTime.toFixed(2)}ms, violations=${violations}/${testIterations}`);
+
+        // Test passes if average is under limit and violations are <10%
+        assertTruthy(averageTime < maxAllowedTime, `Average time ${averageTime.toFixed(2)}ms should be under ${maxAllowedTime}ms`);
+        assertTruthy(violations < testIterations * 0.1, `Violations ${violations} should be less than 10% of ${testIterations} tests`);
+    });
+
+    it('should generate area loot within 50ms requirement', () => {
+        if (typeof LootSystem === 'undefined') return;
+
+        const testIterations = 20;
+        const maxAllowedTime = 50; // 50ms requirement
+        let totalTime = 0;
+        let maxTime = 0;
+        let violations = 0;
+
+        for (let i = 0; i < testIterations; i++) {
+            const startTime = performance.now();
+
+            // Test with various scenarios
+            const areas = ['forest', 'cave', 'mountain'];
+            const explorationTypes = ['standard', 'thorough', 'quick', 'treasure_hunt'];
+
+            const area = areas[i % areas.length];
+            const explorationType = explorationTypes[i % explorationTypes.length];
+            const playerLevel = 1 + (i * 2); // Vary levels 1-39
+
+            LootSystem.generateAreaLoot(area, playerLevel, explorationType);
+
+            const endTime = performance.now();
+            const executionTime = endTime - startTime;
+
+            totalTime += executionTime;
+            maxTime = Math.max(maxTime, executionTime);
+
+            if (executionTime > maxAllowedTime) {
+                violations++;
+            }
+        }
+
+        const averageTime = totalTime / testIterations;
+
+        console.log(`Area loot performance: avg=${averageTime.toFixed(2)}ms, max=${maxTime.toFixed(2)}ms, violations=${violations}/${testIterations}`);
+
+        // Test passes if average is under limit and violations are <10%
+        assertTruthy(averageTime < maxAllowedTime, `Average time ${averageTime.toFixed(2)}ms should be under ${maxAllowedTime}ms`);
+        assertTruthy(violations < testIterations * 0.1, `Violations ${violations} should be less than 10% of ${testIterations} tests`);
+    });
+
+    it('should pass comprehensive performance test', () => {
+        if (typeof LootSystem === 'undefined') return;
+
+        // Run a smaller version of the full performance test
+        const results = LootSystem.quickPerformanceCheck();
+
+        assertTruthy(results.passed, 'Performance test should pass');
+        assertTruthy(['A+', 'A', 'B', 'C'].includes(results.grade), `Performance grade ${results.grade} should be C or better`);
+        assertTruthy(results.averageTime < 50, `Average time ${results.averageTime.toFixed(2)}ms should be under 50ms`);
+
+        if (results.issues.length > 0) {
+            console.warn('Performance issues detected:', results.issues);
+        }
+    });
+
+    it('should handle stress test scenarios', () => {
+        if (typeof LootSystem === 'undefined') return;
+
+        const maxAllowedTime = 100; // More lenient for stress test
+        let maxTime = 0;
+
+        // Test extreme scenarios that might cause performance issues
+        const stressScenarios = [
+            { monster: 'dragon', playerLevel: 50, area: 'legendary_dungeon' },
+            { monster: 'legendary_boss', playerLevel: 1, area: 'high_level_area' },
+            { monster: 'tutorial_enemy', playerLevel: 40, area: 'beginner_area' }
+        ];
+
+        for (const scenario of stressScenarios) {
+            const startTime = performance.now();
+
+            try {
+                LootSystem.generateMonsterLoot(scenario.monster, scenario.playerLevel, scenario.area);
+            } catch (error) {
+                // Expected for some stress scenarios
+            }
+
+            const endTime = performance.now();
+            const executionTime = endTime - startTime;
+            maxTime = Math.max(maxTime, executionTime);
+        }
+
+        console.log(`Stress test max time: ${maxTime.toFixed(2)}ms`);
+        assertTruthy(maxTime < maxAllowedTime, `Stress test max time ${maxTime.toFixed(2)}ms should be under ${maxAllowedTime}ms`);
+    });
+});
+
 // Test rarity rolling and level scaling
 describe('LootSystem Rarity Rolling and Level Scaling', () => {
     beforeAll(() => {
@@ -339,17 +621,29 @@ describe('LootSystem Rarity Rolling and Level Scaling', () => {
         if (typeof LootSystem === 'undefined') return;
 
         // Test level scaling calculation - higher player level reduces drops (but increases quality)
-        const positiveScaling = LootSystem.calculateLevelScaling(5); // Player 5 levels above content
-        const neutralScaling = LootSystem.calculateLevelScaling(0);  // Same level
-        const negativeScaling = LootSystem.calculateLevelScaling(-5); // Player 5 levels below content
+        const positiveScaling = LootSystem.calculateLevelScaling(5, 10, 5); // Player 5 levels above content
+        const neutralScaling = LootSystem.calculateLevelScaling(0, 5, 5);  // Same level
+        const negativeScaling = LootSystem.calculateLevelScaling(-5, 5, 10); // Player 5 levels below content
 
         assertTruthy(positiveScaling < neutralScaling, 'Higher player level should reduce drop scaling');
         assertTruthy(negativeScaling > neutralScaling, 'Lower player level should increase drop scaling');
-        assertEqual(neutralScaling, 1.0, 'Zero level difference should give 1.0 scaling');
+        // Check neutral scaling is close to expected content tier bonus (1.05)
+        assertTruthy(Math.abs(neutralScaling - 1.05) < 0.01, 'Zero level difference should give content tier bonus (~1.05)');
 
-        // Verify scaling is bounded properly
-        assertTruthy(positiveScaling >= 0.3, 'Positive scaling should not go below 0.3');
-        assertTruthy(negativeScaling <= 1.5, 'Negative scaling should not exceed 1.5');
+        // Verify scaling is bounded properly - updated bounds for new system
+        assertTruthy(positiveScaling >= 0.1, 'Positive scaling should not go below 0.1');
+        assertTruthy(negativeScaling <= 2.0, 'Negative scaling should not exceed 2.0');
+
+        // Test extreme differences are handled properly
+        const extremePositive = LootSystem.calculateLevelScaling(20, 25, 5);
+        const extremeNegative = LootSystem.calculateLevelScaling(-15, 5, 20);
+
+        assertTruthy(extremePositive >= 0.1, 'Extreme positive scaling should still provide minimum drops');
+        assertTruthy(extremeNegative <= 2.0, 'Extreme negative scaling should be capped');
+
+        // Test backward compatibility (function should work with just levelDifference)
+        const legacyScaling = LootSystem.calculateLevelScaling(0);
+        assertTruthy(legacyScaling >= 0.9 && legacyScaling <= 1.1, 'Legacy call should work and return reasonable value');
     });
 
     it('should roll for rarity properly', () => {

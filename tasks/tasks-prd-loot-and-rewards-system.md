@@ -39,21 +39,21 @@
   - [x] 2.5 Create loot preview system showing potential area rewards to players
   - [x] 2.6 Add rare area-exclusive items for exploration incentivization
 
-- [ ] 3.0 Optimize Drop Rate Algorithms and Level Scaling
-  - [ ] 3.1 Fine-tune LootSystem.calculateLevelScaling() to prevent over-farming while maintaining fairness
-  - [ ] 3.2 Adjust rarity distribution weights to ensure target percentages (65% common, 25% uncommon, etc.)
-  - [ ] 3.3 Optimize rollForLoot() algorithm to consistently hit 75%+ meaningful loot target
-  - [ ] 3.4 Implement diminishing returns system for repeated farming of same content
-  - [ ] 3.5 Add level difference penalties that scale appropriately for content progression
-  - [ ] 3.6 Performance test loot generation to maintain <50ms generation time requirement
+- [x] 3.0 Optimize Drop Rate Algorithms and Level Scaling
+  - [x] 3.1 Fine-tune LootSystem.calculateLevelScaling() to prevent over-farming while maintaining fairness
+  - [x] 3.2 Adjust rarity distribution weights to ensure target percentages (65% common, 25% uncommon, etc.)
+  - [x] 3.3 Optimize rollForLoot() algorithm to consistently hit 75%+ meaningful loot target
+  - [x] 3.4 Implement diminishing returns system for repeated farming of same content
+  - [x] 3.5 Add level difference penalties that scale appropriately for content progression
+  - [x] 3.6 Performance test loot generation to maintain <50ms generation time requirement
 
-- [ ] 4.0 Expand Equipment and Spell Item Generation
-  - [ ] 4.1 Enhance resolveConcreteItemId() to support more equipment type abstractions
-  - [ ] 4.2 Expand equipment mapping for nature_equipment, beginner_weapons, and class-specific gear
-  - [ ] 4.3 Improve spell scroll/book/tome generation with proper level and class gating
-  - [ ] 4.4 Add equipment upgrade path logic to ensure smooth progression between level tiers
-  - [ ] 4.5 Create consumable item distribution that supports learning curve and strategic depth
-  - [ ] 4.6 Implement material drop system for future crafting system integration
+- [x] 4.0 Expand Equipment and Spell Item Generation
+  - [x] 4.1 Enhance resolveConcreteItemId() to support more equipment type abstractions
+  - [x] 4.2 Expand equipment mapping for nature_equipment, beginner_weapons, and class-specific gear
+  - [x] 4.3 Improve spell scroll/book/tome generation with proper level and class gating
+  - [x] 4.4 Add equipment upgrade path logic to ensure smooth progression between level tiers
+  - [x] 4.5 Create consumable item distribution that supports learning curve and strategic depth
+  - [x] 4.6 Implement material drop system for future crafting system integration
 
 - [ ] 5.0 Implement Phase-Based Progression Balancing
   - [ ] 5.1 Configure early game (levels 1-10) with 80%+ basic reward frequency and learning focus
