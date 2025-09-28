@@ -10,6 +10,12 @@ import { useInventory } from '../../hooks/useInventory';
 import { useGameState } from '../../contexts/ReactGameContext';
 import { useResponsive } from '../../hooks';
 import { useVirtualizedGrid } from '../../hooks/useVirtualizedGrid';
+import { useOptimizedInventoryRendering } from '../../hooks/useOptimizedRendering';
+import { useSmartItemFiltering, useSmartAggregations } from '../../hooks/useDataComputationCache';
+import { useInventoryCache } from '../../hooks/useSmartCache';
+import { performanceMonitor } from '../../utils/performanceMonitor';
+import { useInventoryFeedback } from '../../hooks/useInventoryFeedback';
+import { NotificationContainer } from './NotificationContainer';
 import { EnhancedItem, ItemCategory, ItemType } from '../../types/inventory';
 
 interface InventoryScreenProps {
@@ -299,9 +305,41 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
     getItemsByCategory,
     searchItems,
     consolidateInventoryStacks,
+    useItem,
+    removeItem,
     isLoading,
     error
   } = useInventory();
+
+  // Performance optimization hooks
+  const cache = useInventoryCache();
+  const { filterItems } = useSmartItemFiltering(getFilteredItems({}));
+  const { computeItemStats } = useSmartAggregations();
+
+  // User feedback and error handling
+  const feedback = useInventoryFeedback();
+
+  // Helper function for dropping items (used in sell fallback)
+  const handleDropItem = useCallback(async (item: EnhancedItem) => {
+    try {
+      const result = await removeItem?.(item.id, 1);
+      if (result?.result === 'success') {
+        feedback.showItemRemoved(item.name, 1);
+      } else {
+        feedback.showError(result?.error || `Failed to drop ${item.name}`, {
+          itemId: item.id,
+          itemName: item.name,
+          operationType: 'drop'
+        });
+      }
+    } catch (error) {
+      feedback.showError(error, {
+        itemId: item.id,
+        itemName: item.name,
+        operationType: 'drop'
+      });
+    }
+  }, [removeItem, feedback]);
 
   // Local state
   const [searchQuery, setSearchQuery] = useState('');
@@ -314,73 +352,66 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
   const [usableOnly, setUsableOnly] = useState(false);
   const [stackableOnly, setStackableOnly] = useState(false);
 
-  // Get filtered and sorted items
-  const filteredItems = useMemo(() => {
-    let items: EnhancedItem[] = [];
+  // Optimized filtered items computation with smart caching
+  const [filteredItems, setFilteredItems] = useState<EnhancedItem[]>([]);
+  const [filterStats, setFilterStats] = useState({ computeTime: 0, cacheHit: false });
 
-    // Start with category filter
-    if (selectedCategory === 'all') {
-      items = getFilteredItems({
-        category: 'consumables' // Get all non-equipment items
+  // Smart filtering with caching
+  const updateFilteredItems = useCallback(async () => {
+    const baseItems = selectedCategory === 'all'
+      ? getFilteredItems({ category: 'consumables' })
+      : getItemsByCategory(selectedCategory);
+
+    const filterConfig = {
+      category: selectedCategory,
+      rarity: rarityFilter,
+      valueRange: valueFilter.min || valueFilter.max ? {
+        min: valueFilter.min ? parseFloat(valueFilter.min) : 0,
+        max: valueFilter.max ? parseFloat(valueFilter.max) : Infinity
+      } : undefined,
+      search: searchQuery.trim() || undefined,
+      tags: [
+        ...(usableOnly ? ['usable'] : []),
+        ...(stackableOnly ? ['stackable'] : [])
+      ]
+    };
+
+    const sortConfig = {
+      field: sortBy,
+      order: sortOrder
+    };
+
+    try {
+      const result = await filterItems(filterConfig, sortConfig);
+      setFilteredItems(result.data);
+      setFilterStats({
+        computeTime: result.computeTime,
+        cacheHit: result.cacheHit
       });
-    } else {
-      items = getItemsByCategory(selectedCategory);
-    }
 
-    // Apply search filter
-    if (searchQuery.trim()) {
-      items = searchItems(searchQuery, items);
-    }
-
-    // Apply advanced filters
-    if (rarityFilter.length > 0) {
-      items = items.filter(item => rarityFilter.includes(item.rarity || 'common'));
-    }
-
-    if (valueFilter.min || valueFilter.max) {
-      items = items.filter(item => {
-        const value = item.value || 0;
-        const min = valueFilter.min ? parseFloat(valueFilter.min) : 0;
-        const max = valueFilter.max ? parseFloat(valueFilter.max) : Infinity;
-        return value >= min && value <= max;
-      });
-    }
-
-    if (usableOnly) {
-      items = items.filter(item => item.usable || item.itemType === 'consumable');
-    }
-
-    if (stackableOnly) {
-      items = items.filter(item => item.stackable);
-    }
-
-    // Apply sorting
-    items.sort((a, b) => {
-      let comparison = 0;
-
-      switch (sortBy) {
-        case 'name':
-          comparison = a.name.localeCompare(b.name);
-          break;
-        case 'rarity':
-          const rarityOrder = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythical'];
-          comparison = rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity);
-          break;
-        case 'quantity':
-          comparison = (a.quantity || 1) - (b.quantity || 1);
-          break;
-        case 'type':
-          comparison = (a.itemType || '').localeCompare(b.itemType || '');
-          break;
-        default:
-          comparison = 0;
+      // Track performance in development
+      if (process.env.NODE_ENV === 'development' && result.computeTime > 50) {
+        console.warn(`Slow inventory filtering: ${result.computeTime.toFixed(2)}ms`, {
+          itemCount: baseItems.length,
+          filters: filterConfig,
+          cacheHit: result.cacheHit
+        });
       }
+    } catch (error) {
+      console.error('Error filtering items:', error);
+      feedback.showError(error, {
+        operationType: 'filter',
+        category: selectedCategory,
+        searchQuery
+      });
+      setFilteredItems(baseItems); // Fallback to unfiltered items
+    }
+  }, [selectedCategory, searchQuery, sortBy, sortOrder, rarityFilter, valueFilter, usableOnly, stackableOnly, getFilteredItems, getItemsByCategory, filterItems]);
 
-      return sortOrder === 'desc' ? -comparison : comparison;
-    });
-
-    return items;
-  }, [selectedCategory, searchQuery, sortBy, sortOrder, rarityFilter, valueFilter, usableOnly, stackableOnly, getFilteredItems, getItemsByCategory, searchItems]);
+  // Update filtered items when dependencies change
+  React.useEffect(() => {
+    updateFilteredItems();
+  }, [updateFilteredItems]);
 
   // Virtualized grid configuration
   const ITEM_CARD_HEIGHT = isMobile ? 200 : 240;
@@ -396,28 +427,136 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
     threshold: 50 // Enable virtualization for 50+ items
   });
 
-  // Item rendering function for virtualized grid
-  const renderItem = useCallback((item: EnhancedItem, index: number) => (
+  // Optimized rendering with caching and performance monitoring
+  const renderItemOptimized = useCallback((item: EnhancedItem, index: number) => (
     <ItemCard
       item={item}
       size={isMobile ? 'sm' : 'md'}
       showActions={true}
       showQuantity={true}
       showDescription={true}
-      onUse={(item) => {
-        console.log('Using item:', item.name);
+      onUse={async (item) => {
+        performanceMonitor.trackUserInteraction('item-use');
+        try {
+          // Show loading state for item usage
+          const operationId = feedback.startOperation(`use-${item.id}`, `Using ${item.name}`);
+
+          // Call the actual useItem function from the inventory hook
+          const result = await useItem?.(item.id);
+
+          if (result?.success) {
+            feedback.completeOperation(operationId, {
+              success: true,
+              message: result.message || `Used ${item.name}${result.effects?.length ? ': ' + result.effects.join(', ') : ''}`
+            });
+
+            // Also show quick feedback
+            feedback.showItemUsed(item.name, result.effects?.join(', '));
+          } else {
+            feedback.completeOperation(operationId, {
+              success: false,
+              message: result?.message || `Failed to use ${item.name}`
+            });
+          }
+        } catch (error) {
+          feedback.showError(error, {
+            itemId: item.id,
+            itemName: item.name,
+            operationType: 'use'
+          });
+        }
       }}
-      onSell={(item) => {
-        console.log('Selling item:', item.name);
+      onSell={async (item) => {
+        performanceMonitor.trackUserInteraction('item-sell');
+        try {
+          // For now, simulate selling - in real implementation would call sell function
+          feedback.showWarning(
+            'Feature Not Available',
+            'Item selling is not yet implemented. This feature will be available in a future update.',
+            {
+              actions: [{
+                label: 'Drop Instead',
+                action: () => handleDropItem(item),
+                style: 'secondary'
+              }]
+            }
+          );
+        } catch (error) {
+          feedback.showError(error, {
+            itemId: item.id,
+            itemName: item.name,
+            operationType: 'sell'
+          });
+        }
       }}
-      onDrop={(item) => {
-        console.log('Dropping item:', item.name);
+      onDrop={async (item) => {
+        performanceMonitor.trackUserInteraction('item-drop');
+        try {
+          const operationId = feedback.startOperation(`drop-${item.id}`, `Dropping ${item.name}`);
+
+          // Call the actual removeItem function
+          const result = await removeItem?.(item.id, 1);
+
+          if (result?.result === 'success') {
+            feedback.completeOperation(operationId, {
+              success: true,
+              message: `Dropped ${item.name}`
+            });
+            feedback.showItemRemoved(item.name, 1);
+          } else {
+            feedback.completeOperation(operationId, {
+              success: false,
+              message: result?.error || `Failed to drop ${item.name}`
+            });
+          }
+        } catch (error) {
+          feedback.showError(error, {
+            itemId: item.id,
+            itemName: item.name,
+            operationType: 'drop'
+          });
+        }
       }}
       onInspect={(item) => {
-        console.log('Inspecting item:', item.name);
+        performanceMonitor.trackUserInteraction('item-inspect');
+        try {
+          // Show detailed item information
+          feedback.showInfo(
+            item.name,
+            `${item.description || 'No description available.'}\n\nValue: ${item.value} gold\nRarity: ${item.rarity}\nQuantity: ${item.quantity || 1}`,
+            {
+              duration: 0, // Keep open until dismissed
+              actions: [{
+                label: 'Close',
+                action: () => {},
+                style: 'secondary'
+              }]
+            }
+          );
+        } catch (error) {
+          feedback.showError(error, {
+            itemId: item.id,
+            itemName: item.name,
+            operationType: 'inspect'
+          });
+        }
       }}
     />
   ), [isMobile]);
+
+  // Enhanced rendering with performance optimization
+  const optimizedRenderer = useOptimizedInventoryRendering(
+    filteredItems,
+    renderItemOptimized
+  );
+
+  // Performance tracking for component renders
+  React.useEffect(() => {
+    performanceMonitor.trackComponentRender('InventoryScreen');
+  });
+
+  // Item rendering function for virtualized grid (fallback)
+  const renderItem = renderItemOptimized;
 
   // Item key function for virtualized grid
   const getItemKey = useCallback((item: EnhancedItem, index: number) => item.id, []);
@@ -949,6 +1088,9 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
           </div>
         )}
       </div>
+
+      {/* Notification Container for user feedback */}
+      <NotificationContainer position="top-right" maxNotifications={5} />
     </div>
   );
 };
