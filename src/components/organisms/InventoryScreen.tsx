@@ -4,6 +4,8 @@ import { Button } from '../atoms/Button';
 import { LoadingSpinner } from '../atoms/LoadingSpinner';
 import { ItemCard } from '../molecules/ItemCard';
 import { VirtualizedGrid } from '../atoms/VirtualizedGrid';
+import { LazyVirtualizedGrid } from './LazyVirtualizedGrid';
+import { useLazyInventoryLoading } from '../../hooks/useLazyLoading';
 import { useInventory } from '../../hooks/useInventory';
 import { useGameState } from '../../contexts/ReactGameContext';
 import { useResponsive } from '../../hooks';
@@ -420,6 +422,95 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
   // Item key function for virtualized grid
   const getItemKey = useCallback((item: EnhancedItem, index: number) => item.id, []);
 
+  // Lazy loading setup for large inventories
+  const currentFilters = useMemo(() => ({
+    category: selectedCategory,
+    search: searchQuery,
+    sort: { field: sortBy, order: sortOrder },
+    rarity: rarityFilter,
+    value: valueFilter,
+    usableOnly,
+    stackableOnly
+  }), [selectedCategory, searchQuery, sortBy, sortOrder, rarityFilter, valueFilter, usableOnly, stackableOnly]);
+
+  // Mock lazy loading function (in real app, this would call an API)
+  const loadInventoryItems = useCallback(async (page: number, pageSize: number, filters: any) => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    // Apply filters to get the full filtered dataset
+    let items: EnhancedItem[] = [];
+    if (filters.category === 'all') {
+      items = getFilteredItems({ category: 'consumables' });
+    } else {
+      items = getItemsByCategory(filters.category);
+    }
+
+    // Apply search filter
+    if (filters.search?.trim()) {
+      items = searchItems(filters.search, items);
+    }
+
+    // Apply advanced filters
+    if (filters.rarity?.length > 0) {
+      items = items.filter(item => filters.rarity.includes(item.rarity || 'common'));
+    }
+
+    if (filters.value?.min || filters.value?.max) {
+      items = items.filter(item => {
+        const value = item.value || 0;
+        const min = filters.value.min ? parseFloat(filters.value.min) : 0;
+        const max = filters.value.max ? parseFloat(filters.value.max) : Infinity;
+        return value >= min && value <= max;
+      });
+    }
+
+    if (filters.usableOnly) {
+      items = items.filter(item => item.usable || item.itemType === 'consumable');
+    }
+
+    if (filters.stackableOnly) {
+      items = items.filter(item => item.stackable);
+    }
+
+    // Apply sorting
+    items.sort((a, b) => {
+      let comparison = 0;
+      switch (filters.sort.field) {
+        case 'name':
+          comparison = a.name.localeCompare(b.name);
+          break;
+        case 'rarity':
+          const rarityOrder = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythical'];
+          comparison = rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity);
+          break;
+        case 'quantity':
+          comparison = (a.quantity || 1) - (b.quantity || 1);
+          break;
+        case 'type':
+          comparison = (a.itemType || '').localeCompare(b.itemType || '');
+          break;
+        default:
+          comparison = 0;
+      }
+      return filters.sort.order === 'desc' ? -comparison : comparison;
+    });
+
+    // Paginate
+    const startIndex = page * pageSize;
+    const endIndex = startIndex + pageSize;
+    const pageItems = items.slice(startIndex, endIndex);
+
+    return {
+      items: pageItems,
+      totalCount: items.length,
+      hasMore: endIndex < items.length
+    };
+  }, [getFilteredItems, getItemsByCategory, searchItems]);
+
+  // Enable lazy loading for inventories with 100+ total items
+  const shouldUseLazyLoading = getTotalItemCount() >= 100;
+
   // Handle search input
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -771,8 +862,38 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
           </span>
         </motion.div>
 
-        {/* Items Grid - Virtualized for performance */}
-        {filteredItems.length === 0 ? (
+        {/* Items Grid - With Lazy Loading and Virtualization */}
+        {shouldUseLazyLoading ? (
+          // Use lazy loading + virtualization for large inventories
+          <LazyVirtualizedGrid
+            loadFunction={(page, pageSize) => loadInventoryItems(page, pageSize, currentFilters)}
+            renderItem={renderItem}
+            getItemKey={getItemKey}
+            itemHeight={ITEM_CARD_HEIGHT}
+            minItemWidth={ITEM_MIN_WIDTH}
+            containerHeight={GRID_CONTAINER_HEIGHT}
+            gap={isMobile ? 12 : 16}
+            pageSize={50}
+            preloadDistance={2}
+            skeletonType="item"
+            style={{
+              borderRadius: '8px',
+              background: 'rgba(255, 255, 255, 0.02)'
+            }}
+            emptyState={
+              <motion.div
+                style={inventoryStyles.emptyState}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+              >
+                {searchQuery ?
+                  `No items found matching "${searchQuery}"` :
+                  `No items in ${ITEM_CATEGORIES.find(c => c.id === selectedCategory)?.name} category`
+                }
+              </motion.div>
+            }
+          />
+        ) : filteredItems.length === 0 ? (
           <motion.div
             style={inventoryStyles.emptyState}
             initial={{ opacity: 0 }}
@@ -785,7 +906,7 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
             }
           </motion.div>
         ) : virtualGridSettings.shouldVirtualize ? (
-          // Use virtualized grid for large inventories
+          // Use virtualized grid for medium inventories
           <VirtualizedGrid
             items={filteredItems}
             itemHeight={virtualGridSettings.itemHeight}

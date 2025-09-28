@@ -4,8 +4,10 @@ import { Button } from '../atoms/Button';
 import { LoadingSpinner } from '../atoms/LoadingSpinner';
 import { CreatureCard } from '../molecules/CreatureCard';
 import { VirtualizedGrid } from '../atoms/VirtualizedGrid';
+import { LazyVirtualizedGrid } from './LazyVirtualizedGrid';
 import { useCreatures } from '../../hooks/useCreatures';
 import { useVirtualizedGrid } from '../../hooks/useVirtualizedGrid';
+import { useLazyCreatureLoading } from '../../hooks/useLazyLoading';
 import { useGameState } from '../../hooks';
 import { useResponsive } from '../../hooks';
 import { EnhancedCreature, CreatureType, CreatureElement, CreatureRarity } from '../../types/creatures';
@@ -427,6 +429,95 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
   // Creature key function for virtualized grid
   const getCreatureKey = useCallback((creature: EnhancedCreature, index: number) => creature.creatureId, []);
 
+  // Lazy loading setup for large creature collections
+  const currentCreatureFilters = useMemo(() => ({
+    viewMode,
+    search: searchQuery,
+    type: selectedType,
+    sort: { field: sortBy, order: sortOrder }
+  }), [viewMode, searchQuery, selectedType, sortBy, sortOrder]);
+
+  // Mock lazy loading function for creatures
+  const loadCreatureData = useCallback(async (page: number, pageSize: number, viewModeFilter: string) => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 400));
+
+    // Get current data based on view mode
+    let data: EnhancedCreature[] = [];
+    switch (viewModeFilter) {
+      case 'bestiary':
+        data = [...(filteredBestiary || [])];
+        break;
+      case 'collection':
+        data = [...(filteredCreatures || [])];
+        break;
+      case 'team':
+        data = [...(activeTeam || [])];
+        break;
+      case 'breeding':
+        data = [...(filteredCreatures || [])];
+        break;
+      case 'trading':
+        data = [...(filteredCreatures || [])];
+        break;
+      default:
+        data = [...(filteredBestiary || [])];
+    }
+
+    // Apply search filter
+    if (currentCreatureFilters.search?.trim()) {
+      const searchTerm = currentCreatureFilters.search.toLowerCase();
+      data = data.filter(creature =>
+        creature.name?.toLowerCase().includes(searchTerm) ||
+        creature.species?.toLowerCase().includes(searchTerm) ||
+        creature.creatureType?.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    // Apply type filter
+    if (currentCreatureFilters.type !== 'all') {
+      data = data.filter(creature => creature.creatureType === currentCreatureFilters.type);
+    }
+
+    // Apply sorting
+    data.sort((a, b) => {
+      let comparison = 0;
+      switch (currentCreatureFilters.sort.field) {
+        case 'name':
+          comparison = (a.name || '').localeCompare(b.name || '');
+          break;
+        case 'level':
+          comparison = (a.level || 1) - (b.level || 1);
+          break;
+        case 'rarity':
+          const rarityOrder = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythical'];
+          comparison = rarityOrder.indexOf(a.rarity || 'common') - rarityOrder.indexOf(b.rarity || 'common');
+          break;
+        case 'type':
+          comparison = (a.creatureType || '').localeCompare(b.creatureType || '');
+          break;
+        default:
+          comparison = 0;
+      }
+      return currentCreatureFilters.sort.order === 'desc' ? -comparison : comparison;
+    });
+
+    // Paginate
+    const startIndex = page * pageSize;
+    const endIndex = startIndex + pageSize;
+    const pageItems = data.slice(startIndex, endIndex);
+
+    return {
+      items: pageItems,
+      totalCount: data.length,
+      hasMore: endIndex < data.length
+    };
+  }, [filteredBestiary, filteredCreatures, activeTeam, currentCreatureFilters]);
+
+  // Enable lazy loading for creature collections with 50+ total creatures
+  const totalCreatures = currentData?.length || 0;
+  const shouldUseLazyCreatureLoading = totalCreatures >= 50;
+
   // Handle search input
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -809,8 +900,40 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
           )}
         </motion.div>
 
-        {/* Creatures Grid - Virtualized for performance */}
-        {filteredAndSortedData.length === 0 ? (
+        {/* Creatures Grid - With Lazy Loading and Virtualization */}
+        {shouldUseLazyCreatureLoading ? (
+          // Use lazy loading + virtualization for large creature collections
+          <LazyVirtualizedGrid
+            loadFunction={(page, pageSize) => loadCreatureData(page, pageSize, viewMode)}
+            renderItem={renderCreature}
+            getItemKey={getCreatureKey}
+            itemHeight={CREATURE_CARD_HEIGHT}
+            minItemWidth={CREATURE_MIN_WIDTH}
+            containerHeight={CREATURE_GRID_CONTAINER_HEIGHT}
+            gap={isMobile ? 12 : 16}
+            pageSize={30}
+            preloadDistance={1}
+            skeletonType="creature"
+            style={{
+              borderRadius: '8px',
+              background: 'rgba(255, 255, 255, 0.02)'
+            }}
+            emptyState={
+              <motion.div
+                style={creatureStyles.emptyState}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+              >
+                {searchQuery ?
+                  `No creatures found matching "${searchQuery}"` :
+                  viewMode === 'bestiary' ? 'No creatures discovered yet' :
+                  viewMode === 'collection' ? 'No creatures captured yet' :
+                  'No creatures in your team'
+                }
+              </motion.div>
+            }
+          />
+        ) : filteredAndSortedData.length === 0 ? (
           <motion.div
             style={creatureStyles.emptyState}
             initial={{ opacity: 0 }}
@@ -825,7 +948,7 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
             }
           </motion.div>
         ) : creatureVirtualGridSettings.shouldVirtualize ? (
-          // Use virtualized grid for large creature collections
+          // Use virtualized grid for medium creature collections
           <VirtualizedGrid
             items={filteredAndSortedData}
             itemHeight={creatureVirtualGridSettings.itemHeight}
