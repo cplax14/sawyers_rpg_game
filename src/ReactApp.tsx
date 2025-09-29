@@ -12,6 +12,8 @@ import {
 } from './components/lazy/LazyComponents';
 import { AreaExploration } from './components/organisms/AreaExploration';
 import { Combat } from './components/organisms/Combat';
+import ReactTestPanel from './components/ui/ReactTestPanel';
+import VictoryModal from './components/ui/VictoryModal';
 import InventoryManager from './components/organisms/InventoryManager';
 import { performanceMonitor } from './utils/performanceMonitor';
 import { ReactGameState } from './contexts/ReactGameContext';
@@ -312,6 +314,9 @@ const GameShell: React.FC = () => {
 
       {/* Screen Router */}
       <ScreenRouter currentScreen={currentScreen} gameState={state} />
+
+      {/* Victory Modal */}
+      <VictoryModal />
     </div>
   );
 };
@@ -378,6 +383,7 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({ currentScreen, gameState })
       }}
     >
       {renderScreen()}
+      {process.env.NODE_ENV === 'development' && <ReactTestPanel />}
     </div>
   );
 };
