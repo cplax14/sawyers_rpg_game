@@ -218,27 +218,35 @@ export function useOptimizedRendering<T extends { id: string }>(
     cache.invalidateByTag(cacheKey);
   }, [cache, cacheKey]);
 
-  // Update cache hit rate
+  // Update cache hit rate (debounced to avoid excessive updates)
   useEffect(() => {
-    if (enableCaching) {
+    if (!enableCaching) return;
+
+    const timeoutId = setTimeout(() => {
       const stats = cache.getStats();
       setRenderMetrics(prev => ({
         ...prev,
         cacheHitRate: stats.hitRate
       }));
-    }
-  }, [visibleItems, cache, enableCaching]);
+    }, 100); // Debounce by 100ms
 
-  // Monitor memory usage
+    return () => clearTimeout(timeoutId);
+  }, [cache, enableCaching]); // Removed visibleItems dependency
+
+  // Monitor memory usage (throttled to avoid excessive updates)
   useEffect(() => {
-    if (enableMonitoring && 'memory' in performance) {
+    if (!enableMonitoring || !('memory' in performance)) return;
+
+    const intervalId = setInterval(() => {
       const memory = (performance as any).memory;
       setRenderMetrics(prev => ({
         ...prev,
         memoryUsage: memory.usedJSHeapSize / 1024 / 1024 // MB
       }));
-    }
-  }, [visibleItems, enableMonitoring]);
+    }, 1000); // Update every 1 second instead of on every visibleItems change
+
+    return () => clearInterval(intervalId);
+  }, [enableMonitoring]); // Removed visibleItems dependency
 
   // Cleanup on unmount
   useEffect(() => {

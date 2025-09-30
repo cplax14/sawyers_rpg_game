@@ -91,11 +91,27 @@ const AreaData = {
                         rarityWeights: { uncommon: 0.7, rare: 0.25, epic: 0.05 },
                         quantityRange: [1, 1],
                         items: ["forest_crystal", "nature_gem"]
+                    },
+                    {
+                        itemType: "hidden_forest_cache",
+                        dropChance: 0.15,
+                        rarityWeights: { rare: 0.6, epic: 0.3, legendary: 0.1 },
+                        quantityRange: [1, 2],
+                        items: ["ancient_seed", "forest_memory", "druid_relic"],
+                        explorationTypes: ["thorough", "treasure_hunt"]
+                    },
+                    {
+                        itemType: "quick_forage",
+                        dropChance: 0.8,
+                        rarityWeights: { common: 0.9, uncommon: 0.1 },
+                        quantityRange: [2, 4],
+                        items: ["common_berry", "bark_strip", "fallen_branch"],
+                        explorationTypes: ["quick", "resource_gathering"]
                     }
                 ],
                 areaBonus: {
-                    goldMultiplier: 0.8,
-                    experienceBonus: 0.1, // 10% experience bonus
+                    goldMultiplier: 0.9, // Increased for early game
+                    experienceBonus: 0.15, // Boosted early learning
                     environmentType: "forest"
                 }
             }
@@ -118,7 +134,68 @@ const AreaData = {
             connections: ["forest_path", "wolf_den", "mystic_grove"],
             storyEvents: ["pack_encounter", "ancient_tree"],
             services: [],
-            backgroundMusic: "deep_forest_theme"
+            backgroundMusic: "deep_forest_theme",
+            lootTable: {
+                recommendedLevel: 6,
+                explorationType: "deep_wilderness",
+                drops: [
+                    {
+                        itemType: "ancient_wood",
+                        dropChance: 0.65,
+                        rarityWeights: { common: 0.6, uncommon: 0.3, rare: 0.1 },
+                        quantityRange: [2, 5],
+                        explorationTypes: ["thorough"]
+                    },
+                    {
+                        itemType: "rare_herbs",
+                        dropChance: 0.50,
+                        rarityWeights: { common: 0.5, uncommon: 0.4, rare: 0.1 },
+                        quantityRange: [1, 3],
+                        items: ["bloodroot", "shadowmoss", "ancient_fern"]
+                    },
+                    {
+                        itemType: "beast_materials",
+                        dropChance: 0.40,
+                        rarityWeights: { common: 0.7, uncommon: 0.25, rare: 0.05 },
+                        quantityRange: [1, 4],
+                        items: ["wolf_tracks", "orc_marking", "beast_claw"]
+                    },
+                    {
+                        itemType: "wilderness_equipment",
+                        dropChance: 0.20,
+                        rarityWeights: { common: 0.6, uncommon: 0.3, rare: 0.1 },
+                        equipmentTypes: ["forest_cloak", "tracking_boots", "survival_kit"]
+                    },
+                    {
+                        itemType: "forest_treasures",
+                        dropChance: 0.15,
+                        rarityWeights: { uncommon: 0.7, rare: 0.25, epic: 0.05 },
+                        quantityRange: [1, 2],
+                        items: ["hidden_cache", "ancient_coin", "forest_crystal"]
+                    },
+                    {
+                        itemType: "ancient_grove_secrets",
+                        dropChance: 0.25,
+                        rarityWeights: { epic: 0.7, legendary: 0.3 },
+                        quantityRange: [1, 1],
+                        items: ["primordial_essence", "time_worn_artifact", "forest_heart_fragment"],
+                        explorationTypes: ["thorough", "stealth"]
+                    },
+                    {
+                        itemType: "resource_nodes",
+                        dropChance: 0.9,
+                        rarityWeights: { common: 0.6, uncommon: 0.4 },
+                        quantityRange: [3, 6],
+                        items: ["harvested_wood", "gathered_herbs", "collected_materials"],
+                        explorationTypes: ["resource_gathering"]
+                    }
+                ],
+                areaBonus: {
+                    goldMultiplier: 1.2,
+                    experienceBonus: 0.15,
+                    environmentType: "deep_forest"
+                }
+            }
         },
         
         wolf_den: {
@@ -151,6 +228,62 @@ const AreaData = {
                 species: "alpha_wolf",
                 level: 15,
                 reward: { exp: 500, gold: 200, items: ["wolf_fang", "leather_armor"] }
+            },
+            lootTable: {
+                recommendedLevel: 12,
+                explorationType: "pack_den",
+                drops: [
+                    {
+                        itemType: "wolf_materials",
+                        dropChance: 0.75,
+                        rarityWeights: { common: 0.6, uncommon: 0.3, rare: 0.1 },
+                        quantityRange: [2, 5],
+                        items: ["wolf_pelt", "wolf_fang", "pack_scent"]
+                    },
+                    {
+                        itemType: "den_treasures",
+                        dropChance: 0.60,
+                        rarityWeights: { common: 0.5, uncommon: 0.4, rare: 0.1 },
+                        quantityRange: [1, 3],
+                        items: ["bone_cache", "territorial_marker", "pack_trophy"]
+                    },
+                    {
+                        itemType: "predator_equipment",
+                        dropChance: 0.35,
+                        rarityWeights: { uncommon: 0.6, rare: 0.3, epic: 0.1 },
+                        equipmentTypes: ["hunter_cloak", "tracking_gear", "predator_weapons"]
+                    },
+                    {
+                        itemType: "alpha_artifacts",
+                        dropChance: 0.25,
+                        rarityWeights: { rare: 0.7, epic: 0.25, legendary: 0.05 },
+                        quantityRange: [1, 2],
+                        items: ["alpha_tooth", "leadership_totem", "pack_bond_crystal"]
+                    },
+                    {
+                        itemType: "wolf_den_exclusive",
+                        dropChance: 0.12,
+                        rarityWeights: { epic: 0.7, legendary: 0.3 },
+                        quantityRange: [1, 1],
+                        items: ["howling_moon_pendant", "alpha_dominance_crown", "wolf_spirit_essence"],
+                        areaExclusive: true,
+                        explorationTypes: ["thorough", "treasure_hunt"]
+                    },
+                    {
+                        itemType: "cave_minerals",
+                        dropChance: 0.40,
+                        rarityWeights: { common: 0.7, uncommon: 0.25, rare: 0.05 },
+                        quantityRange: [1, 4],
+                        items: ["cave_salt", "mineral_deposits", "stone_fragments"]
+                    }
+                ],
+                areaBonus: {
+                    goldMultiplier: 1.4, // Increased for boss difficulty
+                    experienceBonus: 0.2, // Added substantial XP bonus for boss area
+                    denBonus: 0.2, // 20% bonus to pack-related items
+                    environmentType: "wolf_den",
+                    bossArea: true
+                }
             }
         },
         
@@ -171,7 +304,69 @@ const AreaData = {
             connections: ["forest_path", "mountain_base", "river_crossing"],
             storyEvents: ["merchant_encounter", "wild_horse_race"],
             services: ["traveling_merchant"],
-            backgroundMusic: "plains_theme"
+            backgroundMusic: "plains_theme",
+            lootTable: {
+                recommendedLevel: 8,
+                explorationType: "open_plains",
+                drops: [
+                    {
+                        itemType: "grassland_herbs",
+                        dropChance: 0.70,
+                        rarityWeights: { common: 0.7, uncommon: 0.25, rare: 0.05 },
+                        quantityRange: [2, 5],
+                        items: ["sweet_grass", "prairie_flower", "wind_herb"]
+                    },
+                    {
+                        itemType: "plains_materials",
+                        dropChance: 0.60,
+                        rarityWeights: { common: 0.8, uncommon: 0.2 },
+                        quantityRange: [1, 4],
+                        items: ["wild_grain", "leather_scraps", "feathers"]
+                    },
+                    {
+                        itemType: "traveler_supplies",
+                        dropChance: 0.45,
+                        rarityWeights: { common: 0.6, uncommon: 0.3, rare: 0.1 },
+                        quantityRange: [1, 3],
+                        items: ["trail_rations", "water_pouch", "merchant_goods"]
+                    },
+                    {
+                        itemType: "riding_equipment",
+                        dropChance: 0.25,
+                        rarityWeights: { common: 0.5, uncommon: 0.4, rare: 0.1 },
+                        equipmentTypes: ["riding_boots", "travel_cloak", "plains_gear"]
+                    },
+                    {
+                        itemType: "sky_treasures",
+                        dropChance: 0.15,
+                        rarityWeights: { uncommon: 0.6, rare: 0.3, epic: 0.1 },
+                        quantityRange: [1, 2],
+                        items: ["wind_crystal", "sky_shard", "freedom_token"]
+                    },
+                    {
+                        itemType: "nomad_caches",
+                        dropChance: 0.35,
+                        rarityWeights: { uncommon: 0.5, rare: 0.4, epic: 0.1 },
+                        quantityRange: [1, 3],
+                        items: ["traveler_memento", "route_map", "merchant_token"],
+                        explorationTypes: ["thorough", "treasure_hunt"]
+                    },
+                    {
+                        itemType: "swift_findings",
+                        dropChance: 0.7,
+                        rarityWeights: { common: 0.8, uncommon: 0.2 },
+                        quantityRange: [2, 3],
+                        items: ["plains_grass", "loose_feather", "worn_horseshoe"],
+                        explorationTypes: ["quick", "combat_patrol"]
+                    }
+                ],
+                areaBonus: {
+                    goldMultiplier: 1.1, // Increased for mid-early game
+                    experienceBonus: 0.1, // Added XP bonus
+                    merchantBonus: 0.3, // 30% bonus when traveling merchant is present
+                    environmentType: "grasslands"
+                }
+            }
         },
         
         mountain_base: {
@@ -191,7 +386,53 @@ const AreaData = {
             connections: ["plains", "mountain_peak", "cave_entrance"],
             storyEvents: ["rockslide", "mountain_guide"],
             services: [],
-            backgroundMusic: "mountain_theme"
+            backgroundMusic: "mountain_theme",
+            lootTable: {
+                recommendedLevel: 10,
+                explorationType: "mountain_foothills",
+                drops: [
+                    {
+                        itemType: "mountain_stone",
+                        dropChance: 0.80,
+                        rarityWeights: { common: 0.6, uncommon: 0.3, rare: 0.1 },
+                        quantityRange: [2, 6],
+                        items: ["granite_chunk", "slate_fragment", "mountain_crystal"]
+                    },
+                    {
+                        itemType: "highland_herbs",
+                        dropChance: 0.55,
+                        rarityWeights: { common: 0.5, uncommon: 0.4, rare: 0.1 },
+                        quantityRange: [1, 3],
+                        items: ["alpine_moss", "cliff_root", "altitude_flower"]
+                    },
+                    {
+                        itemType: "climbing_gear",
+                        dropChance: 0.40,
+                        rarityWeights: { common: 0.4, uncommon: 0.5, rare: 0.1 },
+                        equipmentTypes: ["mountain_boots", "climbing_rope", "altitude_gear"]
+                    },
+                    {
+                        itemType: "tribal_artifacts",
+                        dropChance: 0.30,
+                        rarityWeights: { uncommon: 0.6, rare: 0.3, epic: 0.1 },
+                        quantityRange: [1, 2],
+                        items: ["orc_token", "tribal_marking", "mountain_blessing"]
+                    },
+                    {
+                        itemType: "rare_minerals",
+                        dropChance: 0.20,
+                        rarityWeights: { rare: 0.7, epic: 0.25, legendary: 0.05 },
+                        quantityRange: [1, 2],
+                        items: ["iron_ore", "precious_stone", "mountain_gem"]
+                    }
+                ],
+                areaBonus: {
+                    goldMultiplier: 1.3, // Balanced for mid-game
+                    experienceBonus: 0.12, // Added XP bonus for difficulty
+                    altitudeBonus: 0.15, // 15% bonus to highland-specific items
+                    environmentType: "mountain_foothills"
+                }
+            }
         },
         
         cave_entrance: {
@@ -249,10 +490,36 @@ const AreaData = {
                         rarityWeights: { epic: 0.7, legendary: 0.3 },
                         quantityRange: [1, 1],
                         items: ["ancient_crystal", "power_rune"]
+                    },
+                    {
+                        itemType: "crystal_cave_exclusive",
+                        dropChance: 0.08,
+                        rarityWeights: { epic: 0.6, legendary: 0.4 },
+                        quantityRange: [1, 1],
+                        items: ["resonance_crystal", "cave_singer_gem", "harmonic_amplifier"],
+                        areaExclusive: true,
+                        explorationTypes: ["thorough", "resource_gathering", "treasure_hunt"]
+                    },
+                    {
+                        itemType: "crystalline_formations",
+                        dropChance: 0.6,
+                        rarityWeights: { uncommon: 0.5, rare: 0.4, epic: 0.1 },
+                        quantityRange: [2, 4],
+                        items: ["crystal_cluster", "mineral_vein", "gem_deposit"],
+                        explorationTypes: ["thorough", "resource_gathering"]
+                    },
+                    {
+                        itemType: "treasure_chamber_loot",
+                        dropChance: 0.3,
+                        rarityWeights: { epic: 0.5, legendary: 0.5 },
+                        quantityRange: [1, 2],
+                        items: ["vault_key", "treasure_map", "crystal_crown"],
+                        explorationTypes: ["treasure_hunt"]
                     }
                 ],
                 areaBonus: {
-                    goldMultiplier: 1.5, // Rich mineral deposits
+                    goldMultiplier: 1.6, // Rich mineral deposits + difficulty bonus
+                    experienceBonus: 0.18, // Good XP for dungeon challenge
                     magicItemBonus: 0.2, // 20% bonus to magical item drops
                     environmentType: "crystal_cave"
                 }
@@ -276,7 +543,62 @@ const AreaData = {
             connections: ["mountain_peak", "dragon_peak"],
             storyEvents: ["volcanic_eruption", "fire_temple_found"],
             services: [],
-            backgroundMusic: "volcano_theme"
+            backgroundMusic: "volcano_theme",
+            lootTable: {
+                recommendedLevel: 22,
+                explorationType: "volcanic_wasteland",
+                drops: [
+                    {
+                        itemType: "volcanic_materials",
+                        dropChance: 0.85,
+                        rarityWeights: { uncommon: 0.4, rare: 0.4, epic: 0.2 },
+                        quantityRange: [2, 5],
+                        items: ["obsidian_shard", "lava_rock", "fire_crystal"]
+                    },
+                    {
+                        itemType: "flame_essence",
+                        dropChance: 0.65,
+                        rarityWeights: { rare: 0.5, epic: 0.4, legendary: 0.1 },
+                        quantityRange: [1, 3],
+                        items: ["fire_essence", "molten_core", "flame_spirit"]
+                    },
+                    {
+                        itemType: "heat_resistant_gear",
+                        dropChance: 0.50,
+                        rarityWeights: { rare: 0.6, epic: 0.3, legendary: 0.1 },
+                        equipmentTypes: ["fire_armor", "heat_shield", "flame_weapons"]
+                    },
+                    {
+                        itemType: "salamander_scales",
+                        dropChance: 0.40,
+                        rarityWeights: { rare: 0.7, epic: 0.25, legendary: 0.05 },
+                        quantityRange: [1, 4],
+                        items: ["fire_scale", "heat_membrane", "salamander_hide"]
+                    },
+                    {
+                        itemType: "volcanic_region_exclusive",
+                        dropChance: 0.05,
+                        rarityWeights: { epic: 0.5, legendary: 0.5 },
+                        quantityRange: [1, 1],
+                        items: ["molten_heart", "volcano_core", "phoenix_ash"],
+                        areaExclusive: true,
+                        explorationTypes: ["thorough", "stealth", "treasure_hunt"]
+                    },
+                    {
+                        itemType: "volcanic_gems",
+                        dropChance: 0.25,
+                        rarityWeights: { epic: 0.6, legendary: 0.4 },
+                        quantityRange: [1, 2],
+                        items: ["fire_ruby", "lava_diamond", "inferno_gem"]
+                    }
+                ],
+                areaBonus: {
+                    goldMultiplier: 2.2, // Valuable volcanic materials + high difficulty
+                    experienceBonus: 0.25, // High XP for dangerous area
+                    fireResistanceBonus: 0.4, // 40% bonus to fire-related items
+                    environmentType: "volcanic_region"
+                }
+            }
         },
         
         dragon_peak: {
@@ -398,7 +720,8 @@ const AreaData = {
                     }
                 ],
                 areaBonus: {
-                    goldMultiplier: 1.2,
+                    goldMultiplier: 1.5, // Increased for sacred difficulty
+                    experienceBonus: 0.2, // Spiritual learning bonus
                     spiritualBonus: 0.3, // 30% bonus to spirit-related items
                     environmentType: "sacred_temple"
                 }
@@ -439,7 +762,8 @@ const AreaData = {
                     }
                 ],
                 areaBonus: {
-                    goldMultiplier: 1.3,
+                    goldMultiplier: 1.4, // Competitive rewards
+                    experienceBonus: 0.15, // Learning from rivalry
                     competitiveBonus: 0.25, // 25% bonus to skill-based rewards
                     environmentType: "rival_domain"
                 }
@@ -481,7 +805,8 @@ const AreaData = {
                     }
                 ],
                 areaBonus: {
-                    goldMultiplier: 3.0,
+                    goldMultiplier: 3.5, // Increased cosmic rewards
+                    experienceBonus: 0.5, // Massive end-game XP
                     transcendentBonus: 1.0, // Double chance for transcendent items
                     environmentType: "cosmic_nexus",
                     finalArea: true
@@ -530,7 +855,8 @@ const AreaData = {
                     }
                 ],
                 areaBonus: {
-                    goldMultiplier: 1.1,
+                    goldMultiplier: 1.3, // Increased for training difficulty
+                    experienceBonus: 0.25, // High XP for skill training
                     classBonus: 0.4, // 40% bonus to class-specific items
                     environmentType: "trial_grounds"
                 }
@@ -572,7 +898,8 @@ const AreaData = {
                     }
                 ],
                 areaBonus: {
-                    goldMultiplier: 0.5, // Spirits don't value gold
+                    goldMultiplier: 1.8, // Increased for high-level mystical area
+                    experienceBonus: 0.35, // High spiritual learning
                     spiritualBonus: 1.0, // Double spiritual item drops
                     environmentType: "spirit_realm",
                     mysticalArea: true
@@ -585,9 +912,9 @@ const AreaData = {
             description: "A magical place where nature spirits gather.",
             type: "special",
             unlocked: false,
-            unlockRequirements: { 
-                story: "nature_blessing", 
-                character_class: ["ranger", "druid"] 
+            unlockRequirements: {
+                story: "nature_blessing",
+                character_class: ["ranger", "druid"]
             },
             encounterRate: 20,
             monsters: ["nature_sprite", "unicorn", "treant", "fairy"],
@@ -600,7 +927,64 @@ const AreaData = {
             connections: ["deep_forest"],
             storyEvents: ["spirit_council", "nature_trial"],
             services: ["healing_spring", "monster_sanctuary"],
-            backgroundMusic: "mystic_theme"
+            backgroundMusic: "mystic_theme",
+            lootTable: {
+                recommendedLevel: 14,
+                explorationType: "mystical_sanctuary",
+                drops: [
+                    {
+                        itemType: "nature_blessing",
+                        dropChance: 0.90,
+                        rarityWeights: { uncommon: 0.3, rare: 0.5, epic: 0.2 },
+                        quantityRange: [1, 3],
+                        items: ["fairy_dust", "unicorn_tear", "spirit_blessing"]
+                    },
+                    {
+                        itemType: "magical_herbs",
+                        dropChance: 0.80,
+                        rarityWeights: { rare: 0.6, epic: 0.35, legendary: 0.05 },
+                        quantityRange: [2, 4],
+                        items: ["moonflower", "starlight_moss", "eternal_bloom"]
+                    },
+                    {
+                        itemType: "druidic_artifacts",
+                        dropChance: 0.60,
+                        rarityWeights: { rare: 0.4, epic: 0.5, legendary: 0.1 },
+                        equipmentTypes: ["nature_staff", "grove_robes", "spirit_amulet"]
+                    },
+                    {
+                        itemType: "treant_gifts",
+                        dropChance: 0.45,
+                        rarityWeights: { epic: 0.7, legendary: 0.3 },
+                        quantityRange: [1, 2],
+                        items: ["ancient_bark", "life_seed", "wisdom_fruit"]
+                    },
+                    {
+                        itemType: "mystic_grove_exclusive",
+                        dropChance: 0.15,
+                        rarityWeights: { epic: 0.4, legendary: 0.6 },
+                        quantityRange: [1, 1],
+                        items: ["grove_heart", "nature_crown", "world_tree_essence"],
+                        areaExclusive: true,
+                        explorationTypes: ["thorough", "stealth"],
+                        classRestricted: ["ranger", "druid"]
+                    },
+                    {
+                        itemType: "sanctuary_tokens",
+                        dropChance: 0.35,
+                        rarityWeights: { legendary: 1.0 },
+                        quantityRange: [1, 1],
+                        items: ["grove_protection", "nature_harmony", "eternal_sanctuary"]
+                    }
+                ],
+                areaBonus: {
+                    goldMultiplier: 0.7, // Slightly increased for mystical rewards
+                    experienceBonus: 0.3, // High spiritual XP
+                    natureBonus: 1.5, // 150% bonus to nature items
+                    environmentType: "mystical_grove",
+                    classRestricted: true
+                }
+            }
         },
         
         ancient_ruins: {
@@ -630,10 +1014,56 @@ const AreaData = {
                 name: "The Ancient Guardian",
                 species: "guardian_titan",
                 level: 40,
-                reward: { 
-                    exp: 5000, 
-                    gold: 2000, 
-                    items: ["legendary_weapon", "master_crystal"] 
+                reward: {
+                    exp: 5000,
+                    gold: 2000,
+                    items: ["legendary_weapon", "master_crystal"]
+                }
+            },
+            lootTable: {
+                recommendedLevel: 32,
+                explorationType: "ancient_ruins",
+                drops: [
+                    {
+                        itemType: "ancient_relics",
+                        dropChance: 0.90,
+                        rarityWeights: { epic: 0.4, legendary: 0.6 },
+                        quantityRange: [2, 4],
+                        items: ["civilization_fragment", "ancient_technology", "lost_knowledge"]
+                    },
+                    {
+                        itemType: "guardian_remnants",
+                        dropChance: 0.75,
+                        rarityWeights: { epic: 0.5, legendary: 0.5 },
+                        quantityRange: [1, 3],
+                        items: ["golem_core", "guardian_essence", "construct_blueprint"]
+                    },
+                    {
+                        itemType: "ancient_weapons",
+                        dropChance: 0.60,
+                        rarityWeights: { epic: 0.3, legendary: 0.7 },
+                        equipmentTypes: ["relic_sword", "ancient_armor", "timeless_artifacts"]
+                    },
+                    {
+                        itemType: "spirit_essence",
+                        dropChance: 0.50,
+                        rarityWeights: { legendary: 1.0 },
+                        quantityRange: [1, 2],
+                        items: ["ancient_soul", "forgotten_spirit", "eternal_memory"]
+                    },
+                    {
+                        itemType: "civilization_secrets",
+                        dropChance: 0.20,
+                        rarityWeights: { legendary: 1.0 },
+                        quantityRange: [1, 1],
+                        items: ["ultimate_knowledge", "creation_codex", "world_keystone"]
+                    }
+                ],
+                areaBonus: {
+                    goldMultiplier: 4.0, // Ancient treasures
+                    artificientBonus: 1.0, // Double chance for ancient artifacts
+                    environmentType: "ancient_ruins",
+                    bossArea: true
                 }
             }
         },
@@ -667,7 +1097,64 @@ const AreaData = {
             storyEvents: ["forbidden_knowledge", "library_master"],
             services: ["spell_research", "knowledge_exchange"],
             backgroundMusic: "library_theme",
-            storyBranch: "scholar_path"
+            storyBranch: "scholar_path",
+            lootTable: {
+                recommendedLevel: 16,
+                explorationType: "knowledge_sanctuary",
+                drops: [
+                    {
+                        itemType: "spell_scrolls",
+                        dropChance: 0.95,
+                        rarityWeights: { uncommon: 0.3, rare: 0.5, epic: 0.18, legendary: 0.02 },
+                        quantityRange: [2, 5],
+                        spellTypes: ["arcane_knowledge", "divine_wisdom", "ancient_magic"]
+                    },
+                    {
+                        itemType: "knowledge_tomes",
+                        dropChance: 0.80,
+                        rarityWeights: { rare: 0.4, epic: 0.5, legendary: 0.1 },
+                        quantityRange: [1, 3],
+                        items: ["wisdom_tome", "arcane_compendium", "forbidden_knowledge"]
+                    },
+                    {
+                        itemType: "scholarly_equipment",
+                        dropChance: 0.60,
+                        rarityWeights: { rare: 0.6, epic: 0.35, legendary: 0.05 },
+                        equipmentTypes: ["scholar_robes", "wisdom_staff", "knowledge_crystal"]
+                    },
+                    {
+                        itemType: "research_materials",
+                        dropChance: 0.70,
+                        rarityWeights: { uncommon: 0.4, rare: 0.4, epic: 0.2 },
+                        quantityRange: [1, 4],
+                        items: ["ink_essence", "parchment_scroll", "binding_reagent"]
+                    },
+                    {
+                        itemType: "scholar_library_exclusive",
+                        dropChance: 0.10,
+                        rarityWeights: { epic: 0.3, legendary: 0.7 },
+                        quantityRange: [1, 1],
+                        items: ["omniscience_scroll", "master_librarian_key", "infinite_knowledge_crystal"],
+                        areaExclusive: true,
+                        explorationTypes: ["thorough", "treasure_hunt"],
+                        classRestricted: ["wizard", "paladin"]
+                    },
+                    {
+                        itemType: "master_secrets",
+                        dropChance: 0.25,
+                        rarityWeights: { epic: 0.6, legendary: 0.4 },
+                        quantityRange: [1, 1],
+                        items: ["ultimate_spell", "creation_formula", "reality_codex"]
+                    }
+                ],
+                areaBonus: {
+                    goldMultiplier: 1.4, // Increased for rare knowledge area
+                    experienceBonus: 0.4, // Massive learning bonus
+                    spellBonus: 2.0, // 200% bonus to spell-related items
+                    environmentType: "library",
+                    classRestricted: true
+                }
+            }
         },
 
         warrior_training_ground: {
@@ -698,7 +1185,70 @@ const AreaData = {
             storyEvents: ["warrior_trial", "master_challenge"],
             services: ["weapon_training", "combat_lessons"],
             backgroundMusic: "training_theme",
-            storyBranch: "warrior_path"
+            storyBranch: "warrior_path",
+            lootTable: {
+                recommendedLevel: 16,
+                explorationType: "training_facility",
+                drops: [
+                    {
+                        itemType: "warrior_equipment",
+                        dropChance: 0.85,
+                        rarityWeights: { uncommon: 0.3, rare: 0.5, epic: 0.2 },
+                        equipmentTypes: ["battle_armor", "master_weapons", "warrior_accessories"]
+                    },
+                    {
+                        itemType: "training_manuals",
+                        dropChance: 0.75,
+                        rarityWeights: { rare: 0.6, epic: 0.35, legendary: 0.05 },
+                        quantityRange: [1, 3],
+                        items: ["combat_technique", "weapon_mastery", "battle_strategy"]
+                    },
+                    {
+                        itemType: "strength_enhancers",
+                        dropChance: 0.65,
+                        rarityWeights: { uncommon: 0.4, rare: 0.4, epic: 0.2 },
+                        quantityRange: [1, 4],
+                        items: ["power_potion", "endurance_serum", "warrior_brew"]
+                    },
+                    {
+                        itemType: "master_crafted_gear",
+                        dropChance: 0.45,
+                        rarityWeights: { epic: 0.7, legendary: 0.3 },
+                        quantityRange: [1, 2],
+                        equipmentTypes: ["grandmaster_weapons", "legendary_armor", "champion_artifacts"]
+                    },
+                    {
+                        itemType: "warrior_honors",
+                        dropChance: 0.30,
+                        rarityWeights: { legendary: 1.0 },
+                        quantityRange: [1, 1],
+                        items: ["champion_medal", "master_recognition", "warrior_legacy"]
+                    },
+                    {
+                        itemType: "combat_spoils",
+                        dropChance: 0.8,
+                        rarityWeights: { uncommon: 0.6, rare: 0.3, epic: 0.1 },
+                        quantityRange: [1, 3],
+                        items: ["battle_trophy", "combat_gear", "victory_token"],
+                        explorationTypes: ["combat_patrol"]
+                    },
+                    {
+                        itemType: "hidden_training_cache",
+                        dropChance: 0.4,
+                        rarityWeights: { rare: 0.5, epic: 0.4, legendary: 0.1 },
+                        quantityRange: [1, 2],
+                        items: ["secret_technique", "master_scroll", "ancient_weapon_fragment"],
+                        explorationTypes: ["thorough", "stealth"]
+                    }
+                ],
+                areaBonus: {
+                    goldMultiplier: 1.5, // Increased for training rewards
+                    experienceBonus: 0.35, // High combat learning
+                    combatBonus: 1.5, // 150% bonus to combat-related items
+                    environmentType: "training_ground",
+                    classRestricted: true
+                }
+            }
         },
 
         shadow_realm: {
@@ -744,6 +1294,80 @@ const AreaData = {
                     exp: 8000,
                     gold: 3000,
                     items: ["shadow_blade", "darkness_crown", "void_crystal"]
+                }
+            },
+            lootTable: {
+                recommendedLevel: 28,
+                explorationType: "shadow_dimension",
+                drops: [
+                    {
+                        itemType: "shadow_essence",
+                        dropChance: 0.90,
+                        rarityWeights: { epic: 0.4, legendary: 0.6 },
+                        quantityRange: [2, 4],
+                        items: ["void_fragment", "darkness_crystal", "shadow_core"]
+                    },
+                    {
+                        itemType: "forbidden_artifacts",
+                        dropChance: 0.75,
+                        rarityWeights: { epic: 0.5, legendary: 0.5 },
+                        equipmentTypes: ["shadow_weapons", "void_armor", "darkness_regalia"]
+                    },
+                    {
+                        itemType: "corrupted_power",
+                        dropChance: 0.60,
+                        rarityWeights: { legendary: 1.0 },
+                        quantityRange: [1, 2],
+                        items: ["corruption_seed", "void_whisper", "shadow_mastery"]
+                    },
+                    {
+                        itemType: "dimensional_materials",
+                        dropChance: 0.50,
+                        rarityWeights: { epic: 0.3, legendary: 0.7 },
+                        quantityRange: [1, 3],
+                        items: ["reality_tear", "dimension_shard", "void_metal"]
+                    },
+                    {
+                        itemType: "shadow_realm_exclusive",
+                        dropChance: 0.08,
+                        rarityWeights: { legendary: 1.0 },
+                        quantityRange: [1, 1],
+                        items: ["void_lord_essence", "shadow_dimension_key", "absolute_darkness"],
+                        areaExclusive: true,
+                        explorationTypes: ["thorough", "stealth", "treasure_hunt"],
+                        classRestricted: ["rogue", "assassin"]
+                    },
+                    {
+                        itemType: "shadow_lord_relics",
+                        dropChance: 0.20,
+                        rarityWeights: { legendary: 1.0 },
+                        quantityRange: [1, 1],
+                        items: ["shadow_throne_fragment", "void_crown_shard", "darkness_eternal"]
+                    },
+                    {
+                        itemType: "stealth_rewards",
+                        dropChance: 0.7,
+                        rarityWeights: { rare: 0.4, epic: 0.5, legendary: 0.1 },
+                        quantityRange: [1, 2],
+                        items: ["shadow_cloak_fragment", "void_step_boots", "stealth_mastery_tome"],
+                        explorationTypes: ["stealth"]
+                    },
+                    {
+                        itemType: "dimensional_treasures",
+                        dropChance: 0.4,
+                        rarityWeights: { epic: 0.3, legendary: 0.7 },
+                        quantityRange: [1, 3],
+                        items: ["reality_anchor", "void_compass", "dimensional_key"],
+                        explorationTypes: ["treasure_hunt"]
+                    }
+                ],
+                areaBonus: {
+                    goldMultiplier: 2.8, // Increased shadow treasures
+                    experienceBonus: 0.3, // High XP for dangerous secret area
+                    corruptionBonus: 2.0, // 200% bonus to dark artifacts
+                    environmentType: "shadow_realm",
+                    bossArea: true,
+                    secretArea: true
                 }
             }
         }

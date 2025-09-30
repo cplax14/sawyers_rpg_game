@@ -3,9 +3,10 @@ import { motion } from 'framer-motion';
 import { Button } from '../atoms/Button';
 import { LoadingSpinner } from '../atoms/LoadingSpinner';
 import { ExperienceBar } from '../molecules/ExperienceBar';
-import { useExperience } from '../../hooks/useExperience';
-import { usePlayer } from '../../hooks/useGameState';
-import { useEquipment } from '../../hooks/useEquipment';
+import { useReactGame } from '../../contexts/ReactGameContext';
+// import { useExperience } from '../../hooks/useExperience';
+// import { usePlayer } from '../../hooks/useGameState';
+// import { useEquipment } from '../../hooks/useEquipment';
 import { useResponsive } from '../../hooks';
 import { ExperienceSource } from '../../types/experience';
 import { ExperienceCalculator, createExperienceCalculations, formatExperienceNumber } from '../../utils/experienceUtils';
@@ -166,20 +167,56 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({
   className,
   onClose
 }) => {
-  const { player, playerLevel } = usePlayer();
+  const { state } = useReactGame();
   const { isMobile } = useResponsive();
-  const {
-    experienceState,
-    levelInfo,
-    breakdown,
-    isLoading,
-    error
-  } = useExperience();
-  const {
-    equipmentStats,
-    finalStats,
-    equipped
-  } = useEquipment();
+
+  // Use player data from ReactGameContext
+  const player = state.player;
+  const playerLevel = player?.level || 1;
+
+  // Debug: Check if values are NaN and log once
+  React.useEffect(() => {
+    if (player) {
+      console.log('🎮 StatsScreen Player Data:', {
+        name: player.name,
+        level: player.level,
+        experience: player.experience,
+        experienceToNext: player.experienceToNext,
+        gold: player.gold,
+        experienceIsNaN: isNaN(player.experience),
+        goldIsNaN: isNaN(player.gold)
+      });
+    }
+  }, []); // Only run once
+
+  // TODO: Replace with ReactGameContext equivalents
+  // For now, create mock data to display current player stats
+  const experienceState = {
+    currentExperience: player?.experience || 0,
+    experienceToNext: player?.experienceToNext || 100,
+    achievements: [] // Empty achievements to prevent crashes
+  };
+
+  const levelInfo = {
+    currentLevel: playerLevel,
+    nextLevel: playerLevel + 1,
+    progress: player ? (player.experience / player.experienceToNext) * 100 : 0
+  };
+
+  // Mock experience breakdown to prevent crashes
+  const breakdown = {
+    totalExperience: player?.experience || 0,
+    sources: [], // Empty sources for now
+    sourceTotals: {}, // Empty source totals for now
+    bySource: {} // Empty bySource to prevent crashes
+  };
+  const isLoading = false;
+  const error = null;
+
+  // Mock equipment data
+  const equipmentStats = { attack: 0, defense: 0, magicAttack: 0, magicDefense: 0, speed: 0, accuracy: 0 };
+  const finalStats = player?.baseStats || { attack: 10, defense: 10, magicAttack: 10, magicDefense: 10, speed: 10, accuracy: 85 };
+  const equipped = {};
 
   // Local state
   const [viewMode, setViewMode] = useState<StatsViewMode>('overview');

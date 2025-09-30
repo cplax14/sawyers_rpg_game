@@ -37,19 +37,19 @@ const MonsterData = {
                 drops: [
                     {
                         itemType: "slime_gel",
-                        dropChance: 0.65,
+                        dropChance: 0.50,
                         rarityWeights: { common: 0.8, uncommon: 0.15, rare: 0.05 },
                         quantityRange: [1, 2]
                     },
                     {
                         itemType: "health_potion",
-                        dropChance: 0.25,
+                        dropChance: 0.20,
                         rarityWeights: { common: 0.9, uncommon: 0.1 },
                         quantityRange: [1, 1]
                     },
                     {
                         itemType: "equipment",
-                        dropChance: 0.08,
+                        dropChance: 0.05,
                         rarityWeights: { common: 0.7, uncommon: 0.25, rare: 0.05 },
                         equipmentTypes: ["light_armor", "simple_weapon"]
                     }
@@ -82,25 +82,25 @@ const MonsterData = {
                 drops: [
                     {
                         itemType: "goblin_tooth",
-                        dropChance: 0.45,
+                        dropChance: 0.35,
                         rarityWeights: { common: 0.75, uncommon: 0.2, rare: 0.05 },
                         quantityRange: [1, 3]
                     },
                     {
                         itemType: "crude_weapon",
-                        dropChance: 0.35,
+                        dropChance: 0.25,
                         rarityWeights: { common: 0.8, uncommon: 0.18, rare: 0.02 },
                         equipmentTypes: ["club", "dagger", "sling"]
                     },
                     {
                         itemType: "leather_scraps",
-                        dropChance: 0.3,
+                        dropChance: 0.20,
                         rarityWeights: { common: 0.9, uncommon: 0.1 },
                         quantityRange: [1, 2]
                     },
                     {
                         itemType: "mana_potion",
-                        dropChance: 0.15,
+                        dropChance: 0.10,
                         rarityWeights: { common: 0.85, uncommon: 0.15 },
                         quantityRange: [1, 1]
                     }
@@ -133,25 +133,25 @@ const MonsterData = {
                 drops: [
                     {
                         itemType: "wolf_fang",
-                        dropChance: 0.55,
+                        dropChance: 0.40,
                         rarityWeights: { common: 0.65, uncommon: 0.25, rare: 0.08, epic: 0.02 },
                         quantityRange: [1, 2]
                     },
                     {
                         itemType: "wolf_pelt",
-                        dropChance: 0.4,
+                        dropChance: 0.30,
                         rarityWeights: { common: 0.7, uncommon: 0.25, rare: 0.05 },
                         quantityRange: [1, 1]
                     },
                     {
                         itemType: "beast_equipment",
-                        dropChance: 0.15,
+                        dropChance: 0.12,
                         rarityWeights: { common: 0.6, uncommon: 0.3, rare: 0.09, epic: 0.01 },
                         equipmentTypes: ["hunting_bow", "beast_armor", "nature_accessory"]
                     },
                     {
                         itemType: "stamina_potion",
-                        dropChance: 0.2,
+                        dropChance: 0.15,
                         rarityWeights: { common: 0.8, uncommon: 0.2 },
                         quantityRange: [1, 1]
                     }
@@ -185,31 +185,31 @@ const MonsterData = {
                 drops: [
                     {
                         itemType: "orc_tusk",
-                        dropChance: 0.5,
+                        dropChance: 0.35,
                         rarityWeights: { common: 0.5, uncommon: 0.35, rare: 0.12, epic: 0.03 },
                         quantityRange: [1, 2]
                     },
                     {
                         itemType: "warrior_equipment",
-                        dropChance: 0.4,
+                        dropChance: 0.25,
                         rarityWeights: { common: 0.4, uncommon: 0.4, rare: 0.17, epic: 0.03 },
                         equipmentTypes: ["war_axe", "battle_armor", "strength_ring"]
                     },
                     {
                         itemType: "iron_ore",
-                        dropChance: 0.35,
+                        dropChance: 0.20,
                         rarityWeights: { common: 0.7, uncommon: 0.25, rare: 0.05 },
                         quantityRange: [2, 4]
                     },
                     {
                         itemType: "strength_potion",
-                        dropChance: 0.25,
+                        dropChance: 0.15,
                         rarityWeights: { common: 0.6, uncommon: 0.3, rare: 0.1 },
                         quantityRange: [1, 2]
                     },
                     {
                         itemType: "spell_scroll",
-                        dropChance: 0.1,
+                        dropChance: 0.08,
                         rarityWeights: { uncommon: 0.6, rare: 0.3, epic: 0.1 },
                         spellTypes: ["earth_magic", "combat_magic"]
                     }
@@ -279,7 +279,37 @@ const MonsterData = {
             evolvesTo: ["alpha_wolf"],
             evolutionItems: [],
             breedsWith: ["wolf", "dire_wolf"],
-            areas: ["deep_forest", "wolf_den"]
+            areas: ["deep_forest", "wolf_den"],
+            lootTable: {
+                level: 6,
+                goldRange: [12, 25],
+                drops: [
+                    {
+                        itemType: "dire_wolf_fang",
+                        dropChance: 0.45,
+                        rarityWeights: { common: 0.6, uncommon: 0.3, rare: 0.1 },
+                        quantityRange: [1, 3]
+                    },
+                    {
+                        itemType: "thick_wolf_pelt",
+                        dropChance: 0.35,
+                        rarityWeights: { common: 0.65, uncommon: 0.3, rare: 0.05 },
+                        quantityRange: [1, 2]
+                    },
+                    {
+                        itemType: "beast_equipment",
+                        dropChance: 0.18,
+                        rarityWeights: { common: 0.55, uncommon: 0.35, rare: 0.1 },
+                        equipmentTypes: ["hunting_bow", "beast_armor", "nature_accessory"]
+                    },
+                    {
+                        itemType: "strength_potion",
+                        dropChance: 0.15,
+                        rarityWeights: { common: 0.8, uncommon: 0.2 },
+                        quantityRange: [1, 1]
+                    }
+                ]
+            }
         },
 
         alpha_wolf: {
@@ -300,7 +330,49 @@ const MonsterData = {
             evolvesTo: [],
             evolutionItems: [],
             breedsWith: ["alpha_wolf", "dire_wolf"],
-            areas: ["wolf_den"]
+            areas: ["wolf_den"],
+            lootTable: {
+                level: 25,
+                goldRange: [60, 120],
+                drops: [
+                    {
+                        itemType: "alpha_fang",
+                        dropChance: 0.70,
+                        rarityWeights: { rare: 0.4, epic: 0.45, legendary: 0.15 },
+                        quantityRange: [1, 3]
+                    },
+                    {
+                        itemType: "pack_leader_pelt",
+                        dropChance: 0.60,
+                        rarityWeights: { rare: 0.5, epic: 0.4, legendary: 0.1 },
+                        quantityRange: [1, 2]
+                    },
+                    {
+                        itemType: "leadership_equipment",
+                        dropChance: 0.45,
+                        rarityWeights: { rare: 0.35, epic: 0.5, legendary: 0.15 },
+                        equipmentTypes: ["alpha_armor", "pack_leader_crown", "dominance_amulet"]
+                    },
+                    {
+                        itemType: "lunar_essence",
+                        dropChance: 0.35,
+                        rarityWeights: { rare: 0.4, epic: 0.45, legendary: 0.15 },
+                        quantityRange: [1, 2]
+                    },
+                    {
+                        itemType: "spell_tome",
+                        dropChance: 0.30,
+                        rarityWeights: { rare: 0.4, epic: 0.45, legendary: 0.15 },
+                        spellTypes: ["pack_magic", "leadership_spells", "moon_magic"]
+                    },
+                    {
+                        itemType: "rare_consumable",
+                        dropChance: 0.25,
+                        rarityWeights: { rare: 0.6, epic: 0.35, legendary: 0.05 },
+                        quantityRange: [1, 2]
+                    }
+                ]
+            }
         },
 
         // Plains Monsters
@@ -322,7 +394,37 @@ const MonsterData = {
             evolvesTo: ["stallion"],
             evolutionItems: [],
             breedsWith: ["wild_horse", "unicorn"],
-            areas: ["plains", "grasslands"]
+            areas: ["plains", "grasslands"],
+            lootTable: {
+                level: 4,
+                goldRange: [8, 16],
+                drops: [
+                    {
+                        itemType: "horse_hair",
+                        dropChance: 0.40,
+                        rarityWeights: { common: 0.75, uncommon: 0.2, rare: 0.05 },
+                        quantityRange: [2, 4]
+                    },
+                    {
+                        itemType: "swift_hide",
+                        dropChance: 0.30,
+                        rarityWeights: { common: 0.7, uncommon: 0.25, rare: 0.05 },
+                        quantityRange: [1, 2]
+                    },
+                    {
+                        itemType: "speed_equipment",
+                        dropChance: 0.15,
+                        rarityWeights: { common: 0.6, uncommon: 0.3, rare: 0.1 },
+                        equipmentTypes: ["light_boots", "speed_ring", "wind_cloak"]
+                    },
+                    {
+                        itemType: "stamina_potion",
+                        dropChance: 0.20,
+                        rarityWeights: { common: 0.85, uncommon: 0.15 },
+                        quantityRange: [1, 1]
+                    }
+                ]
+            }
         },
 
         hawk: {
@@ -343,7 +445,37 @@ const MonsterData = {
             evolvesTo: ["eagle"],
             evolutionItems: [],
             breedsWith: ["hawk", "fire_bat"],
-            areas: ["plains", "mountains"]
+            areas: ["plains", "mountains"],
+            lootTable: {
+                level: 3,
+                goldRange: [6, 14],
+                drops: [
+                    {
+                        itemType: "hawk_feather",
+                        dropChance: 0.45,
+                        rarityWeights: { common: 0.7, uncommon: 0.25, rare: 0.05 },
+                        quantityRange: [2, 5]
+                    },
+                    {
+                        itemType: "sharp_talon",
+                        dropChance: 0.35,
+                        rarityWeights: { common: 0.6, uncommon: 0.3, rare: 0.1 },
+                        quantityRange: [1, 3]
+                    },
+                    {
+                        itemType: "wind_equipment",
+                        dropChance: 0.12,
+                        rarityWeights: { common: 0.65, uncommon: 0.3, rare: 0.05 },
+                        equipmentTypes: ["wind_cloak", "accuracy_ring", "flight_boots"]
+                    },
+                    {
+                        itemType: "sight_potion",
+                        dropChance: 0.18,
+                        rarityWeights: { common: 0.8, uncommon: 0.2 },
+                        quantityRange: [1, 1]
+                    }
+                ]
+            }
         },
 
         // Mountain Monsters
@@ -365,7 +497,37 @@ const MonsterData = {
             evolvesTo: ["bighorn"],
             evolutionItems: [],
             breedsWith: ["mountain_goat", "wild_horse"],
-            areas: ["mountains", "mountain_base"]
+            areas: ["mountains", "mountain_base"],
+            lootTable: {
+                level: 5,
+                goldRange: [10, 20],
+                drops: [
+                    {
+                        itemType: "goat_horn",
+                        dropChance: 0.40,
+                        rarityWeights: { common: 0.65, uncommon: 0.3, rare: 0.05 },
+                        quantityRange: [1, 2]
+                    },
+                    {
+                        itemType: "mountain_wool",
+                        dropChance: 0.35,
+                        rarityWeights: { common: 0.8, uncommon: 0.18, rare: 0.02 },
+                        quantityRange: [2, 4]
+                    },
+                    {
+                        itemType: "hardy_equipment",
+                        dropChance: 0.15,
+                        rarityWeights: { common: 0.7, uncommon: 0.25, rare: 0.05 },
+                        equipmentTypes: ["mountain_boots", "hardy_vest", "climbing_gear"]
+                    },
+                    {
+                        itemType: "endurance_potion",
+                        dropChance: 0.20,
+                        rarityWeights: { common: 0.85, uncommon: 0.15 },
+                        quantityRange: [1, 1]
+                    }
+                ]
+            }
         },
 
         rock_lizard: {
@@ -386,7 +548,43 @@ const MonsterData = {
             evolvesTo: ["stone_dragon"],
             evolutionItems: ["earth_gem"],
             breedsWith: ["rock_lizard", "cave_troll"],
-            areas: ["mountains", "cave_entrance"]
+            areas: ["mountains", "cave_entrance"],
+            lootTable: {
+                level: 12,
+                goldRange: [20, 40],
+                drops: [
+                    {
+                        itemType: "stone_scale",
+                        dropChance: 0.45,
+                        rarityWeights: { common: 0.5, uncommon: 0.35, rare: 0.15 },
+                        quantityRange: [2, 4]
+                    },
+                    {
+                        itemType: "earth_crystal",
+                        dropChance: 0.35,
+                        rarityWeights: { uncommon: 0.6, rare: 0.3, epic: 0.1 },
+                        quantityRange: [1, 2]
+                    },
+                    {
+                        itemType: "defensive_equipment",
+                        dropChance: 0.25,
+                        rarityWeights: { common: 0.45, uncommon: 0.4, rare: 0.15 },
+                        equipmentTypes: ["stone_armor", "earth_shield", "defense_amulet"]
+                    },
+                    {
+                        itemType: "hardening_potion",
+                        dropChance: 0.20,
+                        rarityWeights: { common: 0.7, uncommon: 0.25, rare: 0.05 },
+                        quantityRange: [1, 2]
+                    },
+                    {
+                        itemType: "spell_scroll",
+                        dropChance: 0.12,
+                        rarityWeights: { uncommon: 0.7, rare: 0.25, epic: 0.05 },
+                        spellTypes: ["earth_magic", "defensive_magic"]
+                    }
+                ]
+            }
         },
 
         // Cave Monsters
@@ -408,7 +606,37 @@ const MonsterData = {
             evolvesTo: ["vampire_bat"],
             evolutionItems: [],
             breedsWith: ["bat", "fire_bat"],
-            areas: ["cave_entrance", "underground_lake"]
+            areas: ["cave_entrance", "underground_lake"],
+            lootTable: {
+                level: 4,
+                goldRange: [7, 15],
+                drops: [
+                    {
+                        itemType: "bat_wing",
+                        dropChance: 0.40,
+                        rarityWeights: { common: 0.7, uncommon: 0.25, rare: 0.05 },
+                        quantityRange: [1, 2]
+                    },
+                    {
+                        itemType: "echo_essence",
+                        dropChance: 0.30,
+                        rarityWeights: { common: 0.6, uncommon: 0.3, rare: 0.1 },
+                        quantityRange: [1, 3]
+                    },
+                    {
+                        itemType: "dark_equipment",
+                        dropChance: 0.12,
+                        rarityWeights: { common: 0.65, uncommon: 0.3, rare: 0.05 },
+                        equipmentTypes: ["shadow_cloak", "night_vision_goggles", "stealth_boots"]
+                    },
+                    {
+                        itemType: "mana_potion",
+                        dropChance: 0.25,
+                        rarityWeights: { common: 0.8, uncommon: 0.2 },
+                        quantityRange: [1, 1]
+                    }
+                ]
+            }
         },
 
         crystal_spider: {
@@ -429,7 +657,43 @@ const MonsterData = {
             evolvesTo: ["crystal_queen"],
             evolutionItems: ["crystal_shard"],
             breedsWith: ["crystal_spider"],
-            areas: ["cave_entrance", "crystal_caves"]
+            areas: ["cave_entrance", "crystal_caves"],
+            lootTable: {
+                level: 13,
+                goldRange: [22, 45],
+                drops: [
+                    {
+                        itemType: "crystal_silk",
+                        dropChance: 0.50,
+                        rarityWeights: { common: 0.4, uncommon: 0.4, rare: 0.2 },
+                        quantityRange: [2, 5]
+                    },
+                    {
+                        itemType: "crystal_shard",
+                        dropChance: 0.40,
+                        rarityWeights: { uncommon: 0.5, rare: 0.35, epic: 0.15 },
+                        quantityRange: [1, 3]
+                    },
+                    {
+                        itemType: "magical_equipment",
+                        dropChance: 0.28,
+                        rarityWeights: { common: 0.35, uncommon: 0.45, rare: 0.2 },
+                        equipmentTypes: ["crystal_staff", "reflection_armor", "magic_amulet"]
+                    },
+                    {
+                        itemType: "poison_antidote",
+                        dropChance: 0.22,
+                        rarityWeights: { common: 0.6, uncommon: 0.3, rare: 0.1 },
+                        quantityRange: [1, 2]
+                    },
+                    {
+                        itemType: "spell_scroll",
+                        dropChance: 0.15,
+                        rarityWeights: { uncommon: 0.6, rare: 0.3, epic: 0.1 },
+                        spellTypes: ["crystal_magic", "web_spells", "reflection_magic"]
+                    }
+                ]
+            }
         },
 
         gem_slime: {
@@ -450,7 +714,43 @@ const MonsterData = {
             evolvesTo: ["diamond_slime"],
             evolutionItems: ["precious_gem"],
             breedsWith: ["slime", "crystal_spider"],
-            areas: ["cave_entrance", "crystal_caves"]
+            areas: ["cave_entrance", "crystal_caves"],
+            lootTable: {
+                level: 14,
+                goldRange: [25, 50],
+                drops: [
+                    {
+                        itemType: "liquid_gem",
+                        dropChance: 0.45,
+                        rarityWeights: { uncommon: 0.5, rare: 0.35, epic: 0.15 },
+                        quantityRange: [1, 3]
+                    },
+                    {
+                        itemType: "precious_gem",
+                        dropChance: 0.35,
+                        rarityWeights: { uncommon: 0.4, rare: 0.4, epic: 0.2 },
+                        quantityRange: [1, 2]
+                    },
+                    {
+                        itemType: "gem_equipment",
+                        dropChance: 0.30,
+                        rarityWeights: { uncommon: 0.4, rare: 0.45, epic: 0.15 },
+                        equipmentTypes: ["gem_staff", "crystal_armor", "wealth_ring"]
+                    },
+                    {
+                        itemType: "mana_elixir",
+                        dropChance: 0.25,
+                        rarityWeights: { common: 0.5, uncommon: 0.4, rare: 0.1 },
+                        quantityRange: [1, 2]
+                    },
+                    {
+                        itemType: "spell_scroll",
+                        dropChance: 0.18,
+                        rarityWeights: { uncommon: 0.5, rare: 0.35, epic: 0.15 },
+                        spellTypes: ["gem_magic", "healing_magic", "hardening_spells"]
+                    }
+                ]
+            }
         },
 
         cave_troll: {
@@ -471,7 +771,49 @@ const MonsterData = {
             evolvesTo: [],
             evolutionItems: [],
             breedsWith: ["cave_troll", "orc"],
-            areas: ["cave_entrance", "deep_caves"]
+            areas: ["cave_entrance", "deep_caves"],
+            lootTable: {
+                level: 28,
+                goldRange: [70, 140],
+                drops: [
+                    {
+                        itemType: "troll_hide",
+                        dropChance: 0.75,
+                        rarityWeights: { rare: 0.5, epic: 0.4, legendary: 0.1 },
+                        quantityRange: [2, 4]
+                    },
+                    {
+                        itemType: "regeneration_gland",
+                        dropChance: 0.55,
+                        rarityWeights: { rare: 0.4, epic: 0.5, legendary: 0.1 },
+                        quantityRange: [1, 2]
+                    },
+                    {
+                        itemType: "giant_equipment",
+                        dropChance: 0.50,
+                        rarityWeights: { rare: 0.3, epic: 0.55, legendary: 0.15 },
+                        equipmentTypes: ["giant_club", "troll_armor", "strength_gauntlets"]
+                    },
+                    {
+                        itemType: "massive_stone",
+                        dropChance: 0.40,
+                        rarityWeights: { rare: 0.45, epic: 0.45, legendary: 0.1 },
+                        quantityRange: [1, 3]
+                    },
+                    {
+                        itemType: "spell_tome",
+                        dropChance: 0.25,
+                        rarityWeights: { rare: 0.5, epic: 0.4, legendary: 0.1 },
+                        spellTypes: ["earth_mastery", "regeneration_magic", "giant_strength"]
+                    },
+                    {
+                        itemType: "legendary_material",
+                        dropChance: 0.20,
+                        rarityWeights: { epic: 0.7, legendary: 0.3 },
+                        quantityRange: [1, 1]
+                    }
+                ]
+            }
         },
 
         // Volcanic Region Monsters
@@ -493,7 +835,43 @@ const MonsterData = {
             evolvesTo: ["inferno_bat"],
             evolutionItems: ["fire_gem"],
             breedsWith: ["bat", "fire_sprite"],
-            areas: ["volcanic_region", "fire_caves"]
+            areas: ["volcanic_region", "fire_caves"],
+            lootTable: {
+                level: 15,
+                goldRange: [28, 55],
+                drops: [
+                    {
+                        itemType: "flame_wing",
+                        dropChance: 0.48,
+                        rarityWeights: { uncommon: 0.5, rare: 0.35, epic: 0.15 },
+                        quantityRange: [1, 2]
+                    },
+                    {
+                        itemType: "fire_essence",
+                        dropChance: 0.40,
+                        rarityWeights: { uncommon: 0.45, rare: 0.4, epic: 0.15 },
+                        quantityRange: [1, 3]
+                    },
+                    {
+                        itemType: "flame_equipment",
+                        dropChance: 0.32,
+                        rarityWeights: { uncommon: 0.4, rare: 0.45, epic: 0.15 },
+                        equipmentTypes: ["flame_cloak", "heat_armor", "fire_amulet"]
+                    },
+                    {
+                        itemType: "fire_resistance_potion",
+                        dropChance: 0.25,
+                        rarityWeights: { common: 0.4, uncommon: 0.45, rare: 0.15 },
+                        quantityRange: [1, 2]
+                    },
+                    {
+                        itemType: "spell_scroll",
+                        dropChance: 0.20,
+                        rarityWeights: { uncommon: 0.45, rare: 0.4, epic: 0.15 },
+                        spellTypes: ["fire_magic", "flight_spells", "heat_magic"]
+                    }
+                ]
+            }
         },
 
         salamander: {
@@ -514,7 +892,43 @@ const MonsterData = {
             evolvesTo: ["fire_dragon"],
             evolutionItems: ["dragon_scale"],
             breedsWith: ["salamander", "fire_sprite"],
-            areas: ["volcanic_region", "lava_tubes"]
+            areas: ["volcanic_region", "lava_tubes"],
+            lootTable: {
+                level: 16,
+                goldRange: [30, 60],
+                drops: [
+                    {
+                        itemType: "molten_scale",
+                        dropChance: 0.50,
+                        rarityWeights: { uncommon: 0.4, rare: 0.4, epic: 0.2 },
+                        quantityRange: [2, 4]
+                    },
+                    {
+                        itemType: "fire_crystal",
+                        dropChance: 0.42,
+                        rarityWeights: { uncommon: 0.35, rare: 0.45, epic: 0.2 },
+                        quantityRange: [1, 3]
+                    },
+                    {
+                        itemType: "fire_equipment",
+                        dropChance: 0.35,
+                        rarityWeights: { uncommon: 0.35, rare: 0.5, epic: 0.15 },
+                        equipmentTypes: ["salamander_armor", "flame_sword", "heat_shield"]
+                    },
+                    {
+                        itemType: "fire_immunity_potion",
+                        dropChance: 0.28,
+                        rarityWeights: { uncommon: 0.5, rare: 0.4, epic: 0.1 },
+                        quantityRange: [1, 2]
+                    },
+                    {
+                        itemType: "spell_scroll",
+                        dropChance: 0.22,
+                        rarityWeights: { uncommon: 0.4, rare: 0.45, epic: 0.15 },
+                        spellTypes: ["flame_breath", "fire_mastery", "dragon_magic"]
+                    }
+                ]
+            }
         },
 
         lava_golem: {
@@ -535,7 +949,49 @@ const MonsterData = {
             evolvesTo: [],
             evolutionItems: [],
             breedsWith: [],
-            areas: ["volcanic_region", "lava_chambers"]
+            areas: ["volcanic_region", "lava_chambers"],
+            lootTable: {
+                level: 32,
+                goldRange: [80, 160],
+                drops: [
+                    {
+                        itemType: "molten_core",
+                        dropChance: 0.80,
+                        rarityWeights: { rare: 0.4, epic: 0.5, legendary: 0.1 },
+                        quantityRange: [1, 2]
+                    },
+                    {
+                        itemType: "lava_crystal",
+                        dropChance: 0.65,
+                        rarityWeights: { rare: 0.35, epic: 0.5, legendary: 0.15 },
+                        quantityRange: [2, 4]
+                    },
+                    {
+                        itemType: "volcanic_equipment",
+                        dropChance: 0.55,
+                        rarityWeights: { rare: 0.25, epic: 0.6, legendary: 0.15 },
+                        equipmentTypes: ["molten_armor", "lava_gauntlets", "volcanic_shield"]
+                    },
+                    {
+                        itemType: "fire_immunity_stone",
+                        dropChance: 0.45,
+                        rarityWeights: { epic: 0.7, legendary: 0.3 },
+                        quantityRange: [1, 1]
+                    },
+                    {
+                        itemType: "spell_tome",
+                        dropChance: 0.35,
+                        rarityWeights: { rare: 0.3, epic: 0.55, legendary: 0.15 },
+                        spellTypes: ["lava_magic", "eruption_spells", "golem_creation"]
+                    },
+                    {
+                        itemType: "legendary_material",
+                        dropChance: 0.25,
+                        rarityWeights: { epic: 0.6, legendary: 0.4 },
+                        quantityRange: [1, 2]
+                    }
+                ]
+            }
         },
 
         // Dragon Peak Monsters
@@ -557,7 +1013,49 @@ const MonsterData = {
             evolvesTo: ["elder_wyvern"],
             evolutionItems: ["sky_gem"],
             breedsWith: ["dragon_whelp", "wyvern"],
-            areas: ["dragon_peak", "sky_fortress"]
+            areas: ["dragon_peak", "sky_fortress"],
+            lootTable: {
+                level: 30,
+                goldRange: [100, 200],
+                drops: [
+                    {
+                        itemType: "wyvern_scale",
+                        dropChance: 0.85,
+                        rarityWeights: { rare: 0.3, epic: 0.5, legendary: 0.2 },
+                        quantityRange: [2, 5]
+                    },
+                    {
+                        itemType: "sky_gem",
+                        dropChance: 0.60,
+                        rarityWeights: { epic: 0.6, legendary: 0.4 },
+                        quantityRange: [1, 2]
+                    },
+                    {
+                        itemType: "dragon_equipment",
+                        dropChance: 0.50,
+                        rarityWeights: { rare: 0.2, epic: 0.6, legendary: 0.2 },
+                        equipmentTypes: ["wyvern_armor", "sky_rider_helm", "wind_blade"]
+                    },
+                    {
+                        itemType: "wind_essence",
+                        dropChance: 0.45,
+                        rarityWeights: { rare: 0.4, epic: 0.5, legendary: 0.1 },
+                        quantityRange: [1, 3]
+                    },
+                    {
+                        itemType: "spell_tome",
+                        dropChance: 0.40,
+                        rarityWeights: { rare: 0.25, epic: 0.6, legendary: 0.15 },
+                        spellTypes: ["wind_mastery", "flight_magic", "dragon_breath"]
+                    },
+                    {
+                        itemType: "legendary_material",
+                        dropChance: 0.30,
+                        rarityWeights: { epic: 0.5, legendary: 0.5 },
+                        quantityRange: [1, 2]
+                    }
+                ]
+            }
         },
 
         fire_drake: {
@@ -578,7 +1076,49 @@ const MonsterData = {
             evolvesTo: ["fire_dragon"],
             evolutionItems: ["ancient_flame"],
             breedsWith: ["dragon_whelp", "salamander"],
-            areas: ["dragon_peak", "ancient_ruins"]
+            areas: ["dragon_peak", "ancient_ruins"],
+            lootTable: {
+                level: 35,
+                goldRange: [150, 300],
+                drops: [
+                    {
+                        itemType: "drake_scale",
+                        dropChance: 0.90,
+                        rarityWeights: { rare: 0.2, epic: 0.6, legendary: 0.2 },
+                        quantityRange: [3, 6]
+                    },
+                    {
+                        itemType: "dragon_flame",
+                        dropChance: 0.70,
+                        rarityWeights: { epic: 0.5, legendary: 0.5 },
+                        quantityRange: [1, 3]
+                    },
+                    {
+                        itemType: "draconic_equipment",
+                        dropChance: 0.60,
+                        rarityWeights: { epic: 0.4, legendary: 0.6 },
+                        equipmentTypes: ["dragonfire_armor", "flame_claw_gauntlets", "drake_crown"]
+                    },
+                    {
+                        itemType: "ancient_flame",
+                        dropChance: 0.50,
+                        rarityWeights: { epic: 0.3, legendary: 0.7 },
+                        quantityRange: [1, 2]
+                    },
+                    {
+                        itemType: "spell_tome",
+                        dropChance: 0.45,
+                        rarityWeights: { epic: 0.4, legendary: 0.6 },
+                        spellTypes: ["dragonfire_mastery", "ancient_flame_magic", "draconic_arts"]
+                    },
+                    {
+                        itemType: "legendary_material",
+                        dropChance: 0.35,
+                        rarityWeights: { legendary: 1.0 },
+                        quantityRange: [1, 3]
+                    }
+                ]
+            }
         },
 
         ancient_dragon: {
@@ -606,37 +1146,37 @@ const MonsterData = {
                 drops: [
                     {
                         itemType: "dragon_scale",
-                        dropChance: 0.95,
+                        dropChance: 0.85,
                         rarityWeights: { rare: 0.3, epic: 0.5, legendary: 0.2 },
                         quantityRange: [3, 8]
                     },
                     {
                         itemType: "dragon_heart",
-                        dropChance: 0.8,
+                        dropChance: 0.65,
                         rarityWeights: { epic: 0.6, legendary: 0.4 },
                         quantityRange: [1, 1]
                     },
                     {
                         itemType: "legendary_equipment",
-                        dropChance: 0.7,
+                        dropChance: 0.50,
                         rarityWeights: { epic: 0.4, legendary: 0.6 },
                         equipmentTypes: ["dragonslayer_sword", "ancient_armor", "time_amulet"]
                     },
                     {
                         itemType: "ancient_tome",
-                        dropChance: 0.6,
+                        dropChance: 0.40,
                         rarityWeights: { rare: 0.2, epic: 0.4, legendary: 0.4 },
                         spellTypes: ["time_magic", "dragon_magic", "ancient_arts"]
                     },
                     {
                         itemType: "dragon_essence",
-                        dropChance: 0.5,
+                        dropChance: 0.35,
                         rarityWeights: { epic: 0.7, legendary: 0.3 },
                         quantityRange: [2, 5]
                     },
                     {
                         itemType: "legendary_gem",
-                        dropChance: 0.25,
+                        dropChance: 0.20,
                         rarityWeights: { legendary: 1.0 },
                         quantityRange: [1, 2]
                     }
@@ -663,7 +1203,43 @@ const MonsterData = {
             evolvesTo: ["forest_guardian"],
             evolutionItems: ["nature_crystal"],
             breedsWith: ["fairy", "unicorn"],
-            areas: ["mystic_grove", "enchanted_forest"]
+            areas: ["mystic_grove", "enchanted_forest"],
+            lootTable: {
+                level: 20,
+                goldRange: [40, 80],
+                drops: [
+                    {
+                        itemType: "nature_essence",
+                        dropChance: 0.55,
+                        rarityWeights: { uncommon: 0.4, rare: 0.45, epic: 0.15 },
+                        quantityRange: [1, 3]
+                    },
+                    {
+                        itemType: "sprite_dust",
+                        dropChance: 0.45,
+                        rarityWeights: { uncommon: 0.5, rare: 0.4, epic: 0.1 },
+                        quantityRange: [2, 4]
+                    },
+                    {
+                        itemType: "nature_equipment",
+                        dropChance: 0.35,
+                        rarityWeights: { uncommon: 0.4, rare: 0.45, epic: 0.15 },
+                        equipmentTypes: ["nature_staff", "grove_robe", "healing_amulet"]
+                    },
+                    {
+                        itemType: "healing_herb",
+                        dropChance: 0.40,
+                        rarityWeights: { common: 0.4, uncommon: 0.45, rare: 0.15 },
+                        quantityRange: [2, 5]
+                    },
+                    {
+                        itemType: "spell_scroll",
+                        dropChance: 0.28,
+                        rarityWeights: { uncommon: 0.5, rare: 0.4, epic: 0.1 },
+                        spellTypes: ["nature_magic", "healing_spells", "growth_magic"]
+                    }
+                ]
+            }
         },
 
         fairy: {

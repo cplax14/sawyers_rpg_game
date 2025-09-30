@@ -146,6 +146,12 @@ export interface ReactGameState {
     species: string;
     level: number;
   } | null;
+  showVictoryModal: boolean;
+  lastCombatRewards: {
+    experience: number;
+    gold: number;
+    items: ReactItem[];
+  } | null;
 
   // Game session data
   sessionStartTime: number;
@@ -239,7 +245,9 @@ export type ReactGameAction =
   | { type: 'SAVE_TO_SLOT'; payload: { slotId: number; data: SaveSlot } }
   | { type: 'LOAD_FROM_SLOT'; payload: number }
   | { type: 'START_COMBAT'; payload: { species: string; level: number } }
-  | { type: 'END_COMBAT' }
+  | { type: 'END_COMBAT'; payload: { experience: number; gold: number; items: ReactItem[] } }
+  | { type: 'SHOW_VICTORY_MODAL'; payload: boolean }
+  | { type: 'HIDE_VICTORY_MODAL' }
   | { type: 'RESET_GAME' }
   // New inventory system actions
   | { type: 'UPDATE_INVENTORY_STATE'; payload: InventoryState }
@@ -288,6 +296,8 @@ const initialState: ReactGameState = {
   currentScreen: 'menu',
   error: null,
   currentEncounter: null,
+  showVictoryModal: false,
+  lastCombatRewards: null,
   sessionStartTime: Date.now(),
   totalPlayTime: 0,
   settings: defaultSettings,
@@ -339,6 +349,13 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         },
         spells: [],
       };
+      console.log('🔍 CREATE_PLAYER Debug:', {
+        newPlayer,
+        experience: newPlayer.experience,
+        experienceType: typeof newPlayer.experience,
+        gold: newPlayer.gold,
+        goldType: typeof newPlayer.gold
+      });
       return {
         ...state,
         player: newPlayer,
@@ -349,9 +366,15 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
 
     case 'UPDATE_PLAYER':
       if (!state.player) return state;
+      const updatedPlayerData = { ...state.player, ...action.payload };
+      console.log('🔍 UPDATE_PLAYER Debug:', {
+        originalPlayer: { experience: state.player.experience, gold: state.player.gold },
+        updatePayload: action.payload,
+        updatedPlayer: { experience: updatedPlayerData.experience, gold: updatedPlayerData.gold }
+      });
       return {
         ...state,
-        player: { ...state.player, ...action.payload },
+        player: updatedPlayerData,
       };
 
     case 'CHANGE_AREA':
@@ -451,13 +474,6 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         storyFlags: { ...state.storyFlags, ...action.payload },
       };
 
-    case 'COMPLETE_QUEST':
-      if (state.completedQuests.includes(action.payload)) return state;
-      return {
-        ...state,
-        completedQuests: [...state.completedQuests, action.payload],
-      };
-
     case 'UPDATE_SETTINGS':
       return {
         ...state,
@@ -477,7 +493,16 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
       };
 
     case 'LOAD_GAME_DATA':
-      return { ...state, ...action.payload };
+      console.log('🔍 LOAD_GAME_DATA Debug:', {
+        currentPlayerData: state.player ? { experience: state.player.experience, gold: state.player.gold } : 'No player',
+        payloadPlayerData: action.payload.player ? { experience: action.payload.player.experience, gold: action.payload.player.gold } : 'No player in payload',
+        fullPayload: action.payload
+      });
+      const newState = { ...state, ...action.payload };
+      console.log('🔍 LOAD_GAME_DATA Result:', {
+        newPlayerData: newState.player ? { experience: newState.player.experience, gold: newState.player.gold } : 'No player'
+      });
+      return newState;
 
     case 'START_COMBAT':
       return {
@@ -487,9 +512,69 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
       };
 
     case 'END_COMBAT':
+      // Validate payload exists
+      if (!action.payload) {
+        console.error('END_COMBAT action dispatched without payload');
+        return state;
+      }
+      const { experience, gold, items } = action.payload;
+
+      // Add experience and gold to player
+      let updatedPlayerFromCombat = state.player;
+      if (updatedPlayerFromCombat) {
+        updatedPlayerFromCombat = {
+          ...updatedPlayerFromCombat,
+          experience: updatedPlayerFromCombat.experience + experience,
+          gold: updatedPlayerFromCombat.gold + gold
+        };
+
+        // Check for level up
+        while (updatedPlayerFromCombat.experience >= updatedPlayerFromCombat.experienceToNext && updatedPlayerFromCombat.level < 100) {
+          updatedPlayerFromCombat = {
+            ...updatedPlayerFromCombat,
+            level: updatedPlayerFromCombat.level + 1,
+            experienceToNext: (updatedPlayerFromCombat.level + 1) * 100,
+            maxHp: updatedPlayerFromCombat.maxHp + 10,
+            maxMp: updatedPlayerFromCombat.maxMp + 5,
+            hp: updatedPlayerFromCombat.maxHp + 10,
+            mp: updatedPlayerFromCombat.maxMp + 5
+          };
+        }
+      }
+
+      // Add items to inventory
+      const updatedInventoryFromCombat = [...state.inventory];
+      items.forEach(newItem => {
+        const existingItemIndex = updatedInventoryFromCombat.findIndex(item => item.id === newItem.id);
+        if (existingItemIndex !== -1) {
+          updatedInventoryFromCombat[existingItemIndex].quantity += newItem.quantity;
+        } else {
+          updatedInventoryFromCombat.push(newItem);
+        }
+      });
+
       return {
         ...state,
-        currentEncounter: null
+        player: updatedPlayerFromCombat,
+        inventory: updatedInventoryFromCombat,
+        currentEncounter: null,
+        showVictoryModal: true,
+        lastCombatRewards: { experience, gold, items },
+        // Keep current screen as 'combat' to show victory modal, let VictoryModal handle navigation
+        currentScreen: state.currentScreen
+      };
+
+    case 'SHOW_VICTORY_MODAL':
+      return {
+        ...state,
+        showVictoryModal: action.payload
+      };
+
+    case 'HIDE_VICTORY_MODAL':
+      return {
+        ...state,
+        showVictoryModal: false,
+        lastCombatRewards: null
       };
 
     case 'LEVEL_UP_PLAYER':
@@ -516,7 +601,14 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
 
     case 'ADD_EXPERIENCE':
       if (!state.player) return state;
+      console.log('🔍 ADD_EXPERIENCE Debug:', {
+        currentExp: state.player.experience,
+        currentExpType: typeof state.player.experience,
+        incomingExp: action.payload.experience,
+        incomingExpType: typeof action.payload.experience
+      });
       const newExp = state.player.experience + action.payload.experience;
+      console.log('🔍 ADD_EXPERIENCE Result:', { newExp, isNaN: isNaN(newExp) });
       let updatedPlayer = { ...state.player, experience: newExp };
 
       // Check for level up
@@ -545,11 +637,19 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
 
     case 'ADD_GOLD':
       if (!state.player) return state;
+      console.log('🔍 ADD_GOLD Debug:', {
+        currentGold: state.player.gold,
+        currentGoldType: typeof state.player.gold,
+        incomingGold: action.payload.gold,
+        incomingGoldType: typeof action.payload.gold
+      });
+      const newGold = state.player.gold + action.payload.gold;
+      console.log('🔍 ADD_GOLD Result:', { newGold, isNaN: isNaN(newGold) });
       return {
         ...state,
         player: {
           ...state.player,
-          gold: state.player.gold + action.payload.gold
+          gold: newGold
         },
       };
 
@@ -616,7 +716,10 @@ interface ReactGameContextType {
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   startCombat: (species: string, level: number) => void;
-  endCombat: () => void;
+  endCombat: (rewards: { experience: number; gold: number; items: ReactItem[] }) => void;
+  showVictoryModal: () => void;
+  hideVictoryModal: () => void;
+  generateCombatRewards: (enemyLevel: number) => { experience: number; gold: number; items: ReactItem[] };
   resetGame: () => void;
 
   // New inventory system functions
@@ -759,8 +862,136 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
     dispatch({ type: 'START_COMBAT', payload: { species, level } });
   };
 
-  const endCombat = () => {
-    dispatch({ type: 'END_COMBAT' });
+  const endCombat = (rewards: { experience: number; gold: number; items: ReactItem[] }) => {
+    dispatch({ type: 'END_COMBAT', payload: rewards });
+  };
+
+  const showVictoryModal = () => {
+    dispatch({ type: 'SHOW_VICTORY_MODAL', payload: true });
+  };
+
+  const hideVictoryModal = () => {
+    dispatch({ type: 'HIDE_VICTORY_MODAL' });
+  };
+
+  // Item database for loot generation
+  const ITEM_DATABASE: { [key: string]: Omit<ReactItem, 'quantity'> } = {
+    health_potion: {
+      id: 'health_potion',
+      name: 'Health Potion',
+      description: 'Restores 50 HP when used.',
+      type: 'consumable',
+      rarity: 'common',
+      value: 25,
+      icon: '🧪'
+    },
+    mana_potion: {
+      id: 'mana_potion',
+      name: 'Mana Potion',
+      description: 'Restores 30 MP when used.',
+      type: 'consumable',
+      rarity: 'common',
+      value: 20,
+      icon: '💙'
+    },
+    stamina_potion: {
+      id: 'stamina_potion',
+      name: 'Stamina Potion',
+      description: 'Restores stamina and reduces fatigue.',
+      type: 'consumable',
+      rarity: 'common',
+      value: 18,
+      icon: '💪'
+    },
+    goblin_tooth: {
+      id: 'goblin_tooth',
+      name: 'Goblin Tooth',
+      description: 'Sharp tooth from a goblin. Used in crafting.',
+      type: 'material',
+      rarity: 'common',
+      value: 5,
+      icon: '🦷'
+    },
+    wolf_fang: {
+      id: 'wolf_fang',
+      name: 'Wolf Fang',
+      description: 'Curved fang from a wolf. Prized for weapon enhancement.',
+      type: 'material',
+      rarity: 'uncommon',
+      value: 25,
+      icon: '🔪'
+    },
+    wolf_pelt: {
+      id: 'wolf_pelt',
+      name: 'Wolf Pelt',
+      description: 'Thick fur from a wolf. Excellent for armor crafting.',
+      type: 'material',
+      rarity: 'uncommon',
+      value: 30,
+      icon: '🧥'
+    },
+    leather_scraps: {
+      id: 'leather_scraps',
+      name: 'Leather Scraps',
+      description: 'Small pieces of leather from various creatures.',
+      type: 'material',
+      rarity: 'common',
+      value: 8,
+      icon: '🟤'
+    },
+    repair_kit: {
+      id: 'repair_kit',
+      name: 'Repair Kit',
+      description: 'Tools for maintaining weapons and armor.',
+      type: 'material',
+      rarity: 'common',
+      value: 30,
+      icon: '🔧'
+    },
+    healing_herb: {
+      id: 'healing_herb',
+      name: 'Healing Herb',
+      description: 'A common medicinal plant found in forests.',
+      type: 'material',
+      rarity: 'common',
+      value: 5,
+      icon: '🌿'
+    }
+  };
+
+  const generateCombatRewards = (enemyLevel: number = 1) => {
+    const baseExp = enemyLevel * 8;
+    const baseGold = enemyLevel * 5 + Math.floor(Math.random() * 10);
+
+    // Generate random items
+    const items: ReactItem[] = [];
+    const itemIds = Object.keys(ITEM_DATABASE);
+
+    // 70% chance for a common item
+    if (Math.random() < 0.7) {
+      const commonItems = itemIds.filter(id => ITEM_DATABASE[id].rarity === 'common');
+      if (commonItems.length > 0) {
+        const randomItem = commonItems[Math.floor(Math.random() * commonItems.length)];
+        const itemData = ITEM_DATABASE[randomItem];
+        items.push({ ...itemData, quantity: 1 });
+      }
+    }
+
+    // 25% chance for an uncommon item
+    if (Math.random() < 0.25) {
+      const uncommonItems = itemIds.filter(id => ITEM_DATABASE[id].rarity === 'uncommon');
+      if (uncommonItems.length > 0) {
+        const randomItem = uncommonItems[Math.floor(Math.random() * uncommonItems.length)];
+        const itemData = ITEM_DATABASE[randomItem];
+        items.push({ ...itemData, quantity: 1 });
+      }
+    }
+
+    return {
+      experience: baseExp,
+      gold: baseGold,
+      items
+    };
   };
 
   const resetGame = () => {
@@ -831,6 +1062,9 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
     setError,
     startCombat,
     endCombat,
+    showVictoryModal,
+    hideVictoryModal,
+    generateCombatRewards,
     resetGame,
     updateGameState,
     updateInventoryState,

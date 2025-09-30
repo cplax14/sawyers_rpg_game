@@ -329,6 +329,16 @@ const ItemData = {
             value: 20,
             icon: "💙"
         },
+        stamina_potion: {
+            name: "Stamina Potion",
+            description: "Restores stamina and reduces fatigue.",
+            type: "consumable",
+            category: "restoration",
+            rarity: "common",
+            effect: { type: "restore_stamina", amount: 40 },
+            value: 18,
+            icon: "💪"
+        },
         hi_potion: {
             name: "Hi-Potion",
             description: "Restores 150 HP when used.",
@@ -681,6 +691,16 @@ const ItemData = {
             craftingUse: ["armor_crafting", "clothing"],
             value: 30,
             icon: "🧥"
+        },
+        leather_scraps: {
+            name: "Leather Scraps",
+            description: "Small pieces of leather from various creatures.",
+            type: "material",
+            category: "monster_part",
+            rarity: "common",
+            craftingUse: ["armor_crafting", "repair"],
+            value: 8,
+            icon: "🟤"
         },
         orc_tusk: {
             name: "Orc Tusk",

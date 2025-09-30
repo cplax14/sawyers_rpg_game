@@ -527,8 +527,11 @@ class GameWorldUI extends BaseUIModule {
 
             // Update action buttons
             this.updateAreaActionButtons(areaId, areaData);
+
+            // Update loot preview
+            this.updateLootPreview(areaId, areaData);
         }
-        
+
         console.log(`📋 Displayed area details for: ${areaId}`);
     }
 
@@ -1275,6 +1278,795 @@ class GameWorldUI extends BaseUIModule {
             `;
             document.head.appendChild(hintStyles);
         }
+
+        // Add loot preview styles
+        if (!document.getElementById('loot-preview-styles')) {
+            const lootStyles = document.createElement('style');
+            lootStyles.id = 'loot-preview-styles';
+            lootStyles.textContent = `
+                /* Loot Preview Styles */
+                .area-loot-preview {
+                    margin: 10px 0;
+                    border: 1px solid #ddd;
+                    border-radius: 5px;
+                    background: #f9f9f9;
+                }
+
+                .loot-preview-section {
+                    padding: 10px;
+                }
+
+                .loot-header {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    font-weight: bold;
+                    margin-bottom: 8px;
+                    cursor: pointer;
+                    padding: 4px 0;
+                    border-radius: 3px;
+                    transition: background-color 0.2s;
+                }
+
+                .loot-header:hover {
+                    background-color: #e9e9e9;
+                }
+
+                .loot-icon {
+                    margin-right: 8px;
+                    font-size: 1.2em;
+                }
+
+                .loot-title {
+                    flex: 1;
+                    color: #2c3e50;
+                }
+
+                .loot-toggle {
+                    font-size: 0.9em;
+                    color: #666;
+                    transition: transform 0.2s;
+                }
+
+                .loot-summary {
+                    margin-bottom: 10px;
+                }
+
+                .loot-stats {
+                    display: flex;
+                    gap: 15px;
+                    margin-bottom: 8px;
+                    flex-wrap: wrap;
+                }
+
+                .stat-item {
+                    display: flex;
+                    gap: 4px;
+                    align-items: center;
+                }
+
+                .stat-label {
+                    font-size: 0.9em;
+                    color: #666;
+                }
+
+                .stat-value {
+                    font-weight: bold;
+                    color: #2c3e50;
+                }
+
+                .featured-items {
+                    display: flex;
+                    gap: 6px;
+                    flex-wrap: wrap;
+                }
+
+                .featured-item {
+                    padding: 2px 8px;
+                    border-radius: 12px;
+                    font-size: 0.8em;
+                    font-weight: 500;
+                    color: white;
+                    text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+                }
+
+                .featured-item.common { background: #9e9e9e; }
+                .featured-item.uncommon { background: #4caf50; }
+                .featured-item.rare { background: #2196f3; }
+                .featured-item.epic { background: #9c27b0; }
+                .featured-item.legendary { background: #ff9800; }
+
+                .loot-details {
+                    border-top: 1px solid #ddd;
+                    padding-top: 10px;
+                    margin-top: 10px;
+                }
+
+                .loot-categories {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                }
+
+                .loot-category {
+                    background: #fff;
+                    border: 1px solid #e0e0e0;
+                    border-radius: 4px;
+                    padding: 8px;
+                }
+
+                .category-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 6px;
+                }
+
+                .category-name {
+                    font-weight: bold;
+                    color: #2c3e50;
+                }
+
+                .category-chance {
+                    font-weight: bold;
+                    color: #27ae60;
+                    font-size: 0.9em;
+                }
+
+                .category-details {
+                    font-size: 0.85em;
+                    color: #666;
+                    line-height: 1.4;
+                }
+
+                .rarity-distribution {
+                    display: flex;
+                    gap: 4px;
+                    margin-bottom: 4px;
+                }
+
+                .rarity-badge {
+                    display: inline-block;
+                    width: 20px;
+                    height: 20px;
+                    border-radius: 50%;
+                    text-align: center;
+                    line-height: 20px;
+                    font-size: 0.7em;
+                    font-weight: bold;
+                    color: white;
+                    text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+                }
+
+                .rarity-badge.common { background: #9e9e9e; }
+                .rarity-badge.uncommon { background: #4caf50; }
+                .rarity-badge.rare { background: #2196f3; }
+                .rarity-badge.epic { background: #9c27b0; }
+                .rarity-badge.legendary { background: #ff9800; }
+
+                .quantity-range, .item-examples, .equipment-types {
+                    margin: 2px 0;
+                }
+
+                .exploration-bonus {
+                    color: #2980b9;
+                    font-style: italic;
+                    margin-top: 4px;
+                }
+
+                .area-bonus-section {
+                    border-top: 1px solid #ddd;
+                    padding-top: 8px;
+                    margin-top: 8px;
+                }
+
+                .bonus-header {
+                    font-weight: bold;
+                    color: #8e44ad;
+                    margin-bottom: 6px;
+                    font-size: 0.9em;
+                }
+
+                .bonus-list {
+                    display: flex;
+                    gap: 6px;
+                    flex-wrap: wrap;
+                }
+
+                .bonus-tag {
+                    background: linear-gradient(135deg, #8e44ad, #9b59b6);
+                    color: white;
+                    padding: 2px 8px;
+                    border-radius: 10px;
+                    font-size: 0.75em;
+                    font-weight: 500;
+                    text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+                }
+
+                .exploration-section {
+                    border-top: 1px solid #ddd;
+                    padding-top: 8px;
+                    margin-top: 8px;
+                }
+
+                .exploration-header {
+                    display: flex;
+                    align-items: center;
+                    font-weight: bold;
+                    color: #16a085;
+                    margin-bottom: 6px;
+                    font-size: 0.9em;
+                }
+
+                .exploration-icon {
+                    margin-right: 6px;
+                }
+
+                .exploration-types {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                    gap: 6px;
+                }
+
+                .exploration-type {
+                    background: #ecf0f1;
+                    border: 1px solid #bdc3c7;
+                    border-radius: 4px;
+                    padding: 6px;
+                    text-align: center;
+                    cursor: help;
+                    transition: background-color 0.2s;
+                }
+
+                .exploration-type:hover {
+                    background: #d5dbdb;
+                }
+
+                .type-name {
+                    display: block;
+                    font-size: 0.8em;
+                    font-weight: 500;
+                    color: #2c3e50;
+                    margin-bottom: 2px;
+                }
+
+                .type-modifier {
+                    display: block;
+                    font-size: 0.7em;
+                    color: #16a085;
+                    font-weight: bold;
+                }
+
+                .no-loot-message {
+                    color: #7f8c8d;
+                    font-style: italic;
+                    text-align: center;
+                    padding: 20px;
+                    background: #f8f9fa;
+                    border-radius: 4px;
+                    border: 1px dashed #bdc3c7;
+                }
+
+                /* Responsive design for smaller screens */
+                @media (max-width: 600px) {
+                    .loot-stats {
+                        flex-direction: column;
+                        gap: 8px;
+                    }
+
+                    .exploration-types {
+                        grid-template-columns: 1fr;
+                    }
+
+                    .featured-items {
+                        justify-content: center;
+                    }
+                }
+            `;
+            document.head.appendChild(lootStyles);
+        }
+    }
+
+    /**
+     * Update loot preview for the selected area
+     */
+    updateLootPreview(areaId, areaData) {
+        // Get or create loot preview container
+        let lootContainer = document.getElementById('area-loot-preview');
+        if (!lootContainer) {
+            lootContainer = this.createLootPreviewContainer();
+        }
+
+        if (!lootContainer) return; // Failed to create or find container
+
+        // Clear previous content
+        lootContainer.innerHTML = '';
+
+        const gs = this.gameState || this.getGameReference('gameState');
+        const playerLevel = gs?.player?.level || 1;
+
+        // Check if area has loot table
+        if (!areaData.lootTable || !areaData.lootTable.drops) {
+            this.displayNoLootMessage(lootContainer);
+            lootContainer.style.display = 'block';
+            return;
+        }
+
+        // Generate loot preview
+        this.displayLootPreview(lootContainer, areaData.lootTable, playerLevel, areaId);
+        lootContainer.style.display = 'block';
+    }
+
+    /**
+     * Create loot preview container if it doesn't exist
+     */
+    createLootPreviewContainer() {
+        const areaInfo = document.getElementById('area-info');
+        if (!areaInfo) return null;
+
+        const container = document.createElement('div');
+        container.id = 'area-loot-preview';
+        container.className = 'area-loot-preview';
+
+        // Insert after progression section or at the end
+        const progressContainer = document.getElementById('area-progression');
+        if (progressContainer && progressContainer.nextSibling) {
+            areaInfo.insertBefore(container, progressContainer.nextSibling);
+        } else {
+            areaInfo.appendChild(container);
+        }
+
+        return container;
+    }
+
+    /**
+     * Display message when no loot is available
+     */
+    displayNoLootMessage(container) {
+        const noLootDiv = document.createElement('div');
+        noLootDiv.className = 'loot-preview-section';
+        noLootDiv.innerHTML = `
+            <div class="loot-header">
+                <span class="loot-icon">📦</span>
+                <span class="loot-title">Potential Loot</span>
+            </div>
+            <div class="no-loot-message">
+                This area has no special loot to discover.
+            </div>
+        `;
+        container.appendChild(noLootDiv);
+    }
+
+    /**
+     * Display comprehensive loot preview with drop chances and rarity information
+     */
+    displayLootPreview(container, lootTable, playerLevel, areaId) {
+        const lootDiv = document.createElement('div');
+        lootDiv.className = 'loot-preview-section';
+
+        // Header with toggle functionality
+        const header = document.createElement('div');
+        header.className = 'loot-header';
+        header.innerHTML = `
+            <span class="loot-icon">💎</span>
+            <span class="loot-title">Potential Loot</span>
+            <span class="loot-toggle" title="Toggle detailed view">⬇️</span>
+        `;
+
+        // Make header clickable to toggle detailed view
+        this.addEventListener(header, 'click', () => {
+            this.toggleLootDetails(container);
+        });
+
+        lootDiv.appendChild(header);
+
+        // Loot summary (always visible)
+        const summary = this.createLootSummary(lootTable, playerLevel);
+        lootDiv.appendChild(summary);
+
+        // Detailed loot breakdown (initially hidden)
+        const details = this.createLootDetails(lootTable, playerLevel, areaId);
+        details.style.display = 'none';
+        details.className = 'loot-details';
+        lootDiv.appendChild(details);
+
+        // Exploration bonuses section
+        if (lootTable.areaBonus) {
+            const bonusSection = this.createAreaBonusSection(lootTable.areaBonus);
+            lootDiv.appendChild(bonusSection);
+        }
+
+        // Exploration type modifiers
+        const explorationSection = this.createExplorationTypeSection(lootTable);
+        lootDiv.appendChild(explorationSection);
+
+        container.appendChild(lootDiv);
+    }
+
+    /**
+     * Create loot summary showing overall drop categories and best items
+     */
+    createLootSummary(lootTable, playerLevel) {
+        const summary = document.createElement('div');
+        summary.className = 'loot-summary';
+
+        // Calculate overall drop statistics
+        const stats = this.calculateLootStatistics(lootTable, playerLevel);
+
+        summary.innerHTML = `
+            <div class="loot-stats">
+                <div class="stat-item">
+                    <span class="stat-label">Drop Rate:</span>
+                    <span class="stat-value">${stats.averageDropRate}%</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Loot Types:</span>
+                    <span class="stat-value">${stats.lootTypes}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Best Items:</span>
+                    <span class="stat-value">${stats.bestRarity}</span>
+                </div>
+            </div>
+            <div class="featured-items">
+                ${stats.featuredItems.map(item => `
+                    <span class="featured-item ${item.rarity}">${item.name}</span>
+                `).join('')}
+            </div>
+        `;
+
+        return summary;
+    }
+
+    /**
+     * Create detailed loot breakdown showing all drop categories with probabilities
+     */
+    createLootDetails(lootTable, playerLevel, areaId) {
+        const details = document.createElement('div');
+
+        const detailsContent = document.createElement('div');
+        detailsContent.className = 'loot-categories';
+
+        lootTable.drops.forEach((drop, index) => {
+            const categoryDiv = this.createLootCategoryDetails(drop, playerLevel, index);
+            detailsContent.appendChild(categoryDiv);
+        });
+
+        details.appendChild(detailsContent);
+        return details;
+    }
+
+    /**
+     * Create detailed breakdown for a specific loot category
+     */
+    createLootCategoryDetails(drop, playerLevel, index) {
+        const categoryDiv = document.createElement('div');
+        categoryDiv.className = 'loot-category';
+
+        // Calculate level-adjusted drop chance
+        const adjustedDropChance = this.calculateAdjustedDropChance(drop, playerLevel);
+
+        // Get rarity distribution
+        const rarityInfo = this.formatRarityWeights(drop.rarityWeights);
+
+        categoryDiv.innerHTML = `
+            <div class="category-header">
+                <span class="category-name">${this.formatItemTypeName(drop.itemType)}</span>
+                <span class="category-chance">${(adjustedDropChance * 100).toFixed(1)}%</span>
+            </div>
+            <div class="category-details">
+                <div class="rarity-distribution">
+                    ${rarityInfo.map(rarity => `
+                        <span class="rarity-badge ${rarity.name.toLowerCase()}" title="${rarity.name}: ${rarity.percentage}%">
+                            ${rarity.name.charAt(0)}
+                        </span>
+                    `).join('')}
+                </div>
+                ${drop.quantityRange ? `
+                    <div class="quantity-range">
+                        Quantity: ${drop.quantityRange[0]}-${drop.quantityRange[1]}
+                    </div>
+                ` : ''}
+                ${drop.items ? `
+                    <div class="item-examples">
+                        Examples: ${drop.items.slice(0, 3).map(item => this.formatItemName(item)).join(', ')}
+                        ${drop.items.length > 3 ? '...' : ''}
+                    </div>
+                ` : ''}
+                ${drop.equipmentTypes ? `
+                    <div class="equipment-types">
+                        Equipment: ${drop.equipmentTypes.slice(0, 3).map(type => this.formatItemName(type)).join(', ')}
+                        ${drop.equipmentTypes.length > 3 ? '...' : ''}
+                    </div>
+                ` : ''}
+                ${drop.explorationTypes ? `
+                    <div class="exploration-bonus">
+                        Bonus with: ${drop.explorationTypes.join(', ')} exploration
+                    </div>
+                ` : ''}
+            </div>
+        `;
+
+        return categoryDiv;
+    }
+
+    /**
+     * Create area bonus section showing gold multipliers and special effects
+     */
+    createAreaBonusSection(areaBonus) {
+        const bonusDiv = document.createElement('div');
+        bonusDiv.className = 'area-bonus-section';
+
+        const bonuses = [];
+
+        if (areaBonus.goldMultiplier !== undefined) {
+            bonuses.push(`${(areaBonus.goldMultiplier * 100).toFixed(0)}% Gold`);
+        }
+
+        if (areaBonus.experienceBonus !== undefined) {
+            bonuses.push(`+${(areaBonus.experienceBonus * 100).toFixed(0)}% XP`);
+        }
+
+        if (areaBonus.safetyBonus) {
+            bonuses.push('Safe Zone');
+        }
+
+        if (areaBonus.shopAccess) {
+            bonuses.push('Shop Access');
+        }
+
+        if (areaBonus.environmentType) {
+            bonuses.push(`${this.formatItemTypeName(areaBonus.environmentType)} Theme`);
+        }
+
+        if (bonuses.length > 0) {
+            bonusDiv.innerHTML = `
+                <div class="bonus-header">Area Bonuses</div>
+                <div class="bonus-list">
+                    ${bonuses.map(bonus => `<span class="bonus-tag">${bonus}</span>`).join('')}
+                </div>
+            `;
+        }
+
+        return bonusDiv;
+    }
+
+    /**
+     * Create exploration type section showing different exploration modifiers
+     */
+    createExplorationTypeSection(lootTable) {
+        const explorationDiv = document.createElement('div');
+        explorationDiv.className = 'exploration-section';
+
+        // Get exploration modifiers from loot system if available
+        const explorationTypes = ['standard', 'thorough', 'quick', 'treasure_hunt', 'stealth', 'resource_gathering', 'combat_patrol'];
+        const availableTypes = explorationTypes.filter(type => {
+            return lootTable.drops.some(drop =>
+                !drop.explorationTypes || drop.explorationTypes.includes(type)
+            );
+        });
+
+        explorationDiv.innerHTML = `
+            <div class="exploration-header">
+                <span class="exploration-icon">🔍</span>
+                <span class="exploration-title">Exploration Types</span>
+            </div>
+            <div class="exploration-types">
+                ${availableTypes.map(type => {
+                    const modifiers = this.getExplorationModifierInfo(type);
+                    return `
+                        <div class="exploration-type" title="${modifiers.description}">
+                            <span class="type-name">${this.formatExplorationTypeName(type)}</span>
+                            <span class="type-modifier">${modifiers.summary}</span>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+
+        return explorationDiv;
+    }
+
+    /**
+     * Toggle detailed loot view
+     */
+    toggleLootDetails(container) {
+        const details = container.querySelector('.loot-details');
+        const toggle = container.querySelector('.loot-toggle');
+
+        if (details) {
+            const isHidden = details.style.display === 'none';
+            details.style.display = isHidden ? 'block' : 'none';
+            toggle.textContent = isHidden ? '⬆️' : '⬇️';
+            toggle.title = isHidden ? 'Hide detailed view' : 'Show detailed view';
+        }
+    }
+
+    /**
+     * Calculate loot statistics for summary display
+     */
+    calculateLootStatistics(lootTable, playerLevel) {
+        const stats = {
+            averageDropRate: 0,
+            lootTypes: lootTable.drops.length,
+            bestRarity: 'Common',
+            featuredItems: []
+        };
+
+        let totalDropChance = 0;
+        let bestRarityWeight = 0;
+        const itemTypes = new Set();
+
+        lootTable.drops.forEach(drop => {
+            const adjustedChance = this.calculateAdjustedDropChance(drop, playerLevel);
+            totalDropChance += adjustedChance;
+
+            // Track item types
+            itemTypes.add(drop.itemType);
+
+            // Find best rarity
+            Object.entries(drop.rarityWeights || {}).forEach(([rarity, weight]) => {
+                const rarityOrder = { common: 1, uncommon: 2, rare: 3, epic: 4, legendary: 5 };
+                if (weight > 0.1 && rarityOrder[rarity] > bestRarityWeight) {
+                    bestRarityWeight = rarityOrder[rarity];
+                    stats.bestRarity = rarity.charAt(0).toUpperCase() + rarity.slice(1);
+                }
+            });
+
+            // Add featured items
+            if (drop.items && drop.items.length > 0) {
+                const randomItem = drop.items[Math.floor(Math.random() * drop.items.length)];
+                const bestRarity = this.getBestRarityFromWeights(drop.rarityWeights);
+                stats.featuredItems.push({
+                    name: this.formatItemName(randomItem),
+                    rarity: bestRarity
+                });
+            } else if (drop.equipmentTypes && drop.equipmentTypes.length > 0) {
+                const randomEquip = drop.equipmentTypes[Math.floor(Math.random() * drop.equipmentTypes.length)];
+                const bestRarity = this.getBestRarityFromWeights(drop.rarityWeights);
+                stats.featuredItems.push({
+                    name: this.formatItemName(randomEquip),
+                    rarity: bestRarity
+                });
+            }
+        });
+
+        stats.averageDropRate = Math.round((totalDropChance / lootTable.drops.length) * 100);
+
+        // Limit featured items to 3
+        stats.featuredItems = stats.featuredItems.slice(0, 3);
+
+        return stats;
+    }
+
+    /**
+     * Calculate level-adjusted drop chance
+     */
+    calculateAdjustedDropChance(drop, playerLevel) {
+        // Base drop chance
+        let chance = drop.dropChance || 0;
+
+        // Apply level scaling if available (simple implementation)
+        const recommendedLevel = 1; // Could be extracted from loot table if available
+        const levelDifference = playerLevel - recommendedLevel;
+
+        // Small bonus for higher level players (but not too much)
+        if (levelDifference > 0) {
+            chance *= (1 + (levelDifference * 0.02)); // +2% per level over recommended
+        }
+
+        return Math.min(chance, 1.0); // Cap at 100%
+    }
+
+    /**
+     * Format rarity weights for display
+     */
+    formatRarityWeights(rarityWeights) {
+        if (!rarityWeights) return [];
+
+        return Object.entries(rarityWeights)
+            .filter(([_, weight]) => weight > 0)
+            .map(([rarity, weight]) => ({
+                name: rarity.charAt(0).toUpperCase() + rarity.slice(1),
+                percentage: Math.round(weight * 100)
+            }))
+            .sort((a, b) => {
+                const order = { Common: 1, Uncommon: 2, Rare: 3, Epic: 4, Legendary: 5 };
+                return order[a.name] - order[b.name];
+            });
+    }
+
+    /**
+     * Get the best (highest) rarity from weights
+     */
+    getBestRarityFromWeights(rarityWeights) {
+        if (!rarityWeights) return 'common';
+
+        const rarityOrder = { legendary: 5, epic: 4, rare: 3, uncommon: 2, common: 1 };
+        let bestRarity = 'common';
+        let bestOrder = 0;
+
+        Object.entries(rarityWeights).forEach(([rarity, weight]) => {
+            if (weight > 0.05 && rarityOrder[rarity] > bestOrder) { // 5% threshold
+                bestRarity = rarity;
+                bestOrder = rarityOrder[rarity];
+            }
+        });
+
+        return bestRarity;
+    }
+
+    /**
+     * Format item type names for display
+     */
+    formatItemTypeName(itemType) {
+        return itemType.replace(/_/g, ' ')
+            .replace(/\b\w/g, l => l.toUpperCase());
+    }
+
+    /**
+     * Format item names for display
+     */
+    formatItemName(item) {
+        return item.replace(/_/g, ' ')
+            .replace(/\b\w/g, l => l.toUpperCase());
+    }
+
+    /**
+     * Format exploration type names for display
+     */
+    formatExplorationTypeName(type) {
+        const names = {
+            standard: 'Standard',
+            thorough: 'Thorough',
+            quick: 'Quick',
+            treasure_hunt: 'Treasure Hunt',
+            stealth: 'Stealth',
+            resource_gathering: 'Resource Gathering',
+            combat_patrol: 'Combat Patrol'
+        };
+        return names[type] || type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    }
+
+    /**
+     * Get exploration modifier information
+     */
+    getExplorationModifierInfo(type) {
+        const modifiers = {
+            standard: {
+                summary: '1.0x drops',
+                description: 'Normal exploration with standard loot rates'
+            },
+            thorough: {
+                summary: '1.4x drops',
+                description: 'Careful exploration with increased drop rates and gold'
+            },
+            quick: {
+                summary: '0.7x drops, 0.5x time',
+                description: 'Fast exploration with reduced loot but much faster'
+            },
+            treasure_hunt: {
+                summary: '1.2x rare+',
+                description: 'Focus on finding rare items and hidden caches'
+            },
+            stealth: {
+                summary: '1.3x drops, avoid combat',
+                description: 'Sneaky exploration avoiding most encounters'
+            },
+            resource_gathering: {
+                summary: '1.5x materials',
+                description: 'Focused gathering of crafting materials and resources'
+            },
+            combat_patrol: {
+                summary: '1.2x gold, more encounters',
+                description: 'Aggressive exploration seeking out all encounters'
+            }
+        };
+
+        return modifiers[type] || {
+            summary: '1.0x',
+            description: 'Standard exploration modifiers'
+        };
     }
 
     /**

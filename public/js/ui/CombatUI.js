@@ -1194,10 +1194,7 @@ class CombatUI extends BaseUIModule {
                     // Reset combat state after victory
                     combat.active = false;
                     combat.currentTurn = null;
-                    // Return to world after brief delay
-                    setTimeout(() => {
-                        try { this.sendMessage('showScene', { sceneName: 'game_world' }); } catch(_){ }
-                    }, 500);
+                    // Note: Return to world will be handled when the victory modal is closed
                 }
                 return;
             }
@@ -1901,13 +1898,12 @@ class CombatUI extends BaseUIModule {
         if (expEl) expEl.textContent = `+${rewardInfo.experience || 0} EXP`;
         if (goldEl) goldEl.textContent = `+${rewardInfo.gold || 0} Gold`;
 
-        // Handle items list
+        // Enhanced loot display with rarity-based styling
         if (rewardInfo.items && rewardInfo.items.length > 0) {
             if (itemsEl) {
                 itemsEl.innerHTML = '';
-                rewardInfo.items.forEach(item => {
-                    const itemEl = document.createElement('li');
-                    itemEl.textContent = item;
+                rewardInfo.items.forEach((item, index) => {
+                    const itemEl = this.createLootSummaryItem(item, index);
                     itemsEl.appendChild(itemEl);
                 });
                 itemsEl.style.display = 'block';
@@ -1918,10 +1914,265 @@ class CombatUI extends BaseUIModule {
             if (noItemsEl) noItemsEl.style.display = 'block';
         }
 
+        // Add loot summary statistics
+        this.updateLootSummaryStats(modal, rewardInfo);
+
         // Show modal
         modal.classList.remove('hidden');
         modal.style.display = 'flex';
         modal.focus();
+    }
+
+    /**
+     * Create a styled loot summary item element
+     * @param {string|Object} item - Item name or item object with details
+     * @param {number} index - Item index for animation delay
+     */
+    createLootSummaryItem(item, index = 0) {
+        const itemEl = document.createElement('li');
+        itemEl.className = 'victory-loot-item';
+
+        // Handle both string items and detailed item objects
+        let itemName, itemRarity, itemType, itemDescription;
+        if (typeof item === 'string') {
+            itemName = item;
+            itemRarity = this.determineItemRarity(item);
+            itemType = this.determineItemType(item);
+        } else if (item && typeof item === 'object') {
+            itemName = item.name || item.id || 'Unknown Item';
+            itemRarity = item.rarity || 'common';
+            itemType = item.type || 'item';
+            itemDescription = item.description;
+        }
+
+        // Create item content
+        const itemContent = document.createElement('div');
+        itemContent.className = 'loot-item-content';
+
+        // Create item name with rarity styling
+        const nameEl = document.createElement('span');
+        nameEl.className = `loot-item-name rarity-${itemRarity}`;
+        nameEl.textContent = itemName;
+
+        // Create item type badge if applicable
+        const typeEl = document.createElement('span');
+        typeEl.className = 'loot-item-type';
+        typeEl.textContent = this.formatItemType(itemType);
+
+        // Create rarity indicator
+        const rarityEl = document.createElement('span');
+        rarityEl.className = `loot-rarity-indicator rarity-${itemRarity}`;
+        rarityEl.textContent = this.getRarityIcon(itemRarity);
+        rarityEl.title = `${itemRarity.charAt(0).toUpperCase() + itemRarity.slice(1)} Quality`;
+
+        // Assemble item display
+        itemContent.appendChild(rarityEl);
+        itemContent.appendChild(nameEl);
+        if (itemType && itemType !== 'item') {
+            itemContent.appendChild(typeEl);
+        }
+
+        // Add description if available
+        if (itemDescription) {
+            const descEl = document.createElement('div');
+            descEl.className = 'loot-item-description';
+            descEl.textContent = itemDescription;
+            itemContent.appendChild(descEl);
+        }
+
+        itemEl.appendChild(itemContent);
+
+        // Add acquisition animation with delay
+        itemEl.style.animationDelay = `${index * 0.1}s`;
+        itemEl.classList.add('loot-acquisition-animation');
+
+        return itemEl;
+    }
+
+    /**
+     * Update loot summary statistics in the modal
+     * @param {HTMLElement} modal - The victory modal element
+     * @param {Object} rewardInfo - The reward information
+     */
+    updateLootSummaryStats(modal, rewardInfo) {
+        // Find or create stats section
+        let statsSection = modal.querySelector('.victory-loot-stats');
+        if (!statsSection) {
+            statsSection = document.createElement('div');
+            statsSection.className = 'victory-loot-stats';
+
+            const itemsSection = modal.querySelector('.victory-items-section');
+            if (itemsSection) {
+                itemsSection.appendChild(statsSection);
+            }
+        }
+
+        if (!rewardInfo.items || rewardInfo.items.length === 0) {
+            statsSection.style.display = 'none';
+            return;
+        }
+
+        // Calculate loot statistics
+        const stats = this.calculateLootStats(rewardInfo.items);
+
+        statsSection.innerHTML = `
+            <div class="loot-stats-header">Loot Summary</div>
+            <div class="loot-stats-grid">
+                <div class="loot-stat-item">
+                    <span class="loot-stat-label">Total Items:</span>
+                    <span class="loot-stat-value">${stats.totalItems}</span>
+                </div>
+                <div class="loot-stat-item">
+                    <span class="loot-stat-label">Rarest:</span>
+                    <span class="loot-stat-value rarity-${stats.rarestItem.rarity}">
+                        ${this.getRarityIcon(stats.rarestItem.rarity)} ${stats.rarestItem.rarity}
+                    </span>
+                </div>
+                <div class="loot-stat-item">
+                    <span class="loot-stat-label">Equipment:</span>
+                    <span class="loot-stat-value">${stats.equipmentCount}</span>
+                </div>
+                <div class="loot-stat-item">
+                    <span class="loot-stat-label">Consumables:</span>
+                    <span class="loot-stat-value">${stats.consumableCount}</span>
+                </div>
+            </div>
+        `;
+
+        statsSection.style.display = 'block';
+    }
+
+    /**
+     * Calculate comprehensive loot statistics
+     * @param {Array} items - Array of items obtained
+     */
+    calculateLootStats(items) {
+        const stats = {
+            totalItems: items.length,
+            equipmentCount: 0,
+            consumableCount: 0,
+            spellCount: 0,
+            materialCount: 0,
+            rarityDistribution: { common: 0, uncommon: 0, rare: 0, epic: 0, legendary: 0 },
+            rarestItem: { rarity: 'common', priority: 0 }
+        };
+
+        const rarityPriority = { common: 1, uncommon: 2, rare: 3, epic: 4, legendary: 5 };
+
+        items.forEach(item => {
+            // Determine item properties
+            const itemType = typeof item === 'string' ? this.determineItemType(item) : (item.type || 'item');
+            const itemRarity = typeof item === 'string' ? this.determineItemRarity(item) : (item.rarity || 'common');
+
+            // Count by type
+            switch (itemType.toLowerCase()) {
+                case 'equipment':
+                case 'weapon':
+                case 'armor':
+                    stats.equipmentCount++;
+                    break;
+                case 'consumable':
+                case 'potion':
+                    stats.consumableCount++;
+                    break;
+                case 'spell':
+                case 'scroll':
+                    stats.spellCount++;
+                    break;
+                case 'material':
+                    stats.materialCount++;
+                    break;
+            }
+
+            // Count by rarity
+            if (stats.rarityDistribution[itemRarity] !== undefined) {
+                stats.rarityDistribution[itemRarity]++;
+            }
+
+            // Track rarest item
+            const priority = rarityPriority[itemRarity] || 0;
+            if (priority > stats.rarestItem.priority) {
+                stats.rarestItem = { rarity: itemRarity, priority };
+            }
+        });
+
+        return stats;
+    }
+
+    /**
+     * Determine item rarity from name patterns
+     * @param {string} itemName - The name of the item
+     */
+    determineItemRarity(itemName) {
+        const name = itemName.toLowerCase();
+
+        if (name.includes('legendary') || name.includes('mythic') || name.includes('artifact')) {
+            return 'legendary';
+        } else if (name.includes('epic') || name.includes('superior') || name.includes('master')) {
+            return 'epic';
+        } else if (name.includes('rare') || name.includes('enhanced') || name.includes('magic')) {
+            return 'rare';
+        } else if (name.includes('uncommon') || name.includes('quality') || name.includes('improved')) {
+            return 'uncommon';
+        }
+
+        return 'common';
+    }
+
+    /**
+     * Determine item type from name patterns
+     * @param {string} itemName - The name of the item
+     */
+    determineItemType(itemName) {
+        const name = itemName.toLowerCase();
+
+        if (name.includes('sword') || name.includes('bow') || name.includes('staff') ||
+            name.includes('weapon') || name.includes('blade')) {
+            return 'weapon';
+        } else if (name.includes('armor') || name.includes('helmet') || name.includes('shield') ||
+                   name.includes('boots') || name.includes('gloves')) {
+            return 'armor';
+        } else if (name.includes('potion') || name.includes('elixir') || name.includes('remedy')) {
+            return 'consumable';
+        } else if (name.includes('scroll') || name.includes('tome') || name.includes('spell')) {
+            return 'spell';
+        } else if (name.includes('ore') || name.includes('gem') || name.includes('crystal') ||
+                   name.includes('material') || name.includes('essence')) {
+            return 'material';
+        }
+
+        return 'item';
+    }
+
+    /**
+     * Format item type for display
+     * @param {string} itemType - The item type
+     */
+    formatItemType(itemType) {
+        const typeNames = {
+            weapon: '⚔️',
+            armor: '🛡️',
+            consumable: '🧪',
+            spell: '📜',
+            material: '💎',
+            item: '📦'
+        };
+        return typeNames[itemType.toLowerCase()] || typeNames.item;
+    }
+
+    /**
+     * Get rarity icon for display
+     * @param {string} rarity - The item rarity
+     */
+    getRarityIcon(rarity) {
+        const rarityIcons = {
+            common: '⚪',
+            uncommon: '🟢',
+            rare: '🔵',
+            epic: '🟣',
+            legendary: '🟡'
+        };
+        return rarityIcons[rarity.toLowerCase()] || rarityIcons.common;
     }
 
     /**
@@ -1973,6 +2224,12 @@ class CombatUI extends BaseUIModule {
         const closeModal = () => {
             modal.classList.add('hidden');
             modal.style.display = 'none';
+            // Return to world after modal is closed
+            try {
+                this.sendMessage('showScene', { sceneName: 'game_world' });
+            } catch(error) {
+                console.warn('Error transitioning to game world:', error);
+            }
         };
 
         if (continueBtn) continueBtn.addEventListener('click', closeModal);
@@ -2031,8 +2288,10 @@ class CombatUI extends BaseUIModule {
                 border: 3px solid #4caf50;
                 border-radius: 12px;
                 padding: 0;
-                max-width: 500px;
+                max-width: 600px;
                 width: 90%;
+                max-height: 80vh;
+                overflow-y: auto;
                 box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
                 font-family: var(--font-primary, 'Georgia', serif);
             }
@@ -2107,29 +2366,153 @@ class CombatUI extends BaseUIModule {
             }
 
             .victory-items {
-                margin: 0 0 0 20px;
+                margin: 0;
                 padding: 0;
                 list-style: none;
+                max-height: 200px;
+                overflow-y: auto;
+                border: 1px solid var(--primary-gold, #d4af37);
+                border-radius: 6px;
+                background: var(--background-secondary, #3d2415);
+                padding: 8px;
             }
 
-            .victory-items li {
-                color: var(--text-primary, #f4e4bc);
-                padding: 4px 0;
-                position: relative;
+            .victory-loot-item {
+                padding: 8px 12px;
+                margin: 4px 0;
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 4px;
+                border-left: 3px solid transparent;
+                opacity: 0;
+                transform: translateX(-20px);
+                animation: lootItemSlideIn 0.5s ease-out forwards;
             }
 
-            .victory-items li:before {
-                content: "•";
-                color: var(--primary-gold, #d4af37);
+            @keyframes lootItemSlideIn {
+                to {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+            }
+
+            .loot-acquisition-animation {
+                animation: lootItemSlideIn 0.5s ease-out forwards;
+            }
+
+            .loot-item-content {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+
+            .loot-rarity-indicator {
+                font-size: 16px;
+                width: 20px;
+                text-align: center;
+            }
+
+            .loot-item-name {
                 font-weight: bold;
-                position: absolute;
-                left: -12px;
+                font-size: 14px;
+                flex: 1;
+            }
+
+            .loot-item-type {
+                font-size: 12px;
+                padding: 2px 6px;
+                border-radius: 3px;
+                background: rgba(255, 255, 255, 0.1);
+            }
+
+            .loot-item-description {
+                font-size: 12px;
+                color: var(--text-secondary, #b8860b);
+                font-style: italic;
+                width: 100%;
+                margin-top: 4px;
+            }
+
+            /* Rarity-based styling */
+            .rarity-common {
+                color: #ffffff;
+                border-left-color: #9e9e9e;
+            }
+
+            .rarity-uncommon {
+                color: #4caf50;
+                border-left-color: #4caf50;
+            }
+
+            .rarity-rare {
+                color: #2196f3;
+                border-left-color: #2196f3;
+            }
+
+            .rarity-epic {
+                color: #9c27b0;
+                border-left-color: #9c27b0;
+            }
+
+            .rarity-legendary {
+                color: #ff9800;
+                border-left-color: #ff9800;
+                text-shadow: 0 0 8px rgba(255, 152, 0, 0.5);
+                animation: legendaryGlow 2s ease-in-out infinite;
+            }
+
+            @keyframes legendaryGlow {
+                0%, 100% { text-shadow: 0 0 8px rgba(255, 152, 0, 0.5); }
+                50% { text-shadow: 0 0 12px rgba(255, 152, 0, 0.8); }
+            }
+
+            .victory-loot-stats {
+                margin-top: 16px;
+                padding: 12px;
+                background: var(--background-secondary, #3d2415);
+                border: 1px solid var(--primary-gold, #d4af37);
+                border-radius: 6px;
+            }
+
+            .loot-stats-header {
+                font-weight: bold;
+                color: var(--text-primary, #f4e4bc);
+                margin-bottom: 8px;
+                text-align: center;
+                font-size: 14px;
+            }
+
+            .loot-stats-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+
+            .loot-stat-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 4px 8px;
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 3px;
+                font-size: 12px;
+            }
+
+            .loot-stat-label {
+                color: var(--text-secondary, #b8860b);
+            }
+
+            .loot-stat-value {
+                color: var(--text-primary, #f4e4bc);
+                font-weight: bold;
             }
 
             .victory-no-items {
                 color: var(--text-secondary, #b8860b);
                 font-style: italic;
                 margin: 0;
+                text-align: center;
+                padding: 20px;
             }
 
             .victory-footer {
@@ -2152,6 +2535,25 @@ class CombatUI extends BaseUIModule {
             }
 
             .victory-continue-btn:hover {
+                background: var(--secondary-gold, #b8941f);
+            }
+
+            /* Scrollbar styling for loot list */
+            .victory-items::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            .victory-items::-webkit-scrollbar-track {
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 3px;
+            }
+
+            .victory-items::-webkit-scrollbar-thumb {
+                background: var(--primary-gold, #d4af37);
+                border-radius: 3px;
+            }
+
+            .victory-items::-webkit-scrollbar-thumb:hover {
                 background: var(--secondary-gold, #b8941f);
             }
         `;

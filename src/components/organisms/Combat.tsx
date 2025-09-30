@@ -1,9 +1,9 @@
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../atoms/Button';
 import { LoadingSpinner } from '../atoms/LoadingSpinner';
-import { usePlayer, useWorld, useUI, useCombat, useInventory, useIsMobile, useCreatures } from '../../hooks';
-import { useMonsters } from '../../hooks/useGameData';
+import { useReactGame } from '../../contexts/ReactGameContext';
+import { useIsMobile } from '../../hooks';
 import { ReactMonster, ReactPlayer } from '../../types/game';
 
 interface CombatProps {
@@ -42,27 +42,28 @@ interface CombatAction {
 export const Combat: React.FC<CombatProps> = ({
   className
 }) => {
-  const { player, playerLevel, addExperience, addGold } = usePlayer();
-  const { navigateToScreen } = useUI();
-  const { captureCreature, activeTeam } = useCreatures();
-  const { currentEncounter, endCombat } = useCombat();
-  const { legacyInventory: inventory, getItemsByCategory, useItem } = useInventory();
-  const { createMonsterInstance } = useMonsters();
+  const { state, endCombat, setCurrentScreen, addExperience: addExp, addGold: addPlayerGold } = useReactGame();
   const isMobile = useIsMobile();
+
+  const player = state.player;
+  const playerLevel = player?.level || 1;
+  const inventory = state.inventory || [];
+  const currentEncounter = state.currentEncounter;
+  const activeTeam = []; // TODO: Implement companions in ReactGameContext
+
+  const enemyTurnExecutingRef = useRef(false);
+  const battleEndedRef = useRef(false);
 
   // Generate enemy monster
   const enemy = useMemo(() => {
     if (!currentEncounter) return null;
-
-    // Create a monster instance with appropriate stats
-    const baseMonster = createMonsterInstance(currentEncounter.species, currentEncounter.level, true);
 
     // Make starting encounters much easier for new players
     const isEarlyGame = currentEncounter.level <= 2;
     const hpMultiplier = isEarlyGame ? 0.6 : 1.0; // 60% HP for early encounters
     const attackMultiplier = isEarlyGame ? 0.7 : 1.0; // 70% damage for early encounters
 
-    return baseMonster || {
+    return {
       id: `enemy_${Date.now()}`,
       name: currentEncounter.species.replace(/_/g, ' '),
       species: currentEncounter.species,
@@ -99,7 +100,7 @@ export const Combat: React.FC<CombatProps> = ({
       isWild: true,
       friendship: 0
     };
-  }, [currentEncounter, createMonsterInstance]);
+  }, [currentEncounter]);
 
   const [combatState, setCombatState] = useState<CombatState>({
     phase: 'player-turn', // Start with player turn instead of intro
@@ -116,6 +117,15 @@ export const Combat: React.FC<CombatProps> = ({
     isAnimating: false,
     actionMode: 'main'
   });
+
+  // Reset battle ended flag when new combat starts
+  useEffect(() => {
+    if (currentEncounter) {
+      // Only reset when we have a new encounter (new combat starting)
+      battleEndedRef.current = false;
+      enemyTurnExecutingRef.current = false;
+    }
+  }, [currentEncounter]);
 
   // Calculate player weapon damage
   const getPlayerWeaponDamage = useCallback(() => {
@@ -316,8 +326,8 @@ export const Combat: React.FC<CombatProps> = ({
 
     setCombatState(prev => ({ ...prev, isAnimating: true }));
 
-    // Use the item through the inventory system
-    useItem(item.id);
+    // TODO: Use the item through the inventory system
+    // useItem(item.id);
 
     // Apply item effects
     if (item.effects) {
@@ -348,7 +358,7 @@ export const Combat: React.FC<CombatProps> = ({
 
     await new Promise(resolve => setTimeout(resolve, 1000));
     setCombatState(prev => ({ ...prev, isAnimating: false }));
-  }, [combatState, addBattleLog, player, useItem]);
+  }, [combatState, addBattleLog, player]);
 
   // Execute Capture Action
   const executeCapture = useCallback(async () => {
@@ -369,10 +379,10 @@ export const Combat: React.FC<CombatProps> = ({
     if (captureRoll <= finalCaptureChance) {
       addBattleLog(`Successfully captured ${enemy?.name}!`, 'system');
 
-      // Add monster to player's collection
-      if (enemy) {
-        await captureCreature(enemy);
-      }
+      // TODO: Add monster to player's collection
+      // if (enemy) {
+      //   await captureCreature(enemy);
+      // }
 
       setCombatState(prev => ({ ...prev, phase: 'captured' }));
     } else {
@@ -382,7 +392,7 @@ export const Combat: React.FC<CombatProps> = ({
 
     await new Promise(resolve => setTimeout(resolve, 1500));
     setCombatState(prev => ({ ...prev, isAnimating: false }));
-  }, [combatState, addBattleLog, enemy, playerLevel, captureCreature]);
+  }, [combatState, addBattleLog, enemy, playerLevel]);
 
   // Execute Flee Action
   const executeFlee = useCallback(async () => {
@@ -448,8 +458,9 @@ export const Combat: React.FC<CombatProps> = ({
   }, [combatState, addBattleLog, calculateDamage, enemy]);
 
   const executeEnemyTurn = useCallback(async () => {
-    if (combatState.phase !== 'enemy-turn' || !enemy) return;
+    if (!enemy || enemyTurnExecutingRef.current) return;
 
+    enemyTurnExecutingRef.current = true;
     setCombatState(prev => ({ ...prev, isAnimating: true }));
     await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -482,7 +493,9 @@ export const Combat: React.FC<CombatProps> = ({
       phase: prev.playerHp - damage <= 0 ? 'defeat' : 'player-turn',
       isAnimating: false
     }));
-  }, [combatState.phase, enemy, calculateDamage, player, addBattleLog]);
+
+    enemyTurnExecutingRef.current = false;
+  }, [enemy, calculateDamage, player, addBattleLog]);
 
   // Auto-execute enemy turn
   useEffect(() => {
@@ -494,29 +507,86 @@ export const Combat: React.FC<CombatProps> = ({
 
   // Handle battle end
   const handleBattleEnd = useCallback((result: 'victory' | 'defeat' | 'fled' | 'captured') => {
-    if (result === 'victory' || result === 'captured') {
-      const expGained = enemy?.experience || 0;
-      const goldGained = enemy?.gold || 0;
-
-      addExperience(expGained);
-      addGold(goldGained);
-
-      addBattleLog(`Gained ${expGained} experience and ${goldGained} gold!`, 'system');
+    if (battleEndedRef.current) {
+      return;
     }
 
-    // Return to area exploration after a delay
-    setTimeout(() => {
-      endCombat();
-      navigateToScreen('area');
-    }, 3000);
-  }, [enemy, addExperience, addGold, addBattleLog, endCombat, navigateToScreen]);
+    // Don't process if victory modal is already showing (indicates battle already ended)
+    if (state.showVictoryModal) {
+      return;
+    }
+
+    battleEndedRef.current = true;
+
+    if (result === 'victory' || result === 'captured') {
+      // Capture rewards before enemy/encounter might become null
+      const rewardEnemy = enemy || (currentEncounter ? {
+        experience: currentEncounter.level * 12,
+        gold: currentEncounter.level * 6,
+        name: currentEncounter.species.replace(/_/g, ' '),
+        level: currentEncounter.level
+      } : null);
+
+      const expGained = rewardEnemy?.experience || 0;
+      const goldGained = rewardEnemy?.gold || 0;
+
+      // Don't process if rewards would be zero (indicates stale call)
+      if (expGained === 0 && goldGained === 0 && (result === 'victory' || result === 'captured')) {
+        battleEndedRef.current = false; // Reset for valid call
+        return;
+      }
+
+      // Add experience and gold through ReactGameContext
+      if (player) {
+        console.log('🎯 Combat: Attempting to add exp/gold:', {
+          playerId: player.id || 'no-id',
+          playerName: player.name,
+          expGained,
+          goldGained,
+          hasId: !!player.id
+        });
+
+        // Try with or without ID - check what the functions actually expect
+        if (player.id) {
+          addExp(player.id, expGained);
+          addPlayerGold(player.id, goldGained);
+        } else {
+          // Fallback: try with player name or just call without ID
+          addExp(player.name || 'player', expGained);
+          addPlayerGold(player.name || 'player', goldGained);
+        }
+      }
+
+      addBattleLog(`Gained ${expGained} experience and ${goldGained} gold!`, 'system');
+
+      // End combat with proper payload to trigger victory modal
+      endCombat({
+        experience: expGained,
+        gold: goldGained,
+        items: [] // TODO: Add loot items
+      });
+    } else {
+      // For defeat, fled, captured - end combat without rewards
+      endCombat({
+        experience: 0,
+        gold: 0,
+        items: []
+      });
+    }
+
+    // Screen navigation is handled by ReactGameContext after victory modal
+  }, [enemy, addExp, addPlayerGold, addBattleLog, endCombat, currentEncounter, state.showVictoryModal]);
 
   // Auto-handle battle end states
   useEffect(() => {
-    if (['victory', 'defeat', 'fled', 'captured'].includes(combatState.phase)) {
-      handleBattleEnd(combatState.phase as any);
+    if (['victory', 'defeat', 'fled', 'captured'].includes(combatState.phase) && !battleEndedRef.current) {
+      // Add a small delay to ensure state is stable
+      const timer = setTimeout(() => {
+        handleBattleEnd(combatState.phase as any);
+      }, 100);
+      return () => clearTimeout(timer);
     }
-  }, [combatState.phase, handleBattleEnd]);
+  }, [combatState.phase]); // Removed handleBattleEnd from deps to prevent re-runs
 
   if (!enemy) {
     return (
@@ -533,7 +603,7 @@ export const Combat: React.FC<CombatProps> = ({
       >
         <div style={{ textAlign: 'center' }}>
           <h2>No Enemy Found</h2>
-          <Button variant="primary" onClick={() => navigateToScreen('area')}>
+          <Button variant="primary" onClick={() => setCurrentScreen('area')}>
             Back to Area
           </Button>
         </div>

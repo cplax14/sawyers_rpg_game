@@ -27,8 +27,28 @@ class GameState {
             inventory: {
                 items: {},
                 gold: 100,
-                maxSlots: 50, // Maximum number of different item types
-                overflowPolicy: 'prompt' // 'auto-discard', 'prompt', 'store'
+                maxSlots: 10000, // Practically unlimited inventory slots
+                overflowPolicy: 'prompt', // 'auto-discard', 'prompt', 'store'
+
+                // Inventory management tracking
+                warningSettings: {
+                    enableWarnings: true,
+                    warningThresholds: {
+                        yellow: 0.97,  // 97% capacity (9,700+ items)
+                        orange: 0.985, // 98.5% capacity (9,850+ items)
+                        red: 0.995     // 99.5% capacity (9,950+ items)
+                    },
+                    lastWarningTime: 0,
+                    warningCooldown: 30000 // 30 seconds between warnings
+                },
+
+                // Session tracking for loot-heavy detection
+                sessionTracking: {
+                    itemsAddedThisSession: 0,
+                    sessionStartTime: Date.now(),
+                    lootHeavyThreshold: 10, // Items added in session to trigger heavy warnings
+                    recentItems: [] // Track recent items for pattern analysis
+                }
             }
         };
         
@@ -121,6 +141,47 @@ class GameState {
             battlesWon: 0,
             areasExplored: 0,
             storyChoicesMade: 0
+        };
+
+        // Loot collection tracking system
+        this.collection = {
+            // Track all items ever obtained
+            itemsObtained: {}, // { itemId: { count: total, firstObtained: timestamp, lastObtained: timestamp, rarity: string } }
+
+            // Achievement tracking
+            achievements: {
+                unlocked: [], // Array of achievement IDs
+                progress: {}, // { achievementId: { current: number, target: number, unlocked: boolean } }
+                categories: {
+                    collector: [], // Collection-based achievements
+                    combat: [], // Combat-based achievements
+                    exploration: [], // Area exploration achievements
+                    progression: [], // Level/story progression achievements
+                    special: [] // Special/hidden achievements
+                }
+            },
+
+            // Collection milestones
+            milestones: {
+                itemsCollected: 0,
+                uniqueItemsCollected: 0,
+                rareItemsCollected: 0,
+                epicItemsCollected: 0,
+                legendaryItemsCollected: 0,
+                totalValueCollected: 0,
+                firstLegendaryItem: null,
+                completedSets: []
+            },
+
+            // Collection statistics by category
+            categoryStats: {
+                weapons: { collected: 0, unique: 0 },
+                armor: { collected: 0, unique: 0 },
+                consumables: { collected: 0, unique: 0 },
+                materials: { collected: 0, unique: 0 },
+                spells: { collected: 0, unique: 0 },
+                accessories: { collected: 0, unique: 0 }
+            }
         };
         
         // Initialize the state
@@ -963,7 +1024,7 @@ class GameState {
         // Check if inventory is at capacity for new item types
         const currentSlots = Object.keys(this.player.inventory.items).length;
         const isNewItem = !this.player.inventory.items[itemId];
-        const maxSlots = this.player.inventory.maxSlots || 50;
+        const maxSlots = this.player.inventory.maxSlots || 10000;
 
         if (isNewItem && currentSlots >= maxSlots) {
             return this.handleInventoryOverflow(itemId, quantity, rarity, itemData);
@@ -974,11 +1035,20 @@ class GameState {
             this.storeItemData(itemId, itemData);
         }
 
+        // Track collection before adding to inventory
+        this.trackItemCollection(itemId, quantity, rarity, itemData);
+
+        // Track session activity for loot-heavy detection
+        this.trackInventoryActivity(itemId, quantity, isNewItem);
+
         // Add to existing or create new slot
         if (!this.player.inventory.items[itemId]) {
             this.player.inventory.items[itemId] = 0;
         }
         this.player.inventory.items[itemId] += quantity;
+
+        // Check for capacity warnings after adding item
+        this.checkInventoryCapacityWarnings();
 
         // Enhanced notification with rarity indicator and item name
         const displayName = itemData?.name || itemId;
@@ -1168,7 +1238,7 @@ class GameState {
         // Check if main inventory has space
         const currentSlots = Object.keys(this.player.inventory.items).length;
         const hasItem = !!this.player.inventory.items[itemId];
-        const maxSlots = this.player.inventory.maxSlots || 50;
+        const maxSlots = this.player.inventory.maxSlots || 10000;
 
         if (!hasItem && currentSlots >= maxSlots) {
             return { success: false, reason: 'Main inventory is full' };
@@ -4128,6 +4198,576 @@ class GameState {
             required: required,
             percentage: percentage,
             speciesDefeated: progress.speciesDefeated || {}
+        };
+    }
+
+    // ================================================
+    // COLLECTION TRACKING SYSTEM
+    // ================================================
+
+    /**
+     * Track item collection for achievement and milestone purposes
+     * @param {string} itemId - The item identifier
+     * @param {number} quantity - Amount collected
+     * @param {string} rarity - Item rarity level
+     * @param {Object} itemData - Additional item information
+     */
+    trackItemCollection(itemId, quantity, rarity = 'common', itemData = null) {
+        if (!itemId || quantity <= 0) return;
+
+        const timestamp = Date.now();
+        const isFirstTime = !this.collection.itemsObtained[itemId];
+
+        // Track item collection
+        if (!this.collection.itemsObtained[itemId]) {
+            this.collection.itemsObtained[itemId] = {
+                count: 0,
+                firstObtained: timestamp,
+                lastObtained: timestamp,
+                rarity: rarity,
+                type: this.determineItemType(itemId, itemData)
+            };
+        }
+
+        this.collection.itemsObtained[itemId].count += quantity;
+        this.collection.itemsObtained[itemId].lastObtained = timestamp;
+
+        // Update collection milestones
+        this.updateCollectionMilestones(itemId, quantity, rarity, isFirstTime);
+
+        // Update category statistics
+        this.updateCategoryStats(itemId, quantity, rarity, isFirstTime, itemData);
+
+        // Check for achievement progress
+        this.checkCollectionAchievements(itemId, quantity, rarity, isFirstTime);
+
+        console.log(`📦 Collection tracked: ${itemId} x${quantity} (${rarity}) - Total: ${this.collection.itemsObtained[itemId].count}`);
+    }
+
+    /**
+     * Update collection milestones based on new item acquisition
+     */
+    updateCollectionMilestones(itemId, quantity, rarity, isFirstTime) {
+        const milestones = this.collection.milestones;
+
+        // Update total items collected
+        milestones.itemsCollected += quantity;
+
+        // Update unique items if this is the first time collecting this item
+        if (isFirstTime) {
+            milestones.uniqueItemsCollected++;
+        }
+
+        // Update rarity-specific counters
+        switch (rarity.toLowerCase()) {
+            case 'rare':
+                milestones.rareItemsCollected += quantity;
+                break;
+            case 'epic':
+                milestones.epicItemsCollected += quantity;
+                break;
+            case 'legendary':
+                milestones.legendaryItemsCollected += quantity;
+                // Track first legendary item
+                if (!milestones.firstLegendaryItem) {
+                    milestones.firstLegendaryItem = {
+                        itemId: itemId,
+                        timestamp: Date.now(),
+                        count: quantity
+                    };
+                    this.addNotification(`🌟 First Legendary Item: ${itemId}!`, 'achievement');
+                }
+                break;
+        }
+
+        // Estimate value for total value tracking (basic implementation)
+        const estimatedValue = this.estimateItemValue(itemId, rarity);
+        milestones.totalValueCollected += estimatedValue * quantity;
+    }
+
+    /**
+     * Update category-specific collection statistics
+     */
+    updateCategoryStats(itemId, quantity, rarity, isFirstTime, itemData) {
+        const itemType = this.determineItemType(itemId, itemData);
+        const categoryKey = this.mapTypeToCategoryKey(itemType);
+
+        if (this.collection.categoryStats[categoryKey]) {
+            this.collection.categoryStats[categoryKey].collected += quantity;
+            if (isFirstTime) {
+                this.collection.categoryStats[categoryKey].unique++;
+            }
+        }
+    }
+
+    /**
+     * Check and update collection-based achievements
+     */
+    checkCollectionAchievements(itemId, quantity, rarity, isFirstTime) {
+        const milestones = this.collection.milestones;
+
+        // Define collection achievements to check
+        const achievements = [
+            // Basic collection milestones
+            { id: 'first_item', type: 'collector', condition: () => milestones.itemsCollected >= 1, name: 'Pack Rat', description: 'Collect your first item' },
+            { id: 'collector_10', type: 'collector', condition: () => milestones.uniqueItemsCollected >= 10, name: 'Collector', description: 'Collect 10 different items' },
+            { id: 'collector_25', type: 'collector', condition: () => milestones.uniqueItemsCollected >= 25, name: 'Hoarder', description: 'Collect 25 different items' },
+            { id: 'collector_50', type: 'collector', condition: () => milestones.uniqueItemsCollected >= 50, name: 'Master Collector', description: 'Collect 50 different items' },
+
+            // Rarity-based achievements
+            { id: 'first_rare', type: 'collector', condition: () => milestones.rareItemsCollected >= 1, name: 'Treasure Hunter', description: 'Find your first rare item' },
+            { id: 'first_epic', type: 'collector', condition: () => milestones.epicItemsCollected >= 1, name: 'Epic Finder', description: 'Discover your first epic item' },
+            { id: 'first_legendary', type: 'collector', condition: () => milestones.legendaryItemsCollected >= 1, name: 'Legend Seeker', description: 'Obtain your first legendary item' },
+
+            // Quantity milestones
+            { id: 'items_100', type: 'collector', condition: () => milestones.itemsCollected >= 100, name: 'Pack Master', description: 'Collect 100 total items' },
+            { id: 'items_500', type: 'collector', condition: () => milestones.itemsCollected >= 500, name: 'Loot Lord', description: 'Collect 500 total items' },
+            { id: 'items_1000', type: 'collector', condition: () => milestones.itemsCollected >= 1000, name: 'Acquisition Expert', description: 'Collect 1000 total items' },
+
+            // Category-specific achievements
+            { id: 'weapon_collector', type: 'collector', condition: () => this.collection.categoryStats.weapons.unique >= 10, name: 'Arsenal Builder', description: 'Collect 10 different weapons' },
+            { id: 'potion_master', type: 'collector', condition: () => this.collection.categoryStats.consumables.unique >= 15, name: 'Potion Master', description: 'Collect 15 different consumables' }
+        ];
+
+        // Check each achievement
+        achievements.forEach(achievement => {
+            if (!this.isAchievementUnlocked(achievement.id) && achievement.condition()) {
+                this.unlockAchievement(achievement.id, achievement.type, achievement.name, achievement.description);
+            }
+        });
+    }
+
+    /**
+     * Unlock an achievement and update progress tracking
+     */
+    unlockAchievement(achievementId, category, name, description) {
+        if (this.isAchievementUnlocked(achievementId)) return;
+
+        // Add to unlocked achievements
+        this.collection.achievements.unlocked.push(achievementId);
+
+        // Add to category
+        if (!this.collection.achievements.categories[category]) {
+            this.collection.achievements.categories[category] = [];
+        }
+        this.collection.achievements.categories[category].push(achievementId);
+
+        // Update progress tracking
+        if (!this.collection.achievements.progress[achievementId]) {
+            this.collection.achievements.progress[achievementId] = { current: 0, target: 1, unlocked: false };
+        }
+        this.collection.achievements.progress[achievementId].unlocked = true;
+
+        // Notify player
+        this.addNotification(`🏆 Achievement Unlocked: ${name}`, 'achievement');
+        console.log(`🏆 Achievement unlocked: ${achievementId} - ${name}: ${description}`);
+    }
+
+    /**
+     * Check if an achievement is already unlocked
+     */
+    isAchievementUnlocked(achievementId) {
+        return this.collection.achievements.unlocked.includes(achievementId);
+    }
+
+    /**
+     * Get collection statistics summary
+     */
+    getCollectionStats() {
+        const milestones = this.collection.milestones;
+        const categoryStats = this.collection.categoryStats;
+        const achievements = this.collection.achievements;
+
+        return {
+            summary: {
+                totalItems: milestones.itemsCollected,
+                uniqueItems: milestones.uniqueItemsCollected,
+                rareItems: milestones.rareItemsCollected,
+                epicItems: milestones.epicItemsCollected,
+                legendaryItems: milestones.legendaryItemsCollected,
+                estimatedValue: milestones.totalValueCollected
+            },
+            categories: categoryStats,
+            achievements: {
+                total: achievements.unlocked.length,
+                byCategory: Object.keys(achievements.categories).reduce((acc, cat) => {
+                    acc[cat] = achievements.categories[cat].length;
+                    return acc;
+                }, {})
+            },
+            milestones: milestones
+        };
+    }
+
+    /**
+     * Get achievement progress for UI display
+     */
+    getAchievementProgress() {
+        return {
+            unlocked: this.collection.achievements.unlocked,
+            categories: this.collection.achievements.categories,
+            progress: this.collection.achievements.progress
+        };
+    }
+
+    /**
+     * Determine item type from ID and data
+     */
+    determineItemType(itemId, itemData = null) {
+        // Use provided item data if available
+        if (itemData && itemData.type) {
+            return itemData.type;
+        }
+
+        // Try to get from ItemData if available
+        if (typeof ItemData !== 'undefined' && ItemData.getItem) {
+            const item = ItemData.getItem(itemId);
+            if (item && item.type) {
+                return item.type;
+            }
+        }
+
+        // Fallback to name-based detection
+        const name = itemId.toLowerCase();
+        if (name.includes('sword') || name.includes('bow') || name.includes('staff') || name.includes('weapon')) {
+            return 'weapon';
+        } else if (name.includes('armor') || name.includes('helmet') || name.includes('shield')) {
+            return 'armor';
+        } else if (name.includes('potion') || name.includes('elixir') || name.includes('remedy')) {
+            return 'consumable';
+        } else if (name.includes('scroll') || name.includes('tome') || name.includes('spell')) {
+            return 'spell';
+        } else if (name.includes('ring') || name.includes('amulet') || name.includes('accessory')) {
+            return 'accessory';
+        } else if (name.includes('ore') || name.includes('gem') || name.includes('material')) {
+            return 'material';
+        }
+
+        return 'item'; // Default fallback
+    }
+
+    /**
+     * Map item type to category key for statistics
+     */
+    mapTypeToCategoryKey(itemType) {
+        const typeMapping = {
+            'weapon': 'weapons',
+            'armor': 'armor',
+            'consumable': 'consumables',
+            'potion': 'consumables',
+            'spell': 'spells',
+            'scroll': 'spells',
+            'accessory': 'accessories',
+            'material': 'materials',
+            'item': 'materials' // Default fallback
+        };
+
+        return typeMapping[itemType.toLowerCase()] || 'materials';
+    }
+
+    /**
+     * Estimate item value for collection tracking
+     */
+    estimateItemValue(itemId, rarity) {
+        const baseValues = {
+            'common': 10,
+            'uncommon': 25,
+            'rare': 100,
+            'epic': 500,
+            'legendary': 2500
+        };
+
+        return baseValues[rarity.toLowerCase()] || baseValues.common;
+    }
+
+    // ================================================
+    // INVENTORY CAPACITY WARNING SYSTEM
+    // ================================================
+
+    /**
+     * Track inventory activity for loot-heavy session detection
+     */
+    trackInventoryActivity(itemId, quantity, isNewItem) {
+        const tracking = this.player.inventory.sessionTracking;
+        const timestamp = Date.now();
+
+        // Increment session counter
+        tracking.itemsAddedThisSession += quantity;
+
+        // Track recent items for pattern analysis
+        tracking.recentItems.push({
+            itemId: itemId,
+            quantity: quantity,
+            timestamp: timestamp,
+            isNewItem: isNewItem
+        });
+
+        // Keep recent items list manageable (last 20 items)
+        if (tracking.recentItems.length > 20) {
+            tracking.recentItems = tracking.recentItems.slice(-20);
+        }
+
+        // Check if session should be reset (after long inactivity)
+        const sessionDuration = timestamp - tracking.sessionStartTime;
+        const inactivityThreshold = 5 * 60 * 1000; // 5 minutes
+
+        if (sessionDuration > inactivityThreshold) {
+            this.resetSessionTracking();
+        }
+    }
+
+    /**
+     * Check inventory capacity and trigger warnings if needed
+     */
+    checkInventoryCapacityWarnings() {
+        const settings = this.player.inventory.warningSettings;
+        if (!settings.enableWarnings) return;
+
+        const currentTime = Date.now();
+
+        // Respect warning cooldown
+        if (currentTime - settings.lastWarningTime < settings.warningCooldown) {
+            return;
+        }
+
+        const capacityInfo = this.getInventoryCapacityInfo();
+        const isLootHeavySession = this.isLootHeavySession();
+
+        // Determine warning level
+        const warningLevel = this.determineWarningLevel(capacityInfo.percentage);
+
+        if (warningLevel && this.shouldShowWarning(warningLevel, isLootHeavySession)) {
+            this.showInventoryCapacityWarning(warningLevel, capacityInfo, isLootHeavySession);
+            settings.lastWarningTime = currentTime;
+        }
+    }
+
+    /**
+     * Get current inventory capacity information
+     */
+    getInventoryCapacityInfo() {
+        const currentSlots = Object.keys(this.player.inventory.items).length;
+        const maxSlots = this.player.inventory.maxSlots || 10000;
+        const percentage = currentSlots / maxSlots;
+        const slotsRemaining = maxSlots - currentSlots;
+
+        return {
+            current: currentSlots,
+            max: maxSlots,
+            percentage: percentage,
+            remaining: slotsRemaining,
+            isFull: currentSlots >= maxSlots,
+            isNearFull: percentage >= 0.9
+        };
+    }
+
+    /**
+     * Determine if this is a loot-heavy session
+     */
+    isLootHeavySession() {
+        const tracking = this.player.inventory.sessionTracking;
+        return tracking.itemsAddedThisSession >= tracking.lootHeavyThreshold;
+    }
+
+    /**
+     * Determine warning level based on capacity percentage
+     */
+    determineWarningLevel(percentage) {
+        const thresholds = this.player.inventory.warningSettings.warningThresholds;
+
+        if (percentage >= thresholds.red) {
+            return 'red';
+        } else if (percentage >= thresholds.orange) {
+            return 'orange';
+        } else if (percentage >= thresholds.yellow) {
+            return 'yellow';
+        }
+
+        return null;
+    }
+
+    /**
+     * Determine if warning should be shown based on level and session type
+     */
+    shouldShowWarning(warningLevel, isLootHeavySession) {
+        // Always show red warnings
+        if (warningLevel === 'red') return true;
+
+        // Show orange warnings during loot-heavy sessions or at higher capacity
+        if (warningLevel === 'orange') {
+            return isLootHeavySession || this.getInventoryCapacityInfo().percentage >= 0.9;
+        }
+
+        // Show yellow warnings only during very active loot sessions
+        if (warningLevel === 'yellow') {
+            return isLootHeavySession && this.getRecentItemVelocity() > 5; // 5+ items in last minute
+        }
+
+        return false;
+    }
+
+    /**
+     * Calculate recent item acquisition velocity (items per minute)
+     */
+    getRecentItemVelocity() {
+        const tracking = this.player.inventory.sessionTracking;
+        const currentTime = Date.now();
+        const oneMinuteAgo = currentTime - 60000;
+
+        const recentItems = tracking.recentItems.filter(item => item.timestamp >= oneMinuteAgo);
+        return recentItems.reduce((sum, item) => sum + item.quantity, 0);
+    }
+
+    /**
+     * Show inventory capacity warning with appropriate urgency
+     */
+    showInventoryCapacityWarning(warningLevel, capacityInfo, isLootHeavySession) {
+        const suggestions = this.generateInventoryManagementSuggestions(capacityInfo, isLootHeavySession);
+
+        // Create warning message based on level
+        const messages = {
+            yellow: {
+                title: '⚠️ Inventory Filling Up',
+                message: `Inventory at ${Math.round(capacityInfo.percentage * 100)}% capacity (${capacityInfo.remaining} slots remaining).`,
+                type: 'warning'
+            },
+            orange: {
+                title: '🟠 Inventory Nearly Full',
+                message: `Inventory at ${Math.round(capacityInfo.percentage * 100)}% capacity! Only ${capacityInfo.remaining} slots left.`,
+                type: 'warning'
+            },
+            red: {
+                title: '🔴 Inventory Critical',
+                message: `Inventory at ${Math.round(capacityInfo.percentage * 100)}% capacity! Immediate action needed.`,
+                type: 'error'
+            }
+        };
+
+        const warning = messages[warningLevel];
+        if (!warning) return;
+
+        // Show primary warning
+        this.addNotification(warning.message, warning.type);
+
+        // Add session-specific context
+        if (isLootHeavySession) {
+            const sessionItems = this.player.inventory.sessionTracking.itemsAddedThisSession;
+            this.addNotification(`📦 Heavy loot session: ${sessionItems} items collected recently`, 'info');
+        }
+
+        // Show management suggestions
+        if (suggestions.length > 0) {
+            const suggestion = suggestions[0]; // Show most relevant suggestion
+            this.addNotification(`💡 Tip: ${suggestion}`, 'info');
+        }
+
+        console.log(`🚨 Inventory Warning [${warningLevel.toUpperCase()}]: ${capacityInfo.current}/${capacityInfo.max} slots (${Math.round(capacityInfo.percentage * 100)}%)`);
+    }
+
+    /**
+     * Generate context-aware inventory management suggestions
+     */
+    generateInventoryManagementSuggestions(capacityInfo, isLootHeavySession) {
+        const suggestions = [];
+        const items = this.player.inventory.items;
+
+        // Analyze inventory composition
+        const itemTypes = this.analyzeInventoryComposition();
+
+        // Suggest based on what player has most of
+        if (itemTypes.consumables > 10) {
+            suggestions.push("Consider using some consumables or selling excess potions");
+        }
+
+        if (itemTypes.materials > 8) {
+            suggestions.push("Sell or store crafting materials you don't immediately need");
+        }
+
+        if (itemTypes.weapons > 5) {
+            suggestions.push("Sell outdated weapons and keep only current tier equipment");
+        }
+
+        // Session-specific suggestions
+        if (isLootHeavySession) {
+            suggestions.push("Consider taking a break to organize inventory before continuing");
+            suggestions.push("Use auto-discard for common items in overflow settings");
+        }
+
+        // Capacity-specific suggestions
+        if (capacityInfo.percentage >= 0.95) {
+            suggestions.push("Sell items immediately or use overflow storage");
+            suggestions.push("Focus on high-value items only");
+        } else if (capacityInfo.percentage >= 0.85) {
+            suggestions.push("Review and sell items you no longer need");
+            suggestions.push("Equip better gear and sell old equipment");
+        }
+
+        // Always include basic management tip
+        suggestions.push("Open inventory to review and organize items");
+
+        return suggestions;
+    }
+
+    /**
+     * Analyze inventory composition for smart suggestions
+     */
+    analyzeInventoryComposition() {
+        const items = this.player.inventory.items;
+        const composition = {
+            weapons: 0,
+            armor: 0,
+            consumables: 0,
+            materials: 0,
+            spells: 0,
+            total: 0
+        };
+
+        Object.keys(items).forEach(itemId => {
+            const type = this.determineItemType(itemId);
+            const categoryKey = this.mapTypeToCategoryKey(type);
+
+            if (composition[categoryKey] !== undefined) {
+                composition[categoryKey]++;
+            }
+            composition.total++;
+        });
+
+        return composition;
+    }
+
+    /**
+     * Reset session tracking after inactivity
+     */
+    resetSessionTracking() {
+        const tracking = this.player.inventory.sessionTracking;
+        tracking.itemsAddedThisSession = 0;
+        tracking.sessionStartTime = Date.now();
+        tracking.recentItems = [];
+
+        console.log('📊 Inventory session tracking reset after inactivity');
+    }
+
+    /**
+     * Get inventory management status for UI display
+     */
+    getInventoryManagementStatus() {
+        const capacityInfo = this.getInventoryCapacityInfo();
+        const isLootHeavySession = this.isLootHeavySession();
+        const warningLevel = this.determineWarningLevel(capacityInfo.percentage);
+        const composition = this.analyzeInventoryComposition();
+
+        return {
+            capacity: capacityInfo,
+            session: {
+                isLootHeavy: isLootHeavySession,
+                itemsAdded: this.player.inventory.sessionTracking.itemsAddedThisSession,
+                velocity: this.getRecentItemVelocity()
+            },
+            warning: {
+                level: warningLevel,
+                suggestions: this.generateInventoryManagementSuggestions(capacityInfo, isLootHeavySession).slice(0, 3)
+            },
+            composition: composition
         };
     }
 }

@@ -1,8 +1,12 @@
 import React, { useEffect } from 'react';
 import { useGame, useUI } from '../contexts/GameContext';
+import { useReactGame } from '../contexts/ReactGameContext';
 import MainMenu from './ui/MainMenu';
 import CharacterSelection from './ui/CharacterSelection';
 import GameHUD from './ui/GameHUD';
+import ReactInventoryScreen from './organisms/ReactInventoryScreen';
+import ReactCombat from './organisms/ReactCombat';
+import ReactTestPanel from './ui/ReactTestPanel';
 
 /**
  * Main React UI component that renders different screens based on game state
@@ -10,6 +14,7 @@ import GameHUD from './ui/GameHUD';
 const ReactUI: React.FC = () => {
   const { isGameLoaded } = useGame();
   const { currentScreen } = useUI();
+  const { state: reactGameState } = useReactGame();
 
   console.log(`🖼️ ReactUI render: isGameLoaded=${isGameLoaded}, currentScreen="${currentScreen}"`);
 
@@ -95,24 +100,8 @@ const ReactUI: React.FC = () => {
         </div>
       </div>
 
-      <div id="combat" className={`screen ${currentScreen === 'combat' ? 'active' : ''}`}>
-        {/* Combat UI will be implemented here */}
-        <div className="combat-placeholder">
-          <h2>Combat</h2>
-          <p>Combat interface will be implemented here.</p>
-          <div className="combat-buttons" style={{ margin: '20px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-            <button id="attack-btn" className="btn primary" type="button">Attack</button>
-            <button id="magic-btn" className="btn primary" type="button">Magic</button>
-            <button id="items-btn" className="btn primary" type="button">Items</button>
-            <button id="capture-btn" className="btn success" type="button">Capture</button>
-            <button id="flee-btn" className="btn danger" type="button">Flee</button>
-          </div>
-          <div className="combat-submenus" style={{ margin: '20px' }}>
-            <button id="magic-back-btn" className="btn secondary" type="button" style={{ display: 'none' }}>Back from Magic</button>
-            <button id="items-back-btn" className="btn secondary" type="button" style={{ display: 'none' }}>Back from Items</button>
-            <button id="target-back-btn" className="btn secondary" type="button" style={{ display: 'none' }}>Back from Targeting</button>
-          </div>
-        </div>
+      <div id="combat" className={`screen ${currentScreen === 'combat' || reactGameState.currentScreen === 'combat' ? 'active' : ''}`}>
+        <ReactCombat />
       </div>
 
       <div id="monster-management" className={`screen ${currentScreen === 'monster_management' ? 'active' : ''}`}>
@@ -138,12 +127,8 @@ const ReactUI: React.FC = () => {
         </div>
       </div>
 
-      <div id="inventory" className={`screen ${currentScreen === 'inventory' ? 'active' : ''}`}>
-        {/* Inventory UI will be implemented here */}
-        <div className="inventory-placeholder">
-          <h2>Inventory</h2>
-          <p>Inventory interface will be implemented here.</p>
-        </div>
+      <div id="inventory" className={`screen ${currentScreen === 'inventory' || reactGameState.currentScreen === 'inventory' ? 'active' : ''}`}>
+        <ReactInventoryScreen />
       </div>
 
       <div id="settings" className={`screen ${currentScreen === 'settings' ? 'active' : ''}`}>
@@ -153,6 +138,9 @@ const ReactUI: React.FC = () => {
           <p>Settings interface will be implemented here.</p>
         </div>
       </div>
+
+      {/* React Test Panel for development */}
+      {process.env.NODE_ENV === 'development' && <ReactTestPanel />}
     </div>
   );
 };

@@ -397,6 +397,27 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
     threshold: 50 // Enable virtualization for 50+ creatures
   });
 
+  // Handle creature selection for breeding
+  const handleCreatureSelect = useCallback((creature: EnhancedCreature) => {
+    if (viewMode !== 'breeding') return;
+
+    if (!selectedParent1) {
+      setSelectedParent1(creature);
+    } else if (!selectedParent2 && creature.id !== selectedParent1.id) {
+      setSelectedParent2(creature);
+    } else {
+      // Reset selection if same creature or both are already selected
+      setSelectedParent1(creature);
+      setSelectedParent2(null);
+    }
+  }, [viewMode, selectedParent1]);
+
+  // Handle creature selection for trading
+  const handleTradeCreatureSelect = useCallback((creature: EnhancedCreature) => {
+    if (viewMode !== 'trading') return;
+    setSelectedTradeCreature(creature);
+  }, [viewMode]);
+
   // Creature rendering function for virtualized grid
   const renderCreature = useCallback((creature: EnhancedCreature, index: number) => (
     <CreatureCard
@@ -560,21 +581,6 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
     }
   }, []);
 
-  // Handle creature selection for breeding
-  const handleCreatureSelect = useCallback((creature: EnhancedCreature) => {
-    if (viewMode !== 'breeding') return;
-
-    if (!selectedParent1) {
-      setSelectedParent1(creature);
-    } else if (!selectedParent2 && creature.id !== selectedParent1.id) {
-      setSelectedParent2(creature);
-    } else {
-      // Reset selection if same creature or both are already selected
-      setSelectedParent1(creature);
-      setSelectedParent2(null);
-    }
-  }, [viewMode, selectedParent1]);
-
   // Handle breeding execution
   const handleBreed = useCallback(async () => {
     if (!selectedParent1 || !selectedParent2) return;
@@ -601,12 +607,6 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
       alert(`Breeding failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }, [selectedParent1, selectedParent2]);
-
-  // Handle creature selection for trading
-  const handleTradeCreatureSelect = useCallback((creature: EnhancedCreature) => {
-    if (viewMode !== 'trading') return;
-    setSelectedTradeCreature(creature);
-  }, [viewMode]);
 
   // Handle trade execution
   const handleExecuteTrade = useCallback(async () => {
