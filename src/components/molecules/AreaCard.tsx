@@ -303,11 +303,52 @@ const AreaCard: React.FC<AreaCardProps> = ({
           )}
         </div>
 
-        {/* Level requirement warning */}
-        {!meetsLevelRequirement && (
+        {/* Unlock requirements display */}
+        {isLocked && (
+          <div className={styles.unlockRequirements}>
+            <h4 className={styles.requirementsTitle}>🔒 Unlock Requirements:</h4>
+            <div className={styles.requirementsList}>
+              {area.unlockRequirements.level && (
+                <div className={styles.requirement}>
+                  <span className={styles.requirementIcon}>⭐</span>
+                  <span className={`${styles.requirementText} ${!meetsLevelRequirement ? styles.unmet : styles.met}`}>
+                    Level {area.unlockRequirements.level} {meetsLevelRequirement ? '✓' : `(Current: ${playerLevel})`}
+                  </span>
+                </div>
+              )}
+              {area.unlockRequirements.story && (
+                <div className={styles.requirement}>
+                  <span className={styles.requirementIcon}>📖</span>
+                  <span className={styles.requirementText}>
+                    Complete: {area.unlockRequirements.story.replace(/_/g, ' ')}
+                  </span>
+                </div>
+              )}
+              {area.unlockRequirements.areas && area.unlockRequirements.areas.length > 0 && (
+                <div className={styles.requirement}>
+                  <span className={styles.requirementIcon}>🗺️</span>
+                  <span className={styles.requirementText}>
+                    Clear: {area.unlockRequirements.areas.join(', ').replace(/_/g, ' ')}
+                  </span>
+                </div>
+              )}
+              {area.unlockRequirements.items && area.unlockRequirements.items.length > 0 && (
+                <div className={styles.requirement}>
+                  <span className={styles.requirementIcon}>🎒</span>
+                  <span className={styles.requirementText}>
+                    Need: {area.unlockRequirements.items.join(', ').replace(/_/g, ' ')}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Level requirement warning for accessible but challenging areas */}
+        {!isLocked && !meetsLevelRequirement && (
           <div className={styles.levelWarning}>
             <span className={styles.warningIcon}>⚠️</span>
-            <span>Requires level {area.unlockRequirements.level}</span>
+            <span>Recommended level {area.unlockRequirements.level} (Current: {playerLevel})</span>
           </div>
         )}
       </Card>

@@ -40,10 +40,13 @@ export const AreaExploration: React.FC<AreaExplorationProps> = ({
       return { type: 'nothing', message: 'You find nothing of interest.' };
     }
 
-    const encounterRate = currentArea.encounterRate || 0;
+    // Enhanced encounter rates for better gameplay
+    const baseEncounterRate = currentArea.encounterRate || 30;
+    // Boost encounter rate significantly to ensure frequent monster encounters
+    const adjustedEncounterRate = Math.min(75, baseEncounterRate + 40); // Minimum 70% encounter rate, up to 75%
     const roll = Math.random() * 100;
 
-    if (roll < encounterRate && currentArea.monsters.length > 0) {
+    if (roll < adjustedEncounterRate && currentArea.monsters.length > 0) {
       // Monster encounter
       const monsterIndex = Math.floor(Math.random() * currentArea.monsters.length);
       const monsterSpecies = currentArea.monsters[monsterIndex];
@@ -56,8 +59,8 @@ export const AreaExploration: React.FC<AreaExplorationProps> = ({
         },
         message: `A wild ${monsterSpecies.replace(/_/g, ' ')} appears!`
       };
-    } else if (roll < 30) {
-      // Item discovery
+    } else if (roll < adjustedEncounterRate + 15) {
+      // Item discovery (15% chance)
       const items = ['healing_herb', 'mana_flower', 'forest_berry', 'small_gold'];
       const foundItem = items[Math.floor(Math.random() * items.length)];
 
@@ -66,8 +69,8 @@ export const AreaExploration: React.FC<AreaExplorationProps> = ({
         data: { item: foundItem, quantity: 1 },
         message: `You found a ${foundItem.replace(/_/g, ' ')}!`
       };
-    } else if (roll < 40) {
-      // Story event
+    } else if (roll < adjustedEncounterRate + 20) {
+      // Story event (5% chance)
       const events = [
         'You hear rustling in the bushes, but nothing emerges.',
         'Ancient ruins peek through the undergrowth.',
@@ -82,7 +85,7 @@ export const AreaExploration: React.FC<AreaExplorationProps> = ({
       };
     }
 
-    // Nothing found
+    // Nothing found (only 5-10% chance now)
     const nothingMessages = [
       'You search the area thoroughly but find nothing.',
       'The path ahead seems quiet and peaceful.',
