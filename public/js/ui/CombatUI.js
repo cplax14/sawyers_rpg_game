@@ -1194,10 +1194,7 @@ class CombatUI extends BaseUIModule {
                     // Reset combat state after victory
                     combat.active = false;
                     combat.currentTurn = null;
-                    // Return to world after brief delay
-                    setTimeout(() => {
-                        try { this.sendMessage('showScene', { sceneName: 'game_world' }); } catch(_){ }
-                    }, 500);
+                    // Note: Return to world will be handled when the victory modal is closed
                 }
                 return;
             }
@@ -2227,6 +2224,12 @@ class CombatUI extends BaseUIModule {
         const closeModal = () => {
             modal.classList.add('hidden');
             modal.style.display = 'none';
+            // Return to world after modal is closed
+            try {
+                this.sendMessage('showScene', { sceneName: 'game_world' });
+            } catch(error) {
+                console.warn('Error transitioning to game world:', error);
+            }
         };
 
         if (continueBtn) continueBtn.addEventListener('click', closeModal);

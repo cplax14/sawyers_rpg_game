@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sawyer's RPG Game - React Port</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <!-- React App Root -->
+    <div id="react-root" style="width: 100vw; height: 100vh; position: relative; margin: 0; padding: 0;"></div>
+
+    <!-- Temporary canvas for vanilla JS game initialization -->
+    <!-- This will be replaced by React-managed canvas -->
+    <canvas id="game-canvas" width="800" height="600" style="display: none;"></canvas>
+
+    <!-- Load vanilla JS game modules dynamically to avoid Vite module processing -->
+    <script>
+      // Dynamically load vanilla JS files from public directory (served as static assets)
+      const vanillaScripts = [
+        '/js/spellSystem.js',
+        '/js/gameState.js',
+        '/js/ui/BaseUIModule.js',
+        '/js/ui/UIHelpers.js',
+        '/js/ui/SceneManager.js',
+        '/js/ui/NotificationBridge.js',
+        '/js/ui/UIModuleLoader.js',
+        '/js/ui/TransitionController.js',
+        '/js/ui/UIManager.js',
+        '/js/ui/MenuUI.js',
+        '/js/ui/GameWorldUI.js',
+        '/js/ui/CombatUI.js',
+        '/js/ui/MonsterUI.js',
+        '/js/ui/InventoryUI.js',
+        '/js/ui/SettingsUI.js',
+        '/js/ui/StoryUI.js',
+        '/js/player.js',
+        '/js/monster.js',
+        '/js/monsterBreeding.js',
+        '/js/monsterCapture.js',
+        '/js/combat.js',
+        '/js/worldMap.js',
+        '/js/lootSystem.js',
+        '/js/saveSystem.js',
+        '/data/characters.js',
+        '/data/monsters.js',
+        '/data/areas.js',
+        '/data/items.js',
+        '/data/spells.js',
+        '/data/story.js',
+        '/js/game.js' // Must be last
+      ];
+
+      // Load scripts sequentially
+      let loadIndex = 0;
+      function loadNextScript() {
+        if (loadIndex >= vanillaScripts.length) {
+          console.log('✅ All vanilla JS modules loaded');
+          return;
+        }
+
+        const script = document.createElement('script');
+        script.src = vanillaScripts[loadIndex];
+        script.onload = () => {
+          loadIndex++;
+          loadNextScript();
+        };
+        script.onerror = (error) => {
+          console.error(`Failed to load ${vanillaScripts[loadIndex]}:`, error);
+          loadIndex++;
+          loadNextScript();
+        };
+        document.head.appendChild(script);
+      }
+
+      // Start loading when DOM is ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadNextScript);
+      } else {
+        loadNextScript();
+      }
+    </script>
+
+    <!-- Load React app after vanilla JS modules -->
+    <script type="module" src="/src/main.tsx"></script>
+</body>
+</html>

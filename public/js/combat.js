@@ -279,7 +279,8 @@ class CombatEngine {
 
             // Enhanced loot generation with tiered system
             if (typeof LootSystem !== 'undefined') {
-                const monsterLoot = LootSystem.generateMonsterLoot(species, enemyLevel, playerLevel);
+                const currentArea = this.gameState.world?.currentArea || null;
+                const monsterLoot = LootSystem.generateMonsterLoot(species, playerLevel, currentArea);
                 if (monsterLoot) {
                     totalGold += monsterLoot.gold || 0;
                     if (monsterLoot.items && monsterLoot.items.length > 0) {

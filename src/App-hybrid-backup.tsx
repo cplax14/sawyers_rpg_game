@@ -1,5 +1,6 @@
 import React from 'react';
 import { GameProvider, useGame } from './contexts/GameContext';
+import { ReactGameProvider } from './contexts/ReactGameContext';
 import GameCanvas from './components/GameCanvas';
 import ReactUI from './components/ReactUI';
 import LoadingScreen from './components/LoadingScreen';
@@ -10,9 +11,11 @@ import './App.css';
 function App() {
   return (
     <GameProvider>
-      <div className="App">
-        <GameWrapper />
-      </div>
+      <ReactGameProvider>
+        <div className="App">
+          <GameWrapper />
+        </div>
+      </ReactGameProvider>
     </GameProvider>
   );
 }

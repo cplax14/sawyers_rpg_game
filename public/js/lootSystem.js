@@ -3475,7 +3475,11 @@ const LootSystem = {
             spell_scroll: { name: 'Spell Scroll', category: 'spell_scroll', stackable: false, baseValue: 100 },
             spell_book: { name: 'Spell Book', category: 'spell_book', stackable: false, baseValue: 200 },
             spell_tome: { name: 'Spell Tome', category: 'spell_tome', stackable: false, baseValue: 500 },
-            ancient_tome: { name: 'Ancient Tome', category: 'ancient_tome', stackable: false, baseValue: 1000 }
+            ancient_tome: { name: 'Ancient Tome', category: 'ancient_tome', stackable: false, baseValue: 1000 },
+
+            // Abstract item type fallbacks
+            tutorial_items: { name: 'Tutorial Item', category: 'material', stackable: true, baseValue: 5 },
+            village_supplies: { name: 'Village Supply', category: 'material', stackable: true, baseValue: 8 }
         };
 
         return templates[itemType] ? { ...templates[itemType] } : null;
@@ -3736,7 +3740,11 @@ const LootSystem = {
                     leather_equipment: ['leather_armor', 'leather_vest'],
                     metal_equipment: ['iron_sword', 'steel_sword', 'chain_mail', 'plate_armor'],
                     crystal_equipment: ['crystal_staff', 'mana_crystal'],
-                    stealth_gear: ['stealth_cloak', 'poisoned_blade', 'leather_vest']
+                    stealth_gear: ['stealth_cloak', 'poisoned_blade', 'leather_vest'],
+
+                    // Abstract item types for areas and tutorials
+                    tutorial_items: ['health_potion', 'repair_kit', 'healing_herb'],
+                    village_supplies: ['health_potion', 'mana_potion', 'repair_kit', 'healing_herb']
                 };
                 const list = abstractMaps[lootEntry.itemType];
                 if (Array.isArray(list) && list.length > 0) {
