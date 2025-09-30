@@ -42,7 +42,7 @@ interface CombatAction {
 export const Combat: React.FC<CombatProps> = ({
   className
 }) => {
-  const { state, endCombat, setCurrentScreen, addExperience: addExp, addGold: addPlayerGold } = useReactGame();
+  const { state, endCombat, setCurrentScreen, addExperience: addExp, addGold: addPlayerGold, generateCombatRewards } = useReactGame();
   const isMobile = useIsMobile();
 
   const player = state.player;
@@ -557,13 +557,20 @@ export const Combat: React.FC<CombatProps> = ({
         }
       }
 
-      addBattleLog(`Gained ${expGained} experience and ${goldGained} gold!`, 'system');
+      // Generate rewards to show in battle log
+      const rewardItems = generateCombatRewards(enemy?.species || 'unknown', enemy?.level || 1).items;
+      let battleMessage = `Gained ${expGained} experience and ${goldGained} gold!`;
+      if (rewardItems.length > 0) {
+        const itemNames = rewardItems.map(item => item.name).join(', ');
+        battleMessage += ` Found: ${itemNames}`;
+      }
+      addBattleLog(battleMessage, 'system');
 
       // End combat with proper payload to trigger victory modal
       endCombat({
         experience: expGained,
         gold: goldGained,
-        items: [] // TODO: Add loot items
+        items: rewardItems
       });
     } else {
       // For defeat, fled, captured - end combat without rewards

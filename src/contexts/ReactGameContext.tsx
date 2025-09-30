@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useCallback, ReactNode } from 'react';
 import { AutoSaveManager } from '../utils/autoSave';
 import { InventoryState } from '../types/inventory';
 import { CreatureCollection } from '../types/creatures';
@@ -685,6 +685,104 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         experience: action.payload
       };
 
+    case 'SAVE_GAME':
+      try {
+        const saveData = {
+          player: state.player,
+          currentArea: state.currentArea,
+          unlockedAreas: state.unlockedAreas,
+          inventory: state.inventory,
+          capturedMonsters: state.capturedMonsters,
+          storyFlags: state.storyFlags,
+          completedQuests: state.completedQuests,
+          totalPlayTime: state.totalPlayTime + (Date.now() - state.sessionStartTime),
+          settings: state.settings,
+          timestamp: action.payload.timestamp
+        };
+
+        // Save to localStorage
+        const saveSlotKey = `sawyers_rpg_save_slot_${action.payload.slotIndex}`;
+        localStorage.setItem(saveSlotKey, JSON.stringify(saveData));
+
+        console.log(`✅ Game saved to slot ${action.payload.slotIndex + 1}:`, action.payload.saveName);
+
+        // Update save slots in state
+        const updatedSaveSlots = [...state.saveSlots];
+        updatedSaveSlots[action.payload.slotIndex] = {
+          data: saveData,
+          isEmpty: false,
+          saveName: action.payload.saveName,
+          timestamp: action.payload.timestamp
+        };
+
+        return {
+          ...state,
+          saveSlots: updatedSaveSlots,
+          currentSaveSlot: action.payload.slotIndex
+        };
+      } catch (error) {
+        console.error('Save failed:', error);
+        return state;
+      }
+
+    case 'LOAD_GAME':
+      try {
+        const saveSlotKey = `sawyers_rpg_save_slot_${action.payload.slotIndex}`;
+        const savedData = localStorage.getItem(saveSlotKey);
+
+        if (!savedData) {
+          console.error(`No save data found in slot ${action.payload.slotIndex + 1}`);
+          return state;
+        }
+
+        const parsedData = JSON.parse(savedData);
+        console.log(`✅ Game loaded from slot ${action.payload.slotIndex + 1}`);
+
+        return {
+          ...state,
+          player: parsedData.player,
+          currentArea: parsedData.currentArea,
+          unlockedAreas: parsedData.unlockedAreas || [],
+          inventory: parsedData.inventory || [],
+          capturedMonsters: parsedData.capturedMonsters || [],
+          storyFlags: parsedData.storyFlags || {},
+          completedQuests: parsedData.completedQuests || [],
+          totalPlayTime: parsedData.totalPlayTime || 0,
+          settings: { ...state.settings, ...parsedData.settings },
+          currentSaveSlot: action.payload.slotIndex,
+          sessionStartTime: Date.now() // Reset session start time
+        };
+      } catch (error) {
+        console.error('Load failed:', error);
+        return state;
+      }
+
+    case 'DELETE_SAVE':
+      try {
+        const saveSlotKey = `sawyers_rpg_save_slot_${action.payload.slotIndex}`;
+        localStorage.removeItem(saveSlotKey);
+
+        console.log(`✅ Save slot ${action.payload.slotIndex + 1} deleted`);
+
+        // Update save slots in state
+        const updatedSaveSlots = [...state.saveSlots];
+        updatedSaveSlots[action.payload.slotIndex] = {
+          data: null,
+          isEmpty: true,
+          saveName: '',
+          timestamp: 0
+        };
+
+        return {
+          ...state,
+          saveSlots: updatedSaveSlots,
+          currentSaveSlot: state.currentSaveSlot === action.payload.slotIndex ? null : state.currentSaveSlot
+        };
+      } catch (error) {
+        console.error('Delete save failed:', error);
+        return state;
+      }
+
     default:
       return state;
   }
@@ -746,6 +844,50 @@ interface ReactGameProviderProps {
 
 export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(reactGameReducer, initialState);
+
+  // Initialize save slots from localStorage on mount
+  useEffect(() => {
+    const initializeSaveSlots = () => {
+      const saveSlots = [];
+      for (let i = 0; i < 5; i++) { // Check for 5 save slots
+        const saveSlotKey = `sawyers_rpg_save_slot_${i}`;
+        const savedData = localStorage.getItem(saveSlotKey);
+
+        if (savedData) {
+          try {
+            const parsedData = JSON.parse(savedData);
+            saveSlots[i] = {
+              data: parsedData,
+              isEmpty: false,
+              saveName: `Save ${i + 1}`, // Default name, could be enhanced
+              timestamp: parsedData.timestamp || Date.now()
+            };
+          } catch (error) {
+            console.error(`Failed to parse save slot ${i + 1}:`, error);
+            saveSlots[i] = {
+              data: null,
+              isEmpty: true,
+              saveName: '',
+              timestamp: 0
+            };
+          }
+        } else {
+          saveSlots[i] = {
+            data: null,
+            isEmpty: true,
+            saveName: '',
+            timestamp: 0
+          };
+        }
+      }
+
+      // Update state with loaded save slots
+      dispatch({ type: 'LOAD_GAME_DATA', payload: { saveSlots } });
+      console.log('✅ Initialized save slots from localStorage:', saveSlots.filter(slot => !slot.isEmpty).length, 'saves found');
+    };
+
+    initializeSaveSlots();
+  }, []);
 
   // Track session time
   useEffect(() => {
@@ -874,6 +1016,82 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
     dispatch({ type: 'HIDE_VICTORY_MODAL' });
   };
 
+  // Generate combat rewards including items and equipment
+  const generateCombatRewards = useCallback((enemySpecies: string, enemyLevel: number) => {
+    // Base experience and gold calculation
+    const baseExp = Math.floor(enemyLevel * 10 + Math.random() * 20);
+    const baseGold = Math.floor(enemyLevel * 5 + Math.random() * 10);
+
+    // Item drop chance calculation
+    const items: ReactItem[] = [];
+
+    // Common items (40% chance) - using items that exist in ItemData
+    if (Math.random() < 0.4) {
+      const commonItems = [
+        { id: 'healing_herb', name: 'Healing Herb', type: 'material', rarity: 'common', quantity: 1, icon: '🌿' },
+        { id: 'mana_flower', name: 'Mana Flower', type: 'material', rarity: 'common', quantity: 1, icon: '🌸' },
+        { id: 'health_potion', name: 'Health Potion', type: 'consumable', rarity: 'common', quantity: 1, icon: '🧪' },
+      ];
+      const randomCommon = commonItems[Math.floor(Math.random() * commonItems.length)];
+      items.push(randomCommon);
+    }
+
+    // Equipment drops based on enemy type and level (15% chance) - using actual ItemData items
+    if (Math.random() < 0.15) {
+      const equipmentDrops = [
+        // Weapons
+        { id: 'iron_sword', name: 'Iron Sword', type: 'weapon', rarity: 'common', quantity: 1, icon: '⚔️' },
+        { id: 'steel_dagger', name: 'Steel Dagger', type: 'weapon', rarity: 'common', quantity: 1, icon: '🗡️' },
+        { id: 'oak_staff', name: 'Oak Staff', type: 'weapon', rarity: 'common', quantity: 1, icon: '🪄' },
+        // Armor
+        { id: 'leather_vest', name: 'Leather Vest', type: 'armor', rarity: 'common', quantity: 1, icon: '🦺' },
+        { id: 'chain_mail', name: 'Chain Mail', type: 'armor', rarity: 'common', quantity: 1, icon: '🛡️' },
+        { id: 'cloth_robe', name: 'Cloth Robe', type: 'armor', rarity: 'common', quantity: 1, icon: '👘' },
+        // Accessories
+        { id: 'health_ring', name: 'Health Ring', type: 'accessory', rarity: 'common', quantity: 1, icon: '💍' },
+        { id: 'mana_crystal', name: 'Mana Crystal', type: 'accessory', rarity: 'common', quantity: 1, icon: '💎' },
+      ];
+
+      // Filter equipment appropriate for enemy level
+      const appropriateEquipment = equipmentDrops.filter(item => {
+        if (enemyLevel >= 5 && item.rarity === 'uncommon') return true;
+        if (enemyLevel <= 8 && item.rarity === 'common') return true;
+        return false;
+      });
+
+      if (appropriateEquipment.length > 0) {
+        const randomEquipment = appropriateEquipment[Math.floor(Math.random() * appropriateEquipment.length)];
+        items.push(randomEquipment);
+      }
+    }
+
+    // Rare drops (5% chance for higher level enemies) - using actual ItemData items
+    if (enemyLevel >= 3 && Math.random() < 0.05) {
+      const rareItems = [
+        { id: 'crystal_staff', name: 'Crystal Staff', type: 'weapon', rarity: 'rare', quantity: 1, icon: '✨' },
+        { id: 'hi_potion', name: 'Hi-Potion', type: 'consumable', rarity: 'uncommon', quantity: 1, icon: '🧪' },
+        { id: 'elixir', name: 'Elixir', type: 'consumable', rarity: 'rare', quantity: 1, icon: '✨' },
+      ];
+      const randomRare = rareItems[Math.floor(Math.random() * rareItems.length)];
+      items.push(randomRare);
+    }
+
+    // Monster-specific drops - using actual ItemData materials
+    if (enemySpecies === 'slime' && Math.random() < 0.3) {
+      items.push({ id: 'slime_gel', name: 'Slime Gel', type: 'material', rarity: 'common', quantity: 1, icon: '🫧' });
+    } else if (enemySpecies === 'goblin' && Math.random() < 0.25) {
+      items.push({ id: 'goblin_tooth', name: 'Goblin Tooth', type: 'material', rarity: 'common', quantity: 1, icon: '🦷' });
+    } else if (enemySpecies === 'wolf' && Math.random() < 0.2) {
+      items.push({ id: 'wolf_pelt', name: 'Wolf Pelt', type: 'material', rarity: 'uncommon', quantity: 1, icon: '🧥' });
+    }
+
+    return {
+      experience: baseExp,
+      gold: baseGold,
+      items: items
+    };
+  }, []);
+
   // Item database for loot generation
   const ITEM_DATABASE: { [key: string]: Omit<ReactItem, 'quantity'> } = {
     health_potion: {
@@ -959,40 +1177,6 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
     }
   };
 
-  const generateCombatRewards = (enemyLevel: number = 1) => {
-    const baseExp = enemyLevel * 8;
-    const baseGold = enemyLevel * 5 + Math.floor(Math.random() * 10);
-
-    // Generate random items
-    const items: ReactItem[] = [];
-    const itemIds = Object.keys(ITEM_DATABASE);
-
-    // 70% chance for a common item
-    if (Math.random() < 0.7) {
-      const commonItems = itemIds.filter(id => ITEM_DATABASE[id].rarity === 'common');
-      if (commonItems.length > 0) {
-        const randomItem = commonItems[Math.floor(Math.random() * commonItems.length)];
-        const itemData = ITEM_DATABASE[randomItem];
-        items.push({ ...itemData, quantity: 1 });
-      }
-    }
-
-    // 25% chance for an uncommon item
-    if (Math.random() < 0.25) {
-      const uncommonItems = itemIds.filter(id => ITEM_DATABASE[id].rarity === 'uncommon');
-      if (uncommonItems.length > 0) {
-        const randomItem = uncommonItems[Math.floor(Math.random() * uncommonItems.length)];
-        const itemData = ITEM_DATABASE[randomItem];
-        items.push({ ...itemData, quantity: 1 });
-      }
-    }
-
-    return {
-      experience: baseExp,
-      gold: baseGold,
-      items
-    };
-  };
 
   const resetGame = () => {
     dispatch({ type: 'RESET_GAME' });
