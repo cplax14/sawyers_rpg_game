@@ -178,6 +178,15 @@
   --font-ui-md: 1rem;         /* 16px - Default buttons */
   --font-ui-sm: 0.875rem;     /* 14px - Small buttons */
 
+  /* ===== TYPOGRAPHY FONT FAMILIES ===== */
+  /* Heading fonts */
+  --font-heading: 'Cinzel', 'Georgia', serif;
+  --font-heading-alt: 'Crimson Text', 'Times New Roman', serif;
+
+  /* Body fonts */
+  --font-body: 'Crimson Text', 'Times New Roman', serif;
+  --font-body-alt: 'Lora', 'Georgia', serif;
+
   /* ===== ACCESSIBILITY ENHANCEMENTS ===== */
   /* Focus outlines */
   --focus-outline: 2px solid var(--primary-gold);
@@ -261,6 +270,57 @@
 }
 
 /* ===== ACCESSIBILITY ===== */
+
+/* Focus-visible styles for keyboard navigation (WCAG 2.1 AA compliance) */
+*:focus-visible {
+  outline: 3px solid var(--primary-gold);
+  outline-offset: 2px;
+}
+
+button:focus-visible,
+.btn:focus-visible,
+[role="button"]:focus-visible {
+  outline: 3px solid var(--primary-gold);
+  outline-offset: 4px;
+  box-shadow: 0 0 0 6px rgba(212, 175, 55, 0.2);
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid var(--primary-gold);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
+}
+
+a:focus-visible {
+  outline: 3px solid var(--primary-gold);
+  outline-offset: 2px;
+  text-decoration: underline;
+}
+
+/* Visually hidden but accessible to screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.sr-only-focusable:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
 @media (prefers-reduced-motion: reduce) {
   :root {
     --motion-reduce: none;

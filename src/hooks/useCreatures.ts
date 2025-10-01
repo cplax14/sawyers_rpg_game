@@ -6,7 +6,7 @@
  * and bestiary tracking.
  */
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useGameState } from '@/contexts/ReactGameContext';
 import { useInventory } from './useInventory';
 import {
@@ -86,6 +86,11 @@ interface UseCreaturesReturn {
     byElement: Record<CreatureElement, number>;
     companions: number;
     breeding: number;
+    // Added for CreatureScreen compatibility
+    discovered: number;
+    captured: number;
+    total: number;
+    completionPercentage: number;
   };
 
   // Events
@@ -140,13 +145,213 @@ export function useCreatures(): UseCreaturesReturn {
   const [error, setError] = useState<string | null>(null);
   const [eventListeners, setEventListeners] = useState<CreatureEventCallback[]>([]);
 
-  // Initialize from game state
+  // Track processed monster IDs to avoid regenerating IVs
+  const processedMonstersRef = useRef<Set<string>>(new Set());
+
+  // Helper function to convert ReactMonster to EnhancedCreature (generate IVs once per monster)
+  const convertReactMonsterToEnhancedCreature = useCallback((monster: any, currentArea: string, playerName: string): EnhancedCreature => {
+    // Generate random individual stats (IVs) - only called once per unique monster
+    const generateIV = () => Math.floor(Math.random() * 32);
+
+    // Create a properly structured EnhancedCreature
+    return {
+      // Core identity
+      id: monster.id,
+      creatureId: monster.id,
+      name: monster.name,
+      species: monster.species || monster.name.toLowerCase().replace(/\s+/g, '_'),
+      level: monster.level,
+
+      // Health and energy
+      hp: monster.hp,
+      maxHp: monster.maxHp,
+      currentHealth: monster.hp,
+      maxHealth: monster.maxHp,
+      mp: monster.mp,
+      maxMp: monster.maxMp,
+
+      // Stats - ReactMonster has baseStats/currentStats
+      baseStats: monster.baseStats,
+      currentStats: monster.currentStats,
+      // Also provide stats for Monster interface compatibility
+      stats: monster.currentStats,
+
+      // Type and classification
+      creatureType: (monster.types?.[0] as CreatureType) || 'beast',
+      types: monster.types || ['normal'],
+      element: (monster.types?.[0] as CreatureElement) || 'normal',
+      rarity: monster.rarity || 'common',
+      type: monster.types?.[0] || 'beast',
+
+      // Capture information
+      captureDate: Date.now(),
+      captureLocation: currentArea || 'unknown',
+      capturedBy: playerName || 'Player',
+      capturedAt: new Date(),
+      discoveredAt: new Date(),
+      discoveryLocation: currentArea || 'unknown',
+      timesEncountered: 1,
+
+      // Physical attributes
+      size: 'medium' as const,
+      habitat: [currentArea || 'unknown'],
+
+      // Abilities and items
+      abilities: monster.abilities || [],
+      captureRate: monster.captureRate || 0.3,
+      experience: monster.experience || 0,
+      gold: monster.gold || 0,
+      drops: monster.drops || [],
+
+      // Areas and evolution
+      areas: monster.areas || [],
+      evolvesTo: monster.evolvesTo || [],
+
+      // Status flags
+      isWild: monster.isWild !== undefined ? monster.isWild : true,
+      nickname: undefined,
+      isFavorite: false,
+      isCompanion: false,
+
+      // Personality
+      personality: {
+        traits: [],
+        mood: 'neutral',
+        loyalty: 50,
+        happiness: monster.friendship !== undefined ? monster.friendship : 100,
+        energy: 100,
+        sociability: 50
+      },
+
+      // Nature
+      nature: {
+        name: 'neutral',
+        statModifiers: {},
+        behaviorModifiers: {
+          aggression: 0,
+          defensiveness: 0,
+          cooperation: 0
+        }
+      },
+
+      // Individual stats (IVs/EVs) - generated once
+      individualStats: {
+        hpIV: generateIV(),
+        attackIV: generateIV(),
+        defenseIV: generateIV(),
+        magicAttackIV: generateIV(),
+        magicDefenseIV: generateIV(),
+        speedIV: generateIV(),
+        hpEV: 0,
+        attackEV: 0,
+        defenseEV: 0,
+        magicAttackEV: 0,
+        magicDefenseEV: 0,
+        speedEV: 0
+      },
+
+      // Genetics and breeding
+      genetics: {
+        parentIds: [],
+        generation: 1,
+        inheritedTraits: [],
+        mutations: [],
+        breedingPotential: 100
+      },
+      breedingGroup: [monster.types?.[0] as CreatureType || 'beast'],
+      fertility: 100,
+
+      // Collection status
+      collectionStatus: {
+        discovered: true,
+        captured: true,
+        timesCaptures: 1,
+        favorite: false,
+        tags: [],
+        notes: '',
+        completionLevel: 'captured',
+        firstSeenDate: Date.now(),
+        captureCount: 1,
+        releaseCount: 0,
+        breedCount: 0
+      },
+
+      // Visual and descriptive
+      sprite: '',
+      model: undefined,
+      description: `A ${monster.types?.[0] || 'mysterious'} creature from ${currentArea || 'unknown lands'}.`,
+      loreText: `This ${monster.name} was captured in ${currentArea || 'unknown lands'}.`
+    };
+  }, []);
+
+  // Initialize from game state - only process NEW captured monsters
+  useEffect(() => {
+    const capturedMonsters = gameState.capturedMonsters;
+
+    // Early exit if no monsters
+    if (!capturedMonsters || capturedMonsters.length === 0) {
+      return;
+    }
+
+    // Find only NEW monsters (not yet processed)
+    const newMonsters = capturedMonsters.filter(m => !processedMonstersRef.current.has(m.id));
+
+    if (newMonsters.length === 0) {
+      return; // No new monsters to process
+    }
+
+    // Convert only new monsters to EnhancedCreature
+    const newCreaturesMap: Record<string, EnhancedCreature> = {};
+    newMonsters.forEach(monster => {
+      const enhancedCreature = convertReactMonsterToEnhancedCreature(
+        monster,
+        gameState.currentArea || 'unknown',
+        gameState.player?.name || 'Player'
+      );
+      newCreaturesMap[monster.id] = enhancedCreature;
+      processedMonstersRef.current.add(monster.id); // Mark as processed
+    });
+
+    // Merge new creatures with existing collection
+    setCollection(prev => ({
+      ...prev,
+      creatures: { ...prev.creatures, ...newCreaturesMap },
+      totalCaptured: capturedMonsters.length
+    }));
+  }, [gameState.capturedMonsters, gameState.currentArea, gameState.player?.name, convertReactMonsterToEnhancedCreature]);
+
+  // Initialize activeTeam and other collection data from global state
   useEffect(() => {
     if (gameState.creatures) {
+      console.log('🔄 useCreatures: Loading collection from global state', {
+        hasActiveTeam: !!gameState.creatures.activeTeam,
+        activeTeamLength: gameState.creatures.activeTeam?.length || 0,
+        activeTeamIds: gameState.creatures.activeTeam || [],
+        totalCreatures: Object.keys(gameState.creatures.creatures || {}).length
+      });
+
+      // Restore the entire collection from global state
       setCollection(prev => ({
         ...prev,
-        ...gameState.creatures
+        activeTeam: gameState.creatures.activeTeam || [],
+        reserves: gameState.creatures.reserves || [],
+        bestiary: gameState.creatures.bestiary || prev.bestiary,
+        totalDiscovered: gameState.creatures.totalDiscovered || prev.totalDiscovered,
+        totalCaptured: gameState.creatures.totalCaptured || prev.totalCaptured,
+        completionPercentage: gameState.creatures.completionPercentage || prev.completionPercentage,
+        favoriteSpecies: gameState.creatures.favoriteSpecies || prev.favoriteSpecies,
+        activeBreeding: gameState.creatures.activeBreeding || prev.activeBreeding,
+        breedingHistory: gameState.creatures.breedingHistory || prev.breedingHistory,
+        activeTrades: gameState.creatures.activeTrades || prev.activeTrades,
+        tradeHistory: gameState.creatures.tradeHistory || prev.tradeHistory,
+        // Merge creatures (combine captured monsters with any saved creatures)
+        creatures: {
+          ...prev.creatures,
+          ...(gameState.creatures.creatures || {})
+        }
       }));
+
+      console.log('✅ useCreatures: Collection loaded from global state');
     }
   }, [gameState.creatures]);
 
@@ -249,10 +454,12 @@ export function useCreatures(): UseCreaturesReturn {
     setFilteredBestiary(filtered);
   }, [collection.bestiary, collection.filter]);
 
-  // Get active team creatures
-  const activeTeam = collection.activeTeam
-    .map(id => collection.creatures[id])
-    .filter(Boolean);
+  // Get active team creatures - memoized to prevent unnecessary recalculations
+  const activeTeam = useMemo(() => {
+    return collection.activeTeam
+      .map(id => collection.creatures[id])
+      .filter(Boolean);
+  }, [collection.activeTeam, collection.creatures]);
 
   // Emit event to listeners
   const emitEvent = useCallback((event: CreatureEvent) => {
@@ -617,7 +824,19 @@ export function useCreatures(): UseCreaturesReturn {
         reserves: collection.reserves.filter(id => id !== creatureId)
       };
 
+      console.log('💾 addToTeam: Saving new collection', {
+        creatureName: creature.name,
+        creatureId,
+        activeTeamSize: newCollection.activeTeam.length,
+        activeTeamIds: newCollection.activeTeam
+      });
+
       await saveCollection(newCollection);
+
+      console.log('✅ addToTeam: Collection saved successfully', {
+        creatureName: creature.name,
+        activeTeamSize: newCollection.activeTeam.length
+      });
 
       return {
         success: true,
@@ -627,6 +846,7 @@ export function useCreatures(): UseCreaturesReturn {
       };
     } catch (err) {
       const error = err instanceof Error ? err.message : 'Failed to add creature to team';
+      console.error('❌ addToTeam failed:', error, err);
       setError(error);
       return {
         success: false,
@@ -1326,6 +1546,7 @@ export function useCreatures(): UseCreaturesReturn {
   // Get collection statistics
   const getCollectionStats = useCallback(() => {
     const creatures = Object.values(collection.creatures);
+    const bestiaryEntries = Object.values(collection.bestiary);
 
     const byRarity = creatures.reduce((acc, creature) => {
       const rarity = creature.rarity as CreatureRarity;
@@ -1343,15 +1564,28 @@ export function useCreatures(): UseCreaturesReturn {
       return acc;
     }, {} as Record<CreatureElement, number>);
 
+    // Calculate totals for CreatureScreen compatibility
+    const discovered = bestiaryEntries.length;
+    const captured = creatures.length;
+    const total = Math.max(discovered, captured) + 50; // Assume 50 more undiscovered species
+    const completionPercentage = total > 0 ? (discovered / total) * 100 : 0;
+
     return {
+      // Legacy fields for backwards compatibility
       totalCreatures: creatures.length,
       byRarity,
       byType,
       byElement,
       companions: creatures.filter(c => c.companionData?.isCompanion).length,
-      breeding: collection.activeBreeding.length
+      breeding: collection.activeBreeding.length,
+
+      // NEW: Fields expected by CreatureScreen
+      discovered,
+      captured,
+      total,
+      completionPercentage
     };
-  }, [collection.creatures, collection.activeBreeding]);
+  }, [collection.creatures, collection.bestiary, collection.activeBreeding]);
 
   // Add event listener
   const addEventListener = useCallback((callback: CreatureEventCallback): (() => void) => {

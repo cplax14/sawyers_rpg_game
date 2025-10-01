@@ -53,8 +53,7 @@ export const CombatRestrictionBanner: React.FC<CombatRestrictionBannerProps> = (
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.05) 10px, rgba(255,255,255,0.05) 20px)',
-            animation: 'slide 2s linear infinite'
+            background: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.05) 10px, rgba(255,255,255,0.05) 20px)'
           }} />
 
           <div style={{
@@ -132,7 +131,7 @@ export const CombatRestrictionBanner: React.FC<CombatRestrictionBannerProps> = (
                   }}>
                     Allowed:
                   </span>
-                  {restrictions.allowedItemTypes.map((type, index) => (
+                  {restrictions.allowedItemTypes.map((type) => (
                     <span
                       key={type}
                       style={{
@@ -193,13 +192,6 @@ export const CombatRestrictionBanner: React.FC<CombatRestrictionBannerProps> = (
           />
         </motion.div>
       )}
-
-      <style jsx>{`
-        @keyframes slide {
-          0% { transform: translateX(-20px); }
-          100% { transform: translateX(20px); }
-        }
-      `}</style>
     </AnimatePresence>
   );
 };

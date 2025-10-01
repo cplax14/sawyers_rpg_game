@@ -63,6 +63,20 @@ p {
 button {
   font-family: inherit;
   cursor: pointer;
+  min-height: var(--touch-target-comfortable); /* Ensure 48px minimum for accessibility */
+  min-width: var(--touch-target-comfortable);
+}
+
+/* Touch-friendly interactive elements */
+@media (hover: none) and (pointer: coarse) {
+  button,
+  a,
+  [role="button"],
+  input[type="button"],
+  input[type="submit"] {
+    min-height: var(--touch-target-comfortable);
+    min-width: var(--touch-target-comfortable);
+  }
 }
 
 /* Input reset */

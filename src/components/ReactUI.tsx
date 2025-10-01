@@ -4,7 +4,8 @@ import { useReactGame } from '../contexts/ReactGameContext';
 import MainMenu from './ui/MainMenu';
 import CharacterSelection from './ui/CharacterSelection';
 import GameHUD from './ui/GameHUD';
-import ReactInventoryScreen from './organisms/ReactInventoryScreen';
+import { InventoryManager } from './organisms/InventoryManager';
+import { InventoryNavigationProvider } from '../contexts/InventoryNavigationContext';
 import ReactCombat from './organisms/ReactCombat';
 import ReactTestPanel from './ui/ReactTestPanel';
 
@@ -128,7 +129,16 @@ const ReactUI: React.FC = () => {
       </div>
 
       <div id="inventory" className={`screen ${currentScreen === 'inventory' || reactGameState.currentScreen === 'inventory' ? 'active' : ''}`}>
-        <ReactInventoryScreen />
+        <InventoryNavigationProvider initialTab="items">
+          <InventoryManager
+            isOpen={currentScreen === 'inventory' || reactGameState.currentScreen === 'inventory'}
+            onClose={() => {
+              // Handle inventory close - navigate back to appropriate screen
+              setCurrentScreen('game_world');
+            }}
+            initialTab="items"
+          />
+        </InventoryNavigationProvider>
       </div>
 
       <div id="settings" className={`screen ${currentScreen === 'settings' ? 'active' : ''}`}>

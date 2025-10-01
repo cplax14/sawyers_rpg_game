@@ -325,6 +325,24 @@ const InventoryManagerInner: React.FC<InventoryManagerProps> = ({
           }
         }}
       >
+        {/* DEBUG: Component identifier */}
+        {process.env.NODE_ENV === 'development' && (
+          <div style={{
+            position: 'absolute',
+            top: '10px',
+            left: '10px',
+            background: 'rgba(0, 255, 0, 0.9)',
+            color: 'black',
+            padding: '6px 12px',
+            fontSize: '0.75rem',
+            fontWeight: 'bold',
+            borderRadius: '6px',
+            zIndex: 10001,
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
+          }}>
+            ✓ InventoryManager (FULL - WITH CREATURES TAB)
+          </div>
+        )}
         <motion.div
           className="inventory-container"
           initial={{ scale: 0.9, y: 20 }}

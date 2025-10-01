@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../atoms/Button';
 import { LoadingSpinner } from '../atoms/LoadingSpinner';
@@ -277,7 +277,7 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
   const { isMobile, isTablet } = useResponsive();
 
   const {
-    collection = [],
+    collection,
     filteredCreatures = [],
     filteredBestiary = [],
     activeTeam = [],
@@ -286,7 +286,11 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
     getCollectionStats,
     searchCreatures,
     filterCreatures,
-    sortCreatures
+    sortCreatures,
+    addToTeam,
+    removeFromTeam,
+    releaseCreature,
+    renameCreature
   } = useCreatures() || {};
 
   // Local state
@@ -433,23 +437,56 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
           'breeding-selected' : 'breeding-selectable') :
         viewMode === 'trading' ?
           (selectedTradeCreature?.id === creature.id ? 'trading-selected' : 'trading-selectable') : ''}
-      onRelease={(creature) => {
+      onRelease={async (creature) => {
         console.log('Releasing creature:', creature.name);
+        if (releaseCreature) {
+          const result = await releaseCreature(creature.creatureId || creature.id);
+          if (result.success) {
+            console.log('✅ Successfully released:', creature.name);
+          } else {
+            console.error('❌ Failed to release:', result.message);
+          }
+        }
       }}
-      onAddToTeam={(creature) => {
+      onAddToTeam={async (creature) => {
         console.log('Adding to team:', creature.name);
+        if (addToTeam) {
+          const result = await addToTeam(creature.creatureId || creature.id);
+          if (result.success) {
+            console.log('✅ Successfully added to team:', creature.name);
+          } else {
+            console.error('❌ Failed to add to team:', result.message);
+          }
+        }
       }}
-      onRemoveFromTeam={(creature) => {
+      onRemoveFromTeam={async (creature) => {
         console.log('Removing from team:', creature.name);
+        if (removeFromTeam) {
+          const result = await removeFromTeam(creature.creatureId || creature.id);
+          if (result.success) {
+            console.log('✅ Successfully removed from team:', creature.name);
+          } else {
+            console.error('❌ Failed to remove from team:', result.message);
+          }
+        }
       }}
-      onRename={(creature) => {
-        console.log('Renaming creature:', creature.name);
+      onRename={async (creature) => {
+        const newName = prompt(`Enter new name for ${creature.name}:`);
+        if (newName && newName.trim() && renameCreature) {
+          const result = await renameCreature(creature.creatureId || creature.id, newName.trim());
+          if (result.success) {
+            console.log('✅ Successfully renamed to:', newName);
+          } else {
+            console.error('❌ Failed to rename:', result.message);
+          }
+        }
       }}
       onInspect={(creature) => {
         console.log('Inspecting creature:', creature.name);
+        // TODO: Open detailed inspection modal
       }}
     />
-  ), [viewMode, isMobile, selectedParent1?.id, selectedParent2?.id, selectedTradeCreature?.id, handleCreatureSelect, handleTradeCreatureSelect]);
+  ), [viewMode, isMobile, selectedParent1?.id, selectedParent2?.id, selectedTradeCreature?.id, handleCreatureSelect, handleTradeCreatureSelect, addToTeam, removeFromTeam, releaseCreature, renameCreature]);
 
   // Creature key function for virtualized grid
   const getCreatureKey = useCallback((creature: EnhancedCreature, index: number) => creature.creatureId, []);

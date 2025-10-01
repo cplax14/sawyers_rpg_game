@@ -17,7 +17,12 @@ const VictoryModal: React.FC<VictoryModalProps> = ({ isVisible, onClose }) => {
     return null;
   }
 
-  const { experience, gold, items } = state.lastCombatRewards;
+  const { experience, gold, items, capturedMonsterId } = state.lastCombatRewards;
+
+  // Get the captured monster by ID if one was captured in this combat
+  const lastCapturedMonster = capturedMonsterId
+    ? state.capturedMonsters.find(m => m.id === capturedMonsterId)
+    : null;
 
   const handleClose = () => {
     hideVictoryModal();
@@ -163,6 +168,26 @@ const VictoryModal: React.FC<VictoryModalProps> = ({ isVisible, onClose }) => {
             </div>
           )}
         </div>
+
+        {lastCapturedMonster && (
+          <div style={{
+            background: 'linear-gradient(45deg, #8b5cf6, #7c3aed)',
+            borderRadius: '12px',
+            padding: '1rem',
+            marginBottom: '1.5rem',
+            border: '2px solid #d4af37'
+          }}>
+            <h3 style={{ color: '#fff', margin: '0 0 0.5rem 0', fontSize: '1.3rem' }}>
+              🎉 Monster Captured! 🎉
+            </h3>
+            <p style={{ margin: 0, color: '#f0f9ff', fontSize: '1.1rem' }}>
+              <strong>{lastCapturedMonster.name}</strong> (Level {lastCapturedMonster.level}) has been added to your collection!
+            </p>
+            <p style={{ margin: '0.5rem 0 0 0', color: '#e0e7ff', fontSize: '0.9rem' }}>
+              Check the Creatures tab to view your new companion
+            </p>
+          </div>
+        )}
 
         {state.player && state.player.experience >= state.player.experienceToNext && (
           <div style={{

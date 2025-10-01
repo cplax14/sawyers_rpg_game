@@ -313,7 +313,7 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
 
   // Performance optimization hooks
   const cache = useInventoryCache();
-  const { filterItems } = useSmartItemFiltering(getFilteredItems({}));
+  const { filterItems } = useSmartItemFiltering(getFilteredItems('main').map(slot => slot.item!).filter(Boolean));
   const { computeItemStats } = useSmartAggregations();
 
   // User feedback and error handling
@@ -359,7 +359,7 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
   // Smart filtering with caching
   const updateFilteredItems = useCallback(async () => {
     const baseItems = selectedCategory === 'all'
-      ? getFilteredItems({ category: 'consumables' })
+      ? getFilteredItems('main').map(slot => slot.item!).filter(Boolean)
       : getItemsByCategory(selectedCategory);
 
     const filterConfig = {
@@ -580,7 +580,7 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
     // Apply filters to get the full filtered dataset
     let items: EnhancedItem[] = [];
     if (filters.category === 'all') {
-      items = getFilteredItems({ category: 'consumables' });
+      items = getFilteredItems('main').map(slot => slot.item!).filter(Boolean);
     } else {
       items = getItemsByCategory(filters.category);
     }

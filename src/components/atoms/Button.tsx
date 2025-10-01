@@ -98,7 +98,11 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         className={buttonClasses}
         disabled={disabled || loading}
         style={{ ...mobileStyles, ...style }}
-        whileHover={!isTouchDevice ? { scale: 1.02 } : undefined} // Only hover on non-touch devices
+        whileHover={!isTouchDevice ? {
+          scale: 1.02,
+          y: -2,
+          boxShadow: '0 6px 12px rgba(0, 0, 0, 0.4)'
+        } : undefined} // Only hover on non-touch devices
         whileTap={{ scale: 0.98 }}
         transition={{ type: 'spring', stiffness: 400, damping: 25 }}
         {...props}
