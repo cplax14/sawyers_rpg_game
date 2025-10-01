@@ -4,7 +4,9 @@ import { Button } from '../atoms/Button';
 import { LoadingSpinner } from '../atoms/LoadingSpinner';
 import { useReactGame } from '../../contexts/ReactGameContext';
 import { useIsMobile } from '../../hooks';
+import { useCreatures } from '../../hooks/useCreatures';
 import { ReactMonster, ReactPlayer } from '../../types/game';
+import { EnhancedCreature } from '../../types/creatures';
 
 interface CombatProps {
   className?: string;
@@ -42,17 +44,29 @@ interface CombatAction {
 export const Combat: React.FC<CombatProps> = ({
   className
 }) => {
-  const { state, endCombat, setCurrentScreen, addExperience: addExp, addGold: addPlayerGold, generateCombatRewards } = useReactGame();
+  const { state, endCombat, setCurrentScreen, addExperience: addExp, addGold: addPlayerGold, generateCombatRewards, updateStoryFlags, captureMonster } = useReactGame();
   const isMobile = useIsMobile();
 
   const player = state.player;
   const playerLevel = player?.level || 1;
   const inventory = state.inventory || [];
   const currentEncounter = state.currentEncounter;
-  const activeTeam = []; // TODO: Implement companions in ReactGameContext
+  const creaturesHook = useCreatures();
+  const activeTeam = creaturesHook?.activeTeam || [];
 
   const enemyTurnExecutingRef = useRef(false);
   const battleEndedRef = useRef(false);
+
+  // Debug logging for activeTeam state
+  useEffect(() => {
+    console.log('🐾 Combat activeTeam state:', {
+      hasHook: !!creaturesHook,
+      activeTeamLength: activeTeam?.length || 0,
+      activeTeamCreatures: activeTeam?.map(c => ({ id: c.id, name: c.name })) || [],
+      globalCreatures: state.creatures,
+      globalActiveTeam: state.creatures?.activeTeam
+    });
+  }, [activeTeam, creaturesHook, state.creatures]);
 
   // Generate enemy monster
   const enemy = useMemo(() => {
@@ -379,10 +393,15 @@ export const Combat: React.FC<CombatProps> = ({
     if (captureRoll <= finalCaptureChance) {
       addBattleLog(`Successfully captured ${enemy?.name}!`, 'system');
 
-      // TODO: Add monster to player's collection
-      // if (enemy) {
-      //   await captureCreature(enemy);
-      // }
+      // Add monster to player's collection
+      if (enemy) {
+        try {
+          captureMonster(enemy);
+        } catch (error) {
+          console.error('Failed to capture monster:', error);
+          addBattleLog('Capture failed due to an error!', 'system');
+        }
+      }
 
       setCombatState(prev => ({ ...prev, phase: 'captured' }));
     } else {
@@ -392,7 +411,7 @@ export const Combat: React.FC<CombatProps> = ({
 
     await new Promise(resolve => setTimeout(resolve, 1500));
     setCombatState(prev => ({ ...prev, isAnimating: false }));
-  }, [combatState, addBattleLog, enemy, playerLevel]);
+  }, [combatState, addBattleLog, enemy, playerLevel, captureMonster]);
 
   // Execute Flee Action
   const executeFlee = useCallback(async () => {
@@ -425,7 +444,7 @@ export const Combat: React.FC<CombatProps> = ({
   }, [combatState, addBattleLog, enemy, playerLevel, player]);
 
   // Execute Companion Action
-  const executeCompanionAction = useCallback(async (creature: any) => {
+  const executeCompanionAction = useCallback(async (creature: EnhancedCreature) => {
     if (combatState.isAnimating || combatState.phase !== 'player-turn') return;
 
     setCombatState(prev => ({ ...prev, isAnimating: true }));
@@ -559,21 +578,35 @@ export const Combat: React.FC<CombatProps> = ({
 
       // Generate rewards to show in battle log
       const rewardItems = generateCombatRewards(enemy?.species || 'unknown', enemy?.level || 1).items;
-      let battleMessage = `Gained ${expGained} experience and ${goldGained} gold!`;
+      let battleMessage = '';
+
+      // Special message for captures
+      if (result === 'captured') {
+        battleMessage = `🎉 Successfully captured ${enemy?.name || 'monster'}! Added to your collection. `;
+      }
+
+      battleMessage += `Gained ${expGained} experience and ${goldGained} gold!`;
       if (rewardItems.length > 0) {
         const itemNames = rewardItems.map(item => item.name).join(', ');
         battleMessage += ` Found: ${itemNames}`;
       }
       addBattleLog(battleMessage, 'system');
 
+      // Set story flag for first monster encounter (unlocks Grassy Plains)
+      if (!state.storyFlags?.first_monster_encounter) {
+        updateStoryFlags({ first_monster_encounter: true });
+        console.log('🎯 Story Flag Set: first_monster_encounter (unlocks Grassy Plains)');
+      }
+
       // End combat with proper payload to trigger victory modal
       endCombat({
         experience: expGained,
         gold: goldGained,
-        items: rewardItems
+        items: rewardItems,
+        capturedMonsterId: result === 'captured' ? enemy?.id : undefined
       });
     } else {
-      // For defeat, fled, captured - end combat without rewards
+      // For defeat and fled - end combat without rewards
       endCombat({
         experience: 0,
         gold: 0,
@@ -582,7 +615,7 @@ export const Combat: React.FC<CombatProps> = ({
     }
 
     // Screen navigation is handled by ReactGameContext after victory modal
-  }, [enemy, addExp, addPlayerGold, addBattleLog, endCombat, currentEncounter, state.showVictoryModal]);
+  }, [enemy, addExp, addPlayerGold, addBattleLog, endCombat, currentEncounter, state.showVictoryModal, state.storyFlags, updateStoryFlags, captureMonster, generateCombatRewards]);
 
   // Auto-handle battle end states
   useEffect(() => {

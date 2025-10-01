@@ -94,19 +94,25 @@ export interface ItemEffect {
 export interface ReactMonster {
   id: string;
   name: string;
+  species: string;
   level: number;
   hp: number;
   maxHp: number;
   mp: number;
   maxMp: number;
-  stats: PlayerStats;
-  type: string;
+  baseStats: PlayerStats;
+  currentStats: PlayerStats;
+  types: string[];
   rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
   abilities: string[]; // Ability IDs
   captureRate: number;
   experience: number;
   gold: number;
   drops: ItemDrop[];
+  areas: string[];
+  evolvesTo: string[];
+  isWild: boolean;
+  friendship?: number;
 }
 
 export interface ItemDrop {
@@ -151,6 +157,7 @@ export interface ReactGameState {
     experience: number;
     gold: number;
     items: ReactItem[];
+    capturedMonsterId?: string; // Track which monster was just captured
   } | null;
 
   // Game session data
@@ -457,9 +464,11 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
       };
 
     case 'CAPTURE_MONSTER':
+      const newCapturedMonsters = [...state.capturedMonsters, action.payload.monster];
+
       return {
         ...state,
-        capturedMonsters: [...state.capturedMonsters, action.payload.monster],
+        capturedMonsters: newCapturedMonsters,
       };
 
     case 'RELEASE_MONSTER':

@@ -407,10 +407,12 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                 <h1
                   className={styles.gameTitle}
                   style={{
+                    fontFamily: 'var(--font-heading)',
                     fontSize: isMobile ? (isLandscape ? '2rem' : '2.5rem') : isTablet ? '3rem' : '3.5rem',
                     fontWeight: 'bold',
                     color: '#ffd700',
                     margin: 0,
+                    letterSpacing: '0.05em',
                     textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)'
                   }}
                 >
@@ -419,6 +421,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                 <p
                   className={styles.gameSubtitle}
                   style={{
+                    fontFamily: 'var(--font-body)',
                     fontSize: '1.4rem',
                     color: '#cccccc',
                     margin: '0.5rem 0 0 0',

@@ -110,7 +110,13 @@ export const RarityIndicator: React.FC<RarityIndicatorProps> = ({
   const config = RARITY_CONFIGS[rarity];
 
   // Size configurations
-  const sizeConfig = {
+  const sizeConfig: Record<'small' | 'medium' | 'large', {
+    fontSize: string;
+    padding: string;
+    iconSize: string;
+    borderWidth: string;
+    borderRadius: string;
+  }> = {
     small: {
       fontSize: '0.75rem',
       padding: '0.25rem 0.5rem',
@@ -134,7 +140,9 @@ export const RarityIndicator: React.FC<RarityIndicatorProps> = ({
     }
   };
 
-  const currentSize = sizeConfig[size];
+  // Ensure valid size, fallback to 'medium' if invalid
+  const validSize = (size === 'small' || size === 'medium' || size === 'large') ? size : 'medium';
+  const currentSize = sizeConfig[validSize];
 
   // Variant-specific styles
   const getVariantStyles = (): React.CSSProperties => {
