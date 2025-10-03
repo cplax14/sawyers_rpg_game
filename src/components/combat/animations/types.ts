@@ -37,6 +37,52 @@ export interface ParticleConfig {
   spread: number;
 }
 
+// New animation type interfaces
+export interface MeleeAnimationConfig {
+  slashType: 'slash' | 'stab' | 'chop';
+  startX: number;
+  startY: number;
+  endX: number;
+  endY: number;
+  color: string;
+  duration: number;
+  trailWidth?: number;
+}
+
+export interface AoeAnimationConfig {
+  centerX: number;
+  centerY: number;
+  radius: number;
+  color: string;
+  expandDuration: number;
+  fadeDuration: number;
+  particleCount?: number;
+}
+
+export interface BuffAnimationConfig {
+  targetX: number;
+  targetY: number;
+  auraColor: string;
+  pulseSpeed: number;
+  particles: boolean;
+  intensity?: number;
+  persistent?: boolean;
+}
+
+export interface DebuffAnimationConfig {
+  targetX: number;
+  targetY: number;
+  statusType: 'poison' | 'sleep' | 'silence' | 'slow' | 'stun';
+  color: string;
+  duration: number;
+  intensity?: number;
+}
+
+// Animation duration constants by attack weight
+export const FAST_ATTACK_DURATION = 600;      // 400-600ms total (dagger, light spells)
+export const MEDIUM_ATTACK_DURATION = 900;    // 600-1000ms total (sword, standard spells)
+export const HEAVY_ATTACK_DURATION = 1400;    // 1000-1500ms total (axe, powerful spells)
+
 // Magic Bolt specific timings
 export const MAGIC_BOLT_TIMINGS: AnimationTimings = {
   charge: 400,
@@ -65,7 +111,44 @@ export const SPRING_CONFIG = {
   }
 };
 
-// Color schemes for different elements
+// Element color palette constants (per PRD specifications)
+export const FIRE_COLORS = {
+  primary: '#ff6b35',    // Orange
+  secondary: '#ff4444',  // Red
+  tertiary: '#ffaa00'    // Yellow-orange
+};
+
+export const ICE_COLORS = {
+  primary: '#4da6ff',    // Blue
+  secondary: '#b3e0ff',  // Light blue
+  tertiary: '#ffffff'    // White
+};
+
+export const LIGHTNING_COLORS = {
+  primary: '#ffeb3b',    // Yellow
+  secondary: '#fff176',  // Light yellow
+  tertiary: '#ffffff'    // White
+};
+
+export const HOLY_COLORS = {
+  primary: '#ffd700',    // Gold
+  secondary: '#ffffcc',  // Light gold
+  tertiary: '#ffffff'    // White
+};
+
+export const ARCANE_COLORS = {
+  primary: '#9c27b0',    // Purple
+  secondary: '#ba68c8',  // Light purple
+  tertiary: '#4a148c'    // Dark purple
+};
+
+export const POISON_COLORS = {
+  primary: '#8bc34a',    // Green
+  secondary: '#33691e',  // Dark green
+  tertiary: '#7b1fa2'    // Purple tint
+};
+
+// Legacy color schemes (kept for backward compatibility with existing Magic Bolt)
 export const ELEMENT_COLORS = {
   arcane: {
     primary: '#8b5cf6',

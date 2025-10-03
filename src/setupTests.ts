@@ -2,16 +2,45 @@
 import '@testing-library/jest-dom';
 
 // Mock Framer Motion to avoid animation issues in tests
-jest.mock('framer-motion', () => ({
-  motion: {
-    div: 'div',
-    button: 'button',
-    input: 'input',
-    span: 'span',
-    img: 'img',
-  },
-  AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
-}));
+jest.mock('framer-motion', () => {
+  const React = require('react');
+
+  // Create a mock motion component that accepts Framer Motion props
+  const createMotionComponent = (component: string) => {
+    return React.forwardRef(({ children, onAnimationComplete, onExitComplete, ...props }: any, ref: any) => {
+      // Call lifecycle callbacks immediately in tests
+      React.useEffect(() => {
+        if (onAnimationComplete) {
+          onAnimationComplete();
+        }
+      }, [onAnimationComplete]);
+
+      return React.createElement(component, { ...props, ref }, children);
+    });
+  };
+
+  return {
+    motion: {
+      div: createMotionComponent('div'),
+      button: createMotionComponent('button'),
+      input: createMotionComponent('input'),
+      span: createMotionComponent('span'),
+      img: createMotionComponent('img'),
+    },
+    AnimatePresence: ({ children, onExitComplete }: { children: React.ReactNode, onExitComplete?: () => void }) => {
+      // Call exit callback immediately in tests
+      React.useEffect(() => {
+        return () => {
+          if (onExitComplete) {
+            onExitComplete();
+          }
+        };
+      }, [onExitComplete]);
+
+      return children;
+    },
+  };
+});
 
 // Mock window.matchMedia for responsive design tests
 Object.defineProperty(window, 'matchMedia', {
