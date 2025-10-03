@@ -6,30 +6,32 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ProjectileConfig } from './types';
 
 interface ProjectileProps {
-  config: ProjectileConfig;
-  isActive: boolean;
+  startX: number;
+  startY: number;
+  endX: number;
+  endY: number;
+  color: string;
+  size?: number;
+  duration?: number;
+  glowIntensity?: number;
   onComplete?: () => void;
 }
 
 export const Projectile: React.FC<ProjectileProps> = ({
-  config,
-  isActive,
+  startX,
+  startY,
+  endX,
+  endY,
+  color,
+  size = 12,
+  duration = 600,
+  glowIntensity = 1.0,
   onComplete
 }) => {
-  const {
-    startX,
-    startY,
-    endX,
-    endY,
-    color,
-    glowColor,
-    size = 12
-  } = config;
-
-  if (!isActive) return null;
+  const glowColor = color;
+  const glowSize = size * 2 * glowIntensity;
 
   return (
     <>
@@ -48,11 +50,11 @@ export const Projectile: React.FC<ProjectileProps> = ({
           opacity: [0, 1, 1, 0]
         }}
         transition={{
-          duration: 0.6,
+          duration: duration / 1000,
           ease: "easeInOut",
           opacity: {
             times: [0, 0.1, 0.9, 1],
-            duration: 0.6
+            duration: duration / 1000
           }
         }}
         onAnimationComplete={onComplete}
@@ -62,7 +64,7 @@ export const Projectile: React.FC<ProjectileProps> = ({
           height: size,
           borderRadius: '50%',
           backgroundColor: color,
-          boxShadow: `0 0 ${size * 2}px ${glowColor}, 0 0 ${size * 4}px ${glowColor}`,
+          boxShadow: `0 0 ${glowSize}px ${glowColor}, 0 0 ${glowSize * 2}px ${glowColor}`,
           pointerEvents: 'none',
           zIndex: 101
         }}
@@ -85,7 +87,7 @@ export const Projectile: React.FC<ProjectileProps> = ({
             opacity: [0, 0.8, 0]
           }}
           transition={{
-            duration: 0.6,
+            duration: duration / 1000,
             delay: i * 0.05,
             ease: "easeInOut"
           }}
@@ -117,7 +119,7 @@ export const Projectile: React.FC<ProjectileProps> = ({
           opacity: [0, 0.4, 0]
         }}
         transition={{
-          duration: 0.6,
+          duration: duration / 1000,
           ease: "linear"
         }}
         style={{

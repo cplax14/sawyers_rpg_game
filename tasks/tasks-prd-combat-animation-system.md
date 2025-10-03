@@ -76,7 +76,7 @@ Generated from: `docs/prd-combat-animation-system.md`
 
 ## Tasks
 
-- [ ] 1.0 Create Core Animation Infrastructure
+- [X] 1.0 Create Core Animation Infrastructure
   - [x] 1.1 Create `src/components/combat/animations/core/` directory
   - [x] 1.2 Extend `types.ts` with new animation interfaces (MeleeAnimation, AoeAnimation, BuffAnimation, DebuffAnimation)
   - [x] 1.3 Add animation timing constants to `types.ts` (FAST_ATTACK_DURATION, MEDIUM_ATTACK_DURATION, HEAVY_ATTACK_DURATION)
@@ -101,14 +101,14 @@ Generated from: `docs/prd-combat-animation-system.md`
   - [x] 2.9 Ensure particle counts stay within limits (15-30 per effect) for performance
 
 - [ ] 3.0 Build Wizard Support Spell Animations
-  - [ ] 3.1 Create `HealAnimation.tsx` - Cast (400ms green particles gather) → Descend (300ms healing light falls) → Absorption (300ms green glow) → Complete (100ms sparkle)
-  - [ ] 3.2 Create `ProtectAnimation.tsx` - Cast (300ms blue magical circle) → Form (400ms shield barrier materializes) → Sustain (persistent blue shimmer) → Fade (200ms when duration ends)
-  - [ ] 3.3 Create `ShellAnimation.tsx` - Similar to Protect but with purple/violet colors for magic defense
-  - [ ] 3.4 Create `HasteAnimation.tsx` - Cast (250ms) → Yellow speed lines and glow effect → Persistent subtle particle trail
-  - [ ] 3.5 Create `BuffAnimation.tsx` orchestrator that coordinates buff effects with persistent overlays using StatusOverlay and BuffAura components
-  - [ ] 3.6 Implement persistent buff visual effects that remain visible during buff duration without obscuring gameplay
-  - [ ] 3.7 Test buff animations to ensure they're subtle enough to not distract from combat
-  - [ ] 3.8 Verify buff durations align with PRD specs (Heal 1100ms, Protect/Shell 700-900ms, Haste 250ms + persistent)
+  - [x] 3.1 Create `HealAnimation.tsx` - Cast (400ms green particles gather) → Descend (300ms healing light falls) → Absorption (300ms green glow) → Complete (100ms sparkle)
+  - [x] 3.2 Create `ProtectAnimation.tsx` - Cast (300ms blue magical circle) → Form (400ms shield barrier materializes) → Sustain (persistent blue shimmer) → Fade (200ms when duration ends)
+  - [x] 3.3 Create `ShellAnimation.tsx` - Similar to Protect but with purple/violet colors for magic defense
+  - [x] 3.4 Create `HasteAnimation.tsx` - Cast (250ms) → Yellow speed lines and glow effect → Persistent subtle particle trail
+  - [x] 3.5 Create `BuffAnimation.tsx` orchestrator that coordinates buff effects with persistent overlays using StatusOverlay and BuffAura components
+  - [x] 3.6 Implement persistent buff visual effects that remain visible during buff duration without obscuring gameplay
+  - [x] 3.7 Test buff animations to ensure they're subtle enough to not distract from combat
+  - [x] 3.8 Verify buff durations align with PRD specs (Heal 1100ms, Protect/Shell 700-900ms, Haste 250ms + persistent)
 
 - [ ] 4.0 Implement Animation Registry & Integration System
   - [ ] 4.1 Create `animationRegistry.ts` file with ATTACK_ANIMATION_MAP object

@@ -115,37 +115,37 @@ export const SPRING_CONFIG = {
 export const FIRE_COLORS = {
   primary: '#ff6b35',    // Orange
   secondary: '#ff4444',  // Red
-  tertiary: '#ffaa00'    // Yellow-orange
+  accent: '#ffaa00'      // Yellow-orange
 };
 
 export const ICE_COLORS = {
   primary: '#4da6ff',    // Blue
   secondary: '#b3e0ff',  // Light blue
-  tertiary: '#ffffff'    // White
+  accent: '#ffffff'      // White
 };
 
 export const LIGHTNING_COLORS = {
   primary: '#ffeb3b',    // Yellow
   secondary: '#fff176',  // Light yellow
-  tertiary: '#ffffff'    // White
+  accent: '#ffffff'      // White
 };
 
 export const HOLY_COLORS = {
   primary: '#ffd700',    // Gold
   secondary: '#ffffcc',  // Light gold
-  tertiary: '#ffffff'    // White
+  accent: '#ffffff'      // White
 };
 
 export const ARCANE_COLORS = {
   primary: '#9c27b0',    // Purple
   secondary: '#ba68c8',  // Light purple
-  tertiary: '#4a148c'    // Dark purple
+  accent: '#4a148c'      // Dark purple
 };
 
 export const POISON_COLORS = {
   primary: '#8bc34a',    // Green
   secondary: '#33691e',  // Dark green
-  tertiary: '#7b1fa2'    // Purple tint
+  accent: '#7b1fa2'      // Purple tint
 };
 
 // Legacy color schemes (kept for backward compatibility with existing Magic Bolt)
