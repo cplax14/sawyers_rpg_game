@@ -89,16 +89,16 @@ Generated from: `docs/prd-combat-animation-system.md`
   - [x] 1.10 Update `index.ts` to export all new core components
   - [x] 1.11 Create `orchestrators/` directory structure
 
-- [ ] 2.0 Build Wizard Offensive Spell Animations
-  - [ ] 2.1 Create `variants/` directory for spell-specific animations
-  - [ ] 2.2 Create `FireballAnimation.tsx` - Charge (350ms red/orange particles) → Cast (150ms flame burst) → Travel (300ms spinning fireball) → Impact (150ms explosion)
-  - [ ] 2.3 Create `IceShardAnimation.tsx` - Charge (400ms blue crystalline particles) → Cast (150ms frost mist) → Travel (250ms rotating ice shard) → Impact (100ms shatter effect)
-  - [ ] 2.4 Create `LightningAnimation.tsx` - Charge (350ms electric sparks) → Cast (100ms point upward) → Strike (200ms bolt from sky) → Impact (250ms electric burst)
-  - [ ] 2.5 Create `HolyBeamAnimation.tsx` - Charge (350ms golden particles above) → Cast (150ms divine light forms) → Beam (350ms column of light) → Impact (150ms radiant burst)
-  - [ ] 2.6 Create `MeteorAnimation.tsx` - Charge (600ms red glow in sky) → Warning (400ms shadow circles on ground) → Impact (300ms meteors crash) → Aftermath (200ms dust clouds)
-  - [ ] 2.7 Test each spell animation in isolation with mock positions and data
-  - [ ] 2.8 Verify all spell animations meet timing guidelines (Fireball 950ms, Ice 900ms, Lightning 900ms, Holy 1000ms, Meteor 1500ms)
-  - [ ] 2.9 Ensure particle counts stay within limits (15-30 per effect) for performance
+- [x] 2.0 Build Wizard Offensive Spell Animations
+  - [x] 2.1 Create `variants/` directory for spell-specific animations
+  - [x] 2.2 Create `FireballAnimation.tsx` - Charge (350ms red/orange particles) → Cast (150ms flame burst) → Travel (300ms spinning fireball) → Impact (150ms explosion)
+  - [x] 2.3 Create `IceShardAnimation.tsx` - Charge (400ms blue crystalline particles) → Cast (150ms frost mist) → Travel (250ms rotating ice shard) → Impact (100ms shatter effect)
+  - [x] 2.4 Create `LightningAnimation.tsx` - Charge (350ms electric sparks) → Cast (100ms point upward) → Strike (200ms bolt from sky) → Impact (250ms electric burst)
+  - [x] 2.5 Create `HolyBeamAnimation.tsx` - Charge (350ms golden particles above) → Cast (150ms divine light forms) → Beam (350ms column of light) → Impact (150ms radiant burst)
+  - [x] 2.6 Create `MeteorAnimation.tsx` - Charge (600ms red glow in sky) → Warning (400ms shadow circles on ground) → Impact (300ms meteors crash) → Aftermath (200ms dust clouds)
+  - [x] 2.7 Test each spell animation in isolation with mock positions and data
+  - [x] 2.8 Verify all spell animations meet timing guidelines (Fireball 950ms, Ice 900ms, Lightning 900ms, Holy 1000ms, Meteor 1500ms)
+  - [x] 2.9 Ensure particle counts stay within limits (15-30 per effect) for performance
 
 - [ ] 3.0 Build Wizard Support Spell Animations
   - [ ] 3.1 Create `HealAnimation.tsx` - Cast (400ms green particles gather) → Descend (300ms healing light falls) → Absorption (300ms green glow) → Complete (100ms sparkle)
