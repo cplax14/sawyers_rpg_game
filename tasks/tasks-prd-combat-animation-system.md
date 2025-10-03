@@ -100,7 +100,7 @@ Generated from: `docs/prd-combat-animation-system.md`
   - [x] 2.8 Verify all spell animations meet timing guidelines (Fireball 950ms, Ice 900ms, Lightning 900ms, Holy 1000ms, Meteor 1500ms)
   - [x] 2.9 Ensure particle counts stay within limits (15-30 per effect) for performance
 
-- [ ] 3.0 Build Wizard Support Spell Animations
+- [x] 3.0 Build Wizard Support Spell Animations
   - [x] 3.1 Create `HealAnimation.tsx` - Cast (400ms green particles gather) → Descend (300ms healing light falls) → Absorption (300ms green glow) → Complete (100ms sparkle)
   - [x] 3.2 Create `ProtectAnimation.tsx` - Cast (300ms blue magical circle) → Form (400ms shield barrier materializes) → Sustain (persistent blue shimmer) → Fade (200ms when duration ends)
   - [x] 3.3 Create `ShellAnimation.tsx` - Similar to Protect but with purple/violet colors for magic defense
