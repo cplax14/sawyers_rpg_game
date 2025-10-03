@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AreaCard } from '../molecules/AreaCard';
 import { Button } from '../atoms/Button';
 import { LoadingSpinner } from '../atoms/LoadingSpinner';
-import { useAreas, usePlayer, useWorld, useUI, useHorizontalSwipeNavigation, useIsMobile, useSaveSystem } from '../../hooks';
+import { useAreas, usePlayer, useWorld, useUI, useHorizontalSwipeNavigation, useIsMobile, useSaveSystem, useGameState } from '../../hooks';
 import { ReactArea } from '../../types/game';
 import { worldMapStyles } from '../../utils/temporaryStyles';
 // import styles from './WorldMap.module.css'; // Temporarily disabled due to PostCSS parsing issues
@@ -34,9 +34,10 @@ export const WorldMap: React.FC<WorldMapProps> = ({
 }) => {
   const { areas, isLoading, error, getAreaById, getConnectedAreas } = useAreas();
   const { player, playerLevel } = usePlayer();
-  const { currentAreaId, unlockedAreas, changeArea, hasStoryFlag, isAreaUnlocked } = useWorld();
+  const { currentAreaId, unlockedAreas, changeArea, hasStoryFlag, isAreaUnlocked, setStoryFlag } = useWorld();
   const { navigateToScreen } = useUI();
-  const { saveGame, loadGame, getSaveSlots, isLoading: saveLoading } = useSaveSystem();
+  const { saveGame, loadGame, getFreshSlots, saveSlots, isLoading: saveLoading } = useSaveSystem();
+  const { state: gameState } = useGameState();
   const isMobile = useIsMobile();
 
 
@@ -152,23 +153,101 @@ export const WorldMap: React.FC<WorldMapProps> = ({
     setShowGameMenu(prev => !prev);
   }, []);
 
+  // Quick Save handler - finds empty slot or uses slot 0
+  const handleQuickSave = useCallback(async () => {
+    try {
+      if (!gameState || !gameState.player) {
+        console.error('Cannot save: No valid game state');
+        return;
+      }
+
+      // Get fresh save slots directly from IndexedDB (bypassing stale React state)
+      const currentSlots = await getFreshSlots();
+
+      // Find first empty slot, or use slot 0 as dedicated Quick Save slot
+      let targetSlot = 0;
+      let foundEmpty = false;
+
+      for (let i = 0; i < currentSlots.length; i++) {
+        if (currentSlots[i].isEmpty) {
+          targetSlot = i;
+          foundEmpty = true;
+          break;
+        }
+      }
+
+      // If no empty slots, warn about overwriting
+      if (!foundEmpty) {
+        console.warn('⚠️ All save slots full, using Quick Save slot (slot 0)');
+      } else {
+        console.log(`💾 Quick Save to slot ${targetSlot} (first empty slot)`);
+      }
+
+      const success = await saveGame(gameState, {
+        slotNumber: targetSlot,
+        saveName: `Quick Save - ${currentArea?.name || 'Unknown Location'}`,
+        overwrite: true
+      });
+
+      if (success) {
+        console.log(`✅ Quick Save successful in slot ${targetSlot}`);
+        setShowGameMenu(false);
+      } else {
+        console.error('Quick Save operation returned false');
+      }
+    } catch (error) {
+      console.error('Failed to Quick Save:', error);
+    }
+  }, [gameState, currentArea, saveGame, getFreshSlots]);
+
+  // Manual save handler - saves to specified slot
   const handleSaveGame = useCallback(async (slotId: number) => {
     try {
-      await saveGame(slotId, `World Map - ${currentArea?.name || 'Unknown Location'}`);
-      setShowGameMenu(false);
+      if (!gameState || !gameState.player) {
+        console.error('Cannot save: No valid game state');
+        return;
+      }
+
+      console.log(`💾 Attempting to save game to slot ${slotId}`);
+      const success = await saveGame(gameState, {
+        slotNumber: slotId,
+        saveName: `World Map - ${currentArea?.name || 'Unknown Location'}`,
+        overwrite: true
+      });
+
+      if (success) {
+        console.log(`✅ Game saved successfully to slot ${slotId}`);
+        setShowGameMenu(false);
+      } else {
+        console.error('Save operation returned false');
+      }
     } catch (error) {
       console.error('Failed to save game:', error);
     }
-  }, [saveGame, currentArea]);
+  }, [saveGame, currentArea, gameState]);
 
   const handleLoadGame = useCallback(async (slotId: number) => {
     try {
-      await loadGame(slotId);
-      setShowGameMenu(false);
+      console.log(`📂 Attempting to load game from slot ${slotId}`);
+      const loadedState = await loadGame({ slotNumber: slotId });
+
+      if (loadedState) {
+        console.log(`✅ Game loaded successfully from slot ${slotId}`);
+        setShowGameMenu(false);
+      } else {
+        console.error('Load operation returned null');
+      }
     } catch (error) {
       console.error('Failed to load game:', error);
     }
   }, [loadGame]);
+
+  // DEBUG: Temporary handler to manually fix tutorial_complete flag
+  const handleForceUnlockTutorial = useCallback(() => {
+    setStoryFlag('tutorial_complete', true);
+    console.log('🔧 DEBUG: Manually set tutorial_complete flag to true');
+    alert('Tutorial flag has been set! The Forest Path should now be unlocked.');
+  }, [setStoryFlag]);
 
   const getAreaAccessibility = useCallback((area: ReactArea): {
     accessible: boolean;
@@ -590,7 +669,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({
                   <Button
                     variant="primary"
                     size="large"
-                    onClick={() => handleSaveGame(1)}
+                    onClick={handleQuickSave}
                     disabled={saveLoading}
                     style={{ width: '100%' }}
                   >
@@ -600,7 +679,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({
                   <Button
                     variant="secondary"
                     size="large"
-                    onClick={() => navigateToScreen('save-load')}
+                    onClick={() => navigateToScreen('menu')}
                     style={{ width: '100%' }}
                   >
                     Save & Load Game
@@ -638,6 +717,27 @@ export const WorldMap: React.FC<WorldMapProps> = ({
           )}
         </AnimatePresence>
       </div>
+
+      {/* DEBUG: Temporary button to fix tutorial_complete flag */}
+      <Button
+        variant="outline"
+        onClick={handleForceUnlockTutorial}
+        style={{
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          zIndex: 9999,
+          backgroundColor: '#ff6b35',
+          color: 'white',
+          border: '2px solid #ff8c61',
+          padding: '0.75rem 1rem',
+          fontSize: '0.9rem',
+          fontWeight: 'bold',
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.3)'
+        }}
+      >
+        🔧 Fix Tutorial Flag
+      </Button>
     </div>
   );
 };

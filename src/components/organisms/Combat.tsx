@@ -7,6 +7,7 @@ import { useIsMobile } from '../../hooks';
 import { useCreatures } from '../../hooks/useCreatures';
 import { ReactMonster, ReactPlayer } from '../../types/game';
 import { EnhancedCreature } from '../../types/creatures';
+import { MagicBoltAnimation } from '../combat/animations';
 
 interface CombatProps {
   className?: string;
@@ -56,17 +57,8 @@ export const Combat: React.FC<CombatProps> = ({
 
   const enemyTurnExecutingRef = useRef(false);
   const battleEndedRef = useRef(false);
-
-  // Debug logging for activeTeam state
-  useEffect(() => {
-    console.log('🐾 Combat activeTeam state:', {
-      hasHook: !!creaturesHook,
-      activeTeamLength: activeTeam?.length || 0,
-      activeTeamCreatures: activeTeam?.map(c => ({ id: c.id, name: c.name })) || [],
-      globalCreatures: state.creatures,
-      globalActiveTeam: state.creatures?.activeTeam
-    });
-  }, [activeTeam, creaturesHook, state.creatures]);
+  const playerElementRef = useRef<HTMLDivElement>(null);
+  const enemyElementRef = useRef<HTMLDivElement>(null);
 
   // Generate enemy monster
   const enemy = useMemo(() => {
@@ -132,6 +124,13 @@ export const Combat: React.FC<CombatProps> = ({
     actionMode: 'main'
   });
 
+  const [activeAnimation, setActiveAnimation] = useState<{
+    type: 'magic-bolt';
+    damage: number;
+    isCritical: boolean;
+    element: 'arcane' | 'fire' | 'ice' | 'lightning';
+  } | null>(null);
+
   // Reset battle ended flag when new combat starts
   useEffect(() => {
     if (currentEncounter) {
@@ -169,6 +168,7 @@ export const Combat: React.FC<CombatProps> = ({
         mpCost: 8,
         damage: (player?.baseStats.magicAttack || 10) + (player && player.level <= 3 ? 6 : 0), // +6 magic damage for early levels
         type: 'offensive' as const,
+        element: 'arcane',
         description: 'A magical energy attack'
       },
       {
@@ -214,6 +214,34 @@ export const Combat: React.FC<CombatProps> = ({
       return false;
     });
   }, [inventory]);
+
+  // Calculate animation positions from DOM elements
+  const getAnimationPositions = useCallback(() => {
+    const playerEl = playerElementRef.current;
+    const enemyEl = enemyElementRef.current;
+
+    // Fallback positions if refs aren't ready
+    if (!playerEl || !enemyEl) {
+      return {
+        casterPosition: { x: 200, y: 400 },
+        targetPosition: { x: 600, y: 250 }
+      };
+    }
+
+    const playerRect = playerEl.getBoundingClientRect();
+    const enemyRect = enemyEl.getBoundingClientRect();
+
+    return {
+      casterPosition: {
+        x: playerRect.left + playerRect.width / 2,
+        y: playerRect.top + playerRect.height / 2
+      },
+      targetPosition: {
+        x: enemyRect.left + enemyRect.width / 2,
+        y: enemyRect.top + enemyRect.height / 2
+      }
+    };
+  }, []);
 
   const addBattleLog = useCallback((message: string, type: BattleLogEntry['type'] = 'action') => {
     setCombatState(prev => ({
@@ -276,6 +304,7 @@ export const Combat: React.FC<CombatProps> = ({
 
     setCombatState(prev => ({ ...prev, isAnimating: true }));
 
+    // Check MP cost
     if (combatState.playerMp < spell.mpCost) {
       addBattleLog('Not enough MP!', 'system');
       setCombatState(prev => ({ ...prev, isAnimating: false }));
@@ -283,23 +312,48 @@ export const Combat: React.FC<CombatProps> = ({
     }
 
     if (spell.type === 'offensive') {
-      // Offensive spell
+      // Calculate accuracy
       const accuracy = 85 + (player?.baseStats.accuracy || 85) - 85;
       const accuracyRoll = Math.random() * 100;
 
       if (accuracyRoll <= accuracy) {
+        // Calculate damage with variance
         const baseDamage = spell.damage + Math.floor(Math.random() * 8);
-        const damage = calculateDamage(baseDamage, playerLevel, enemy?.currentStats.magicDefense || 3);
+        const normalDamage = calculateDamage(baseDamage, playerLevel, enemy?.currentStats.magicDefense || 3);
 
-        addBattleLog(`You cast ${spell.name} for ${damage} magic damage!`, 'action');
+        // Critical hit chance (15%)
+        const isCritical = Math.random() < 0.15;
+        const damage = isCritical ? Math.floor(normalDamage * 1.5) : normalDamage;
 
+        // Trigger animation with proper positions
+        setActiveAnimation({
+          type: 'magic-bolt',
+          damage,
+          isCritical,
+          element: spell.element || 'arcane'
+        });
+
+        // Wait for animation to complete (1400ms total)
+        await new Promise(resolve => setTimeout(resolve, 1400));
+
+        // Add battle log AFTER animation
+        addBattleLog(
+          `You cast ${spell.name} for ${damage} magic damage!${isCritical ? ' CRITICAL HIT!' : ''}`,
+          'action'
+        );
+
+        // Apply damage and update state
         setCombatState(prev => ({
           ...prev,
           enemyHp: Math.max(0, prev.enemyHp - damage),
           playerMp: Math.max(0, prev.playerMp - spell.mpCost),
           phase: prev.enemyHp - damage <= 0 ? 'victory' : 'enemy-turn'
         }));
+
+        // Clear animation
+        setActiveAnimation(null);
       } else {
+        // Spell missed
         addBattleLog(`${spell.name} missed!`, 'action');
         setCombatState(prev => ({
           ...prev,
@@ -308,7 +362,7 @@ export const Combat: React.FC<CombatProps> = ({
         }));
       }
     } else {
-      // Defensive spell
+      // Defensive spells (heal, shield) - no animation changes
       if (spell.id === 'heal') {
         const healAmount = Math.min(spell.healing, (player?.maxHp || 100) - combatState.playerHp);
         addBattleLog(`You cast ${spell.name} and recover ${Math.floor(healAmount)} HP!`, 'heal');
@@ -330,9 +384,9 @@ export const Combat: React.FC<CombatProps> = ({
       }
     }
 
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 500));
     setCombatState(prev => ({ ...prev, isAnimating: false }));
-  }, [combatState, addBattleLog, calculateDamage, playerLevel, enemy, player]);
+  }, [combatState, addBattleLog, calculateDamage, playerLevel, enemy, player, getAnimationPositions]);
 
   // Execute Item Usage
   const executeItemUse = useCallback(async (item: any) => {
@@ -704,6 +758,7 @@ export const Combat: React.FC<CombatProps> = ({
       }}>
         {/* Player Side */}
         <motion.div
+          ref={playerElementRef}
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
           style={{
@@ -778,6 +833,7 @@ export const Combat: React.FC<CombatProps> = ({
 
         {/* Enemy Side */}
         <motion.div
+          ref={enemyElementRef}
           initial={{ opacity: 0, x: 50 }}
           animate={{ opacity: 1, x: 0 }}
           style={{
@@ -1251,6 +1307,24 @@ export const Combat: React.FC<CombatProps> = ({
           <LoadingSpinner size="large" />
         </div>
       )}
+
+      {/* Animation Layer */}
+      {activeAnimation?.type === 'magic-bolt' && (() => {
+        const positions = getAnimationPositions();
+        return (
+          <MagicBoltAnimation
+            casterPosition={positions.casterPosition}
+            targetPosition={positions.targetPosition}
+            damage={activeAnimation.damage}
+            isCritical={activeAnimation.isCritical}
+            element={activeAnimation.element}
+            isActive={true}
+            onComplete={() => {
+              // Animation completed, cleanup handled in executeMagic
+            }}
+          />
+        );
+      })()}
     </div>
   );
 };

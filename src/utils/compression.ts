@@ -255,20 +255,26 @@ export class DataCompressor {
         chunks = this.chunkData(compressedData, this.config.chunkSize);
       }
 
-      return {
+      const result: CompressionResult = {
         data: compressedData,
         originalSize,
         compressedSize: isCompressed ? new Blob([compressedData]).size : originalSize,
         compressionRatio: isCompressed ? compressionRatio : 0,
         algorithm,
         isCompressed,
-        chunks,
         metadata: {
           timestamp: new Date(),
           checksum,
           version: '1.0.0'
         }
       };
+
+      // Only add chunks property if it was actually created
+      if (chunks !== undefined) {
+        result.chunks = chunks;
+      }
+
+      return result;
 
     } catch (error) {
       console.warn('Compression failed, falling back to uncompressed:', error);

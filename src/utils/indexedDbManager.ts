@@ -32,9 +32,15 @@ export class IndexedDbManager {
         const request = indexedDB.open(this.dbName, this.dbVersion);
 
         request.onerror = () => {
+          const errorMessage = request.error?.message || request.error?.name || 'Unknown error';
+          console.error('❌ IndexedDB open failed:', {
+            error: request.error,
+            errorMessage,
+            readyState: request.readyState
+          });
           reject({
             success: false,
-            error: new Error(`Failed to open IndexedDB: ${request.error?.message}`)
+            error: new Error(`Failed to open IndexedDB: ${errorMessage}`)
           });
         };
 
@@ -43,7 +49,14 @@ export class IndexedDbManager {
 
           // Set up error handling
           this.db.onerror = (event) => {
-            console.error('IndexedDB error:', event);
+            const target = event.target as IDBRequest;
+            const errorMessage = target.error?.message || target.error?.name || 'Unknown database error';
+            console.error('❌ IndexedDB error:', {
+              error: target.error,
+              errorMessage,
+              errorCode: target.error?.name,
+              transaction: (event.target as any).transaction?.mode
+            });
           };
 
           resolve({
@@ -154,8 +167,31 @@ export class IndexedDbManager {
       const saveStore = transaction.objectStore('saves');
       const metadataStore = transaction.objectStore('metadata');
 
+      // Add transaction error handler
+      transaction.onerror = (event) => {
+        const target = event.target as IDBRequest;
+        console.error('❌ Transaction error:', {
+          error: target.error,
+          message: target.error?.message,
+          name: target.error?.name
+        });
+      };
+
       // Save full data
       const saveId = `slot_${slotNumber}`;
+
+      // Delete any existing records for this slot to prevent constraint violations
+      // This handles both the save data and metadata for the slot
+      const slotNumberIndex = metadataStore.index('slotNumber');
+      const existingMetadataRequest = slotNumberIndex.getAll(slotNumber);
+      const existingMetadata = await this.promisifyRequest(existingMetadataRequest);
+
+      // Delete all existing metadata records with this slotNumber
+      for (const meta of existingMetadata) {
+        await this.promisifyRequest(metadataStore.delete(meta.id));
+      }
+
+      // Now save the new data
       await this.promisifyRequest(saveStore.put({
         id: saveId,
         slotNumber,
@@ -221,9 +257,20 @@ export class IndexedDbManager {
         };
       }
 
+      // Update last accessed time BEFORE doing any async processing
+      // This ensures the transaction doesn't complete before we update metadata
+      saveData.metadata.lastAccessed = new Date();
+      await this.promisifyRequest(metadataStore.put({
+        id: saveId,
+        slotNumber,
+        ...saveData.metadata,
+        playerSummary: saveData.playerSummary,
+        progressSummary: saveData.progressSummary
+      }));
+
       onProgress?.(60, 'Validating save data...');
 
-      // Validate save data
+      // Validate save data (after transaction completes)
       const validationResult = await this.validateSaveData(saveData);
       if (!validationResult.isValid) {
         return {
@@ -234,23 +281,11 @@ export class IndexedDbManager {
 
       onProgress?.(80, 'Decompressing data...');
 
-      // Decompress if necessary
+      // Decompress if necessary (after transaction completes)
       let processedData = saveData;
       if (saveData.isCompressed) {
         processedData = await this.decompressGameData(saveData);
       }
-
-      onProgress?.(90, 'Updating access time...');
-
-      // Update last accessed time
-      processedData.metadata.lastAccessed = new Date();
-      await this.promisifyRequest(metadataStore.put({
-        id: saveId,
-        slotNumber,
-        ...processedData.metadata,
-        playerSummary: processedData.playerSummary,
-        progressSummary: processedData.progressSummary
-      }));
 
       onProgress?.(100, 'Load completed');
 
@@ -420,6 +455,48 @@ export class IndexedDbManager {
   }
 
   /**
+   * Update sync status for a slot
+   */
+  async updateSyncStatus(
+    slotNumber: number,
+    status: SaveSyncStatus,
+    isCloudAvailable: boolean = false,
+    lastError: string | null = null
+  ): Promise<SaveOperationResult<void>> {
+    if (!this.db) {
+      return {
+        success: false,
+        error: new Error('Database not initialized')
+      };
+    }
+
+    try {
+      const transaction = this.db.transaction(['syncState'], 'readwrite');
+      const syncStateStore = transaction.objectStore('syncState');
+
+      const syncStateData = {
+        slotNumber,
+        status,
+        isCloudAvailable,
+        lastError,
+        lastSyncAttempt: new Date().toISOString()
+      };
+
+      await this.promisifyRequest(syncStateStore.put(syncStateData));
+
+      return {
+        success: true,
+        data: undefined
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error : new Error('Failed to update sync status')
+      };
+    }
+  }
+
+  /**
    * Cleanup old saves and optimize database
    */
   async cleanup(): Promise<SaveOperationResult<{deletedCount: number, reclaimedBytes: number}>> {
@@ -431,15 +508,58 @@ export class IndexedDbManager {
     }
 
     try {
-      // This would implement cleanup logic like:
-      // - Remove corrupted saves
-      // - Clean up orphaned metadata
-      // - Compress old saves
-      // - Remove temporary files
+      let deletedCount = 0;
+      let reclaimedBytes = 0;
+
+      const transaction = this.db.transaction(['saves', 'metadata'], 'readwrite');
+      const saveStore = transaction.objectStore('saves');
+      const metadataStore = transaction.objectStore('metadata');
+
+      // Get all metadata records
+      const allMetadata = await this.promisifyRequest(metadataStore.getAll());
+
+      // Track valid slot numbers
+      const slotRecords = new Map<number, any[]>();
+
+      // Group metadata by slotNumber
+      for (const meta of allMetadata) {
+        if (meta.slotNumber !== undefined) {
+          if (!slotRecords.has(meta.slotNumber)) {
+            slotRecords.set(meta.slotNumber, []);
+          }
+          slotRecords.get(meta.slotNumber)!.push(meta);
+        } else {
+          // Delete corrupted metadata with no slotNumber
+          console.warn('🧹 Cleaning up corrupted metadata:', meta.id, meta.name);
+          await this.promisifyRequest(metadataStore.delete(meta.id));
+          deletedCount++;
+          reclaimedBytes += this.calculateDataSize(meta);
+        }
+      }
+
+      // For each slot with multiple records, keep only the most recent
+      for (const [slotNumber, records] of slotRecords) {
+        if (records.length > 1) {
+          // Sort by lastModified, newest first
+          records.sort((a, b) =>
+            new Date(b.lastModified || 0).getTime() - new Date(a.lastModified || 0).getTime()
+          );
+
+          // Keep the first (newest), delete the rest
+          for (let i = 1; i < records.length; i++) {
+            console.warn('🧹 Cleaning up duplicate metadata for slot', slotNumber, ':', records[i].id);
+            await this.promisifyRequest(metadataStore.delete(records[i].id));
+            deletedCount++;
+            reclaimedBytes += this.calculateDataSize(records[i]);
+          }
+        }
+      }
+
+      console.log(`✅ Cleanup completed: ${deletedCount} records removed, ${reclaimedBytes} bytes reclaimed`);
 
       return {
         success: true,
-        data: { deletedCount: 0, reclaimedBytes: 0 }
+        data: { deletedCount, reclaimedBytes }
       };
     } catch (error) {
       return {
@@ -464,7 +584,23 @@ export class IndexedDbManager {
   private promisifyRequest<T>(request: IDBRequest<T>): Promise<T> {
     return new Promise((resolve, reject) => {
       request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
+      request.onerror = () => {
+        const error = request.error;
+        const detailedError = new Error(
+          `IndexedDB request failed: ${error?.message || error?.name || 'Unknown error'}`
+        );
+        // Preserve the original error for debugging
+        (detailedError as any).originalError = error;
+        (detailedError as any).errorCode = error?.name;
+        console.error('❌ IndexedDB request error:', {
+          message: error?.message,
+          name: error?.name,
+          code: error?.name,
+          transaction: (request.transaction as any)?.mode,
+          objectStore: (request.source as any)?.name
+        });
+        reject(detailedError);
+      };
     });
   }
 
@@ -496,12 +632,36 @@ export class IndexedDbManager {
 
   private simpleCompress(data: string): string {
     // Placeholder compression - in production use a real compression library
-    return btoa(data);
+    // Handle Unicode characters by encoding to UTF-8 first
+    try {
+      // Convert string to UTF-8 bytes, then to base64
+      const utf8Bytes = new TextEncoder().encode(data);
+      const binaryString = Array.from(utf8Bytes)
+        .map(byte => String.fromCharCode(byte))
+        .join('');
+      return btoa(binaryString);
+    } catch (error) {
+      console.error('Compression failed:', error);
+      // Fallback: return original data (no compression)
+      return data;
+    }
   }
 
   private simpleDecompress(data: string): string {
     // Placeholder decompression
-    return atob(data);
+    try {
+      // Decode base64 to binary string, then to UTF-8
+      const binaryString = atob(data);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      return new TextDecoder().decode(bytes);
+    } catch (error) {
+      console.error('Decompression failed:', error);
+      // Fallback: return original data (no decompression)
+      return data;
+    }
   }
 
   private calculateDataSize(data: any): number {

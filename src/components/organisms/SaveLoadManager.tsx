@@ -44,7 +44,7 @@ export const SaveLoadManager: React.FC<SaveLoadManagerProps> = ({
     refreshSlots
   } = useSaveSystem();
 
-  const { gameState } = useGameState();
+  const { state: gameState, updateGameState } = useGameState();
   const { isMobile, isTablet } = useResponsive();
   const { animationConfig } = useReducedMotion();
 
@@ -93,9 +93,11 @@ export const SaveLoadManager: React.FC<SaveLoadManagerProps> = ({
     });
 
     if (loadedState) {
+      // CRITICAL FIX: Dispatch the loaded state to React context
+      await updateGameState(loadedState);
       onLoadComplete?.(slotNumber);
     }
-  }, [isInitialized, loadGame, onLoadComplete]);
+  }, [isInitialized, loadGame, onLoadComplete, updateGameState]);
 
   const handleDelete = useCallback(async (slotNumber: number) => {
     if (!isInitialized) return;

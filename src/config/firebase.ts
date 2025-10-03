@@ -25,13 +25,13 @@ const getFirebaseConfig = (): FirebaseConfig => {
   const env = (import.meta as any).env || {};
 
   const config: FirebaseConfig = {
-    apiKey: env.REACT_APP_FIREBASE_API_KEY || 'AIzaSyBe_IhD5D662gd7hfIyXCvDS6UtIKm8pJg',
-    authDomain: env.REACT_APP_FIREBASE_AUTH_DOMAIN || 'sawyers-rpg-game.firebaseapp.com',
-    projectId: env.REACT_APP_FIREBASE_PROJECT_ID || 'sawyers-rpg-game',
-    storageBucket: env.REACT_APP_FIREBASE_STORAGE_BUCKET || 'sawyers-rpg-game.firebasestorage.app',
-    messagingSenderId: env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID || '963309553093',
-    appId: env.REACT_APP_FIREBASE_APP_ID || '1:963309553093:web:4a989b49ab75f8bafd37ac',
-    measurementId: env.REACT_APP_FIREBASE_MEASUREMENT_ID || 'G-YQ5SKL679K'
+    apiKey: env.VITE_FIREBASE_API_KEY || 'AIzaSyBe_IhD5D662gd7hfIyXCvDS6UtIKm8pJg',
+    authDomain: env.VITE_FIREBASE_AUTH_DOMAIN || 'sawyers-rpg-game.firebaseapp.com',
+    projectId: env.VITE_FIREBASE_PROJECT_ID || 'sawyers-rpg-game',
+    storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET || 'sawyers-rpg-game.firebasestorage.app',
+    messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID || '963309553093',
+    appId: env.VITE_FIREBASE_APP_ID || '1:963309553093:web:4a989b49ab75f8bafd37ac',
+    measurementId: env.VITE_FIREBASE_MEASUREMENT_ID || 'G-YQ5SKL679K'
   };
 
   // Validate required configuration
@@ -41,7 +41,7 @@ const getFirebaseConfig = (): FirebaseConfig => {
 
   for (const field of requiredFields) {
     if (!config[field] || config[field]?.includes('your-')) {
-      console.warn(`Firebase ${field} is not configured properly. Please set REACT_APP_FIREBASE_${field.toUpperCase()} in your environment variables.`);
+      console.warn(`Firebase ${field} is not configured properly. Please set VITE_FIREBASE_${field.toUpperCase()} in your environment variables.`);
     }
   }
 
@@ -75,7 +75,7 @@ export const initializeFirebase = (): {
 
       // Connect to emulators in development
       const env = (import.meta as any).env || {};
-      if (env.NODE_ENV === 'development' && env.REACT_APP_USE_FIREBASE_EMULATOR === 'true') {
+      if (env.NODE_ENV === 'development' && env.VITE_USE_FIREBASE_EMULATOR === 'true') {
         try {
           // Only connect to emulators if not already connected
           if (!firebaseAuth.config.emulator) {

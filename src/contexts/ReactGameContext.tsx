@@ -505,13 +505,27 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
       console.log('🔍 LOAD_GAME_DATA Debug:', {
         currentPlayerData: state.player ? { experience: state.player.experience, gold: state.player.gold } : 'No player',
         payloadPlayerData: action.payload.player ? { experience: action.payload.player.experience, gold: action.payload.player.gold } : 'No player in payload',
+        currentStoryFlags: state.storyFlags,
+        payloadStoryFlags: action.payload.storyFlags,
         fullPayload: action.payload
       });
-      const newState = { ...state, ...action.payload };
+      const loadedState = { ...state, ...action.payload };
+
+      // Backward compatibility: Ensure tutorial_complete flag exists if player exists
+      if (loadedState.player && !loadedState.storyFlags?.tutorial_complete) {
+        console.warn('⚠️ Loaded save missing tutorial_complete flag, adding it automatically...');
+        loadedState.storyFlags = {
+          ...loadedState.storyFlags,
+          tutorial_complete: true
+        };
+      }
+
       console.log('🔍 LOAD_GAME_DATA Result:', {
-        newPlayerData: newState.player ? { experience: newState.player.experience, gold: newState.player.gold } : 'No player'
+        newPlayerData: loadedState.player ? { experience: loadedState.player.experience, gold: loadedState.player.gold } : 'No player',
+        storyFlags: loadedState.storyFlags,
+        hasTutorialComplete: loadedState.storyFlags?.tutorial_complete
       });
-      return newState;
+      return loadedState;
 
     case 'START_COMBAT':
       return {

@@ -21,6 +21,7 @@ interface SaveSlotCardProps {
   isSelected?: boolean;
   isLoading?: boolean;
   className?: string;
+  disableCardClick?: boolean;
 }
 
 const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
@@ -34,7 +35,8 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
   onConflictResolve,
   isSelected = false,
   isLoading = false,
-  className = ''
+  className = '',
+  disableCardClick = false
 }) => {
   const [showActions, setShowActions] = useState(false);
   const { isMobile, isTablet } = useResponsive();
@@ -173,20 +175,23 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
 
   const cardStyle: React.CSSProperties = {
     position: 'relative',
-    background: slotInfo.isEmpty
-      ? 'linear-gradient(135deg, #2a2a3e, #1e1e2f)'
-      : 'linear-gradient(135deg, #3a4f7a, #2d3561)',
-    border: `2px solid ${isSelected ? '#d4af37' : 'rgba(212, 175, 55, 0.3)'}`,
+    background: isSelected
+      ? 'linear-gradient(135deg, #4a5f8a, #3d4571)'
+      : slotInfo.isEmpty
+        ? 'linear-gradient(135deg, #2a2a3e, #1e1e2f)'
+        : 'linear-gradient(135deg, #3a4f7a, #2d3561)',
+    border: `3px solid ${isSelected ? '#d4af37' : 'rgba(212, 175, 55, 0.3)'}`,
     borderRadius: '12px',
     padding: isMobile ? '12px' : '16px',
     minHeight: isMobile ? '120px' : '140px',
     cursor: slotInfo.isEmpty ? 'default' : 'pointer',
     transition: 'all 0.3s ease',
     boxShadow: isSelected
-      ? '0 8px 32px rgba(212, 175, 55, 0.3)'
+      ? '0 8px 32px rgba(212, 175, 55, 0.5), inset 0 0 0 2px rgba(212, 175, 55, 0.2)'
       : '0 4px 16px rgba(0, 0, 0, 0.3)',
     opacity: isLoading ? 0.7 : 1,
-    overflow: 'hidden'
+    overflow: 'hidden',
+    transform: isSelected ? 'scale(1.02)' : 'scale(1)'
   };
 
   const headerStyle: React.CSSProperties = {
@@ -236,7 +241,15 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
       } : {}}
       whileTap={!slotInfo.isEmpty ? { scale: 0.98 } : {}}
       transition={animationConfig}
-      onClick={() => !slotInfo.isEmpty && onLoad?.()}
+      onClick={disableCardClick ? undefined : () => {
+        console.log('💾 SaveSlotCard clicked:', { slotNumber: slotInfo.slotNumber, isEmpty: slotInfo.isEmpty, hasOnLoad: !!onLoad, disableCardClick });
+        if (!slotInfo.isEmpty && onLoad) {
+          console.log('🔥 Calling onLoad for slot:', slotInfo.slotNumber);
+          onLoad();
+        } else {
+          console.log('⚠️ Click blocked:', { isEmpty: slotInfo.isEmpty, hasOnLoad: !!onLoad });
+        }
+      }}
       onMouseEnter={() => !isMobile && setShowActions(true)}
       onMouseLeave={() => !isMobile && setShowActions(false)}
     >
@@ -264,6 +277,37 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
             <div style={{ color: '#d4af37', fontSize: '1rem' }}>
               Loading...
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Selection Indicator */}
+      <AnimatePresence>
+        {isSelected && !slotInfo.isEmpty && (
+          <motion.div
+            style={{
+              position: 'absolute',
+              top: '12px',
+              right: '12px',
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #d4af37, #f4c653)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#1a1a2e',
+              fontSize: '1.2rem',
+              fontWeight: 'bold',
+              boxShadow: '0 4px 12px rgba(212, 175, 55, 0.5)',
+              zIndex: 5
+            }}
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            exit={{ scale: 0, rotate: 180 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+          >
+            ✓
           </motion.div>
         )}
       </AnimatePresence>

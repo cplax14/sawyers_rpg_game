@@ -47,6 +47,7 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
     restoreFromCloud,
     syncSlot,
     resolveConflict,
+    deleteCloudSave,
     triggerFullSync,
     triggerQuickSync
   } = useCloudSave();
@@ -63,7 +64,17 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
 
   // Refresh save slots on mount and when cloud state changes
   useEffect(() => {
-    refreshSlots();
+    // Only refresh if save system is actually initialized (not just the flag)
+    // Add a small delay to ensure initialization is complete
+    if (isAuthenticated && isInitialized) {
+      const timeoutId = setTimeout(() => {
+        refreshSlots().catch(err => {
+          console.warn('Failed to refresh slots on mount:', err);
+        });
+      }, 100); // Small delay to ensure save system is fully ready
+
+      return () => clearTimeout(timeoutId);
+    }
   }, [refreshSlots, isAuthenticated, isInitialized]);
 
   // Computed values
@@ -91,12 +102,15 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
 
   // Event handlers
   const handleSlotSelection = useCallback((slotNumber: number, selected: boolean) => {
+    console.log('🎯 handleSlotSelection called:', { slotNumber, selected, currentSelectedSlots: Array.from(selectedSlots) });
     setSelectedSlots(prev => {
       const newSet = new Set(prev);
       if (selected) {
         newSet.add(slotNumber);
+        console.log('✅ Added slot to selection:', slotNumber, 'New set:', Array.from(newSet));
       } else {
         newSet.delete(slotNumber);
+        console.log('❌ Removed slot from selection:', slotNumber, 'New set:', Array.from(newSet));
       }
       return newSet;
     });
@@ -119,12 +133,8 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
     trackSyncOperation(slotNumber, { type: 'backup', status: 'in_progress', progress: 0 });
 
     try {
-      await backupToCloud(slotNumber, {
-        overwriteNewer: false,
-        progressCallback: (progress) => {
-          trackSyncOperation(slotNumber, { type: 'backup', status: 'in_progress', progress: progress.percentage });
-        }
-      });
+      // backupToCloud only accepts (slotNumber, saveName?) - no options object
+      await backupToCloud(slotNumber);
 
       trackSyncOperation(slotNumber, { type: 'backup', status: 'completed', progress: 100 });
       setTimeout(() => setSyncOperations(prev => {
@@ -144,12 +154,8 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
     trackSyncOperation(slotNumber, { type: 'restore', status: 'in_progress', progress: 0 });
 
     try {
-      await restoreFromCloud(slotNumber, {
-        overwriteLocal: true,
-        progressCallback: (progress) => {
-          trackSyncOperation(slotNumber, { type: 'restore', status: 'in_progress', progress: progress.percentage });
-        }
-      });
+      // restoreFromCloud only accepts (slotNumber) - no options object
+      await restoreFromCloud(slotNumber);
 
       trackSyncOperation(slotNumber, { type: 'restore', status: 'completed', progress: 100 });
       setTimeout(() => setSyncOperations(prev => {
@@ -214,6 +220,40 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
       console.error('Quick sync failed:', error);
     }
   }, [triggerQuickSync, refreshSlots]);
+
+  const handleDeleteCloudSave = useCallback(async (slotNumber: number, deleteLocalToo: boolean = true) => {
+    // Show confirmation dialog
+    const confirmMessage = deleteLocalToo
+      ? `Delete save slot ${slotNumber + 1} from both cloud and local storage?`
+      : `Delete save slot ${slotNumber + 1} from cloud storage only?`;
+
+    if (!window.confirm(confirmMessage)) {
+      return;
+    }
+
+    trackSyncOperation(slotNumber, { type: 'backup', status: 'in_progress', progress: 0 });
+
+    try {
+      const result = await deleteCloudSave(slotNumber, deleteLocalToo);
+
+      if (result.success) {
+        trackSyncOperation(slotNumber, { type: 'backup', status: 'completed', progress: 100 });
+
+        setTimeout(() => setSyncOperations(prev => {
+          const newMap = new Map(prev);
+          newMap.delete(slotNumber);
+          return newMap;
+        }), 2000);
+
+        await refreshSlots();
+      } else {
+        throw new Error(result.error?.message || 'Delete failed');
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Cloud save deletion failed';
+      trackSyncOperation(slotNumber, { type: 'backup', status: 'failed', progress: 0, error: errorMessage });
+    }
+  }, [deleteCloudSave, refreshSlots, trackSyncOperation]);
 
   // Authentication check
   if (!isAuthenticated) {
@@ -956,8 +996,40 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
             exit={{ opacity: 0, x: 20 }}
             transition={animationConfig}
           >
-            {/* Slot selection controls */}
-            <div style={{
+            {/* Empty state message when no saves exist */}
+            {saveSlots.every(slot => slot.isEmpty) && (
+              <div style={{
+                padding: '32px 24px',
+                background: 'rgba(33, 150, 243, 0.1)',
+                border: '1px solid rgba(33, 150, 243, 0.3)',
+                borderRadius: '8px',
+                textAlign: 'center',
+                marginBottom: '24px'
+              }}>
+                <div style={{ fontSize: '3rem', marginBottom: '16px' }}>💾</div>
+                <h3 style={{ color: '#2196f3', marginBottom: '12px', fontSize: '1.2rem' }}>
+                  No Saved Games Found
+                </h3>
+                <p style={{ color: '#cccccc', marginBottom: '16px', maxWidth: '500px', margin: '0 auto 16px' }}>
+                  The Cloud Save Manager syncs your existing saved games to cloud storage.
+                  To create a save, start a new game and save your progress from the main menu.
+                </p>
+                <div style={{ marginTop: '20px', display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <Button
+                    variant="secondary"
+                    onClick={() => setActiveTab('overview')}
+                  >
+                    View Overview
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Show slots only if at least one save exists */}
+            {!saveSlots.every(slot => slot.isEmpty) && (
+              <>
+                {/* Slot selection controls */}
+                <div style={{
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
@@ -1011,32 +1083,15 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
                     }}
                     whileHover={{ scale: 1.02 }}
                   >
-                    {!slot.isEmpty && (
-                      <div style={{
-                        position: 'absolute',
-                        top: '8px',
-                        left: '8px',
-                        zIndex: 5
-                      }}>
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={(e) => handleSlotSelection(slot.slotNumber, e.target.checked)}
-                          style={{
-                            width: '16px',
-                            height: '16px',
-                            cursor: 'pointer'
-                          }}
-                        />
-                      </div>
-                    )}
-
                     <SaveSlotCard
                       slotInfo={slot}
+                      isSelected={isSelected}
                       isLoading={isOperating}
+                      onLoad={() => handleSlotSelection(slot.slotNumber, !isSelected)}
                       onCloudSync={() => handleCloudSync(slot.slotNumber)}
                       onCloudRestore={() => handleCloudRestore(slot.slotNumber)}
                       onConflictResolve={() => handleConflictResolve(slot.slotNumber)}
+                      onDelete={() => handleDeleteCloudSave(slot.slotNumber)}
                     />
 
                     {/* Operation Progress */}
@@ -1093,6 +1148,8 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
                 );
               })}
             </div>
+              </>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

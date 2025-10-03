@@ -12,7 +12,8 @@ import {
   SaveExportOptions,
   SaveImportResult,
   SaveOperationResult,
-  SaveSystemEvents
+  SaveSystemEvents,
+  SaveSyncStatus
 } from '../types/saveSystem';
 import { ReactGameState } from '../types/game';
 
@@ -52,6 +53,8 @@ interface UseSaveSystemResult {
   initializeSaveSystem: () => Promise<boolean>;
   cleanup: () => Promise<void>;
   getStorageInfo: () => Promise<void>;
+  getFreshSlots: () => Promise<SaveSlotInfo[]>;
+  updateSyncStatus: (slotNumber: number, status: SaveSyncStatus, isCloudAvailable?: boolean, lastError?: string | null) => Promise<boolean>;
 }
 
 export const useSaveSystem = (): UseSaveSystemResult => {
@@ -134,19 +137,31 @@ export const useSaveSystem = (): UseSaveSystemResult => {
       setIsLoading(true);
       setError(null);
 
+      console.log('🚀 Initializing save system...');
       const saveManager = createSaveManager();
       const result = await saveManager.initialize();
 
       if (result.success) {
+        console.log('✅ Save system initialized successfully');
         setIsInitialized(true);
+
+        // Wait for state update to propagate
+        await new Promise(resolve => setTimeout(resolve, 0));
+
+        // Note: refreshSlots and getStorageInfo are called here but not in deps
+        // to avoid circular dependency. They'll use the latest state values.
         await refreshSlots();
         await getStorageInfo();
+
+        console.log('✅ Save system ready');
         return true;
       } else {
+        console.error('❌ Save system initialization failed:', result.error);
         setError(result.error?.message || 'Failed to initialize save system');
         return false;
       }
     } catch (err) {
+      console.error('❌ Save system initialization exception:', err);
       setError(err instanceof Error ? err.message : 'Unknown initialization error');
       return false;
     } finally {
@@ -154,28 +169,65 @@ export const useSaveSystem = (): UseSaveSystemResult => {
     }
   }, [createSaveManager]);
 
-  // Refresh save slots
-  const refreshSlots = useCallback(async (): Promise<void> => {
-    if (!saveManagerRef.current || !isInitialized) return;
+  // Get fresh slots directly from IndexedDB without React state
+  const getFreshSlots = useCallback(async (): Promise<SaveSlotInfo[]> => {
+    if (!saveManagerRef.current) return [];
 
     try {
       const result = await saveManagerRef.current.getAllSaves();
+      if (result.success && result.data) {
+        return result.data;
+      }
+      return [];
+    } catch (err) {
+      console.error('Failed to get fresh slots:', err);
+      return [];
+    }
+  }, []); // Remove isInitialized from dependency array
+
+  // Refresh save slots
+  const refreshSlots = useCallback(async (): Promise<void> => {
+    // Only check for the actual manager reference, not React state
+    if (!saveManagerRef.current) {
+      console.warn('⚠️ Cannot refresh slots: manager not yet created');
+      // Don't set error here - it's expected during initialization
+      return;
+    }
+
+    try {
+      console.log('🔄 Refreshing save slots...');
+      const result = await saveManagerRef.current.getAllSaves();
       if (result.success) {
-        setSaveSlots(result.data || []);
+        const slots = result.data || [];
+        console.log('✅ Save slots refreshed:', {
+          totalSlots: slots.length,
+          occupiedSlots: slots.filter(s => !s.isEmpty).length,
+          slotNumbers: slots.filter(s => !s.isEmpty).map(s => s.slotNumber)
+        });
+        setSaveSlots(slots);
+        // Clear any previous errors on success
+        setError(null);
       } else {
+        console.error('❌ Failed to refresh slots:', result.error);
         setError(result.error?.message || 'Failed to refresh save slots');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to refresh save slots');
+      console.error('❌ Exception refreshing slots:', err);
+      // Only set error if it's not an initialization-related issue
+      const errorMessage = err instanceof Error ? err.message : 'Failed to refresh save slots';
+      if (!errorMessage.includes('not initialized')) {
+        setError(errorMessage);
+      }
     }
-  }, [isInitialized]);
+  }, []); // Remove isInitialized from dependency array
 
   // Save game
   const saveGame = useCallback(async (
     gameState: ReactGameState,
     options: SaveOperationOptions
   ): Promise<boolean> => {
-    if (!saveManagerRef.current || !isInitialized) {
+    if (!saveManagerRef.current) {
+      console.error('❌ Save failed: Save system not initialized');
       setError('Save system not initialized');
       return false;
     }
@@ -189,18 +241,25 @@ export const useSaveSystem = (): UseSaveSystemResult => {
         }
       });
 
+      if (!result.success) {
+        console.error('❌ Save failed:', result.error);
+        setError(result.error?.message || 'Save operation failed');
+      }
+
       return result.success;
     } catch (err) {
+      console.error('❌ Save exception:', err);
       setError(err instanceof Error ? err.message : 'Save operation failed');
       return false;
     }
-  }, [isInitialized]);
+  }, []); // Remove isInitialized from dependency array
 
   // Load game
   const loadGame = useCallback(async (
     options: LoadOperationOptions
   ): Promise<ReactGameState | null> => {
-    if (!saveManagerRef.current || !isInitialized) {
+    // Only check for actual manager, not React state
+    if (!saveManagerRef.current) {
       setError('Save system not initialized');
       return null;
     }
@@ -224,11 +283,11 @@ export const useSaveSystem = (): UseSaveSystemResult => {
       setError(err instanceof Error ? err.message : 'Load operation failed');
       return null;
     }
-  }, [isInitialized]);
+  }, []); // Remove isInitialized from dependency array
 
   // Delete save
   const deleteSave = useCallback(async (slotNumber: number): Promise<boolean> => {
-    if (!saveManagerRef.current || !isInitialized) {
+    if (!saveManagerRef.current) {
       setError('Save system not initialized');
       return false;
     }
@@ -246,7 +305,7 @@ export const useSaveSystem = (): UseSaveSystemResult => {
       setError(err instanceof Error ? err.message : 'Delete operation failed');
       return false;
     }
-  }, [isInitialized, refreshSlots]);
+  }, [refreshSlots]); // Remove isInitialized from dependency array
 
   // Export save
   const exportSave = useCallback(async (
@@ -335,6 +394,32 @@ export const useSaveSystem = (): UseSaveSystemResult => {
     }
   }, [isInitialized]);
 
+  // Update sync status
+  const updateSyncStatus = useCallback(async (
+    slotNumber: number,
+    status: SaveSyncStatus,
+    isCloudAvailable: boolean = false,
+    lastError: string | null = null
+  ): Promise<boolean> => {
+    if (!saveManagerRef.current) {
+      console.warn('Cannot update sync status: Save system not initialized');
+      return false;
+    }
+
+    try {
+      const result = await saveManagerRef.current.updateSyncStatus(slotNumber, status, isCloudAvailable, lastError);
+      if (result.success) {
+        // Refresh slots to update UI
+        await refreshSlots();
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error('Failed to update sync status:', err);
+      return false;
+    }
+  }, [refreshSlots]);
+
   // Cleanup
   const cleanup = useCallback(async (): Promise<void> => {
     if (saveManagerRef.current) {
@@ -401,7 +486,9 @@ export const useSaveSystem = (): UseSaveSystemResult => {
     // Utilities
     initializeSaveSystem,
     cleanup,
-    getStorageInfo
+    getStorageInfo,
+    getFreshSlots,
+    updateSyncStatus
   };
 };
 
