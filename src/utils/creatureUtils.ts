@@ -381,7 +381,7 @@ export const calculatePersonalityCompatibility = (
     ['clingy', 'protective']
   ];
 
-  const hasCompatibleTraits = compatibleTraits.some(pair =>
+  const hasCompatibleTraits = personality1.traits && personality2.traits && compatibleTraits.some(pair =>
     (personality1.traits.includes(pair[0] as any) && personality2.traits.includes(pair[1] as any)) ||
     (personality1.traits.includes(pair[1] as any) && personality2.traits.includes(pair[0] as any))
   );
