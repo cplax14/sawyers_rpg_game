@@ -264,7 +264,10 @@ describe('Modal', () => {
 
     rerender(<Modal {...defaultProps} isOpen={false} />);
 
-    // Modal should still be in DOM briefly during exit animation
-    expect(screen.queryByRole('dialog')).toBeInTheDocument();
+    // Modal should be removed from DOM after close
+    // Note: In test environment, framer-motion animations are instant
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
   });
 });

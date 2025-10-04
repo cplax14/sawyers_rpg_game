@@ -84,7 +84,7 @@ export const cardStyles = createFallbackStyles([
 
 export const modalStyles = createFallbackStyles([
   'overlay', 'modal', 'header', 'title', 'closeButton',
-  'content', 'footer', 'actions'
+  'content', 'footer', 'actions', 'sm', 'md', 'lg', 'xl'
 ]);
 
 export const loadingSpinnerStyles = createFallbackStyles([
