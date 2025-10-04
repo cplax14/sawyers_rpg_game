@@ -1,5 +1,6 @@
 // Jest test setup file
 import '@testing-library/jest-dom';
+import 'whatwg-fetch'; // Polyfill fetch for Firebase and other APIs
 
 // Mock Framer Motion to avoid animation issues in tests
 jest.mock('framer-motion', () => {
@@ -79,18 +80,85 @@ jest.mock('uuid', () => ({
   v4: jest.fn(() => 'mock-uuid-v4')
 }));
 
+// Mock Firebase configuration to avoid import.meta issues
+jest.mock('./config/firebase', () => {
+  const mockAuth = {
+    currentUser: null,
+    config: {},
+    signInWithEmailAndPassword: jest.fn(),
+    createUserWithEmailAndPassword: jest.fn(),
+    signOut: jest.fn(),
+    onAuthStateChanged: jest.fn(),
+  };
+
+  const mockFirestore = {
+    app: {},
+    collection: jest.fn(),
+    doc: jest.fn(),
+    getDoc: jest.fn(),
+    setDoc: jest.fn(),
+    updateDoc: jest.fn(),
+    deleteDoc: jest.fn(),
+  };
+
+  const mockStorage = {
+    app: {},
+    ref: jest.fn(),
+    uploadBytes: jest.fn(),
+    getDownloadURL: jest.fn(),
+  };
+
+  const mockApp = {
+    name: '[DEFAULT]',
+    options: {},
+    automaticDataCollectionEnabled: false,
+  };
+
+  return {
+    initializeFirebase: jest.fn(() => ({
+      app: mockApp,
+      auth: mockAuth,
+      firestore: mockFirestore,
+      storage: mockStorage,
+    })),
+    getFirebaseServices: jest.fn(() => ({
+      app: mockApp,
+      auth: mockAuth,
+      firestore: mockFirestore,
+      storage: mockStorage,
+    })),
+    getFirebaseAuth: jest.fn(() => mockAuth),
+    getFirebaseFirestore: jest.fn(() => mockFirestore),
+    getFirebaseStorage: jest.fn(() => mockStorage),
+    isFirebaseConfigured: jest.fn(() => true),
+    checkFirebaseConnection: jest.fn(async () => ({
+      connected: true,
+      services: {
+        auth: true,
+        firestore: true,
+        storage: true,
+      },
+    })),
+    app: mockApp,
+    auth: mockAuth,
+    firestore: mockFirestore,
+    storage: mockStorage,
+  };
+});
+
 // Mock import.meta for Vite compatibility
-Object.defineProperty(global, 'import', {
-  value: {
-    meta: {
-      env: {
-        VITE_FIREBASE_API_KEY: 'mock-api-key',
-        VITE_FIREBASE_AUTH_DOMAIN: 'mock-auth-domain',
-        VITE_FIREBASE_PROJECT_ID: 'mock-project-id',
-        VITE_FIREBASE_STORAGE_BUCKET: 'mock-storage-bucket',
-        VITE_FIREBASE_MESSAGING_SENDER_ID: 'mock-sender-id',
-        VITE_FIREBASE_APP_ID: 'mock-app-id'
-      }
+// This is needed for Firebase config and other Vite-specific imports
+(global as any).import = {
+  meta: {
+    env: {
+      NODE_ENV: 'test',
+      VITE_FIREBASE_API_KEY: 'mock-api-key',
+      VITE_FIREBASE_AUTH_DOMAIN: 'mock-auth-domain',
+      VITE_FIREBASE_PROJECT_ID: 'mock-project-id',
+      VITE_FIREBASE_STORAGE_BUCKET: 'mock-storage-bucket',
+      VITE_FIREBASE_MESSAGING_SENDER_ID: 'mock-sender-id',
+      VITE_FIREBASE_APP_ID: 'mock-app-id',
+      VITE_USE_FIREBASE_EMULATOR: 'false'
     }
   }
-});
+};
