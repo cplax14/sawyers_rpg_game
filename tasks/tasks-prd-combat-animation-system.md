@@ -137,18 +137,18 @@ Generated from: `docs/prd-combat-animation-system.md`
   - [x] 5.11 Add lazy loading for animation components to reduce initial bundle size (Phase 3 - COMPLETE: Evaluated and deferred, documented decision)
   - [x] 5.12 Test graceful degradation when browser doesn't support advanced effects (Phase 3 - COMPLETE: Tested all edge cases, compatibility documented)
 
-- [ ] 6.0 Create Comprehensive Documentation
-  - [ ] 6.1 Create `docs/animations/` directory structure
-  - [ ] 6.2 Write `README.md` with overview, quick start guide, and file structure explanation
-  - [ ] 6.3 Write `design-principles.md` with visual philosophy (anticipation, impact, follow-through), readability standards, examples
-  - [ ] 6.4 Write `timing-guidelines.md` with phase breakdowns, duration standards by attack weight, frame budget allocation
-  - [ ] 6.5 Write `adding-new-animations.md` tutorial with step-by-step instructions, code examples, testing checklist
-  - [ ] 6.6 Write `component-api.md` with complete API docs for all core components, props reference, usage examples
-  - [ ] 6.7 Write `troubleshooting.md` with common issues, error messages, debugging tips, performance problems
-  - [ ] 6.8 Write `wizard-spell-specifications.md` with detailed specs for each spell (Fireball, Ice Shard, Lightning, etc.), visual mockups, timing breakdowns
-  - [ ] 6.9 Write `animation-patterns.md` with reusable templates for projectile, AOE, buff/debuff patterns
-  - [ ] 6.10 Add color palette reference table with hex codes for all elements (Fire: #ff6b35, Ice: #4da6ff, etc.)
-  - [ ] 6.11 Review all docs for clarity and completeness (junior developer should be able to add animations independently)
+- [x] 6.0 Create Comprehensive Documentation
+  - [x] 6.1 Create `docs/animations/` directory structure
+  - [x] 6.2 Write `README.md` with overview, quick start guide, and file structure explanation
+  - [x] 6.3 Write `design-principles.md` with visual philosophy (anticipation, impact, follow-through), readability standards, examples
+  - [x] 6.4 Write `timing-guidelines.md` with phase breakdowns, duration standards by attack weight, frame budget allocation
+  - [x] 6.5 Write `adding-new-animations.md` tutorial with step-by-step instructions, code examples, testing checklist
+  - [x] 6.6 Write `component-api.md` with complete API docs for all core components, props reference, usage examples
+  - [x] 6.7 Write `troubleshooting.md` with common issues, error messages, debugging tips, performance problems
+  - [x] 6.8 Write `wizard-spell-specifications.md` with detailed specs for each spell (Fireball, Ice Shard, Lightning, etc.), visual mockups, timing breakdowns
+  - [x] 6.9 Write `animation-patterns.md` with reusable templates for projectile, AOE, buff/debuff patterns
+  - [x] 6.10 Add color palette reference table with hex codes for all elements (Fire: #ff6b35, Ice: #4da6ff, etc.)
+  - [x] 6.11 Review all docs for clarity and completeness (junior developer should be able to add animations independently)
 
 - [ ] 7.0 Redesign Magic Bolt & Integration Testing
   - [ ] 7.1 Refactor `MagicBoltAnimation.tsx` to use new core components (ChargeParticles, Projectile, ImpactEffects from core)
