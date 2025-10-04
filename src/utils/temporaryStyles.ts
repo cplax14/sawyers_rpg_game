@@ -108,7 +108,8 @@ export const characterClassCardStyles = createFallbackStyles([
 ]);
 
 export const tooltipStyles = createFallbackStyles([
-  'tooltip', 'arrow', 'trigger', 'content', 'top', 'bottom', 'left', 'right'
+  'tooltip', 'arrow', 'trigger', 'content', 'top', 'bottom', 'left', 'right',
+  'dark', 'light', 'info', 'warning', 'error'
 ]);
 
 // Export default styles object for backwards compatibility
