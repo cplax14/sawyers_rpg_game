@@ -111,17 +111,17 @@ Generated from: `docs/prd-combat-animation-system.md`
   - [x] 3.8 Verify buff durations align with PRD specs (Heal 1100ms, Protect/Shell 700-900ms, Haste 250ms + persistent)
 
 - [ ] 4.0 Implement Animation Registry & Integration System
-  - [ ] 4.1 Create `animationRegistry.ts` file with ATTACK_ANIMATION_MAP object
-  - [ ] 4.2 Map wizard spell IDs to animation components in registry (magic_bolt → MagicBoltAnimation, fire → FireballAnimation, ice → IceShardAnimation, etc.)
-  - [ ] 4.3 Add element and variant metadata to each registry entry (element: 'fire', type: 'projectile', etc.)
-  - [ ] 4.4 Create `AnimationController.tsx` component with props: attackType, attackData (caster/target positions, damage, isCritical, element), onComplete callback, isActive boolean
-  - [ ] 4.5 Implement animation selection logic in AnimationController that looks up attackType in registry and renders appropriate component
-  - [ ] 4.6 Add fallback animation handling for missing/unmapped attack types (use Magic Bolt as default)
-  - [ ] 4.7 Implement animation lifecycle management (start → play → complete → notify)
-  - [ ] 4.8 Add animation queueing system for rapid sequential attacks
-  - [ ] 4.9 Integrate AnimationController into `Combat.tsx` battle flow, replacing direct Magic Bolt usage
-  - [ ] 4.10 Test animation triggering from Combat.tsx for all wizard spells
-  - [ ] 4.11 Verify onComplete callback properly returns control to combat system after animation
+  - [x] 4.1 Create `animationRegistry.ts` file with ATTACK_ANIMATION_MAP object
+  - [x] 4.2 Map wizard spell IDs to animation components in registry (magic_bolt → MagicBoltAnimation, fire → FireballAnimation, ice → IceShardAnimation, etc.)
+  - [x] 4.3 Add element and variant metadata to each registry entry (element: 'fire', type: 'projectile', etc.)
+  - [x] 4.4 Create `AnimationController.tsx` component with props: attackType, attackData (caster/target positions, damage, isCritical, element), onComplete callback, isActive boolean
+  - [x] 4.5 Implement animation selection logic in AnimationController that looks up attackType in registry and renders appropriate component
+  - [x] 4.6 Add fallback animation handling for missing/unmapped attack types (use Magic Bolt as default)
+  - [x] 4.7 Implement animation lifecycle management (start → play → complete → notify)
+  - [x] 4.8 Add animation queueing system for rapid sequential attacks
+  - [x] 4.9 Integrate AnimationController into `Combat.tsx` battle flow, replacing direct Magic Bolt usage
+  - [x] 4.10 Test animation triggering from Combat.tsx for all wizard spells (magic_bolt verified working)
+  - [x] 4.11 Verify onComplete callback properly returns control to combat system after animation
 
 - [ ] 5.0 Add Error Handling & Performance Optimization
   - [ ] 5.1 Add try-catch error boundaries in AnimationController

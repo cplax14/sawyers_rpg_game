@@ -7,7 +7,7 @@ import { useIsMobile } from '../../hooks';
 import { useCreatures } from '../../hooks/useCreatures';
 import { ReactMonster, ReactPlayer } from '../../types/game';
 import { EnhancedCreature } from '../../types/creatures';
-import { MagicBoltAnimation } from '../combat/animations';
+import { AnimationController } from '../combat/animations/AnimationController';
 
 interface CombatProps {
   className?: string;
@@ -125,10 +125,14 @@ export const Combat: React.FC<CombatProps> = ({
   });
 
   const [activeAnimation, setActiveAnimation] = useState<{
-    type: 'magic-bolt';
+    spellId: string;
     damage: number;
     isCritical: boolean;
-    element: 'arcane' | 'fire' | 'ice' | 'lightning';
+    element: string;
+    casterX: number;
+    casterY: number;
+    targetX: number;
+    targetY: number;
   } | null>(null);
 
   // Reset battle ended flag when new combat starts
@@ -325,12 +329,19 @@ export const Combat: React.FC<CombatProps> = ({
         const isCritical = Math.random() < 0.15;
         const damage = isCritical ? Math.floor(normalDamage * 1.5) : normalDamage;
 
-        // Trigger animation with proper positions
+        // Get animation positions from DOM elements
+        const positions = getAnimationPositions();
+
+        // Trigger animation with proper positions and spell ID
         setActiveAnimation({
-          type: 'magic-bolt',
+          spellId: spell.id, // Use spell ID for registry lookup
           damage,
           isCritical,
-          element: spell.element || 'arcane'
+          element: spell.element || 'arcane',
+          casterX: positions.casterPosition.x,
+          casterY: positions.casterPosition.y,
+          targetX: positions.targetPosition.x,
+          targetY: positions.targetPosition.y
         });
 
         // Wait for animation to complete (1400ms total)
@@ -1309,22 +1320,25 @@ export const Combat: React.FC<CombatProps> = ({
       )}
 
       {/* Animation Layer */}
-      {activeAnimation?.type === 'magic-bolt' && (() => {
-        const positions = getAnimationPositions();
-        return (
-          <MagicBoltAnimation
-            casterPosition={positions.casterPosition}
-            targetPosition={positions.targetPosition}
-            damage={activeAnimation.damage}
-            isCritical={activeAnimation.isCritical}
-            element={activeAnimation.element}
-            isActive={true}
-            onComplete={() => {
-              // Animation completed, cleanup handled in executeMagic
-            }}
-          />
-        );
-      })()}
+      {activeAnimation && (
+        <AnimationController
+          attackType={activeAnimation.spellId}
+          attackData={{
+            casterX: activeAnimation.casterX,
+            casterY: activeAnimation.casterY,
+            targetX: activeAnimation.targetX,
+            targetY: activeAnimation.targetY,
+            damage: activeAnimation.damage,
+            isCritical: activeAnimation.isCritical,
+            element: activeAnimation.element
+          }}
+          onComplete={() => {
+            // Animation completed, cleanup handled in executeMagic
+            console.log('✅ [Combat] Animation completed via AnimationController');
+          }}
+          isActive={true}
+        />
+      )}
     </div>
   );
 };
