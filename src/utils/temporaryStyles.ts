@@ -95,7 +95,8 @@ export const loadingSpinnerStyles = createFallbackStyles([
 export const inputStyles = createFallbackStyles([
   'container', 'fullWidth', 'input', 'error', 'disabled', 'focused',
   'hasIconBefore', 'hasIconAfter', 'label', 'required', 'inputWrapper',
-  'iconBefore', 'passwordToggle', 'iconAfter', 'errorMessage', 'helperText'
+  'iconBefore', 'passwordToggle', 'iconAfter', 'errorMessage', 'helperText',
+  'default', 'search', 'password', 'sm', 'md', 'lg'
 ]);
 
 export const characterClassCardStyles = createFallbackStyles([
