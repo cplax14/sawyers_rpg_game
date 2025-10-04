@@ -110,7 +110,7 @@ Generated from: `docs/prd-combat-animation-system.md`
   - [x] 3.7 Test buff animations to ensure they're subtle enough to not distract from combat
   - [x] 3.8 Verify buff durations align with PRD specs (Heal 1100ms, Protect/Shell 700-900ms, Haste 250ms + persistent)
 
-- [ ] 4.0 Implement Animation Registry & Integration System
+- [x] 4.0 Implement Animation Registry & Integration System
   - [x] 4.1 Create `animationRegistry.ts` file with ATTACK_ANIMATION_MAP object
   - [x] 4.2 Map wizard spell IDs to animation components in registry (magic_bolt → MagicBoltAnimation, fire → FireballAnimation, ice → IceShardAnimation, etc.)
   - [x] 4.3 Add element and variant metadata to each registry entry (element: 'fire', type: 'projectile', etc.)
