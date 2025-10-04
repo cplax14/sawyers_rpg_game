@@ -37,7 +37,8 @@ export default defineConfig({
     // Copy game assets and data files
     rollupOptions: {
       input: {
-        main: resolve(__dirname, 'index.html')
+        main: resolve(__dirname, 'index.html'),
+        animationTest: resolve(__dirname, 'animation-test.html')
       }
     }
   },
