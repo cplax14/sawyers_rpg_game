@@ -573,6 +573,21 @@ export const categorizeItem = (item: EnhancedItem): ItemCategory => {
     return 'equipment';
   }
 
+  if (item.itemType === 'material') {
+    return 'materials';
+  }
+
+  if (item.itemType === 'quest') {
+    return 'quest';
+  }
+
+  // If itemType is set but not recognized, default to misc
+  // This prevents fallthrough to heuristic checks for explicitly typed items
+  const knownItemTypes = ['consumable', 'equipment', 'material', 'quest'];
+  if (item.itemType && !knownItemTypes.includes(item.itemType)) {
+    return 'misc';
+  }
+
   // Check by category if available
   if (item.category) {
     return item.category;
