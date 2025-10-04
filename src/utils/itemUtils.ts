@@ -295,6 +295,7 @@ export const consolidateStacks = (items: EnhancedItem[]): EnhancedItem[] => {
 
     if (!item.stackable) {
       consolidated.push(item);
+      processed.add(item.id);
       continue;
     }
 
@@ -311,7 +312,7 @@ export const consolidateStacks = (items: EnhancedItem[]): EnhancedItem[] => {
     }
 
     // Mark as processed
-    identicalItems.forEach(processed.add, processed);
+    identicalItems.forEach(identicalItem => processed.add(identicalItem.id));
   }
 
   return consolidated;
