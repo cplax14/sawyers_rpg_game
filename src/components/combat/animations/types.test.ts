@@ -343,12 +343,12 @@ describe('Animation Types', () => {
         expect(FIRE_COLORS.secondary).toBe('#ff4444');
       });
 
-      it('should have tertiary fire color', () => {
-        expect(FIRE_COLORS.tertiary).toBe('#ffaa00');
+      it('should have accent fire color', () => {
+        expect(FIRE_COLORS.accent).toBe('#ffaa00');
       });
 
       it('should have all three color properties', () => {
-        expect(Object.keys(FIRE_COLORS)).toEqual(['primary', 'secondary', 'tertiary']);
+        expect(Object.keys(FIRE_COLORS)).toEqual(['primary', 'secondary', 'accent']);
       });
     });
 
@@ -365,12 +365,12 @@ describe('Animation Types', () => {
         expect(ICE_COLORS.secondary).toBe('#b3e0ff');
       });
 
-      it('should have tertiary ice color', () => {
-        expect(ICE_COLORS.tertiary).toBe('#ffffff');
+      it('should have accent ice color', () => {
+        expect(ICE_COLORS.accent).toBe('#ffffff');
       });
 
       it('should have all three color properties', () => {
-        expect(Object.keys(ICE_COLORS)).toEqual(['primary', 'secondary', 'tertiary']);
+        expect(Object.keys(ICE_COLORS)).toEqual(['primary', 'secondary', 'accent']);
       });
     });
 
@@ -387,12 +387,12 @@ describe('Animation Types', () => {
         expect(LIGHTNING_COLORS.secondary).toBe('#fff176');
       });
 
-      it('should have tertiary lightning color', () => {
-        expect(LIGHTNING_COLORS.tertiary).toBe('#ffffff');
+      it('should have accent lightning color', () => {
+        expect(LIGHTNING_COLORS.accent).toBe('#ffffff');
       });
 
       it('should have all three color properties', () => {
-        expect(Object.keys(LIGHTNING_COLORS)).toEqual(['primary', 'secondary', 'tertiary']);
+        expect(Object.keys(LIGHTNING_COLORS)).toEqual(['primary', 'secondary', 'accent']);
       });
     });
 
@@ -409,12 +409,12 @@ describe('Animation Types', () => {
         expect(HOLY_COLORS.secondary).toBe('#ffffcc');
       });
 
-      it('should have tertiary holy color', () => {
-        expect(HOLY_COLORS.tertiary).toBe('#ffffff');
+      it('should have accent holy color', () => {
+        expect(HOLY_COLORS.accent).toBe('#ffffff');
       });
 
       it('should have all three color properties', () => {
-        expect(Object.keys(HOLY_COLORS)).toEqual(['primary', 'secondary', 'tertiary']);
+        expect(Object.keys(HOLY_COLORS)).toEqual(['primary', 'secondary', 'accent']);
       });
     });
 
@@ -431,12 +431,12 @@ describe('Animation Types', () => {
         expect(ARCANE_COLORS.secondary).toBe('#ba68c8');
       });
 
-      it('should have tertiary arcane color', () => {
-        expect(ARCANE_COLORS.tertiary).toBe('#4a148c');
+      it('should have accent arcane color', () => {
+        expect(ARCANE_COLORS.accent).toBe('#4a148c');
       });
 
       it('should have all three color properties', () => {
-        expect(Object.keys(ARCANE_COLORS)).toEqual(['primary', 'secondary', 'tertiary']);
+        expect(Object.keys(ARCANE_COLORS)).toEqual(['primary', 'secondary', 'accent']);
       });
     });
 
@@ -453,12 +453,12 @@ describe('Animation Types', () => {
         expect(POISON_COLORS.secondary).toBe('#33691e');
       });
 
-      it('should have tertiary poison color', () => {
-        expect(POISON_COLORS.tertiary).toBe('#7b1fa2');
+      it('should have accent poison color', () => {
+        expect(POISON_COLORS.accent).toBe('#7b1fa2');
       });
 
       it('should have all three color properties', () => {
-        expect(Object.keys(POISON_COLORS)).toEqual(['primary', 'secondary', 'tertiary']);
+        expect(Object.keys(POISON_COLORS)).toEqual(['primary', 'secondary', 'accent']);
       });
     });
   });
@@ -520,7 +520,7 @@ describe('Animation Types', () => {
       [FIRE_COLORS, ICE_COLORS, LIGHTNING_COLORS, HOLY_COLORS, ARCANE_COLORS, POISON_COLORS].forEach(palette => {
         expect(palette.primary).toMatch(hexColorPattern);
         expect(palette.secondary).toMatch(hexColorPattern);
-        expect(palette.tertiary).toMatch(hexColorPattern);
+        expect(palette.accent).toMatch(hexColorPattern);
       });
     });
 
