@@ -50,6 +50,8 @@ export interface CloudSaveMetadata {
   updatedAt: Date;
   lastPlayedAt?: Date;
   playtime: number;
+  playerName?: string;
+  playerClass?: string;
   playerLevel: number;
   currentArea: string;
   dataSize: number;
@@ -87,6 +89,8 @@ export interface CloudSaveListItem {
   createdAt: Date;
   updatedAt: Date;
   playtime: number;
+  playerName?: string;
+  playerClass?: string;
   playerLevel: number;
   currentArea: string;
   dataSize: number;
@@ -322,18 +326,26 @@ export class CloudStorageService {
 
       // Create metadata with compression information
       const saveId = `${user.uid}_slot_${slotNumber}`;
+
+      // Ensure saveName is always a string (defensive programming)
+      const safeSaveName = typeof saveName === 'string'
+        ? saveName
+        : `Save Slot ${slotNumber + 1}`;
+
       const metadata: CloudSaveMetadata = {
         id: saveId,
         userId: user.uid,
         slotNumber,
-        saveName,
+        saveName: safeSaveName,
         gameVersion: '1.0.0', // TODO: Get from config
         createdAt: new Date(),
         updatedAt: new Date(),
         lastPlayedAt: new Date(),
-        playtime: gameState.totalPlayTime || 0,
-        playerLevel: gameState.player?.level || 1,
-        currentArea: gameState.currentArea || 'unknown',
+        playtime: finalGameState?.totalPlayTime || 0,
+        playerName: finalGameState?.player?.name,
+        playerClass: finalGameState?.player?.class,
+        playerLevel: finalGameState?.player?.level || 1,
+        currentArea: finalGameState?.currentArea || 'unknown',
         dataSize: compressionResult.originalSize,
         compressedSize: compressionResult.compressedSize,
         checksum: compressionResult.metadata.checksum,
@@ -359,7 +371,9 @@ export class CloudStorageService {
 
       // Save game state data to Firestore with compression metadata
       const gameStateRef = doc(this.firestore, 'users', user.uid, 'saveData', saveId);
-      batch.set(gameStateRef, {
+
+      // Sanitize data for Firestore - remove undefined values
+      const gameStateData: Record<string, any> = {
         id: saveId,
         gameState: compressionResult.data,
         compressionMetadata: {
@@ -372,9 +386,15 @@ export class CloudStorageService {
           timestamp: compressionResult.metadata.timestamp,
           version: compressionResult.metadata.version
         },
-        chunks: compressionResult.chunks, // For large data handling
         updatedAt: serverTimestamp()
-      });
+      };
+
+      // Only include chunks if they exist (Firestore doesn't accept undefined)
+      if (compressionResult.chunks !== undefined) {
+        gameStateData.chunks = compressionResult.chunks;
+      }
+
+      batch.set(gameStateRef, gameStateData);
 
       // Execute batch write with retry logic
       await retry.critical(() => batch.commit(), {
@@ -654,15 +674,10 @@ export class CloudStorageService {
       for (const doc of querySnapshot.docs) {
         const data = doc.data();
 
-        // Check if screenshot exists
-        let hasScreenshot = false;
-        try {
-          const screenshotRef = ref(this.storage, `users/${user.uid}/screenshots/${doc.id}.png`);
-          await retry.quick(() => getMetadata(screenshotRef));
-          hasScreenshot = true;
-        } catch {
-          hasScreenshot = false;
-        }
+        // Screenshots are optional and checking causes CORS errors for non-existent files
+        // Skip the check entirely - assume no screenshots exist for now
+        // TODO: When screenshot upload is implemented, track in Firestore metadata instead
+        const hasScreenshot = false;
 
         saves.push({
           id: doc.id,
@@ -671,6 +686,8 @@ export class CloudStorageService {
           createdAt: data.createdAt?.toDate() || new Date(),
           updatedAt: data.updatedAt?.toDate() || new Date(),
           playtime: data.playtime || 0,
+          playerName: data.playerName,
+          playerClass: data.playerClass,
           playerLevel: data.playerLevel || 1,
           currentArea: data.currentArea || 'unknown',
           dataSize: data.dataSize || 0,
@@ -749,13 +766,16 @@ export class CloudStorageService {
         }
       });
 
-      // Delete screenshot from Storage
-      try {
-        const screenshotRef = ref(this.storage, `users/${user.uid}/screenshots/${saveId}.png`);
-        await retry.network(() => deleteObject(screenshotRef));
-      } catch {
-        // Screenshot might not exist or failed to delete - not critical
-      }
+      // Skip screenshot deletion to avoid CORS errors
+      // Screenshots are optional and don't exist for most saves
+      // Attempting to delete non-existent files causes CORS errors that can't be caught cleanly
+      // TODO: When screenshot upload is implemented, track in Firestore metadata and only delete if exists
+      // try {
+      //   const screenshotRef = ref(this.storage, `users/${user.uid}/screenshots/${saveId}.png`);
+      //   await deleteObject(screenshotRef);
+      // } catch {
+      //   // Screenshot might not exist - not critical
+      // }
 
       return {
         success: true,

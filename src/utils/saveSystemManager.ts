@@ -381,6 +381,18 @@ export class SaveSystemManager {
   }
 
   /**
+   * Update sync status for a save slot
+   */
+  async updateSyncStatus(
+    slotNumber: number,
+    status: SaveSyncStatus,
+    isCloudAvailable: boolean = false,
+    lastError: string | null = null
+  ): Promise<SaveOperationResult<void>> {
+    return await this.indexedDbManager.updateSyncStatus(slotNumber, status, isCloudAvailable, lastError);
+  }
+
+  /**
    * Cleanup and optimize save system
    */
   async cleanup(): Promise<SaveOperationResult<{deletedCount: number, reclaimedBytes: number}>> {

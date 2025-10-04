@@ -248,16 +248,7 @@ export function useLazyInventoryLoading(
     [loadItems, filters]
   );
 
-  const result = useLazyLoading(loadFunction, config);
-
-  // Reset when filters change
-  useEffect(() => {
-    result.reset();
-    // Load first page immediately
-    result.loadPage(0);
-  }, [filters, result.reset, result.loadPage]);
-
-  return result;
+  return useLazyLoading(loadFunction, config);
 }
 
 /**
@@ -279,16 +270,7 @@ export function useLazyCreatureLoading(
     [loadCreatures, viewMode]
   );
 
-  const result = useLazyLoading(loadFunction, config);
-
-  // Reset when view mode changes
-  useEffect(() => {
-    result.reset();
-    // Load first page immediately
-    result.loadPage(0);
-  }, [viewMode, result.reset, result.loadPage]);
-
-  return result;
+  return useLazyLoading(loadFunction, config);
 }
 
 export default useLazyLoading;

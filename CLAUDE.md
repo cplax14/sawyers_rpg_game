@@ -340,7 +340,7 @@ For questions or issues:
 IMMEDIATELY after implementing any front-end change:
 1. **Identify what changed** - Review the modified components/pages
 2. **Navigate to affected pages** - Use `mcp__playwright__browser_navigate` to visit each changed view
-3. **Verify design compliance** - Compare against `/docs/context/design-principles.md` and `/docs/context/style-guide.md`
+3. **Verify design compliance** - Compare against `/docs/context/rpg_design_principles.md` and `/docs/context/style_guide.md`
 4. **Validate feature implementation** - Ensure the change fulfills the user's specific request
 5. **Check acceptance criteria** - Review any provided context files or requirements
 6. **Capture evidence** - Take full page screenshot at desktop viewport (1440px) of each changed view

@@ -590,7 +590,7 @@ export const useInventory = () => {
       .map(slot => slot.item!);
 
     // Consolidate stacks
-    const consolidatedItems = consolidateStacks(items);
+    const consolidatedItems = consolidateStacks(items) || [];
 
     // Update container with consolidated items
     const newSlots: InventorySlot[] = consolidatedItems.map((item, index) => ({

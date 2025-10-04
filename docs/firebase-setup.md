@@ -76,8 +76,13 @@ This guide explains how to set up Firebase for Sawyer's RPG Game cloud save func
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Users can only access their own save data
+    // Users can only access their own save metadata
     match /users/{userId}/saves/{saveId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Users can only access their own save data (game state)
+    match /users/{userId}/saveData/{saveId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 

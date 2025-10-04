@@ -9,26 +9,26 @@ describe('Button', () => {
 
     const button = screen.getByRole('button', { name: /click me/i });
     expect(button).toBeInTheDocument();
-    expect(button).toHaveClass('button', 'primary', 'md');
+    expect(button).toHaveClass('btn-button', 'btn-primary', 'btn-md');
   });
 
   it('renders different variants correctly', () => {
     const { rerender } = render(<Button variant="secondary">Secondary</Button>);
-    expect(screen.getByRole('button')).toHaveClass('secondary');
+    expect(screen.getByRole('button')).toHaveClass('btn-secondary');
 
     rerender(<Button variant="danger">Danger</Button>);
-    expect(screen.getByRole('button')).toHaveClass('danger');
+    expect(screen.getByRole('button')).toHaveClass('btn-danger');
 
     rerender(<Button variant="success">Success</Button>);
-    expect(screen.getByRole('button')).toHaveClass('success');
+    expect(screen.getByRole('button')).toHaveClass('btn-success');
   });
 
   it('renders different sizes correctly', () => {
     const { rerender } = render(<Button size="sm">Small</Button>);
-    expect(screen.getByRole('button')).toHaveClass('sm');
+    expect(screen.getByRole('button')).toHaveClass('btn-sm');
 
     rerender(<Button size="lg">Large</Button>);
-    expect(screen.getByRole('button')).toHaveClass('lg');
+    expect(screen.getByRole('button')).toHaveClass('btn-lg');
   });
 
   it('handles disabled state', () => {
@@ -36,7 +36,7 @@ describe('Button', () => {
 
     const button = screen.getByRole('button');
     expect(button).toBeDisabled();
-    expect(button).toHaveClass('disabled');
+    expect(button).toHaveClass('btn-disabled');
   });
 
   it('handles loading state', () => {
@@ -44,10 +44,10 @@ describe('Button', () => {
 
     const button = screen.getByRole('button');
     expect(button).toBeDisabled();
-    expect(button).toHaveClass('loading');
+    expect(button).toHaveClass('btn-loading');
 
     // Should have spinner
-    const spinner = button.querySelector('.spinner');
+    const spinner = button.querySelector('.btn-spinner');
     expect(spinner).toBeInTheDocument();
   });
 
@@ -69,7 +69,7 @@ describe('Button', () => {
     render(<Button fullWidth>Full Width</Button>);
 
     const button = screen.getByRole('button');
-    expect(button).toHaveClass('fullWidth');
+    expect(button).toHaveClass('btn-full-width');
   });
 
   it('handles click events', async () => {
@@ -147,7 +147,8 @@ describe('Button', () => {
     expect(button).toHaveAttribute('aria-describedby', 'help-text');
   });
 
-  it('supports keyboard navigation', () => {
+  it('supports keyboard navigation', async () => {
+    const user = userEvent.setup();
     const handleClick = jest.fn();
     render(<Button onClick={handleClick}>Keyboard</Button>);
 
@@ -156,7 +157,7 @@ describe('Button', () => {
 
     expect(button).toHaveFocus();
 
-    fireEvent.keyDown(button, { key: 'Enter' });
+    await user.keyboard('{Enter}');
     expect(handleClick).toHaveBeenCalled();
   });
 });

@@ -284,3 +284,6 @@ storybook-static/
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
+
+# Screenshots from Playwright MCP
+.playwright-mcp/

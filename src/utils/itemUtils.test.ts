@@ -554,7 +554,7 @@ describe('itemUtils', () => {
       const result = getInventoryStats(mockItems);
 
       expect(result.totalItems).toBe(17); // Sum of all quantities
-      expect(result.totalValue).toBe(370); // Calculated total value
+      expect(result.totalValue).toBe(500); // Calculated total value (100+150+150+100+0)
       expect(result.categories.consumables).toBe(5); // Health + Mana potions
       expect(result.categories.equipment).toBe(1);
       expect(result.rarities.common).toBe(14); // Common items quantities

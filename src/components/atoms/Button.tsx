@@ -6,7 +6,8 @@ import { motion, HTMLMotionProps } from 'framer-motion';
 const createButtonStyles = () => {
   const buttonClasses = [
     'button', 'primary', 'secondary', 'danger', 'success',
-    'sm', 'md', 'lg', 'loading', 'disabled', 'fullWidth'
+    'sm', 'md', 'lg', 'loading', 'disabled', 'fullWidth',
+    'spinner', 'content', 'iconBefore', 'iconAfter'
   ];
   const styles: Record<string, string> = {};
   buttonClasses.forEach(className => {

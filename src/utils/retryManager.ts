@@ -125,6 +125,13 @@ export const NON_RETRYABLE_ERROR_TYPES = [
   'status_404', // Not Found
   'status_409', // Conflict
   'status_422', // Unprocessable Entity
+
+  // Firebase Storage errors that should not be retried
+  'storage/object-not-found', // File doesn't exist - retrying won't help
+  'storage/unauthorized', // Permission denied
+  'storage/unauthenticated', // Not signed in
+  'storage/quota-exceeded', // Storage quota exceeded
+  'storage/invalid-checksum', // File corruption
 ] as const;
 
 /**

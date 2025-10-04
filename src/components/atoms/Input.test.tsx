@@ -119,7 +119,7 @@ describe('Input', () => {
 
     expect(screen.getByTestId('icon-before')).toBeInTheDocument();
     expect(screen.getByTestId('icon-after')).toBeInTheDocument();
-    expect(screen.getByTestId('input-with-icons')).toHaveClass('hasIconBefore', 'hasIconAfter');
+    expect(screen.getByTestId('input-with-icons')).toHaveClass('has-icon-before', 'has-icon-after');
   });
 
   it('does not render iconAfter when variant is password', () => {
@@ -160,7 +160,7 @@ describe('Input', () => {
   it('applies fullWidth class correctly', () => {
     const { container } = render(<Input fullWidth />);
     const inputContainer = container.firstChild;
-    expect(inputContainer).toHaveClass('fullWidth');
+    expect(inputContainer).toHaveClass('full-width');
   });
 
   it('forwards ref correctly', () => {

@@ -38,8 +38,33 @@ export const MainMenu: React.FC<MainMenuProps> = ({
   const {
     saveSlots: newSaveSlots,
     isInitialized: saveSystemInitialized,
-    loadGame: loadGameNew
+    loadGame: loadGameNew,
+    refreshSlots
   } = useSaveSystem();
+
+  // Check if there are any non-empty saves in the new system
+  const hasNewSaves = saveSystemInitialized && newSaveSlots.length > 0 && newSaveSlots.some(slot => !slot.isEmpty);
+  const hasSavedGames = hasAnySaves || hasNewSaves;
+
+  // Force refresh slots if initialized but empty (timing issue workaround)
+  useEffect(() => {
+    if (saveSystemInitialized && newSaveSlots.length === 0) {
+      console.log('⚠️ Save system initialized but no slots loaded, forcing refresh...');
+      refreshSlots?.();
+    }
+  }, [saveSystemInitialized, newSaveSlots.length, refreshSlots]);
+
+  // Debug logging
+  useEffect(() => {
+    console.log('MainMenu save state:', {
+      saveSystemInitialized,
+      newSaveSlotsLength: newSaveSlots.length,
+      hasNewSaves,
+      hasAnySaves,
+      hasSavedGames,
+      nonEmptySlots: newSaveSlots.filter(s => !s.isEmpty).map(s => s.slotNumber)
+    });
+  }, [saveSystemInitialized, newSaveSlots, hasNewSaves, hasAnySaves, hasSavedGames]);
 
   // Authentication and cloud save hooks
   const { isAuthenticated, user, signOut } = useAuth();
@@ -469,7 +494,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                   variant="primary"
                   size={isMobile ? "md" : "large"}
                   onClick={handleContinue}
-                  disabled={!player && !hasAnySaves}
+                  disabled={!player && !hasSavedGames}
                   className={styles.menuButton}
                   touchFriendly={true}
                 >
@@ -490,7 +515,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                   variant="secondary"
                   size={isMobile ? "md" : "large"}
                   onClick={handleShowLoadMenu}
-                  disabled={!hasAnySaves}
+                  disabled={!hasSavedGames}
                   className={styles.menuButton}
                   touchFriendly={true}
                 >

@@ -394,17 +394,28 @@ describe('useLazyCreatureLoading', () => {
       { initialProps: { viewMode: 'bestiary' } }
     );
 
-    // Wait for initial load
-    await waitFor(() => {
-      expect(mockLoadCreatures).toHaveBeenCalledWith(0, 30, 'bestiary');
+    // Load first page with initial view mode
+    await act(async () => {
+      await result.current.loadPage(0);
     });
+
+    expect(mockLoadCreatures).toHaveBeenCalledWith(0, 30, 'bestiary');
 
     // Change view mode
     rerender({ viewMode: 'collection' });
 
-    // Should reset and load with new view mode
-    await waitFor(() => {
-      expect(mockLoadCreatures).toHaveBeenCalledWith(0, 30, 'collection');
+    // Reset should clear items
+    act(() => {
+      result.current.reset();
     });
+
+    expect(result.current.items).toEqual([]);
+
+    // Load with new view mode
+    await act(async () => {
+      await result.current.loadPage(0);
+    });
+
+    expect(mockLoadCreatures).toHaveBeenCalledWith(0, 30, 'collection');
   });
 });

@@ -84,7 +84,7 @@ export const cardStyles = createFallbackStyles([
 
 export const modalStyles = createFallbackStyles([
   'overlay', 'modal', 'header', 'title', 'closeButton',
-  'content', 'footer', 'actions'
+  'content', 'footer', 'actions', 'sm', 'md', 'lg', 'xl'
 ]);
 
 export const loadingSpinnerStyles = createFallbackStyles([
@@ -95,7 +95,8 @@ export const loadingSpinnerStyles = createFallbackStyles([
 export const inputStyles = createFallbackStyles([
   'container', 'fullWidth', 'input', 'error', 'disabled', 'focused',
   'hasIconBefore', 'hasIconAfter', 'label', 'required', 'inputWrapper',
-  'iconBefore', 'passwordToggle', 'iconAfter', 'errorMessage', 'helperText'
+  'iconBefore', 'passwordToggle', 'iconAfter', 'errorMessage', 'helperText',
+  'default', 'search', 'password', 'sm', 'md', 'lg'
 ]);
 
 export const characterClassCardStyles = createFallbackStyles([
@@ -107,7 +108,8 @@ export const characterClassCardStyles = createFallbackStyles([
 ]);
 
 export const tooltipStyles = createFallbackStyles([
-  'tooltip', 'arrow', 'trigger', 'content', 'top', 'bottom', 'left', 'right'
+  'tooltip', 'arrow', 'trigger', 'content', 'top', 'bottom', 'left', 'right',
+  'dark', 'light', 'info', 'warning', 'error'
 ]);
 
 // Export default styles object for backwards compatibility

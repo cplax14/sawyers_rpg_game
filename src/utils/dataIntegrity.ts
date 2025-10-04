@@ -488,15 +488,55 @@ const validateFieldConstraints = (
  * Create a sanitized copy of game state for safe cloud storage
  */
 export const sanitizeGameStateForCloud = (gameState: ReactGameState): ReactGameState => {
-  const sanitized = { ...gameState };
+  // Guard against null/undefined input
+  if (!gameState || typeof gameState !== 'object') {
+    throw new Error('Invalid game state: must be a non-null object');
+  }
+
+  // Deep clone and remove functions recursively
+  const removeNonSerializable = (obj: any): any => {
+    if (obj === null || obj === undefined) {
+      return obj;
+    }
+
+    if (typeof obj === 'function') {
+      return undefined;
+    }
+
+    if (Array.isArray(obj)) {
+      return obj.map(item => removeNonSerializable(item)).filter(item => item !== undefined);
+    }
+
+    if (typeof obj === 'object') {
+      const cleaned: any = {};
+      for (const key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          const value = removeNonSerializable(obj[key]);
+          if (value !== undefined && typeof value !== 'function') {
+            cleaned[key] = value;
+          }
+        }
+      }
+      return cleaned;
+    }
+
+    return obj;
+  };
+
+  const sanitized = removeNonSerializable(gameState);
+
+  // Guard against sanitized being null
+  if (!sanitized || typeof sanitized !== 'object') {
+    throw new Error('Sanitization failed: result is null or not an object');
+  }
 
   // Remove temporary or sensitive data
   if ('temporaryData' in sanitized) {
-    delete (sanitized as any).temporaryData;
+    delete sanitized.temporaryData;
   }
 
   if ('sessionData' in sanitized) {
-    delete (sanitized as any).sessionData;
+    delete sanitized.sessionData;
   }
 
   // Ensure timestamp is current

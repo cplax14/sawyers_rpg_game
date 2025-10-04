@@ -10,6 +10,7 @@ import { useSaveSystem } from './useSaveSystem';
 import { cloudStorageService, CloudStorageResult, CloudSaveData, CloudSaveListItem } from '../services/cloudStorage';
 import { convertFirebaseError, logCloudError, createUserErrorMessage, getRecoveryActions, CloudError, CloudErrorCode, ErrorSeverity } from '../utils/cloudErrors';
 import { ReactGameState } from '../types/game';
+import { SaveSyncStatus } from '../types/saveSystem';
 
 export interface CloudSaveHookResult {
   // State
@@ -30,6 +31,7 @@ export interface CloudSaveHookResult {
   restoreFromCloud: (slotNumber: number) => Promise<CloudStorageResult<any>>;
   syncSlot: (slotNumber: number) => Promise<CloudStorageResult<any>>;
   resolveConflict: (slotNumber: number, resolution: 'local' | 'cloud' | 'merge') => Promise<CloudStorageResult<any>>;
+  deleteCloudSave: (slotNumber: number, deleteLocal?: boolean) => Promise<CloudStorageResult<any>>;
   triggerFullSync: () => Promise<CloudStorageResult<any>>;
   triggerQuickSync: () => Promise<CloudStorageResult<any>>;
   refreshSlots: () => Promise<CloudStorageResult<CloudSaveListItem[]>>;
@@ -53,7 +55,15 @@ export const useCloudSave = (): CloudSaveHookResult => {
 
   // Hooks
   const { user, isAuthenticated, error: authError } = useAuth();
-  const { saveGame: saveLocal, loadGame: loadLocal, getSaveSlots } = useSaveSystem();
+  const {
+    saveGame: saveLocal,
+    loadGame: loadLocal,
+    deleteSave: deleteLocalSave,
+    saveSlots: localSaveSlots,
+    refreshSlots: refreshLocalSlots,
+    getFreshSlots,
+    updateSyncStatus
+  } = useSaveSystem();
 
   // Refs for cleanup
   const operationRef = useRef<AbortController | null>(null);
@@ -177,16 +187,51 @@ export const useCloudSave = (): CloudSaveHookResult => {
     clearError();
 
     try {
-      // Get local save data
-      const localSlots = getSaveSlots();
-      const localSave = localSlots.find(slot => slot.id === slotNumber);
+      // Get fresh save slots directly from IndexedDB (bypassing React state)
+      console.log('🔄 Fetching fresh local save slots...');
+      const localSlots = await getFreshSlots();
+
+      console.log('🔍 backupToCloud called:', {
+        requestedSlot: slotNumber,
+        availableSlots: localSlots.map(s => ({ slotNumber: s.slotNumber, isEmpty: s.isEmpty, name: s.metadata?.name }))
+      });
+
+      const localSave = localSlots.find(slot => slot.slotNumber === slotNumber);
 
       if (!localSave) {
+        console.error('❌ Slot not found:', {
+          requestedSlot: slotNumber,
+          availableSlotNumbers: localSlots.filter(s => !s.isEmpty).map(s => s.slotNumber)
+        });
         throw new Error(`No local save found in slot ${slotNumber}`);
       }
 
+      if (localSave.isEmpty) {
+        console.error('❌ Slot is empty:', { slotNumber });
+        throw new Error(`Slot ${slotNumber} is empty`);
+      }
+
+      console.log('✅ Found local save:', {
+        slotNumber: localSave.slotNumber,
+        name: localSave.metadata?.name,
+        isEmpty: localSave.isEmpty
+      });
+
       // Load the actual game state
-      const gameState = await loadLocal(slotNumber);
+      const gameState = await loadLocal({ slotNumber });
+
+      if (!gameState) {
+        console.error('❌ Failed to load game state from local storage:', { slotNumber });
+        throw new Error(`Failed to load game state from slot ${slotNumber}`);
+      }
+
+      console.log('✅ Loaded game state for cloud upload:', {
+        hasPlayer: !!gameState.player,
+        hasInventory: !!gameState.inventory,
+        hasWorld: !!gameState.world,
+        timestamp: gameState.timestamp
+      });
+
       const displayName = saveName || localSave.name || `Save ${slotNumber}`;
 
       // Upload to cloud
@@ -194,14 +239,18 @@ export const useCloudSave = (): CloudSaveHookResult => {
         user!,
         slotNumber,
         displayName,
-        gameState as ReactGameState
+        gameState
       );
 
       if (result.success) {
         setLastSyncTime(Date.now());
         await updateQuotaInfo(user!);
+        // Update sync status to SYNCED
+        await updateSyncStatus(slotNumber, SaveSyncStatus.SYNCED, true);
       } else if (result.error) {
         handleError(new Error(result.error.message), 'backupToCloud');
+        // Update sync status to SYNC_FAILED
+        await updateSyncStatus(slotNumber, SaveSyncStatus.SYNC_FAILED, false, result.error.message);
       }
 
       return result;
@@ -218,7 +267,7 @@ export const useCloudSave = (): CloudSaveHookResult => {
     } finally {
       setSyncInProgress(false);
     }
-  }, [preOperationCheck, user, getSaveSlots, loadLocal, updateQuotaInfo, handleError, clearError]);
+  }, [preOperationCheck, user, loadLocal, getFreshSlots, updateQuotaInfo, handleError, clearError, updateSyncStatus]);
 
   // Restore cloud save to local
   const restoreFromCloud = useCallback(async (slotNumber: number): Promise<CloudStorageResult<any>> => {
@@ -239,8 +288,12 @@ export const useCloudSave = (): CloudSaveHookResult => {
         // Save to local storage
         await saveLocal(slotNumber, result.data.metadata.saveName, result.data.gameState as ReactGameState);
         setLastSyncTime(Date.now());
+        // Update sync status to SYNCED
+        await updateSyncStatus(slotNumber, SaveSyncStatus.SYNCED, true);
       } else if (result.error) {
         handleError(new Error(result.error.message), 'restoreFromCloud');
+        // Update sync status to SYNC_FAILED
+        await updateSyncStatus(slotNumber, SaveSyncStatus.SYNC_FAILED, true, result.error.message);
       }
 
       return result;
@@ -257,7 +310,7 @@ export const useCloudSave = (): CloudSaveHookResult => {
     } finally {
       setSyncInProgress(false);
     }
-  }, [preOperationCheck, user, saveLocal, handleError, clearError]);
+  }, [preOperationCheck, user, saveLocal, handleError, clearError, updateSyncStatus]);
 
   // Sync specific slot
   const syncSlot = useCallback(async (slotNumber: number): Promise<CloudStorageResult<any>> => {
@@ -272,8 +325,8 @@ export const useCloudSave = (): CloudSaveHookResult => {
 
     try {
       // Get local save info
-      const localSlots = getSaveSlots();
-      const localSave = localSlots.find(slot => slot.id === slotNumber);
+      const localSlots = localSaveSlots;
+      const localSave = localSlots.find(slot => slot.slotNumber === slotNumber);
 
       // Get cloud saves
       const cloudSavesResult = await cloudStorageService.listCloudSaves(user!);
@@ -310,8 +363,8 @@ export const useCloudSave = (): CloudSaveHookResult => {
           // Cloud is newer, download
           return await restoreFromCloud(slotNumber);
         } else {
-          // Same timestamp, check for conflicts
-          // For now, consider them synced
+          // Same timestamp, already synced
+          await updateSyncStatus(slotNumber, SaveSyncStatus.SYNCED, true);
           return { success: true, data: { action: 'already_synced' } };
         }
       }
@@ -330,7 +383,7 @@ export const useCloudSave = (): CloudSaveHookResult => {
     } finally {
       setSyncInProgress(false);
     }
-  }, [preOperationCheck, user, getSaveSlots, backupToCloud, restoreFromCloud, handleError, clearError]);
+  }, [preOperationCheck, user, localSaveSlots, backupToCloud, restoreFromCloud, handleError, clearError, updateSyncStatus]);
 
   // Resolve sync conflicts
   const resolveConflict = useCallback(async (slotNumber: number, resolution: 'local' | 'cloud' | 'merge'): Promise<CloudStorageResult<any>> => {
@@ -368,6 +421,60 @@ export const useCloudSave = (): CloudSaveHookResult => {
     }
   }, [backupToCloud, restoreFromCloud, handleError, clearError]);
 
+  // Delete cloud save (and optionally local save)
+  const deleteCloudSave = useCallback(async (slotNumber: number, deleteLocal: boolean = true): Promise<CloudStorageResult<any>> => {
+    const checkError = preOperationCheck();
+    if (checkError) {
+      setError(checkError);
+      return { success: false, error: { code: checkError.code, message: checkError.message } };
+    }
+
+    setSyncInProgress(true);
+    clearError();
+
+    try {
+      // Delete from cloud first
+      const cloudResult = await cloudStorageService.deleteCloudSave(user!, slotNumber);
+
+      if (!cloudResult.success) {
+        // Cloud deletion failed
+        handleError(new Error(cloudResult.error?.message || 'Failed to delete cloud save'), 'deleteCloudSave');
+        return cloudResult;
+      }
+
+      // If cloud deletion succeeded and deleteLocal is true, also delete local save
+      if (deleteLocal) {
+        const localResult = await deleteLocalSave(slotNumber);
+        if (!localResult) {
+          console.warn(`Cloud save deleted but local save deletion failed for slot ${slotNumber}`);
+          // Update sync status to indicate cloud-only deletion
+          await updateSyncStatus(slotNumber, SaveSyncStatus.LOCAL_ONLY, false);
+        }
+      } else {
+        // Cloud deleted but local kept - update sync status
+        await updateSyncStatus(slotNumber, SaveSyncStatus.LOCAL_ONLY, false);
+      }
+
+      setLastSyncTime(Date.now());
+      await updateQuotaInfo(user!);
+      await refreshLocalSlots();
+
+      return cloudResult;
+
+    } catch (err) {
+      handleError(err, 'deleteCloudSave');
+      return {
+        success: false,
+        error: {
+          code: 'DELETE_FAILED',
+          message: err instanceof Error ? err.message : 'Delete failed'
+        }
+      };
+    } finally {
+      setSyncInProgress(false);
+    }
+  }, [preOperationCheck, user, deleteLocalSave, updateSyncStatus, updateQuotaInfo, refreshLocalSlots, handleError, clearError]);
+
   // Full sync of all slots
   const triggerFullSync = useCallback(async (): Promise<CloudStorageResult<any>> => {
     const checkError = preOperationCheck();
@@ -380,9 +487,9 @@ export const useCloudSave = (): CloudSaveHookResult => {
     clearError();
 
     try {
-      const localSlots = getSaveSlots();
+      const localSlots = localSaveSlots;
       const results = await Promise.allSettled(
-        localSlots.map(slot => syncSlot(slot.id))
+        localSlots.map(slot => syncSlot(slot.slotNumber))
       );
 
       const successful = results.filter(r => r.status === 'fulfilled' && r.value.success).length;
@@ -412,7 +519,7 @@ export const useCloudSave = (): CloudSaveHookResult => {
     } finally {
       setSyncInProgress(false);
     }
-  }, [preOperationCheck, user, getSaveSlots, syncSlot, updateQuotaInfo, handleError, clearError]);
+  }, [preOperationCheck, user, localSaveSlots, syncSlot, updateQuotaInfo, handleError, clearError]);
 
   // Quick sync (changed saves only)
   const triggerQuickSync = useCallback(async (): Promise<CloudStorageResult<any>> => {
@@ -471,6 +578,7 @@ export const useCloudSave = (): CloudSaveHookResult => {
     restoreFromCloud,
     syncSlot,
     resolveConflict,
+    deleteCloudSave,
     triggerFullSync,
     triggerQuickSync,
     refreshSlots,
