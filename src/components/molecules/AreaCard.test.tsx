@@ -105,7 +105,7 @@ describe('AreaCard', () => {
   });
 
   it('shows locked state for locked areas', () => {
-    render(<AreaCard area={lockedArea} />);
+    render(<AreaCard area={lockedArea} accessible={false} />);
 
     expect(screen.getByText('🔒 Locked')).toBeInTheDocument();
     expect(screen.getByLabelText('Locked')).toBeInTheDocument();
@@ -113,7 +113,7 @@ describe('AreaCard', () => {
 
   it('shows unlock tooltip for locked areas', async () => {
     const user = userEvent.setup();
-    render(<AreaCard area={lockedArea} />);
+    render(<AreaCard area={lockedArea} accessible={false} />);
 
     const lockedButton = screen.getByText('🔒 Locked');
     await user.hover(lockedButton);
@@ -167,7 +167,7 @@ describe('AreaCard', () => {
     const user = userEvent.setup();
     const handleClick = jest.fn();
 
-    render(<AreaCard area={lockedArea} onClick={handleClick} />);
+    render(<AreaCard area={lockedArea} accessible={false} onClick={handleClick} />);
 
     const card = screen.getByLabelText('Dark Dungeon - Locked');
     await user.click(card);
@@ -181,7 +181,8 @@ describe('AreaCard', () => {
 
     render(<AreaCard {...defaultProps} accessible={false} onClick={handleClick} />);
 
-    const card = screen.getByLabelText('Forest Path - Inaccessible');
+    // When accessible={false}, isLocked is true, so aria-label shows "Locked"
+    const card = screen.getByLabelText('Forest Path - Locked');
     await user.click(card);
 
     expect(handleClick).not.toHaveBeenCalled();
@@ -202,7 +203,8 @@ describe('AreaCard', () => {
       />
     );
 
-    expect(screen.getByText('Requires level 5')).toBeInTheDocument();
+    expect(screen.getByText(/Recommended level 5/)).toBeInTheDocument();
+    expect(screen.getByText(/Current: 3/)).toBeInTheDocument();
     expect(screen.getByText('⚠️')).toBeInTheDocument();
   });
 
@@ -235,7 +237,7 @@ describe('AreaCard', () => {
   });
 
   it('sets proper ARIA attributes when locked', () => {
-    render(<AreaCard area={lockedArea} />);
+    render(<AreaCard area={lockedArea} accessible={false} />);
 
     const card = screen.getByLabelText('Dark Dungeon - Locked');
     expect(card).toHaveAttribute('aria-disabled', 'true');
@@ -243,17 +245,32 @@ describe('AreaCard', () => {
   });
 
   it('shows correct area type icon', () => {
-    const { rerender } = render(<AreaCard {...defaultProps} />);
-    expect(screen.getByLabelText('wilderness')).toBeInTheDocument();
+    // Test each type separately since AreaCard is memoized by area.id
+    const { container: container1 } = render(<AreaCard {...defaultProps} />);
+    let iconEl = container1.querySelector('[aria-label="wilderness"]');
+    expect(iconEl).toBeInTheDocument();
+    expect(iconEl?.textContent).toBe('🌲');
 
-    rerender(<AreaCard area={{ ...mockArea, type: 'town' }} />);
-    expect(screen.getByLabelText('town')).toBeInTheDocument();
+    const { container: container2 } = render(
+      <AreaCard area={{ ...mockArea, id: 'town_area', type: 'town' }} />
+    );
+    iconEl = container2.querySelector('[aria-label="town"]');
+    expect(iconEl).toBeInTheDocument();
+    expect(iconEl?.textContent).toBe('🏘️');
 
-    rerender(<AreaCard area={{ ...mockArea, type: 'dungeon' }} />);
-    expect(screen.getByLabelText('dungeon')).toBeInTheDocument();
+    const { container: container3 } = render(
+      <AreaCard area={{ ...mockArea, id: 'dungeon_area', type: 'dungeon' }} />
+    );
+    iconEl = container3.querySelector('[aria-label="dungeon"]');
+    expect(iconEl).toBeInTheDocument();
+    expect(iconEl?.textContent).toBe('🏰');
 
-    rerender(<AreaCard area={{ ...mockArea, type: 'special' }} />);
-    expect(screen.getByLabelText('special')).toBeInTheDocument();
+    const { container: container4 } = render(
+      <AreaCard area={{ ...mockArea, id: 'special_area', type: 'special' }} />
+    );
+    iconEl = container4.querySelector('[aria-label="special"]');
+    expect(iconEl).toBeInTheDocument();
+    expect(iconEl?.textContent).toBe('✨');
   });
 
   it('handles areas without services gracefully', () => {
