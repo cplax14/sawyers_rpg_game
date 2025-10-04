@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { ParticleSystem } from '../core/ParticleSystem';
 import { AreaEffect } from '../core/AreaEffect';
-import { FIRE_COLORS } from '../types';
+import { FIRE_COLORS, validateParticleCount } from '../types';
 
 interface MeteorAnimationProps {
   casterX: number;

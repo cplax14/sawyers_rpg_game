@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { ParticleSystem } from '../core/ParticleSystem';
 import { Projectile } from '../Projectile';
-import { ICE_COLORS } from '../types';
+import { ICE_COLORS, validateParticleCount } from '../types';
 
 interface IceShardAnimationProps {
   casterX: number;
@@ -80,6 +80,7 @@ export const IceShardAnimation: React.FC<IceShardAnimationProps> = React.memo(({
       {phase === 'charge' && (
         <>
           {/* Converging ice crystals */}
+          {validateParticleCount(15, 'IceShardAnimation', 'charge')}
           <ParticleSystem
             originX={casterX}
             originY={casterY}
@@ -195,6 +196,7 @@ export const IceShardAnimation: React.FC<IceShardAnimationProps> = React.memo(({
           />
 
           {/* Crystalline shards bursting out */}
+          {validateParticleCount(10, 'IceShardAnimation', 'cast')}
           <ParticleSystem
             originX={casterX}
             originY={casterY}
@@ -291,6 +293,7 @@ export const IceShardAnimation: React.FC<IceShardAnimationProps> = React.memo(({
               height: 0
             }}
           >
+            {validateParticleCount(10, 'IceShardAnimation', 'travel-trail')}
             <ParticleSystem
               originX={0}
               originY={0}
@@ -392,6 +395,7 @@ export const IceShardAnimation: React.FC<IceShardAnimationProps> = React.memo(({
           ))}
 
           {/* Shatter particles */}
+          {validateParticleCount(22, 'IceShardAnimation', 'impact')}
           <ParticleSystem
             originX={targetX}
             originY={targetY}

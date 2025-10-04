@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { ParticleSystem } from '../core/ParticleSystem';
-import { LIGHTNING_COLORS } from '../types';
+import { LIGHTNING_COLORS, validateParticleCount } from '../types';
 
 interface LightningAnimationProps {
   casterX: number;
@@ -96,6 +96,7 @@ export const LightningAnimation: React.FC<LightningAnimationProps> = React.memo(
       {phase === 'charge' && (
         <>
           {/* Crackling electric sparks */}
+          {validateParticleCount(12, 'LightningAnimation', 'charge')}
           <ParticleSystem
             originX={casterX}
             originY={casterY}
@@ -237,6 +238,7 @@ export const LightningAnimation: React.FC<LightningAnimationProps> = React.memo(
           />
 
           {/* Upward sparks */}
+          {validateParticleCount(8, 'LightningAnimation', 'cast')}
           <ParticleSystem
             originX={casterX}
             originY={casterY}
@@ -407,6 +409,7 @@ export const LightningAnimation: React.FC<LightningAnimationProps> = React.memo(
           ))}
 
           {/* Crackling electric particles */}
+          {validateParticleCount(24, 'LightningAnimation', 'impact')}
           <ParticleSystem
             originX={targetX}
             originY={targetY}

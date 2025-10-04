@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { ParticleSystem } from '../core/ParticleSystem';
-import { HOLY_COLORS } from '../types';
+import { HOLY_COLORS, validateParticleCount } from '../types';
 
 interface HolyBeamAnimationProps {
   casterX: number;

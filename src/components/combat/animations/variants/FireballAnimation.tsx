@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { ParticleSystem } from '../core/ParticleSystem';
 import { Projectile } from '../Projectile';
 import { ImpactEffects } from '../ImpactEffects';
-import { FIRE_COLORS } from '../types';
+import { FIRE_COLORS, validateParticleCount } from '../types';
 
 interface FireballAnimationProps {
   casterX: number;
@@ -81,6 +81,7 @@ export const FireballAnimation: React.FC<FireballAnimationProps> = React.memo(({
       {phase === 'charge' && (
         <>
           {/* Primary particle swirl */}
+          {validateParticleCount(18, 'FireballAnimation', 'charge')}
           <ParticleSystem
             originX={casterX}
             originY={casterY}
@@ -170,6 +171,7 @@ export const FireballAnimation: React.FC<FireballAnimationProps> = React.memo(({
           />
 
           {/* Burst particles */}
+          {validateParticleCount(12, 'FireballAnimation', 'cast')}
           <ParticleSystem
             originX={casterX}
             originY={casterY}
@@ -242,6 +244,7 @@ export const FireballAnimation: React.FC<FireballAnimationProps> = React.memo(({
               height: 0
             }}
           >
+            {validateParticleCount(15, 'FireballAnimation', 'travel-trail')}
             <ParticleSystem
               originX={0}
               originY={0}
@@ -308,6 +311,7 @@ export const FireballAnimation: React.FC<FireballAnimationProps> = React.memo(({
           />
 
           {/* Radiating explosion particles */}
+          {validateParticleCount(28, 'FireballAnimation', 'impact-primary')}
           <ParticleSystem
             originX={targetX}
             originY={targetY}
@@ -321,6 +325,7 @@ export const FireballAnimation: React.FC<FireballAnimationProps> = React.memo(({
           />
 
           {/* Secondary particle burst */}
+          {validateParticleCount(15, 'FireballAnimation', 'impact-secondary')}
           <ParticleSystem
             originX={targetX}
             originY={targetY}

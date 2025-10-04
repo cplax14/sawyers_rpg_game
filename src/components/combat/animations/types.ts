@@ -2,7 +2,56 @@
  * Combat Animation Types and Constants
  *
  * Shared types and constants for all combat animations
+ * Task 5.10: Particle count validation
  */
+
+// ================================================================
+// PERFORMANCE VALIDATION
+// Task 5.10: Enforce particle count limits
+// ================================================================
+
+/**
+ * Maximum particle count per effect
+ * Exceeding this will cause console errors in development
+ */
+const MAX_PARTICLES = 30;
+
+/**
+ * Recommended maximum particle count
+ * Exceeding this will cause console warnings
+ */
+const RECOMMENDED_MAX_PARTICLES = 20;
+
+/**
+ * Validate particle count in development mode
+ * Warns if particle count exceeds recommended maximum
+ * Errors if particle count exceeds hard maximum
+ *
+ * @param count - Number of particles to create
+ * @param componentName - Name of the animation component
+ * @param phase - Optional animation phase (e.g., 'charge', 'impact')
+ */
+export const validateParticleCount = (
+  count: number,
+  componentName: string,
+  phase?: string
+): void => {
+  if (process.env.NODE_ENV !== 'production') {
+    const location = phase ? `${componentName} - ${phase}` : componentName;
+
+    if (count > MAX_PARTICLES) {
+      console.error(
+        `🚨 [${location}] Particle count (${count}) EXCEEDS maximum (${MAX_PARTICLES}). ` +
+        `This will cause performance issues! Reduce particle count immediately.`
+      );
+    } else if (count > RECOMMENDED_MAX_PARTICLES) {
+      console.warn(
+        `⚠️ [${location}] Particle count (${count}) exceeds recommended max (${RECOMMENDED_MAX_PARTICLES}). ` +
+        `Consider reducing for better performance.`
+      );
+    }
+  }
+};
 
 export interface AnimationTimings {
   charge: number;

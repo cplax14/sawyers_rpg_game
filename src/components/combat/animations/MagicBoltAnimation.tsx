@@ -31,7 +31,7 @@ interface MagicBoltAnimationProps {
 
 type AnimationPhase = 'idle' | 'charge' | 'cast' | 'projectile' | 'impact' | 'complete';
 
-export const MagicBoltAnimation: React.FC<MagicBoltAnimationProps> = ({
+export const MagicBoltAnimation: React.FC<MagicBoltAnimationProps> = React.memo(({
   casterPosition,
   targetPosition,
   damage,
@@ -256,4 +256,6 @@ export const MagicBoltAnimation: React.FC<MagicBoltAnimationProps> = ({
       )}
     </>
   );
-};
+});
+
+MagicBoltAnimation.displayName = 'MagicBoltAnimation';
