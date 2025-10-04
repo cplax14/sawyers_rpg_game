@@ -60,9 +60,9 @@ export interface LevelRequirements {
 
 const BASE_XP_PER_LEVEL = 100;
 const XP_SCALING_FACTOR = 1.15;
-const MAX_LEVEL = 100;
+export const MAX_LEVEL = 100;
 
-const ACTIVITY_BASE_XP: Record<ExperienceActivity, number> = {
+export const ACTIVITY_BASE_XP: Record<ExperienceActivity, number> = {
   combat: 25,
   quest: 50,
   exploration: 15,
