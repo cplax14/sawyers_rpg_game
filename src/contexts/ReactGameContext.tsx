@@ -170,6 +170,11 @@ export interface ReactGameState {
   // Save system
   saveSlots: SaveSlot[];
   currentSaveSlot: number | null;
+
+  // Breeding system
+  breedingAttempts: number;
+  discoveredRecipes: string[];
+  breedingMaterials: Record<string, number>;
 }
 
 export interface GameSettings {
@@ -259,7 +264,14 @@ export type ReactGameAction =
   // New inventory system actions
   | { type: 'UPDATE_INVENTORY_STATE'; payload: InventoryState }
   | { type: 'UPDATE_CREATURE_COLLECTION'; payload: CreatureCollection }
-  | { type: 'UPDATE_EXPERIENCE_STATE'; payload: ExperienceState };
+  | { type: 'UPDATE_EXPERIENCE_STATE'; payload: ExperienceState }
+  // Breeding system actions
+  | { type: 'BREED_CREATURES'; payload: { parent1Id: string; parent2Id: string; recipeId?: string } }
+  | { type: 'UPDATE_BREEDING_ATTEMPTS'; payload: number }
+  | { type: 'DISCOVER_RECIPE'; payload: string }
+  | { type: 'ADD_BREEDING_MATERIAL'; payload: { materialId: string; quantity: number } }
+  | { type: 'REMOVE_BREEDING_MATERIAL'; payload: { materialId: string; quantity: number } }
+  | { type: 'APPLY_EXHAUSTION'; payload: { creatureId: string } };
 
 // Default settings
 const defaultSettings: GameSettings = {
@@ -310,6 +322,9 @@ const initialState: ReactGameState = {
   settings: defaultSettings,
   saveSlots: [],
   currentSaveSlot: null,
+  breedingAttempts: 0,
+  discoveredRecipes: [],
+  breedingMaterials: {},
 };
 
 // Game reducer function
@@ -709,6 +724,91 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         experience: action.payload
       };
 
+    // Breeding system reducer handlers
+    case 'BREED_CREATURES':
+      // Note: Actual breeding logic is handled by breedingEngine utility
+      // This action is dispatched after breeding completion to update state
+      return state;
+
+    case 'UPDATE_BREEDING_ATTEMPTS':
+      return {
+        ...state,
+        breedingAttempts: action.payload
+      };
+
+    case 'DISCOVER_RECIPE':
+      if (state.discoveredRecipes.includes(action.payload)) return state;
+      return {
+        ...state,
+        discoveredRecipes: [...state.discoveredRecipes, action.payload]
+      };
+
+    case 'ADD_BREEDING_MATERIAL':
+      const currentMaterialQuantity = state.breedingMaterials[action.payload.materialId] || 0;
+      return {
+        ...state,
+        breedingMaterials: {
+          ...state.breedingMaterials,
+          [action.payload.materialId]: currentMaterialQuantity + action.payload.quantity
+        }
+      };
+
+    case 'REMOVE_BREEDING_MATERIAL':
+      const existingQuantity = state.breedingMaterials[action.payload.materialId] || 0;
+      const newQuantity = Math.max(0, existingQuantity - action.payload.quantity);
+      const updatedMaterials = { ...state.breedingMaterials };
+
+      if (newQuantity <= 0) {
+        delete updatedMaterials[action.payload.materialId];
+      } else {
+        updatedMaterials[action.payload.materialId] = newQuantity;
+      }
+
+      return {
+        ...state,
+        breedingMaterials: updatedMaterials
+      };
+
+    case 'APPLY_EXHAUSTION':
+      // Update creature exhaustion in creatures collection
+      if (!state.creatures) return state;
+
+      const targetCreature = state.creatures.creatures[action.payload.creatureId];
+      if (!targetCreature) return state;
+
+      const newExhaustionLevel = (targetCreature.exhaustionLevel || 0) + 1;
+      const newBreedingCount = (targetCreature.breedingCount || 0) + 1;
+
+      // Apply -20% stat penalty per exhaustion level to creature's stats
+      // Note: We apply penalty directly to stats since EnhancedCreature uses Monster.stats
+      const exhaustionMultiplier = 1 - (newExhaustionLevel * 0.2);
+      const penalizedStats = {
+        attack: Math.floor(targetCreature.stats.attack * exhaustionMultiplier),
+        defense: Math.floor(targetCreature.stats.defense * exhaustionMultiplier),
+        magicAttack: Math.floor(targetCreature.stats.magicAttack * exhaustionMultiplier),
+        magicDefense: Math.floor(targetCreature.stats.magicDefense * exhaustionMultiplier),
+        speed: Math.floor(targetCreature.stats.speed * exhaustionMultiplier),
+        accuracy: Math.floor(targetCreature.stats.accuracy * exhaustionMultiplier)
+      };
+
+      const updatedCreatures = {
+        ...state.creatures,
+        creatures: {
+          ...state.creatures.creatures,
+          [action.payload.creatureId]: {
+            ...targetCreature,
+            exhaustionLevel: newExhaustionLevel,
+            breedingCount: newBreedingCount,
+            stats: penalizedStats
+          }
+        }
+      };
+
+      return {
+        ...state,
+        creatures: updatedCreatures
+      };
+
     case 'SAVE_GAME':
       try {
         const saveData = {
@@ -721,7 +821,11 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
           completedQuests: state.completedQuests,
           totalPlayTime: state.totalPlayTime + (Date.now() - state.sessionStartTime),
           settings: state.settings,
-          timestamp: action.payload.timestamp
+          timestamp: action.payload.timestamp,
+          // Breeding system data
+          breedingAttempts: state.breedingAttempts,
+          discoveredRecipes: state.discoveredRecipes,
+          breedingMaterials: state.breedingMaterials
         };
 
         // Save to localStorage
@@ -774,7 +878,11 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
           totalPlayTime: parsedData.totalPlayTime || 0,
           settings: { ...state.settings, ...parsedData.settings },
           currentSaveSlot: action.payload.slotIndex,
-          sessionStartTime: Date.now() // Reset session start time
+          sessionStartTime: Date.now(), // Reset session start time
+          // Breeding system data with backward compatibility
+          breedingAttempts: parsedData.breedingAttempts || 0,
+          discoveredRecipes: parsedData.discoveredRecipes || [],
+          breedingMaterials: parsedData.breedingMaterials || {}
         };
       } catch (error) {
         console.error('Load failed:', error);
@@ -849,6 +957,14 @@ interface ReactGameContextType {
   updateInventoryState: (inventoryState: InventoryState) => void;
   updateCreatureCollection: (creatures: CreatureCollection) => void;
   updateExperienceState: (experience: ExperienceState) => void;
+
+  // Breeding system functions
+  breedCreatures: (parent1Id: string, parent2Id: string, recipeId?: string) => void;
+  applyExhaustion: (creatureId: string) => void;
+  discoverRecipe: (recipeId: string) => void;
+  updateBreedingAttempts: (attempts: number) => void;
+  addBreedingMaterial: (materialId: string, quantity: number) => void;
+  removeBreedingMaterial: (materialId: string, quantity: number) => void;
 
   // Computed properties
   isPlayerCreated: boolean;
@@ -1223,6 +1339,31 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
     dispatch({ type: 'UPDATE_EXPERIENCE_STATE', payload: experience });
   };
 
+  // Breeding system helper functions
+  const breedCreatures = (parent1Id: string, parent2Id: string, recipeId?: string) => {
+    dispatch({ type: 'BREED_CREATURES', payload: { parent1Id, parent2Id, recipeId } });
+  };
+
+  const applyExhaustion = (creatureId: string) => {
+    dispatch({ type: 'APPLY_EXHAUSTION', payload: { creatureId } });
+  };
+
+  const discoverRecipe = (recipeId: string) => {
+    dispatch({ type: 'DISCOVER_RECIPE', payload: recipeId });
+  };
+
+  const updateBreedingAttempts = (attempts: number) => {
+    dispatch({ type: 'UPDATE_BREEDING_ATTEMPTS', payload: attempts });
+  };
+
+  const addBreedingMaterial = (materialId: string, quantity: number) => {
+    dispatch({ type: 'ADD_BREEDING_MATERIAL', payload: { materialId, quantity } });
+  };
+
+  const removeBreedingMaterial = (materialId: string, quantity: number) => {
+    dispatch({ type: 'REMOVE_BREEDING_MATERIAL', payload: { materialId, quantity } });
+  };
+
   // Computed properties
   const isPlayerCreated = state.player !== null;
 
@@ -1278,6 +1419,12 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
     updateInventoryState,
     updateCreatureCollection,
     updateExperienceState,
+    breedCreatures,
+    applyExhaustion,
+    discoverRecipe,
+    updateBreedingAttempts,
+    addBreedingMaterial,
+    removeBreedingMaterial,
     isPlayerCreated,
     canAccessArea,
     getInventoryByType,
