@@ -12,6 +12,8 @@
 import React, { useState, useEffect, useCallback, useRef, Component, ErrorInfo } from 'react';
 import { getAnimationMetadata, DEFAULT_ANIMATION, type AnimationMetadata } from './animationRegistry';
 import type { AnimationComponentProps } from './animationRegistry';
+import { DamageNumber } from './DamageNumber';
+import { MissIndicator } from './MissIndicator';
 
 // ================================================================
 // PERFORMANCE INSTRUMENTATION
@@ -169,6 +171,7 @@ interface AnimationControllerProps {
     damage?: number;
     isCritical?: boolean;
     element?: string;
+    missed?: boolean;
   };
 
   /** Callback when animation completes */
@@ -306,6 +309,15 @@ export const AnimationController: React.FC<AnimationControllerProps> = ({
   // Task 5.5: Check if positions are valid
   const positionsValid = useRef<boolean>(true);
 
+  // Damage number display state
+  const [showDamageNumber, setShowDamageNumber] = useState<boolean>(false);
+  const damageNumberTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const impactTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Miss indicator display state
+  const [showMissIndicator, setShowMissIndicator] = useState<boolean>(false);
+  const missIndicatorTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   // ================================================================
   // ERROR HANDLING
   // Task 5.1-5.2: Handle animation errors gracefully
@@ -315,7 +327,7 @@ export const AnimationController: React.FC<AnimationControllerProps> = ({
    * Handle errors from the error boundary
    * Skip animation and immediately call onComplete to continue combat
    */
-  const handleAnimationError = useCallback((error: Error, failedAttackType: string) => {
+  const handleAnimationError = useCallback((_error: Error, failedAttackType: string) => {
     if (process.env.NODE_ENV !== 'production') {
       console.error(
         `🚨 [AnimationController] Animation failed for "${failedAttackType}", skipping to result`
@@ -396,6 +408,10 @@ export const AnimationController: React.FC<AnimationControllerProps> = ({
   /**
    * Handle animation completion
    * Calls the onComplete callback and processes queue if needed
+   *
+   * The damage number is handled separately in its own useEffect that triggers
+   * during the impact phase. Here we just wait for the damage number to finish
+   * (if it's showing) before proceeding to the next step.
    */
   const handleAnimationComplete = useCallback(() => {
     if (process.env.NODE_ENV !== 'production') {
@@ -407,16 +423,18 @@ export const AnimationController: React.FC<AnimationControllerProps> = ({
       logAnimationTiming(currentAnimation.type, 'complete', performance.now());
     }
 
+    // Brief delay before calling onComplete callback
+    // Note: The parent (Combat.tsx) is responsible for keeping this component mounted
+    // long enough for the full damage number animation (1250ms) to complete
+    const DAMAGE_NUMBER_COMPLETION_DELAY = showDamageNumber ? 300 : 50;
+
     // Update state to complete
     setAnimationState('complete');
 
-    // Notify combat system
-    if (currentAnimation) {
-      // Use a slight delay to ensure animation visuals complete before callback
-      setTimeout(() => {
-        onComplete();
-      }, 50);
-    }
+    // Notify combat system after brief delay (longer if damage number is showing)
+    setTimeout(() => {
+      onComplete();
+    }, DAMAGE_NUMBER_COMPLETION_DELAY);
 
     // Clear current animation
     setCurrentAnimation(null);
@@ -432,14 +450,16 @@ export const AnimationController: React.FC<AnimationControllerProps> = ({
           );
         }
 
-        // Start the next queued animation
-        const metadata = getAnimationWithFallback(nextAnimation.attackType);
-        setCurrentAnimation({
-          type: nextAnimation.attackType,
-          data: nextAnimation.attackData,
-          metadata
-        });
-        setAnimationState('playing');
+        // Start the next queued animation after damage number completes
+        setTimeout(() => {
+          const metadata = getAnimationWithFallback(nextAnimation.attackType);
+          setCurrentAnimation({
+            type: nextAnimation.attackType,
+            data: nextAnimation.attackData,
+            metadata
+          });
+          setAnimationState('playing');
+        }, DAMAGE_NUMBER_COMPLETION_DELAY);
 
         return remainingQueue;
       }
@@ -448,7 +468,128 @@ export const AnimationController: React.FC<AnimationControllerProps> = ({
       setAnimationState('idle');
       return [];
     });
-  }, [currentAnimation, onComplete, getAnimationWithFallback]);
+  }, [currentAnimation, showDamageNumber, onComplete, getAnimationWithFallback]);
+
+  // ================================================================
+  // DAMAGE NUMBER TIMING
+  // Trigger damage numbers during impact phase (not after animation ends)
+  // ================================================================
+
+  /**
+   * Effect to show damage numbers during the impact phase of the animation
+   *
+   * Typical spell structure:
+   * - Charge phase: 700-800ms
+   * - Cast phase: 150ms
+   * - Travel phase: 300ms
+   * - Impact: ~1150-1250ms from start
+   *
+   * We schedule the damage number to appear at impact time (1150ms),
+   * stay visible for 1 full second, then hide it before cleaning up.
+   */
+  useEffect(() => {
+    // Only trigger for animations with damage
+    if (currentAnimation && currentAnimation.data.damage && currentAnimation.data.damage > 0 && animationState === 'playing') {
+      const IMPACT_TIME = 1150; // When impact phase starts (ms)
+      const DAMAGE_NUMBER_DURATION = 1250; // How long damage number is visible (ms)
+
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(
+          `💥 [Damage Number] Scheduling damage number for ${currentAnimation.type}:`,
+          {
+            damage: currentAnimation.data.damage,
+            isCritical: currentAnimation.data.isCritical,
+            impactTime: `${IMPACT_TIME}ms`,
+            duration: `${DAMAGE_NUMBER_DURATION}ms`,
+            position: { x: currentAnimation.data.targetX, y: currentAnimation.data.targetY }
+          }
+        );
+      }
+
+      // Schedule damage number to appear at impact time
+      impactTimerRef.current = setTimeout(() => {
+        if (process.env.NODE_ENV !== 'production') {
+          console.log(`✨ [Damage Number] Displaying damage: ${currentAnimation.data.damage}`);
+        }
+        setShowDamageNumber(true);
+
+        // Hide damage number after its full duration
+        damageNumberTimerRef.current = setTimeout(() => {
+          if (process.env.NODE_ENV !== 'production') {
+            console.log(`🔚 [Damage Number] Hiding damage number`);
+          }
+          setShowDamageNumber(false);
+        }, DAMAGE_NUMBER_DURATION);
+      }, IMPACT_TIME);
+    }
+
+    // Cleanup timers if animation changes or unmounts
+    return () => {
+      if (impactTimerRef.current) {
+        clearTimeout(impactTimerRef.current);
+        impactTimerRef.current = null;
+      }
+      if (damageNumberTimerRef.current) {
+        clearTimeout(damageNumberTimerRef.current);
+        damageNumberTimerRef.current = null;
+      }
+    };
+  }, [currentAnimation, animationState]);
+
+  // ================================================================
+  // MISS INDICATOR TIMING
+  // Trigger miss indicator during impact phase when attack misses
+  // ================================================================
+
+  /**
+   * Effect to show miss indicator during the impact phase when attack misses
+   *
+   * Same timing as damage numbers - appears at impact time (1150ms),
+   * stays visible for ~850ms, then swipes away diagonally.
+   */
+  useEffect(() => {
+    // Only trigger for animations that missed
+    if (currentAnimation && currentAnimation.data.missed && animationState === 'playing') {
+      const IMPACT_TIME = 1150; // When impact phase starts (ms)
+      const MISS_INDICATOR_DURATION = 1200; // How long miss indicator is visible (ms)
+
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(
+          `❌ [Miss Indicator] Scheduling miss indicator for ${currentAnimation.type}:`,
+          {
+            impactTime: `${IMPACT_TIME}ms`,
+            duration: `${MISS_INDICATOR_DURATION}ms`,
+            position: { x: currentAnimation.data.targetX, y: currentAnimation.data.targetY }
+          }
+        );
+      }
+
+      // Schedule miss indicator to appear at impact time
+      missIndicatorTimerRef.current = setTimeout(() => {
+        if (process.env.NODE_ENV !== 'production') {
+          console.log(`✨ [Miss Indicator] Displaying MISS indicator`);
+        }
+        setShowMissIndicator(true);
+
+        // Miss indicator handles its own duration internally
+        // Just reset state after it completes
+        setTimeout(() => {
+          if (process.env.NODE_ENV !== 'production') {
+            console.log(`🔚 [Miss Indicator] Hiding miss indicator`);
+          }
+          setShowMissIndicator(false);
+        }, MISS_INDICATOR_DURATION);
+      }, IMPACT_TIME);
+    }
+
+    // Cleanup timer if animation changes or unmounts
+    return () => {
+      if (missIndicatorTimerRef.current) {
+        clearTimeout(missIndicatorTimerRef.current);
+        missIndicatorTimerRef.current = null;
+      }
+    };
+  }, [currentAnimation, animationState]);
 
   // ================================================================
   // ANIMATION TRIGGERING & QUEUEING
@@ -556,6 +697,22 @@ export const AnimationController: React.FC<AnimationControllerProps> = ({
       setAnimationQueue([]);
       setCurrentAnimation(null);
 
+      // Clear damage number timers
+      if (impactTimerRef.current) {
+        clearTimeout(impactTimerRef.current);
+        impactTimerRef.current = null;
+      }
+      if (damageNumberTimerRef.current) {
+        clearTimeout(damageNumberTimerRef.current);
+        damageNumberTimerRef.current = null;
+      }
+
+      // Clear miss indicator timer
+      if (missIndicatorTimerRef.current) {
+        clearTimeout(missIndicatorTimerRef.current);
+        missIndicatorTimerRef.current = null;
+      }
+
       if (process.env.NODE_ENV !== 'production') {
         console.log('🧹 [AnimationController] Cleaned up on unmount');
       }
@@ -615,7 +772,34 @@ export const AnimationController: React.FC<AnimationControllerProps> = ({
           zIndex: 100 // Ensure animations appear above combat UI
         }}
       >
+        {/* Main spell animation */}
         <AnimationComponent {...animationProps} />
+
+        {/* Damage number overlay - appears during/after impact */}
+        {showDamageNumber && currentAnimation.data.damage && (
+          <DamageNumber
+            damage={currentAnimation.data.damage}
+            targetX={currentAnimation.data.targetX}
+            targetY={currentAnimation.data.targetY}
+            isCritical={currentAnimation.data.isCritical}
+            onComplete={() => {
+              // Damage number animation completed
+              // (handled by timer in handleAnimationComplete)
+            }}
+          />
+        )}
+
+        {/* Miss indicator overlay - appears during/after impact when attack misses */}
+        {showMissIndicator && currentAnimation.data.missed && (
+          <MissIndicator
+            targetX={currentAnimation.data.targetX}
+            targetY={currentAnimation.data.targetY}
+            onComplete={() => {
+              // Miss indicator animation completed
+              // (handled by timer in effect)
+            }}
+          />
+        )}
       </div>
     </AnimationErrorBoundary>
   );

@@ -147,6 +147,7 @@ export const Combat: React.FC<CombatProps> = ({
     casterY: number;
     targetX: number;
     targetY: number;
+    missed?: boolean;
   } | null>(null);
 
   // Reset battle ended flag when new combat starts
@@ -368,8 +369,11 @@ export const Combat: React.FC<CombatProps> = ({
           targetY: positions.targetPosition.y
         });
 
-        // Wait for animation to complete (1400ms total)
-        await new Promise(resolve => setTimeout(resolve, 1400));
+        // Wait for animation AND damage number to complete
+        // Spell animation: 1150ms (to impact)
+        // Damage number: 1250ms (appear + hold + fade)
+        // Total: 2400ms + 100ms buffer = 2500ms
+        await new Promise(resolve => setTimeout(resolve, 2500));
 
         // Add battle log AFTER animation
         addBattleLog(
@@ -388,13 +392,40 @@ export const Combat: React.FC<CombatProps> = ({
         // Clear animation
         setActiveAnimation(null);
       } else {
-        // Spell missed
+        // Spell missed - show animation with miss indicator
+        // Get animation positions from DOM elements
+        const positions = getAnimationPositions();
+
+        // Trigger animation with missed flag
+        setActiveAnimation({
+          spellId: spell.id, // Use spell ID for registry lookup
+          damage: 0,
+          isCritical: false,
+          element: spell.element || 'arcane',
+          casterX: positions.casterPosition.x,
+          casterY: positions.casterPosition.y,
+          targetX: positions.targetPosition.x,
+          targetY: positions.targetPosition.y,
+          missed: true // This triggers the miss indicator
+        });
+
+        // Wait for animation AND miss indicator to complete
+        // Spell animation: 1150ms (to impact)
+        // Miss indicator: 1200ms (appear + hold + fade)
+        // Total: 2350ms + 150ms buffer = 2500ms
+        await new Promise(resolve => setTimeout(resolve, 2500));
+
+        // Add battle log AFTER animation
         addBattleLog(`${spell.name} missed!`, 'action');
+
         setCombatState(prev => ({
           ...prev,
           playerMp: Math.max(0, prev.playerMp - spell.mpCost),
           phase: 'enemy-turn'
         }));
+
+        // Clear animation
+        setActiveAnimation(null);
       }
     } else {
       // Defensive spells (heal, shield) - no animation changes
@@ -626,6 +657,10 @@ export const Combat: React.FC<CombatProps> = ({
 
     battleEndedRef.current = true;
 
+    // For victory/capture: Add 2-second delay to let damage animations and numbers finish
+    // This ensures players see the final damage before the modal appears
+    const modalDelay = (result === 'victory' || result === 'captured') ? 2000 : 0;
+
     if (result === 'victory' || result === 'captured') {
       // Capture rewards before enemy/encounter might become null
       const rewardEnemy = enemy || (currentEncounter ? {
@@ -688,19 +723,24 @@ export const Combat: React.FC<CombatProps> = ({
       }
 
       // End combat with proper payload to trigger victory modal
-      endCombat({
-        experience: expGained,
-        gold: goldGained,
-        items: rewardItems,
-        capturedMonsterId: result === 'captured' ? enemy?.id : undefined
-      });
+      // Delay by 2 seconds to ensure animations and damage numbers complete
+      setTimeout(() => {
+        endCombat({
+          experience: expGained,
+          gold: goldGained,
+          items: rewardItems,
+          capturedMonsterId: result === 'captured' ? enemy?.id : undefined
+        });
+      }, modalDelay);
     } else {
-      // For defeat and fled - end combat without rewards
-      endCombat({
-        experience: 0,
-        gold: 0,
-        items: []
-      });
+      // For defeat and fled - end combat without rewards (no delay needed)
+      setTimeout(() => {
+        endCombat({
+          experience: 0,
+          gold: 0,
+          items: []
+        });
+      }, modalDelay);
     }
 
     // Screen navigation is handled by ReactGameContext after victory modal
@@ -1354,7 +1394,8 @@ export const Combat: React.FC<CombatProps> = ({
             targetY: activeAnimation.targetY,
             damage: activeAnimation.damage,
             isCritical: activeAnimation.isCritical,
-            element: activeAnimation.element
+            element: activeAnimation.element,
+            missed: activeAnimation.missed
           }}
           onComplete={() => {
             // Animation completed, cleanup handled in executeMagic
