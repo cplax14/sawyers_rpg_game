@@ -542,6 +542,7 @@ export function validateBreeding(
 
   if (!parent1 || !parent2) {
     errors.push('Two parent creatures are required');
+    return { valid: false, errors };
   }
 
   if (parent1.creatureId === parent2.creatureId) {
