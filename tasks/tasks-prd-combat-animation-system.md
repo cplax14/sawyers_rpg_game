@@ -160,6 +160,6 @@ Generated from: `docs/prd-combat-animation-system.md`
   - [x] 7.7 Implement critical hit animations with enhanced visuals (1.4x scale, 1.5x particles, gold overlays, screen shake, impact rings)
   - [x] 7.8 Performance test: cast all spells in sequence and verify consistent 60fps (PASSED: avg 1792 FPS, 0 frame drops, all animations ≥60 FPS)
   - [x] 7.9 Cross-browser testing on Chrome, Firefox, Safari (desktop) - INFRASTRUCTURE COMPLETE: Comprehensive test framework, automation scripts, and testing guides created. Chrome/Firefox testing ready. Safari testing infrastructure ready but requires macOS platform. See `/docs/animations/task-7.9-cross-browser-test-report.md` for test framework.
-  - [ ] 7.10 Create a test battle scenario that demonstrates all wizard animations
+  - [x] 7.10 Create a test battle scenario that demonstrates all wizard animations - COMPLETE: Created Animation Showcase with both standalone HTML and React component versions. Features: 10 wizard spells, normal/critical variants, playback controls, progress tracking, sequential "Play All" mode. Files: `animation-showcase.html`, `src/components/combat/AnimationShowcase.tsx`, `docs/animations/animation-showcase-guide.md`. Accessible via standalone page or integrated React component route.
   - [ ] 7.11 Document any bugs or limitations discovered during testing
   - [ ] 7.12 Final validation against PRD success metrics (visual distinction, 60fps, <4 hours per future animation)
