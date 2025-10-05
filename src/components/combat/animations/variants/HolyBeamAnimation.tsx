@@ -1,7 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { ParticleSystem } from '../core/ParticleSystem';
-import { HOLY_COLORS, validateParticleCount } from '../types';
+import { HOLY_COLORS, validateParticleCount, CRITICAL_HIT_MULTIPLIERS } from '../types';
+import { CriticalScreenShake, CriticalImpactRings, CriticalIndicator } from '../CriticalHitEffects';
 
 interface HolyBeamAnimationProps {
   casterX: number;
@@ -9,6 +10,10 @@ interface HolyBeamAnimationProps {
   targetX: number;
   targetY: number;
   onComplete?: () => void;
+  // Critical hit enhancement props
+  isCritical?: boolean;
+  damage?: number;
+  element?: string;
 }
 
 /**
@@ -31,15 +36,28 @@ export const HolyBeamAnimation: React.FC<HolyBeamAnimationProps> = React.memo(({
   casterY,
   targetX,
   targetY,
-  onComplete
+  onComplete,
+  isCritical = false,
+  damage,
+  element
 }) => {
   const [phase, setPhase] = useState<'charge' | 'cast' | 'beam' | 'impact'>('charge');
 
-  // Phase durations (ms)
+  // Apply critical hit multipliers
+  const critMultiplier = isCritical ? CRITICAL_HIT_MULTIPLIERS : {
+    particleCount: 1,
+    scale: 1,
+    glowOpacity: 1,
+    screenFlash: 1,
+    impactDuration: 1,
+    shakeIntensity: 0
+  };
+
+  // Phase durations (ms) - extend impact for critical hits
   const CHARGE_DURATION = 350;
   const CAST_DURATION = 150;
   const BEAM_DURATION = 350;
-  const IMPACT_DURATION = 150;
+  const IMPACT_DURATION = isCritical ? 200 : 150; // +50ms for crits
 
   // Phase transition handlers
   const handleChargeComplete = useCallback(() => {
@@ -293,11 +311,11 @@ export const HolyBeamAnimation: React.FC<HolyBeamAnimationProps> = React.memo(({
       {/* BEAM PHASE: Column of light descends (350ms) */}
       {phase === 'beam' && (
         <>
-          {/* Main beam column */}
+          {/* Main beam column - wider for critical hits */}
           <motion.div
             initial={{ opacity: 0, scaleY: 0 }}
             animate={{
-              opacity: [0, 0.9, 0.8, 0.7],
+              opacity: [0, 0.9 * critMultiplier.glowOpacity, 0.8, 0.7],
               scaleY: [0, 1, 1, 1],
               transition: {
                 duration: BEAM_DURATION / 1000,
@@ -307,18 +325,27 @@ export const HolyBeamAnimation: React.FC<HolyBeamAnimationProps> = React.memo(({
             onAnimationComplete={handleBeamComplete}
             style={{
               position: 'absolute',
-              left: targetX - 30,
+              left: targetX - (isCritical ? 40 : 30),
               top: 0,
-              width: 60,
+              width: isCritical ? 80 : 60,
               height: targetY,
-              background: `linear-gradient(to bottom,
-                ${HOLY_COLORS.accent}ff 0%,
-                ${HOLY_COLORS.primary}dd 30%,
-                ${HOLY_COLORS.secondary}bb 70%,
-                ${HOLY_COLORS.primary}dd 100%)`,
-              filter: 'blur(6px)',
+              background: isCritical
+                ? `linear-gradient(to bottom,
+                  #ffd700 0%,
+                  ${HOLY_COLORS.accent}ff 20%,
+                  ${HOLY_COLORS.primary}dd 40%,
+                  ${HOLY_COLORS.secondary}bb 70%,
+                  ${HOLY_COLORS.primary}dd 100%)`
+                : `linear-gradient(to bottom,
+                  ${HOLY_COLORS.accent}ff 0%,
+                  ${HOLY_COLORS.primary}dd 30%,
+                  ${HOLY_COLORS.secondary}bb 70%,
+                  ${HOLY_COLORS.primary}dd 100%)`,
+              filter: `blur(${isCritical ? 8 : 6}px)`,
               transformOrigin: 'top',
-              boxShadow: `0 0 40px ${HOLY_COLORS.primary}`
+              boxShadow: isCritical
+                ? `0 0 60px #ffd700, 0 0 40px ${HOLY_COLORS.primary}`
+                : `0 0 40px ${HOLY_COLORS.primary}`
             }}
           />
 
@@ -449,15 +476,15 @@ export const HolyBeamAnimation: React.FC<HolyBeamAnimationProps> = React.memo(({
         </>
       )}
 
-      {/* IMPACT PHASE: Radiant burst (150ms) */}
+      {/* IMPACT PHASE: Radiant burst (150-200ms) */}
       {phase === 'impact' && (
         <>
-          {/* Central radiant burst */}
+          {/* Central radiant burst - enhanced for critical hits */}
           <motion.div
             initial={{ opacity: 0, scale: 0 }}
             animate={{
-              opacity: [0, 1, 0.7, 0],
-              scale: [0, 1.3, 1.8, 2.2],
+              opacity: [0, 1 * critMultiplier.glowOpacity, 0.7, 0],
+              scale: [0, 1.3 * critMultiplier.scale, 1.8 * critMultiplier.scale, 2.2 * critMultiplier.scale],
               transition: {
                 duration: IMPACT_DURATION / 1000,
                 ease: 'easeOut'
@@ -471,8 +498,10 @@ export const HolyBeamAnimation: React.FC<HolyBeamAnimationProps> = React.memo(({
               width: 120,
               height: 120,
               borderRadius: '50%',
-              background: `radial-gradient(circle, ${HOLY_COLORS.accent}ff 0%, ${HOLY_COLORS.primary}dd 40%, ${HOLY_COLORS.secondary}80 70%, transparent 90%)`,
-              filter: 'blur(8px)'
+              background: isCritical
+                ? `radial-gradient(circle, #ffd700 0%, ${HOLY_COLORS.accent}ff 20%, ${HOLY_COLORS.primary}dd 50%, ${HOLY_COLORS.secondary}80 70%, transparent 90%)`
+                : `radial-gradient(circle, ${HOLY_COLORS.accent}ff 0%, ${HOLY_COLORS.primary}dd 40%, ${HOLY_COLORS.secondary}80 70%, transparent 90%)`,
+              filter: `blur(${isCritical ? 10 : 8}px)`
             }}
           />
 
@@ -504,11 +533,26 @@ export const HolyBeamAnimation: React.FC<HolyBeamAnimationProps> = React.memo(({
             />
           ))}
 
-          {/* Golden sparkle burst */}
+          {/* Critical-only impact rings */}
+          {isCritical && (
+            <CriticalImpactRings
+              targetX={targetX}
+              targetY={targetY}
+              color={HOLY_COLORS.accent}
+              duration={IMPACT_DURATION}
+            />
+          )}
+
+          {/* Golden sparkle burst - more for critical hits */}
+          {validateParticleCount(
+            Math.floor(28 * Math.min(critMultiplier.particleCount, 30/28)),
+            'HolyBeamAnimation',
+            'impact'
+          )}
           <ParticleSystem
             originX={targetX}
             originY={targetY}
-            particleCount={28}
+            particleCount={Math.floor(28 * Math.min(critMultiplier.particleCount, 30/28))}
             colors={[HOLY_COLORS.primary, HOLY_COLORS.secondary, HOLY_COLORS.accent]}
             spread={140}
             lifetime={IMPACT_DURATION}
@@ -569,11 +613,11 @@ export const HolyBeamAnimation: React.FC<HolyBeamAnimationProps> = React.memo(({
             </motion.div>
           ))}
 
-          {/* Screen flash effect (golden) */}
+          {/* Screen flash effect (golden) - enhanced for critical hits */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{
-              opacity: [0, 0.15, 0],
+              opacity: [0, 0.15 * critMultiplier.screenFlash, 0],
               transition: {
                 duration: IMPACT_DURATION / 1000,
                 ease: 'easeInOut'
@@ -585,11 +629,21 @@ export const HolyBeamAnimation: React.FC<HolyBeamAnimationProps> = React.memo(({
               top: 0,
               width: '100%',
               height: '100%',
-              background: HOLY_COLORS.primary,
+              background: isCritical
+                ? `linear-gradient(to bottom, #ffd700, ${HOLY_COLORS.accent}, ${HOLY_COLORS.primary})`
+                : HOLY_COLORS.primary,
               pointerEvents: 'none',
               zIndex: 99
             }}
           />
+
+          {/* Critical hit indicator */}
+          {isCritical && (
+            <CriticalIndicator targetX={targetX} targetY={targetY} />
+          )}
+
+          {/* Critical screen shake */}
+          {isCritical && <CriticalScreenShake duration={IMPACT_DURATION} />}
         </>
       )}
     </div>
