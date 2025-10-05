@@ -1,7 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { ParticleSystem } from '../core/ParticleSystem';
-import { LIGHTNING_COLORS } from '../types';
+import { LIGHTNING_COLORS, validateParticleCount, CRITICAL_HIT_MULTIPLIERS } from '../types';
+import { CriticalScreenShake, CriticalImpactRings, CriticalIndicator } from '../CriticalHitEffects';
 
 interface LightningAnimationProps {
   casterX: number;
@@ -9,6 +10,10 @@ interface LightningAnimationProps {
   targetX: number;
   targetY: number;
   onComplete?: () => void;
+  // Critical hit enhancement props
+  isCritical?: boolean;
+  damage?: number;
+  element?: string;
 }
 
 /**
@@ -31,15 +36,28 @@ export const LightningAnimation: React.FC<LightningAnimationProps> = React.memo(
   casterY,
   targetX,
   targetY,
-  onComplete
+  onComplete,
+  isCritical = false,
+  damage,
+  element
 }) => {
   const [phase, setPhase] = useState<'charge' | 'cast' | 'strike' | 'impact'>('charge');
 
-  // Phase durations (ms)
-  const CHARGE_DURATION = 350;
+  // Apply critical hit multipliers
+  const critMultiplier = isCritical ? CRITICAL_HIT_MULTIPLIERS : {
+    particleCount: 1,
+    scale: 1,
+    glowOpacity: 1,
+    screenFlash: 1,
+    impactDuration: 1,
+    shakeIntensity: 0
+  };
+
+  // Phase durations (ms) - extend impact for critical hits
+  const CHARGE_DURATION = 700; // DOUBLED from 350ms for more anticipation
   const CAST_DURATION = 100;
   const STRIKE_DURATION = 200;
-  const IMPACT_DURATION = 250;
+  const IMPACT_DURATION = isCritical ? 300 : 250; // +50ms for crits
 
   // Phase transition handlers
   const handleChargeComplete = useCallback(() => {
@@ -96,6 +114,7 @@ export const LightningAnimation: React.FC<LightningAnimationProps> = React.memo(
       {phase === 'charge' && (
         <>
           {/* Crackling electric sparks */}
+          {validateParticleCount(12, 'LightningAnimation', 'charge')}
           <ParticleSystem
             originX={casterX}
             originY={casterY}
@@ -237,6 +256,7 @@ export const LightningAnimation: React.FC<LightningAnimationProps> = React.memo(
           />
 
           {/* Upward sparks */}
+          {validateParticleCount(8, 'LightningAnimation', 'cast')}
           <ParticleSystem
             originX={casterX}
             originY={casterY}
@@ -265,23 +285,25 @@ export const LightningAnimation: React.FC<LightningAnimationProps> = React.memo(
               pointerEvents: 'none'
             }}
           >
-            {/* Primary bolt */}
+            {/* Primary bolt - thicker for critical hits */}
             <motion.path
               d={lightningPath}
               initial={{ pathLength: 0, opacity: 0 }}
               animate={{
                 pathLength: 1,
-                opacity: [0, 1, 0.8],
+                opacity: [0, 1 * critMultiplier.glowOpacity, 0.8],
                 transition: {
                   duration: STRIKE_DURATION / 1000,
                   ease: 'linear'
                 }
               }}
               onAnimationComplete={handleStrikeComplete}
-              stroke={LIGHTNING_COLORS.accent}
-              strokeWidth="4"
+              stroke={isCritical ? '#ffd700' : LIGHTNING_COLORS.accent}
+              strokeWidth={isCritical ? 6 : 4}
               fill="none"
-              filter={`drop-shadow(0 0 8px ${LIGHTNING_COLORS.accent}) drop-shadow(0 0 12px ${LIGHTNING_COLORS.primary})`}
+              filter={isCritical
+                ? `drop-shadow(0 0 12px #ffd700) drop-shadow(0 0 16px ${LIGHTNING_COLORS.accent})`
+                : `drop-shadow(0 0 8px ${LIGHTNING_COLORS.accent}) drop-shadow(0 0 12px ${LIGHTNING_COLORS.primary})`}
             />
 
             {/* Secondary thinner bolt (slight offset) */}
@@ -350,15 +372,15 @@ export const LightningAnimation: React.FC<LightningAnimationProps> = React.memo(
         </>
       )}
 
-      {/* IMPACT PHASE: Electric burst and arcs (250ms) */}
+      {/* IMPACT PHASE: Electric burst and arcs (250-300ms) */}
       {phase === 'impact' && (
         <>
-          {/* Central electric burst */}
+          {/* Central electric burst - enhanced for critical hits */}
           <motion.div
             initial={{ opacity: 0, scale: 0 }}
             animate={{
-              opacity: [0, 1, 0.7, 0.5, 0],
-              scale: [0, 1.2, 1.5, 1.8, 2],
+              opacity: [0, 1 * critMultiplier.glowOpacity, 0.7, 0.5, 0],
+              scale: [0, 1.2 * critMultiplier.scale, 1.5 * critMultiplier.scale, 1.8 * critMultiplier.scale, 2 * critMultiplier.scale],
               transition: {
                 duration: IMPACT_DURATION / 1000,
                 ease: 'easeOut'
@@ -372,8 +394,10 @@ export const LightningAnimation: React.FC<LightningAnimationProps> = React.memo(
               width: 100,
               height: 100,
               borderRadius: '50%',
-              background: `radial-gradient(circle, ${LIGHTNING_COLORS.accent}ff 0%, ${LIGHTNING_COLORS.primary}cc 40%, ${LIGHTNING_COLORS.secondary}60 70%, transparent 90%)`,
-              filter: 'blur(6px)'
+              background: isCritical
+                ? `radial-gradient(circle, #ffd700 0%, ${LIGHTNING_COLORS.accent}ff 20%, ${LIGHTNING_COLORS.primary}cc 50%, ${LIGHTNING_COLORS.secondary}60 70%, transparent 90%)`
+                : `radial-gradient(circle, ${LIGHTNING_COLORS.accent}ff 0%, ${LIGHTNING_COLORS.primary}cc 40%, ${LIGHTNING_COLORS.secondary}60 70%, transparent 90%)`,
+              filter: `blur(${isCritical ? 8 : 6}px)`
             }}
           />
 
@@ -406,11 +430,26 @@ export const LightningAnimation: React.FC<LightningAnimationProps> = React.memo(
             />
           ))}
 
-          {/* Crackling electric particles */}
+          {/* Critical-only impact rings */}
+          {isCritical && (
+            <CriticalImpactRings
+              targetX={targetX}
+              targetY={targetY}
+              color={LIGHTNING_COLORS.accent}
+              duration={IMPACT_DURATION}
+            />
+          )}
+
+          {/* Crackling electric particles - more for critical hits */}
+          {validateParticleCount(
+            Math.floor(24 * Math.min(critMultiplier.particleCount, 30/24)),
+            'LightningAnimation',
+            'impact'
+          )}
           <ParticleSystem
             originX={targetX}
             originY={targetY}
-            particleCount={24}
+            particleCount={Math.floor(24 * Math.min(critMultiplier.particleCount, 30/24))}
             colors={[LIGHTNING_COLORS.primary, LIGHTNING_COLORS.secondary, LIGHTNING_COLORS.accent]}
             spread={120}
             lifetime={IMPACT_DURATION}
@@ -470,11 +509,11 @@ export const LightningAnimation: React.FC<LightningAnimationProps> = React.memo(
             }}
           />
 
-          {/* Screen flash effect (yellow) */}
+          {/* Screen flash effect (yellow) - enhanced for critical hits */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{
-              opacity: [0, 0.2, 0.1, 0],
+              opacity: [0, 0.2 * critMultiplier.screenFlash, 0.1, 0],
               transition: {
                 duration: IMPACT_DURATION / 1000,
                 ease: 'easeInOut'
@@ -486,11 +525,21 @@ export const LightningAnimation: React.FC<LightningAnimationProps> = React.memo(
               top: 0,
               width: '100%',
               height: '100%',
-              background: LIGHTNING_COLORS.accent,
+              background: isCritical
+                ? `linear-gradient(to bottom, #ffd700, ${LIGHTNING_COLORS.accent}, ${LIGHTNING_COLORS.primary})`
+                : LIGHTNING_COLORS.accent,
               pointerEvents: 'none',
               zIndex: 99
             }}
           />
+
+          {/* Critical hit indicator */}
+          {isCritical && (
+            <CriticalIndicator targetX={targetX} targetY={targetY} />
+          )}
+
+          {/* Critical screen shake */}
+          {isCritical && <CriticalScreenShake duration={IMPACT_DURATION} />}
         </>
       )}
     </div>

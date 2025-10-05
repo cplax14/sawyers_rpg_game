@@ -3,7 +3,8 @@ import { motion } from 'framer-motion';
 import { ParticleSystem } from '../core/ParticleSystem';
 import { Projectile } from '../Projectile';
 import { ImpactEffects } from '../ImpactEffects';
-import { FIRE_COLORS } from '../types';
+import { FIRE_COLORS, validateParticleCount, CRITICAL_HIT_MULTIPLIERS } from '../types';
+import { CriticalScreenShake, CriticalImpactRings, CriticalIndicator } from '../CriticalHitEffects';
 
 interface FireballAnimationProps {
   casterX: number;
@@ -11,6 +12,10 @@ interface FireballAnimationProps {
   targetX: number;
   targetY: number;
   onComplete?: () => void;
+  // Task 7.7: Critical hit enhancement props
+  isCritical?: boolean;
+  damage?: number;
+  element?: string;
 }
 
 /**
@@ -33,15 +38,28 @@ export const FireballAnimation: React.FC<FireballAnimationProps> = React.memo(({
   casterY,
   targetX,
   targetY,
-  onComplete
+  onComplete,
+  isCritical = false,
+  damage,
+  element
 }) => {
   const [phase, setPhase] = useState<'charge' | 'cast' | 'travel' | 'impact'>('charge');
 
-  // Phase durations (ms)
-  const CHARGE_DURATION = 350;
+  // Task 7.7: Apply critical hit multipliers
+  const critMultiplier = isCritical ? CRITICAL_HIT_MULTIPLIERS : {
+    particleCount: 1,
+    scale: 1,
+    glowOpacity: 1,
+    screenFlash: 1,
+    impactDuration: 1,
+    shakeIntensity: 0
+  };
+
+  // Phase durations (ms) - extend impact for critical hits
+  const CHARGE_DURATION = 700; // DOUBLED from 350ms for more anticipation
   const CAST_DURATION = 150;
   const TRAVEL_DURATION = 300;
-  const IMPACT_DURATION = 150;
+  const IMPACT_DURATION = isCritical ? 200 : 150; // +50ms for crits
 
   // Calculate projectile trajectory
   const deltaX = targetX - casterX;
@@ -81,6 +99,7 @@ export const FireballAnimation: React.FC<FireballAnimationProps> = React.memo(({
       {phase === 'charge' && (
         <>
           {/* Primary particle swirl */}
+          {validateParticleCount(18, 'FireballAnimation', 'charge')}
           <ParticleSystem
             originX={casterX}
             originY={casterY}
@@ -170,6 +189,7 @@ export const FireballAnimation: React.FC<FireballAnimationProps> = React.memo(({
           />
 
           {/* Burst particles */}
+          {validateParticleCount(12, 'FireballAnimation', 'cast')}
           <ParticleSystem
             originX={casterX}
             originY={casterY}
@@ -242,6 +262,7 @@ export const FireballAnimation: React.FC<FireballAnimationProps> = React.memo(({
               height: 0
             }}
           >
+            {validateParticleCount(15, 'FireballAnimation', 'travel-trail')}
             <ParticleSystem
               originX={0}
               originY={0}
@@ -257,15 +278,15 @@ export const FireballAnimation: React.FC<FireballAnimationProps> = React.memo(({
         </>
       )}
 
-      {/* IMPACT PHASE: Explosion burst (150ms) */}
+      {/* IMPACT PHASE: Explosion burst (150-200ms) */}
       {phase === 'impact' && (
         <>
-          {/* Core explosion flash */}
+          {/* Core explosion flash - enhanced for critical hits */}
           <motion.div
             initial={{ opacity: 0, scale: 0 }}
             animate={{
-              opacity: [0, 1, 0.6, 0],
-              scale: [0, 1.5, 2, 2.5],
+              opacity: [0, 1 * critMultiplier.glowOpacity, 0.6, 0],
+              scale: [0, 1.5 * critMultiplier.scale, 2 * critMultiplier.scale, 2.5 * critMultiplier.scale],
               transition: {
                 duration: IMPACT_DURATION / 1000,
                 ease: 'easeOut'
@@ -279,17 +300,19 @@ export const FireballAnimation: React.FC<FireballAnimationProps> = React.memo(({
               width: 120,
               height: 120,
               borderRadius: '50%',
-              background: `radial-gradient(circle, ${FIRE_COLORS.accent}ff 0%, ${FIRE_COLORS.primary}cc 30%, ${FIRE_COLORS.secondary}80 60%, transparent 80%)`,
-              filter: 'blur(8px)'
+              background: isCritical
+                ? `radial-gradient(circle, #ffd700 0%, ${FIRE_COLORS.accent}ff 20%, ${FIRE_COLORS.primary}cc 50%, ${FIRE_COLORS.secondary}80 70%, transparent 90%)`
+                : `radial-gradient(circle, ${FIRE_COLORS.accent}ff 0%, ${FIRE_COLORS.primary}cc 30%, ${FIRE_COLORS.secondary}80 60%, transparent 80%)`,
+              filter: `blur(${isCritical ? 10 : 8}px)`
             }}
           />
 
-          {/* Explosion ring shockwave */}
+          {/* Explosion ring shockwave - enhanced for critical hits */}
           <motion.div
             initial={{ opacity: 0, scale: 0 }}
             animate={{
               opacity: [0.8, 0.4, 0],
-              scale: [0, 2, 3],
+              scale: [0, 2 * critMultiplier.scale, 3 * critMultiplier.scale],
               transition: {
                 duration: IMPACT_DURATION / 1000,
                 ease: [0.4, 0, 0.2, 1]
@@ -302,16 +325,33 @@ export const FireballAnimation: React.FC<FireballAnimationProps> = React.memo(({
               width: 80,
               height: 80,
               borderRadius: '50%',
-              border: `3px solid ${FIRE_COLORS.primary}`,
-              boxShadow: `0 0 20px ${FIRE_COLORS.primary}`
+              border: `3px solid ${isCritical ? '#ffd700' : FIRE_COLORS.primary}`,
+              boxShadow: isCritical
+                ? `0 0 30px #ffd700, 0 0 40px ${FIRE_COLORS.primary}`
+                : `0 0 20px ${FIRE_COLORS.primary}`
             }}
           />
 
-          {/* Radiating explosion particles */}
+          {/* Critical-only impact rings */}
+          {isCritical && (
+            <CriticalImpactRings
+              targetX={targetX}
+              targetY={targetY}
+              color={FIRE_COLORS.accent}
+              duration={IMPACT_DURATION}
+            />
+          )}
+
+          {/* Radiating explosion particles - more for critical hits */}
+          {validateParticleCount(
+            Math.floor(28 * Math.min(critMultiplier.particleCount, 30/28)),
+            'FireballAnimation',
+            'impact-primary'
+          )}
           <ParticleSystem
             originX={targetX}
             originY={targetY}
-            particleCount={28}
+            particleCount={Math.floor(28 * Math.min(critMultiplier.particleCount, 30/28))}
             colors={[FIRE_COLORS.primary, FIRE_COLORS.secondary, FIRE_COLORS.accent]}
             spread={150}
             lifetime={IMPACT_DURATION}
@@ -321,6 +361,7 @@ export const FireballAnimation: React.FC<FireballAnimationProps> = React.memo(({
           />
 
           {/* Secondary particle burst */}
+          {validateParticleCount(15, 'FireballAnimation', 'impact-secondary')}
           <ParticleSystem
             originX={targetX}
             originY={targetY}
@@ -333,11 +374,11 @@ export const FireballAnimation: React.FC<FireballAnimationProps> = React.memo(({
             fadeOut={true}
           />
 
-          {/* Screen flash effect */}
+          {/* Screen flash effect - enhanced for critical hits */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{
-              opacity: [0, 0.15, 0],
+              opacity: [0, 0.15 * critMultiplier.screenFlash, 0],
               transition: {
                 duration: IMPACT_DURATION / 1000,
                 ease: 'easeInOut'
@@ -349,11 +390,21 @@ export const FireballAnimation: React.FC<FireballAnimationProps> = React.memo(({
               top: 0,
               width: '100%',
               height: '100%',
-              background: FIRE_COLORS.primary,
+              background: isCritical
+                ? `linear-gradient(to bottom, #ffd700, ${FIRE_COLORS.accent}, ${FIRE_COLORS.primary})`
+                : FIRE_COLORS.primary,
               pointerEvents: 'none',
               zIndex: 99
             }}
           />
+
+          {/* Critical hit indicator */}
+          {isCritical && (
+            <CriticalIndicator targetX={targetX} targetY={targetY} />
+          )}
+
+          {/* Critical screen shake */}
+          {isCritical && <CriticalScreenShake duration={IMPACT_DURATION} />}
         </>
       )}
     </div>

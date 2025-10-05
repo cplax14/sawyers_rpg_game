@@ -2,7 +2,8 @@ import React, { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { ParticleSystem } from '../core/ParticleSystem';
 import { Projectile } from '../Projectile';
-import { ICE_COLORS } from '../types';
+import { ICE_COLORS, validateParticleCount, CRITICAL_HIT_MULTIPLIERS } from '../types';
+import { CriticalScreenShake, CriticalImpactRings, CriticalIndicator } from '../CriticalHitEffects';
 
 interface IceShardAnimationProps {
   casterX: number;
@@ -10,6 +11,10 @@ interface IceShardAnimationProps {
   targetX: number;
   targetY: number;
   onComplete?: () => void;
+  // Critical hit enhancement props
+  isCritical?: boolean;
+  damage?: number;
+  element?: string;
 }
 
 /**
@@ -32,15 +37,28 @@ export const IceShardAnimation: React.FC<IceShardAnimationProps> = React.memo(({
   casterY,
   targetX,
   targetY,
-  onComplete
+  onComplete,
+  isCritical = false,
+  damage,
+  element
 }) => {
   const [phase, setPhase] = useState<'charge' | 'cast' | 'travel' | 'impact'>('charge');
 
-  // Phase durations (ms)
-  const CHARGE_DURATION = 400;
+  // Apply critical hit multipliers
+  const critMultiplier = isCritical ? CRITICAL_HIT_MULTIPLIERS : {
+    particleCount: 1,
+    scale: 1,
+    glowOpacity: 1,
+    screenFlash: 1,
+    impactDuration: 1,
+    shakeIntensity: 0
+  };
+
+  // Phase durations (ms) - extend impact for critical hits
+  const CHARGE_DURATION = 800; // DOUBLED from 400ms for more anticipation
   const CAST_DURATION = 150;
   const TRAVEL_DURATION = 250;
-  const IMPACT_DURATION = 100;
+  const IMPACT_DURATION = isCritical ? 150 : 100; // +50ms for crits
 
   // Calculate projectile trajectory
   const deltaX = targetX - casterX;
@@ -80,6 +98,7 @@ export const IceShardAnimation: React.FC<IceShardAnimationProps> = React.memo(({
       {phase === 'charge' && (
         <>
           {/* Converging ice crystals */}
+          {validateParticleCount(15, 'IceShardAnimation', 'charge')}
           <ParticleSystem
             originX={casterX}
             originY={casterY}
@@ -195,6 +214,7 @@ export const IceShardAnimation: React.FC<IceShardAnimationProps> = React.memo(({
           />
 
           {/* Crystalline shards bursting out */}
+          {validateParticleCount(10, 'IceShardAnimation', 'cast')}
           <ParticleSystem
             originX={casterX}
             originY={casterY}
@@ -291,6 +311,7 @@ export const IceShardAnimation: React.FC<IceShardAnimationProps> = React.memo(({
               height: 0
             }}
           >
+            {validateParticleCount(10, 'IceShardAnimation', 'travel-trail')}
             <ParticleSystem
               originX={0}
               originY={0}
@@ -330,15 +351,15 @@ export const IceShardAnimation: React.FC<IceShardAnimationProps> = React.memo(({
         </>
       )}
 
-      {/* IMPACT PHASE: Ice shatter effect (100ms) */}
+      {/* IMPACT PHASE: Ice shatter effect (100-150ms) */}
       {phase === 'impact' && (
         <>
-          {/* Core shatter burst */}
+          {/* Core shatter burst - enhanced for critical hits */}
           <motion.div
             initial={{ opacity: 0, scale: 0 }}
             animate={{
-              opacity: [0, 1, 0],
-              scale: [0, 1.2, 1.8],
+              opacity: [0, 1 * critMultiplier.glowOpacity, 0],
+              scale: [0, 1.2 * critMultiplier.scale, 1.8 * critMultiplier.scale],
               transition: {
                 duration: IMPACT_DURATION / 1000,
                 ease: 'easeOut'
@@ -352,8 +373,10 @@ export const IceShardAnimation: React.FC<IceShardAnimationProps> = React.memo(({
               width: 80,
               height: 80,
               borderRadius: '50%',
-              background: `radial-gradient(circle, ${ICE_COLORS.accent}ff 0%, ${ICE_COLORS.primary}cc 40%, transparent 70%)`,
-              filter: 'blur(5px)'
+              background: isCritical
+                ? `radial-gradient(circle, #ffd700 0%, ${ICE_COLORS.accent}ff 20%, ${ICE_COLORS.primary}cc 50%, transparent 70%)`
+                : `radial-gradient(circle, ${ICE_COLORS.accent}ff 0%, ${ICE_COLORS.primary}cc 40%, transparent 70%)`,
+              filter: `blur(${isCritical ? 7 : 5}px)`
             }}
           />
 
@@ -391,11 +414,26 @@ export const IceShardAnimation: React.FC<IceShardAnimationProps> = React.memo(({
             />
           ))}
 
-          {/* Shatter particles */}
+          {/* Critical-only impact rings */}
+          {isCritical && (
+            <CriticalImpactRings
+              targetX={targetX}
+              targetY={targetY}
+              color={ICE_COLORS.accent}
+              duration={IMPACT_DURATION}
+            />
+          )}
+
+          {/* Shatter particles - more for critical hits */}
+          {validateParticleCount(
+            Math.floor(22 * Math.min(critMultiplier.particleCount, 30/22)),
+            'IceShardAnimation',
+            'impact'
+          )}
           <ParticleSystem
             originX={targetX}
             originY={targetY}
-            particleCount={22}
+            particleCount={Math.floor(22 * Math.min(critMultiplier.particleCount, 30/22))}
             colors={[ICE_COLORS.primary, ICE_COLORS.secondary, ICE_COLORS.accent]}
             spread={130}
             lifetime={IMPACT_DURATION}
@@ -427,11 +465,11 @@ export const IceShardAnimation: React.FC<IceShardAnimationProps> = React.memo(({
             }}
           />
 
-          {/* Screen flash effect (blue) */}
+          {/* Screen flash effect (blue) - enhanced for critical hits */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{
-              opacity: [0, 0.1, 0],
+              opacity: [0, 0.1 * critMultiplier.screenFlash, 0],
               transition: {
                 duration: IMPACT_DURATION / 1000,
                 ease: 'easeInOut'
@@ -443,11 +481,21 @@ export const IceShardAnimation: React.FC<IceShardAnimationProps> = React.memo(({
               top: 0,
               width: '100%',
               height: '100%',
-              background: ICE_COLORS.primary,
+              background: isCritical
+                ? `linear-gradient(to bottom, #ffd700, ${ICE_COLORS.accent}, ${ICE_COLORS.primary})`
+                : ICE_COLORS.primary,
               pointerEvents: 'none',
               zIndex: 99
             }}
           />
+
+          {/* Critical hit indicator */}
+          {isCritical && (
+            <CriticalIndicator targetX={targetX} targetY={targetY} />
+          )}
+
+          {/* Critical screen shake */}
+          {isCritical && <CriticalScreenShake duration={IMPACT_DURATION} />}
         </>
       )}
     </div>

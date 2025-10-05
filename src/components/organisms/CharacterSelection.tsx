@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CharacterClassCard } from '../molecules/CharacterClassCard';
 import { Button } from '../atoms/Button';
@@ -29,6 +29,14 @@ export const CharacterSelection: React.FC<CharacterSelectionProps> = ({
   const [playerName, setPlayerName] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [nameError, setNameError] = useState<string | null>(null);
+
+  // Ref to track current selectedClass value (fixes stale closure bug)
+  const selectedClassRef = useRef<ReactCharacterClass | null>(null);
+
+  // Keep ref in sync with selectedClass state
+  useEffect(() => {
+    selectedClassRef.current = selectedClass;
+  }, [selectedClass]);
 
   // Auto-select first class if available
   useEffect(() => {
@@ -76,7 +84,10 @@ export const CharacterSelection: React.FC<CharacterSelectionProps> = ({
   }, []);
 
   const handleCreateCharacter = useCallback(async () => {
-    if (!selectedClass || !validateName(playerName)) {
+    // Use ref to get current value, not stale closure value
+    const currentClass = selectedClassRef.current;
+
+    if (!currentClass || !validateName(playerName)) {
       return;
     }
 
@@ -86,7 +97,7 @@ export const CharacterSelection: React.FC<CharacterSelectionProps> = ({
       // Simulate character creation delay for better UX
       await new Promise(resolve => setTimeout(resolve, 1500));
 
-      createPlayer(playerName.trim(), selectedClass.id);
+      createPlayer(playerName.trim(), currentClass.id);
 
       // Navigate to world map or trigger callback
       if (onCharacterCreated) {
@@ -100,7 +111,8 @@ export const CharacterSelection: React.FC<CharacterSelectionProps> = ({
     } finally {
       setIsCreating(false);
     }
-  }, [selectedClass, playerName, validateName, createPlayer, onCharacterCreated, navigateToScreen]);
+  }, [playerName, validateName, createPlayer, onCharacterCreated, navigateToScreen]);
+  // Note: selectedClass removed from deps since we use selectedClassRef.current
 
   const handleKeyPress = useCallback((event: React.KeyboardEvent) => {
     if (event.key === 'Enter' && !isCreating) {

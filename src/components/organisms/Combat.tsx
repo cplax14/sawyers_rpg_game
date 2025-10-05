@@ -7,7 +7,21 @@ import { useIsMobile } from '../../hooks';
 import { useCreatures } from '../../hooks/useCreatures';
 import { ReactMonster, ReactPlayer } from '../../types/game';
 import { EnhancedCreature } from '../../types/creatures';
-import { MagicBoltAnimation } from '../combat/animations';
+import { AnimationController } from '../combat/animations/AnimationController';
+
+// TypeScript declarations for global objects
+declare global {
+  interface Window {
+    SpellData?: {
+      spells: Record<string, any>;
+      getSpell: (spellId: string) => any;
+    };
+    CharacterData?: {
+      classes: Record<string, any>;
+      getClass: (className: string) => any;
+    };
+  }
+}
 
 interface CombatProps {
   className?: string;
@@ -125,10 +139,17 @@ export const Combat: React.FC<CombatProps> = ({
   });
 
   const [activeAnimation, setActiveAnimation] = useState<{
-    type: 'magic-bolt';
+    spellId: string;
     damage: number;
     isCritical: boolean;
-    element: 'arcane' | 'fire' | 'ice' | 'lightning';
+    element: string;
+    casterX: number;
+    casterY: number;
+    targetX: number;
+    targetY: number;
+    missed?: boolean;
+    animationType?: 'spell' | 'enemy-attack';
+    enemySpecies?: string;
   } | null>(null);
 
   // Reset battle ended flag when new combat starts
@@ -161,41 +182,51 @@ export const Combat: React.FC<CombatProps> = ({
 
   // Get available spells for the player
   const getPlayerSpells = useCallback(() => {
-    const spells = [
-      {
+    // Get SpellData from global scope
+    const SpellData = typeof window !== 'undefined' ? (window as any).SpellData : null;
+
+    if (!SpellData || !player || !player.spells || player.spells.length === 0) {
+      // Fallback to basic spell if no spell data available
+      return [{
         id: 'magic_bolt',
         name: 'Magic Bolt',
         mpCost: 8,
-        damage: (player?.baseStats.magicAttack || 10) + (player && player.level <= 3 ? 6 : 0), // +6 magic damage for early levels
+        damage: (player?.baseStats.magicAttack || 10) + (player && player.level <= 3 ? 6 : 0),
         type: 'offensive' as const,
         element: 'arcane',
         description: 'A magical energy attack'
-      },
-      {
-        id: 'heal',
-        name: 'Heal',
-        mpCost: 12,
-        healing: 20 + (player?.baseStats.magicAttack || 10) * 0.5,
-        type: 'defensive' as const,
-        description: 'Restore HP'
-      },
-      {
-        id: 'shield',
-        name: 'Shield',
-        mpCost: 10,
-        defenseBoost: 5,
-        type: 'defensive' as const,
-        description: 'Temporarily increase defense'
-      }
-    ];
+      }];
+    }
 
-    // Filter spells based on player class or level
-    return spells.filter(spell => {
-      if (spell.id === 'heal' && combatState.playerMp < spell.mpCost) return false;
-      if (spell.id === 'magic_bolt' && combatState.playerMp < spell.mpCost) return false;
-      if (spell.id === 'shield' && combatState.playerMp < spell.mpCost) return false;
-      return true;
-    });
+    // Map player's spell IDs to full spell objects from SpellData
+    const playerSpells = player.spells
+      .map(spellId => {
+        const spellData = SpellData.getSpell(spellId);
+
+        if (!spellData) {
+          console.warn(`⚠️ Spell ID "${spellId}" not found in SpellData`);
+          return null;
+        }
+
+        // Transform spell data to combat spell format
+        return {
+          id: spellId,
+          name: spellData.name,
+          mpCost: spellData.mpCost,
+          damage: spellData.power
+            ? spellData.power + (player.baseStats.magicAttack || 10) * 0.5
+            : undefined,
+          healing: spellData.effects?.find((e: any) => e.type === 'heal')?.power
+            ? spellData.effects.find((e: any) => e.type === 'heal').power + (player.baseStats.magicAttack || 10) * 0.3
+            : undefined,
+          type: (spellData.type === 'healing' || spellData.type === 'support') ? 'defensive' as const : 'offensive' as const,
+          element: spellData.element || 'arcane',
+          description: spellData.description
+        };
+      })
+      .filter(spell => spell !== null && spell.mpCost <= combatState.playerMp);
+
+    return playerSpells;
   }, [player, combatState.playerMp]);
 
   // Get usable items in combat
@@ -325,16 +356,26 @@ export const Combat: React.FC<CombatProps> = ({
         const isCritical = Math.random() < 0.15;
         const damage = isCritical ? Math.floor(normalDamage * 1.5) : normalDamage;
 
-        // Trigger animation with proper positions
+        // Get animation positions from DOM elements
+        const positions = getAnimationPositions();
+
+        // Trigger animation with proper positions and spell ID
         setActiveAnimation({
-          type: 'magic-bolt',
+          spellId: spell.id, // Use spell ID for registry lookup
           damage,
           isCritical,
-          element: spell.element || 'arcane'
+          element: spell.element || 'arcane',
+          casterX: positions.casterPosition.x,
+          casterY: positions.casterPosition.y,
+          targetX: positions.targetPosition.x,
+          targetY: positions.targetPosition.y
         });
 
-        // Wait for animation to complete (1400ms total)
-        await new Promise(resolve => setTimeout(resolve, 1400));
+        // Wait for animation AND damage number to complete
+        // Spell animation: 1150ms (to impact)
+        // Damage number: 1250ms (appear + hold + fade)
+        // Total: 2400ms + 100ms buffer = 2500ms
+        await new Promise(resolve => setTimeout(resolve, 2500));
 
         // Add battle log AFTER animation
         addBattleLog(
@@ -353,13 +394,40 @@ export const Combat: React.FC<CombatProps> = ({
         // Clear animation
         setActiveAnimation(null);
       } else {
-        // Spell missed
+        // Spell missed - show animation with miss indicator
+        // Get animation positions from DOM elements
+        const positions = getAnimationPositions();
+
+        // Trigger animation with missed flag
+        setActiveAnimation({
+          spellId: spell.id, // Use spell ID for registry lookup
+          damage: 0,
+          isCritical: false,
+          element: spell.element || 'arcane',
+          casterX: positions.casterPosition.x,
+          casterY: positions.casterPosition.y,
+          targetX: positions.targetPosition.x,
+          targetY: positions.targetPosition.y,
+          missed: true // This triggers the miss indicator
+        });
+
+        // Wait for animation AND miss indicator to complete
+        // Spell animation: 1150ms (to impact)
+        // Miss indicator: 1200ms (appear + hold + fade)
+        // Total: 2350ms + 150ms buffer = 2500ms
+        await new Promise(resolve => setTimeout(resolve, 2500));
+
+        // Add battle log AFTER animation
         addBattleLog(`${spell.name} missed!`, 'action');
+
         setCombatState(prev => ({
           ...prev,
           playerMp: Math.max(0, prev.playerMp - spell.mpCost),
           phase: 'enemy-turn'
         }));
+
+        // Clear animation
+        setActiveAnimation(null);
       }
     } else {
       // Defensive spells (heal, shield) - no animation changes
@@ -535,11 +603,11 @@ export const Combat: React.FC<CombatProps> = ({
 
     enemyTurnExecutingRef.current = true;
     setCombatState(prev => ({ ...prev, isAnimating: true }));
-    await new Promise(resolve => setTimeout(resolve, 1000));
 
-    // Simple AI: mostly attack, sometimes special move
+    // Calculate damage
     const aiChoice = Math.random();
     let damage = 0;
+    let attackType = 'attack';
 
     if (aiChoice < 0.8) {
       // Basic attack
@@ -548,7 +616,7 @@ export const Combat: React.FC<CombatProps> = ({
         enemy.level,
         player?.baseStats.defense || 10
       );
-      addBattleLog(`${enemy.name} attacks for ${damage} damage!`, 'action');
+      attackType = 'attack';
     } else {
       // Special ability
       damage = calculateDamage(
@@ -556,9 +624,40 @@ export const Combat: React.FC<CombatProps> = ({
         enemy.level,
         player?.baseStats.magicDefense || 8
       );
+      attackType = 'special';
+    }
+
+    // Get animation positions from DOM elements
+    const positions = getAnimationPositions();
+
+    // Trigger enemy attack animation
+    setActiveAnimation({
+      spellId: attackType, // 'attack' or 'special'
+      damage,
+      isCritical: false, // Enemies could have crits in the future
+      element: 'physical', // Could be determined by enemy type
+      casterX: positions.targetPosition.x, // Enemy is on the right
+      casterY: positions.targetPosition.y,
+      targetX: positions.casterPosition.x, // Player is on the left
+      targetY: positions.casterPosition.y,
+      animationType: 'enemy-attack',
+      enemySpecies: enemy.species // Pass enemy species for animation lookup
+    });
+
+    // Wait for animation to complete (similar to spell animation timing)
+    // Enemy animations are ~800-1200ms
+    // Plus damage number display: 1250ms
+    // Total: ~2500ms
+    await new Promise(resolve => setTimeout(resolve, 2500));
+
+    // Add battle log AFTER animation
+    if (aiChoice < 0.8) {
+      addBattleLog(`${enemy.name} attacks for ${damage} damage!`, 'action');
+    } else {
       addBattleLog(`${enemy.name} uses special attack for ${damage} damage!`, 'action');
     }
 
+    // Apply damage and update state
     setCombatState(prev => ({
       ...prev,
       playerHp: Math.max(0, prev.playerHp - damage),
@@ -567,8 +666,11 @@ export const Combat: React.FC<CombatProps> = ({
       isAnimating: false
     }));
 
+    // Clear animation
+    setActiveAnimation(null);
+
     enemyTurnExecutingRef.current = false;
-  }, [enemy, calculateDamage, player, addBattleLog]);
+  }, [enemy, calculateDamage, player, addBattleLog, getAnimationPositions]);
 
   // Auto-execute enemy turn
   useEffect(() => {
@@ -590,6 +692,10 @@ export const Combat: React.FC<CombatProps> = ({
     }
 
     battleEndedRef.current = true;
+
+    // For victory/capture: Add 2-second delay to let damage animations and numbers finish
+    // This ensures players see the final damage before the modal appears
+    const modalDelay = (result === 'victory' || result === 'captured') ? 2000 : 0;
 
     if (result === 'victory' || result === 'captured') {
       // Capture rewards before enemy/encounter might become null
@@ -653,19 +759,24 @@ export const Combat: React.FC<CombatProps> = ({
       }
 
       // End combat with proper payload to trigger victory modal
-      endCombat({
-        experience: expGained,
-        gold: goldGained,
-        items: rewardItems,
-        capturedMonsterId: result === 'captured' ? enemy?.id : undefined
-      });
+      // Delay by 2 seconds to ensure animations and damage numbers complete
+      setTimeout(() => {
+        endCombat({
+          experience: expGained,
+          gold: goldGained,
+          items: rewardItems,
+          capturedMonsterId: result === 'captured' ? enemy?.id : undefined
+        });
+      }, modalDelay);
     } else {
-      // For defeat and fled - end combat without rewards
-      endCombat({
-        experience: 0,
-        gold: 0,
-        items: []
-      });
+      // For defeat and fled - end combat without rewards (no delay needed)
+      setTimeout(() => {
+        endCombat({
+          experience: 0,
+          gold: 0,
+          items: []
+        });
+      }, modalDelay);
     }
 
     // Screen navigation is handled by ReactGameContext after victory modal
@@ -1309,22 +1420,28 @@ export const Combat: React.FC<CombatProps> = ({
       )}
 
       {/* Animation Layer */}
-      {activeAnimation?.type === 'magic-bolt' && (() => {
-        const positions = getAnimationPositions();
-        return (
-          <MagicBoltAnimation
-            casterPosition={positions.casterPosition}
-            targetPosition={positions.targetPosition}
-            damage={activeAnimation.damage}
-            isCritical={activeAnimation.isCritical}
-            element={activeAnimation.element}
-            isActive={true}
-            onComplete={() => {
-              // Animation completed, cleanup handled in executeMagic
-            }}
-          />
-        );
-      })()}
+      {activeAnimation && (
+        <AnimationController
+          attackType={activeAnimation.spellId}
+          attackData={{
+            casterX: activeAnimation.casterX,
+            casterY: activeAnimation.casterY,
+            targetX: activeAnimation.targetX,
+            targetY: activeAnimation.targetY,
+            damage: activeAnimation.damage,
+            isCritical: activeAnimation.isCritical,
+            element: activeAnimation.element,
+            missed: activeAnimation.missed,
+            enemySpecies: activeAnimation.enemySpecies
+          }}
+          animationType={activeAnimation.animationType || 'spell'}
+          onComplete={() => {
+            // Animation completed, cleanup handled in executeMagic or executeEnemyTurn
+            console.log('✅ [Combat] Animation completed via AnimationController');
+          }}
+          isActive={true}
+        />
+      )}
     </div>
   );
 };

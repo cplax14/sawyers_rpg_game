@@ -53,7 +53,7 @@ export const HasteAnimation: React.FC<HasteAnimationProps> = React.memo(({
   const [phase, setPhase] = useState<'cast' | 'sustain' | 'fade'>('cast');
 
   // Phase durations (ms)
-  const CAST_DURATION = 250;
+  const CAST_DURATION = 500; // DOUBLED from 250ms for more anticipation
   const FADE_DURATION = 200;
 
   // Watch for isActive changes during sustain phase

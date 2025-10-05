@@ -48,7 +48,7 @@ export const ShellAnimation: React.FC<ShellAnimationProps> = React.memo(({
   const [phase, setPhase] = useState<'cast' | 'form' | 'sustain' | 'fade'>('cast');
 
   // Phase durations (ms)
-  const CAST_DURATION = 300;
+  const CAST_DURATION = 600; // DOUBLED from 300ms for more anticipation
   const FORM_DURATION = 400;
   const FADE_DURATION = 200;
 

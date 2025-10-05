@@ -1,0 +1,407 @@
+/**
+ * Animation Showcase Styles
+ * Task 7.10: Test battle scenario styling
+ */
+
+.animation-showcase {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: #e0e0e0;
+  padding: 20px;
+}
+
+.showcase-header {
+  text-align: center;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.showcase-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.showcase-header .subtitle {
+  color: #a0a0a0;
+  font-size: 1.1rem;
+}
+
+.showcase-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 350px 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.showcase-sidebar {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  height: fit-content;
+  position: sticky;
+  top: 20px;
+}
+
+.showcase-sidebar h2 {
+  font-size: 1.3rem;
+  margin-bottom: 15px;
+  color: #fff;
+}
+
+.controls {
+  margin-bottom: 25px;
+}
+
+.control-group {
+  margin-bottom: 15px;
+}
+
+.control-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #b0b0b0;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.btn {
+  width: 100%;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: #e0e0e0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.btn-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.toggle-switch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-switch input {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.toggle-switch:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.spell-list {
+  margin-top: 20px;
+}
+
+.spell-category {
+  margin-bottom: 20px;
+}
+
+.spell-category h3 {
+  font-size: 1rem;
+  color: #9c27b0;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.spell-item {
+  padding: 12px 15px;
+  margin-bottom: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.spell-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(5px);
+}
+
+.spell-item.active {
+  background: rgba(102, 126, 234, 0.2);
+  border-color: #667eea;
+}
+
+.spell-item.completed {
+  opacity: 0.6;
+}
+
+.spell-item.completed::after {
+  content: '✓';
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.spell-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.spell-name {
+  font-weight: 600;
+  color: #fff;
+}
+
+.spell-type {
+  font-size: 0.85rem;
+  color: #a0a0a0;
+}
+
+.battle-stage {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  min-height: 600px;
+}
+
+.stage-info {
+  background: rgba(0, 0, 0, 0.5);
+  padding: 15px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.stage-info h3 {
+  font-size: 1.2rem;
+  margin-bottom: 8px;
+  color: #fff;
+}
+
+.animation-status {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.status-playing {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4caf50;
+  border: 1px solid #4caf50;
+}
+
+.status-idle {
+  background: rgba(158, 158, 158, 0.2);
+  color: #9e9e9e;
+  border: 1px solid #9e9e9e;
+}
+
+.status-critical {
+  background: rgba(255, 193, 7, 0.2);
+  color: #ffc107;
+  border: 1px solid #ffc107;
+}
+
+.progress-bar {
+  flex: 1;
+  min-width: 200px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  width: 0%;
+  transition: width 0.1s linear;
+}
+
+.progress-text {
+  color: #b0b0b0;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.battle-arena {
+  position: relative;
+  height: 500px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 100px;
+}
+
+.character {
+  width: 120px;
+  height: 120px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  position: relative;
+  z-index: 1;
+}
+
+.character-label {
+  position: absolute;
+  bottom: -30px;
+  font-size: 0.9rem;
+  color: #b0b0b0;
+  font-weight: 600;
+}
+
+.wizard {
+  border-color: #9c27b0;
+  box-shadow: 0 0 20px rgba(156, 39, 176, 0.3);
+}
+
+.enemy {
+  border-color: #f44336;
+  box-shadow: 0 0 20px rgba(244, 67, 54, 0.3);
+}
+
+.instructions {
+  background: rgba(33, 150, 243, 0.1);
+  border: 1px solid rgba(33, 150, 243, 0.3);
+  border-radius: 8px;
+  padding: 15px;
+  margin-top: 20px;
+}
+
+.instructions h4 {
+  color: #2196f3;
+  margin-bottom: 10px;
+}
+
+.instructions ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.instructions li {
+  padding: 5px 0;
+  color: #b0b0b0;
+}
+
+.instructions li::before {
+  content: '→ ';
+  color: #2196f3;
+  font-weight: bold;
+}
+
+.showcase-footer {
+  text-align: center;
+  padding: 20px;
+  color: #808080;
+  font-size: 0.9rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .showcase-content {
+    grid-template-columns: 1fr;
+  }
+
+  .showcase-sidebar {
+    position: static;
+  }
+
+  .battle-arena {
+    padding: 0 50px;
+  }
+}
+
+@media (max-width: 768px) {
+  .showcase-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .battle-arena {
+    padding: 0 20px;
+  }
+
+  .character {
+    width: 80px;
+    height: 80px;
+    font-size: 2rem;
+  }
+
+  .animation-status {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .progress-bar {
+    width: 100%;
+  }
+}

@@ -16,6 +16,7 @@
     "test:coverage": "jest --coverage",
     "test:headless": "node scripts/headless-test.js",
     "test:react": "node scripts/headless-test-react.js",
+    "test:performance": "node scripts/run-performance-test.js",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint . --ext ts,tsx --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",

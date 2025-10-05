@@ -326,6 +326,14 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
 
     case 'CREATE_PLAYER':
       const { name, class: playerClass } = action.payload;
+
+      // Load character class data and assign starting spells
+      const characterClassData = typeof window !== 'undefined' && (window as any).CharacterData
+        ? (window as any).CharacterData.getClass(playerClass)
+        : null;
+
+      const startingSpells = characterClassData?.startingSpells || [];
+
       // This will be enhanced with actual class data
       const baseStats = {
         attack: 10,
@@ -354,15 +362,8 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
           armor: null,
           accessory: null,
         },
-        spells: [],
+        spells: startingSpells,
       };
-      console.log('🔍 CREATE_PLAYER Debug:', {
-        newPlayer,
-        experience: newPlayer.experience,
-        experienceType: typeof newPlayer.experience,
-        gold: newPlayer.gold,
-        goldType: typeof newPlayer.gold
-      });
       return {
         ...state,
         player: newPlayer,

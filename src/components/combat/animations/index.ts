@@ -17,5 +17,30 @@ export { StatusOverlay } from './core/StatusOverlay';
 export { BuffAura } from './core/BuffAura';
 export { ParticleSystem, PARTICLE_PRESETS } from './core/ParticleSystem';
 
+// Animation system
+export { AnimationController } from './AnimationController';
+export {
+  getAnimationMetadata,
+  hasAnimation,
+  getRegisteredSpells,
+  getSpellsByElement,
+  getSpellsByType,
+  DEFAULT_ANIMATION,
+  ATTACK_ANIMATION_MAP
+} from './animationRegistry';
+export type { AnimationMetadata, AnimationComponentProps } from './animationRegistry';
+
+// Enemy animation system
+export {
+  getEnemyAnimationMetadata,
+  hasEnemyAnimation,
+  getRegisteredEnemies,
+  getEnemiesByAnimationType,
+  ENEMY_ANIMATION_MAP
+} from './enemyAnimationRegistry';
+export type { EnemyAnimationMetadata } from './enemyAnimationRegistry';
+
+export * from './enemy';
+
 // Type definitions
 export * from './types';
