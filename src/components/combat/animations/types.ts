@@ -53,6 +53,24 @@ export const validateParticleCount = (
   }
 };
 
+// ================================================================
+// CRITICAL HIT ENHANCEMENTS
+// Task 7.7: Enhanced visuals for critical hits
+// ================================================================
+
+/**
+ * Critical hit enhancement multipliers
+ * Applied to visual effects when isCritical is true
+ */
+export const CRITICAL_HIT_MULTIPLIERS = {
+  particleCount: 1.5,      // 50% more particles
+  scale: 1.4,              // 40% larger visual effects
+  glowOpacity: 1.5,        // 50% brighter glows
+  screenFlash: 2.0,        // 2x stronger screen flash
+  impactDuration: 1.3,     // 30% longer impact phase
+  shakeIntensity: 4        // 4px screen shake
+} as const;
+
 export interface AnimationTimings {
   charge: number;
   cast: number;

@@ -582,12 +582,18 @@ export const AnimationController: React.FC<AnimationControllerProps> = ({
   const AnimationComponent = currentAnimation.metadata.component;
 
   // Build props for the animation component
+  // Task 7.7: Pass critical hit and damage data for enhanced visuals
   const animationProps: AnimationComponentProps = {
     casterX: currentAnimation.data.casterX,
     casterY: currentAnimation.data.casterY,
     targetX: currentAnimation.data.targetX,
     targetY: currentAnimation.data.targetY,
-    onComplete: handleAnimationComplete
+    onComplete: handleAnimationComplete,
+
+    // Critical hit and damage data for visual customization
+    isCritical: currentAnimation.data.isCritical,
+    damage: currentAnimation.data.damage,
+    element: currentAnimation.data.element
   };
 
   // Render the animation wrapped in error boundary

@@ -32,6 +32,11 @@ export interface AnimationComponentProps {
   targetX: number;
   targetY: number;
   onComplete?: () => void;
+
+  // Enhanced data for visual customization (Task 7.7: Critical hit enhancements)
+  isCritical?: boolean;
+  damage?: number;
+  element?: string;
 }
 
 /**
