@@ -45,6 +45,14 @@ export interface EnhancedCreature extends Monster {
   breedingGroup: string[];
   fertility: number;
 
+  // Breeding metadata (instant breeding system)
+  generation: number; // 0-5, higher generations have stat bonuses
+  breedingCount: number; // Times this creature has been used for breeding
+  exhaustionLevel: number; // Exhaustion stacks from breeding (-20% stats per level)
+  inheritedAbilities: string[]; // Ability IDs inherited from parents
+  parentIds: [string?, string?]; // IDs of parent creatures for lineage tracking
+  statCaps: Partial<PlayerStats>; // Generation-based maximum stat values
+
   // Combat companion features
   companionData?: CreatureCompanionData;
 
