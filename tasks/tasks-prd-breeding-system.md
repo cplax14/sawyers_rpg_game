@@ -62,37 +62,37 @@ Based on PRD: `prd-breeding-system.md`
   - [x] 2.13 Add discoverRecipe() helper function to ReactGameContextType
   - [x] 2.14 Export breeding helper functions from context
 
-- [ ] 3.0 Implement Core Breeding Engine Logic
-  - [ ] 3.1 Create `src/utils/breedingEngine.ts` file
-  - [ ] 3.2 Implement calculateBreedingCost(parent1, parent2, attemptCount) function
-  - [ ] 3.3 Calculate base gold cost: 100 × (parent1.level + parent2.level)
-  - [ ] 3.4 Apply rarity multiplier (Common ×1, Uncommon ×2, Rare ×4, Epic ×8, Legendary ×16)
-  - [ ] 3.5 Apply generation tax: ×1.5 per generation level
-  - [ ] 3.6 Apply per-creature breeding count tax: ×1.2 per breedingCount on each parent
-  - [ ] 3.7 Implement generateOffspring(parent1, parent2, recipe?) function
-  - [ ] 3.8 Determine offspring species (50/50 from parents or recipe-specific)
-  - [ ] 3.9 Call inheritStats() to calculate offspring base stats
-  - [ ] 3.10 Call rollRarityUpgrade() for 10% rarity upgrade chance
-  - [ ] 3.11 Determine generation: max(parent1.gen, parent2.gen) + 1 (cap at 5)
-  - [ ] 3.12 Call inheritAbilities() for 30% chance per parent ability
-  - [ ] 3.13 Set parentIds to track lineage
-  - [ ] 3.14 Return BreedingResult with new creature and metadata
-  - [ ] 3.15 Implement inheritStats(parent1Stats, parent2Stats, generation) function
-  - [ ] 3.16 Calculate base stats: random 70-90% of parent average for each stat
-  - [ ] 3.17 For each stat, 40% chance to inherit better parent's value
-  - [ ] 3.18 Apply generation bonus: +5% per generation (max +25% at Gen 5)
-  - [ ] 3.19 Return final stat object
-  - [ ] 3.20 Implement rollRarityUpgrade(parentRarity) function with 10% chance logic
-  - [ ] 3.21 Implement applyExhaustion(creature) function
-  - [ ] 3.22 Increment creature.breedingCount
-  - [ ] 3.23 Increment creature.exhaustionLevel
-  - [ ] 3.24 Apply -20% stat penalty per exhaustion level to currentStats
-  - [ ] 3.25 Return updated creature with exhaustion applied
-  - [ ] 3.26 Implement inheritAbilities(parent1, parent2) function
-  - [ ] 3.27 Roll 30% chance for each parent's abilities
-  - [ ] 3.28 Return array of inherited ability IDs
-  - [ ] 3.29 Implement calculateStatCaps(generation) function
-  - [ ] 3.30 Return stat caps with +10% per generation bonus
+- [x] 3.0 Implement Core Breeding Engine Logic
+  - [x] 3.1 Create `src/utils/breedingEngine.ts` file
+  - [x] 3.2 Implement calculateBreedingCost(parent1, parent2, attemptCount) function
+  - [x] 3.3 Calculate base gold cost: 100 × (parent1.level + parent2.level)
+  - [x] 3.4 Apply rarity multiplier (Common ×1, Uncommon ×2, Rare ×4, Epic ×8, Legendary ×16)
+  - [x] 3.5 Apply generation tax: ×1.5 per generation level
+  - [x] 3.6 Apply per-creature breeding count tax: ×1.2 per breedingCount on each parent
+  - [x] 3.7 Implement generateOffspring(parent1, parent2, recipe?) function
+  - [x] 3.8 Determine offspring species (50/50 from parents or recipe-specific)
+  - [x] 3.9 Call inheritStats() to calculate offspring base stats
+  - [x] 3.10 Call rollRarityUpgrade() for 10% rarity upgrade chance
+  - [x] 3.11 Determine generation: max(parent1.gen, parent2.gen) + 1 (cap at 5)
+  - [x] 3.12 Call inheritAbilities() for 30% chance per parent ability
+  - [x] 3.13 Set parentIds to track lineage
+  - [x] 3.14 Return BreedingResult with new creature and metadata
+  - [x] 3.15 Implement inheritStats(parent1Stats, parent2Stats, generation) function
+  - [x] 3.16 Calculate base stats: random 70-90% of parent average for each stat
+  - [x] 3.17 For each stat, 40% chance to inherit better parent's value
+  - [x] 3.18 Apply generation bonus: +5% per generation (max +25% at Gen 5)
+  - [x] 3.19 Return final stat object
+  - [x] 3.20 Implement rollRarityUpgrade(parentRarity) function with 10% chance logic
+  - [x] 3.21 Implement applyExhaustion(creature) function
+  - [x] 3.22 Increment creature.breedingCount
+  - [x] 3.23 Increment creature.exhaustionLevel
+  - [x] 3.24 Apply -20% stat penalty per exhaustion level to currentStats
+  - [x] 3.25 Return updated creature with exhaustion applied
+  - [x] 3.26 Implement inheritAbilities(parent1, parent2) function
+  - [x] 3.27 Roll 30% chance for each parent's abilities
+  - [x] 3.28 Return array of inherited ability IDs
+  - [x] 3.29 Implement calculateStatCaps(generation) function
+  - [x] 3.30 Return stat caps with +10% per generation bonus
 
 - [ ] 4.0 Create Breeding Recipe and Material Data
   - [ ] 4.1 Create `public/data/breedingRecipes.js` file
