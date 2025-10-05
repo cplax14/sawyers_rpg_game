@@ -46,21 +46,21 @@ Based on PRD: `prd-breeding-system.md`
   - [x] 1.12 Add statCaps: Partial<PlayerStats> for generation-based max stats
   - [x] 1.13 Create BreedingState interface (activeBreeding, discoveredRecipes, breedingAttempts, materials)
 
-- [ ] 2.0 Extend Game State and Context for Breeding
-  - [ ] 2.1 Add breedingAttempts: number to ReactGameState (session counter for cost escalation)
-  - [ ] 2.2 Add discoveredRecipes: string[] to track unlocked breeding recipes
-  - [ ] 2.3 Add breedingMaterials: Record<string, number> to track available materials inventory
-  - [ ] 2.4 Create BREED_CREATURES action type in ReactGameAction
-  - [ ] 2.5 Create UPDATE_BREEDING_ATTEMPTS action type
-  - [ ] 2.6 Create DISCOVER_RECIPE action type
-  - [ ] 2.7 Create ADD_BREEDING_MATERIAL action type
-  - [ ] 2.8 Create REMOVE_BREEDING_MATERIAL action type
-  - [ ] 2.9 Create APPLY_EXHAUSTION action type
-  - [ ] 2.10 Implement reducer handlers for all breeding actions in reactGameReducer
-  - [ ] 2.11 Add breedCreatures() helper function to ReactGameContextType
-  - [ ] 2.12 Add applyExhaustion() helper function to ReactGameContextType
-  - [ ] 2.13 Add discoverRecipe() helper function to ReactGameContextType
-  - [ ] 2.14 Export breeding helper functions from context
+- [x] 2.0 Extend Game State and Context for Breeding
+  - [x] 2.1 Add breedingAttempts: number to ReactGameState (session counter for cost escalation)
+  - [x] 2.2 Add discoveredRecipes: string[] to track unlocked breeding recipes
+  - [x] 2.3 Add breedingMaterials: Record<string, number> to track available materials inventory
+  - [x] 2.4 Create BREED_CREATURES action type in ReactGameAction
+  - [x] 2.5 Create UPDATE_BREEDING_ATTEMPTS action type
+  - [x] 2.6 Create DISCOVER_RECIPE action type
+  - [x] 2.7 Create ADD_BREEDING_MATERIAL action type
+  - [x] 2.8 Create REMOVE_BREEDING_MATERIAL action type
+  - [x] 2.9 Create APPLY_EXHAUSTION action type
+  - [x] 2.10 Implement reducer handlers for all breeding actions in reactGameReducer
+  - [x] 2.11 Add breedCreatures() helper function to ReactGameContextType
+  - [x] 2.12 Add applyExhaustion() helper function to ReactGameContextType
+  - [x] 2.13 Add discoverRecipe() helper function to ReactGameContextType
+  - [x] 2.14 Export breeding helper functions from context
 
 - [ ] 3.0 Implement Core Breeding Engine Logic
   - [ ] 3.1 Create `src/utils/breedingEngine.ts` file
