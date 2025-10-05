@@ -55,7 +55,7 @@ export const MeteorAnimation: React.FC<MeteorAnimationProps> = React.memo(({
   };
 
   // Phase durations (ms) - extend impact for critical hits
-  const CHARGE_DURATION = 600;
+  const CHARGE_DURATION = 1200; // DOUBLED from 600ms for more anticipation
   const WARNING_DURATION = 400;
   const IMPACT_DURATION = isCritical ? 350 : 300; // +50ms for crits
   const AFTERMATH_DURATION = 200;

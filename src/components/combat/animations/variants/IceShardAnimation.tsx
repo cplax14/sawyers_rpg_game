@@ -55,7 +55,7 @@ export const IceShardAnimation: React.FC<IceShardAnimationProps> = React.memo(({
   };
 
   // Phase durations (ms) - extend impact for critical hits
-  const CHARGE_DURATION = 400;
+  const CHARGE_DURATION = 800; // DOUBLED from 400ms for more anticipation
   const CAST_DURATION = 150;
   const TRAVEL_DURATION = 250;
   const IMPACT_DURATION = isCritical ? 150 : 100; // +50ms for crits

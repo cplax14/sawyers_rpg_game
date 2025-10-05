@@ -54,7 +54,7 @@ export const LightningAnimation: React.FC<LightningAnimationProps> = React.memo(
   };
 
   // Phase durations (ms) - extend impact for critical hits
-  const CHARGE_DURATION = 350;
+  const CHARGE_DURATION = 700; // DOUBLED from 350ms for more anticipation
   const CAST_DURATION = 100;
   const STRIKE_DURATION = 200;
   const IMPACT_DURATION = isCritical ? 300 : 250; // +50ms for crits

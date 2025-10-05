@@ -54,7 +54,7 @@ export const HolyBeamAnimation: React.FC<HolyBeamAnimationProps> = React.memo(({
   };
 
   // Phase durations (ms) - extend impact for critical hits
-  const CHARGE_DURATION = 350;
+  const CHARGE_DURATION = 700; // DOUBLED from 350ms for more anticipation
   const CAST_DURATION = 150;
   const BEAM_DURATION = 350;
   const IMPACT_DURATION = isCritical ? 200 : 150; // +50ms for crits

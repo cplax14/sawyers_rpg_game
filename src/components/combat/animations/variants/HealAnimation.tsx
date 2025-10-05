@@ -47,7 +47,7 @@ export const HealAnimation: React.FC<HealAnimationProps> = React.memo(({
   const [phase, setPhase] = useState<'cast' | 'descend' | 'absorption' | 'complete'>('cast');
 
   // Phase durations (ms)
-  const CAST_DURATION = 400;
+  const CAST_DURATION = 800; // DOUBLED from 400ms for more anticipation
   const DESCEND_DURATION = 300;
   const ABSORPTION_DURATION = 300;
   const COMPLETE_DURATION = 100;
