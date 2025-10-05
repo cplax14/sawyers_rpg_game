@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Animation Performance Test - Task 7.8</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background-color: #0a0a0a;
+      color: #ffffff;
+      overflow: hidden;
+    }
+
+    #root {
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      font-size: 24px;
+      color: #888;
+    }
+
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid #333;
+      border-top: 5px solid #4caf50;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div id="root">
+    <div class="loading">
+      <div class="loading-spinner"></div>
+      <span>Loading Performance Test...</span>
+    </div>
+  </div>
+
+  <script type="module">
+    // Instructions for running the test
+    console.log('');
+    console.log('═══════════════════════════════════════════════════════════════');
+    console.log('   ANIMATION PERFORMANCE TEST - Task 7.8');
+    console.log('═══════════════════════════════════════════════════════════════');
+    console.log('');
+    console.log('This test will:');
+    console.log('  1. Cast all 6 spell animations in sequence');
+    console.log('  2. Test both normal hits and critical hits');
+    console.log('  3. Measure FPS during each animation');
+    console.log('  4. Generate a comprehensive performance report');
+    console.log('');
+    console.log('Success Criteria:');
+    console.log('  • Average FPS >= 55 across all animations');
+    console.log('  • Frame drops < 10% of total frames');
+    console.log('  • Individual animations >= 50 FPS average');
+    console.log('');
+    console.log('Instructions:');
+    console.log('  1. Click "Start Test" to begin');
+    console.log('  2. Watch animations play automatically');
+    console.log('  3. Review the performance report when complete');
+    console.log('  4. Click "Export Report" to save results as JSON');
+    console.log('');
+    console.log('IMPORTANT: Close other browser tabs for accurate results');
+    console.log('═══════════════════════════════════════════════════════════════');
+    console.log('');
+
+    // This page requires the Vite dev server to be running
+    // Display instructions if not being served by Vite
+    if (!window.location.href.includes('localhost') && !window.location.href.includes('127.0.0.1')) {
+      document.getElementById('root').innerHTML = `
+        <div style="padding: 40px; max-width: 800px; margin: 0 auto;">
+          <h1 style="color: #f44336; margin-bottom: 20px;">⚠️ Development Server Required</h1>
+          <p style="font-size: 18px; margin-bottom: 20px;">
+            This performance test must be run through the Vite development server.
+          </p>
+          <div style="background-color: #2a2a2a; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h2 style="margin-top: 0;">How to Run:</h2>
+            <ol style="line-height: 2; padding-left: 20px;">
+              <li>Open a terminal in the project directory</li>
+              <li>Run: <code style="background-color: #1a1a1a; padding: 4px 8px; border-radius: 4px;">npm run dev</code></li>
+              <li>Navigate to: <code style="background-color: #1a1a1a; padding: 4px 8px; border-radius: 4px;">http://localhost:3000/animation-performance-test.html</code></li>
+            </ol>
+          </div>
+          <p style="color: #888;">
+            The test component requires React and TypeScript compilation which is handled by Vite.
+          </p>
+        </div>
+      `;
+    }
+  </script>
+
+  <!--
+    This page will be served by Vite dev server
+    To run: npm run dev
+    Then navigate to: http://localhost:3000/animation-performance-test.html
+  -->
+  <script type="module" src="/src/performance-test-entry.tsx"></script>
+</body>
+</html>

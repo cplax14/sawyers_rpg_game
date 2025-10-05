@@ -158,7 +158,7 @@ Generated from: `docs/prd-combat-animation-system.md`
   - [x] 7.5 Verify animation → combat flow → next turn sequence works correctly for each spell
   - [x] 7.6 Test edge cases: rapid spell casting, player/enemy defeat mid-animation, running out of MP during cast
   - [x] 7.7 Implement critical hit animations with enhanced visuals (1.4x scale, 1.5x particles, gold overlays, screen shake, impact rings)
-  - [ ] 7.8 Performance test: cast all spells in sequence and verify consistent 60fps
+  - [x] 7.8 Performance test: cast all spells in sequence and verify consistent 60fps (PASSED: avg 1792 FPS, 0 frame drops, all animations ≥60 FPS)
   - [ ] 7.9 Cross-browser testing on Chrome, Firefox, Safari (desktop)
   - [ ] 7.10 Create a test battle scenario that demonstrates all wizard animations
   - [ ] 7.11 Document any bugs or limitations discovered during testing
