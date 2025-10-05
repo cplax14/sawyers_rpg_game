@@ -148,6 +148,8 @@ export const Combat: React.FC<CombatProps> = ({
     targetX: number;
     targetY: number;
     missed?: boolean;
+    animationType?: 'spell' | 'enemy-attack';
+    enemySpecies?: string;
   } | null>(null);
 
   // Reset battle ended flag when new combat starts
@@ -601,11 +603,11 @@ export const Combat: React.FC<CombatProps> = ({
 
     enemyTurnExecutingRef.current = true;
     setCombatState(prev => ({ ...prev, isAnimating: true }));
-    await new Promise(resolve => setTimeout(resolve, 1000));
 
-    // Simple AI: mostly attack, sometimes special move
+    // Calculate damage
     const aiChoice = Math.random();
     let damage = 0;
+    let attackType = 'attack';
 
     if (aiChoice < 0.8) {
       // Basic attack
@@ -614,7 +616,7 @@ export const Combat: React.FC<CombatProps> = ({
         enemy.level,
         player?.baseStats.defense || 10
       );
-      addBattleLog(`${enemy.name} attacks for ${damage} damage!`, 'action');
+      attackType = 'attack';
     } else {
       // Special ability
       damage = calculateDamage(
@@ -622,9 +624,40 @@ export const Combat: React.FC<CombatProps> = ({
         enemy.level,
         player?.baseStats.magicDefense || 8
       );
+      attackType = 'special';
+    }
+
+    // Get animation positions from DOM elements
+    const positions = getAnimationPositions();
+
+    // Trigger enemy attack animation
+    setActiveAnimation({
+      spellId: attackType, // 'attack' or 'special'
+      damage,
+      isCritical: false, // Enemies could have crits in the future
+      element: 'physical', // Could be determined by enemy type
+      casterX: positions.targetPosition.x, // Enemy is on the right
+      casterY: positions.targetPosition.y,
+      targetX: positions.casterPosition.x, // Player is on the left
+      targetY: positions.casterPosition.y,
+      animationType: 'enemy-attack',
+      enemySpecies: enemy.species // Pass enemy species for animation lookup
+    });
+
+    // Wait for animation to complete (similar to spell animation timing)
+    // Enemy animations are ~800-1200ms
+    // Plus damage number display: 1250ms
+    // Total: ~2500ms
+    await new Promise(resolve => setTimeout(resolve, 2500));
+
+    // Add battle log AFTER animation
+    if (aiChoice < 0.8) {
+      addBattleLog(`${enemy.name} attacks for ${damage} damage!`, 'action');
+    } else {
       addBattleLog(`${enemy.name} uses special attack for ${damage} damage!`, 'action');
     }
 
+    // Apply damage and update state
     setCombatState(prev => ({
       ...prev,
       playerHp: Math.max(0, prev.playerHp - damage),
@@ -633,8 +666,11 @@ export const Combat: React.FC<CombatProps> = ({
       isAnimating: false
     }));
 
+    // Clear animation
+    setActiveAnimation(null);
+
     enemyTurnExecutingRef.current = false;
-  }, [enemy, calculateDamage, player, addBattleLog]);
+  }, [enemy, calculateDamage, player, addBattleLog, getAnimationPositions]);
 
   // Auto-execute enemy turn
   useEffect(() => {
@@ -1395,10 +1431,12 @@ export const Combat: React.FC<CombatProps> = ({
             damage: activeAnimation.damage,
             isCritical: activeAnimation.isCritical,
             element: activeAnimation.element,
-            missed: activeAnimation.missed
+            missed: activeAnimation.missed,
+            enemySpecies: activeAnimation.enemySpecies
           }}
+          animationType={activeAnimation.animationType || 'spell'}
           onComplete={() => {
-            // Animation completed, cleanup handled in executeMagic
+            // Animation completed, cleanup handled in executeMagic or executeEnemyTurn
             console.log('✅ [Combat] Animation completed via AnimationController');
           }}
           isActive={true}

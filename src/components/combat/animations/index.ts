@@ -30,5 +30,17 @@ export {
 } from './animationRegistry';
 export type { AnimationMetadata, AnimationComponentProps } from './animationRegistry';
 
+// Enemy animation system
+export {
+  getEnemyAnimationMetadata,
+  hasEnemyAnimation,
+  getRegisteredEnemies,
+  getEnemiesByAnimationType,
+  ENEMY_ANIMATION_MAP
+} from './enemyAnimationRegistry';
+export type { EnemyAnimationMetadata } from './enemyAnimationRegistry';
+
+export * from './enemy';
+
 // Type definitions
 export * from './types';

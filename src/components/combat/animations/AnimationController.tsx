@@ -11,6 +11,7 @@
 
 import React, { useState, useEffect, useCallback, useRef, Component, ErrorInfo } from 'react';
 import { getAnimationMetadata, DEFAULT_ANIMATION, type AnimationMetadata } from './animationRegistry';
+import { getEnemyAnimationMetadata, type EnemyAnimationMetadata } from './enemyAnimationRegistry';
 import type { AnimationComponentProps } from './animationRegistry';
 import { DamageNumber } from './DamageNumber';
 import { MissIndicator } from './MissIndicator';
@@ -172,6 +173,8 @@ interface AnimationControllerProps {
     isCritical?: boolean;
     element?: string;
     missed?: boolean;
+    /** Enemy species ID (for enemy attacks) */
+    enemySpecies?: string;
   };
 
   /** Callback when animation completes */
@@ -179,6 +182,9 @@ interface AnimationControllerProps {
 
   /** Whether animation should be playing */
   isActive: boolean;
+
+  /** Animation type: 'spell' for player spells, 'enemy-attack' for enemy attacks */
+  animationType?: 'spell' | 'enemy-attack';
 }
 
 /**
@@ -190,6 +196,7 @@ interface QueuedAnimation {
   attackData: AnimationControllerProps['attackData'];
   onComplete: () => void;
   timestamp: number;
+  animationType?: 'spell' | 'enemy-attack';
 }
 
 /**
@@ -284,7 +291,8 @@ export const AnimationController: React.FC<AnimationControllerProps> = ({
   attackType,
   attackData,
   onComplete,
-  isActive
+  isActive,
+  animationType = 'spell' // Default to spell for backward compatibility
 }) => {
   // ================================================================
   // STATE MANAGEMENT
@@ -300,7 +308,8 @@ export const AnimationController: React.FC<AnimationControllerProps> = ({
   const [currentAnimation, setCurrentAnimation] = useState<{
     type: string;
     data: AnimationControllerProps['attackData'];
-    metadata: AnimationMetadata;
+    metadata: AnimationMetadata | EnemyAnimationMetadata;
+    animationType: 'spell' | 'enemy-attack';
   } | null>(null);
 
   // Track if we've logged a warning for this attack type (prevent spam)
@@ -354,11 +363,16 @@ export const AnimationController: React.FC<AnimationControllerProps> = ({
 
         // Validate positions before starting next animation
         if (validatePositions(nextAnimation.attackData, nextAnimation.attackType)) {
-          const metadata = getAnimationWithFallback(nextAnimation.attackType);
+          const metadata = getAnimationWithFallback(
+            nextAnimation.attackType,
+            nextAnimation.animationType || 'spell',
+            nextAnimation.attackData.enemySpecies
+          );
           setCurrentAnimation({
             type: nextAnimation.attackType,
             data: nextAnimation.attackData,
-            metadata
+            metadata,
+            animationType: nextAnimation.animationType || 'spell'
           });
           setAnimationState('playing');
         } else {
@@ -381,8 +395,28 @@ export const AnimationController: React.FC<AnimationControllerProps> = ({
   /**
    * Get animation metadata with fallback
    * Returns the animation component and metadata for the given attack type
+   * Supports both player spells and enemy attacks
    */
-  const getAnimationWithFallback = useCallback((type: string): AnimationMetadata => {
+  const getAnimationWithFallback = useCallback((
+    type: string,
+    animType: 'spell' | 'enemy-attack',
+    enemySpecies?: string
+  ): AnimationMetadata | EnemyAnimationMetadata => {
+    if (animType === 'enemy-attack' && enemySpecies) {
+      // Enemy attack - use enemy animation registry
+      const enemyMetadata = getEnemyAnimationMetadata(enemySpecies);
+
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(
+          `🎬 [AnimationController] Enemy animation selected: ${enemySpecies} →`,
+          enemyMetadata.description || 'no description'
+        );
+      }
+
+      return enemyMetadata;
+    }
+
+    // Player spell - use spell animation registry
     const metadata = getAnimationMetadata(type);
 
     if (metadata) {
@@ -452,11 +486,16 @@ export const AnimationController: React.FC<AnimationControllerProps> = ({
 
         // Start the next queued animation after damage number completes
         setTimeout(() => {
-          const metadata = getAnimationWithFallback(nextAnimation.attackType);
+          const metadata = getAnimationWithFallback(
+            nextAnimation.attackType,
+            nextAnimation.animationType || 'spell',
+            nextAnimation.attackData.enemySpecies
+          );
           setCurrentAnimation({
             type: nextAnimation.attackType,
             data: nextAnimation.attackData,
-            metadata
+            metadata,
+            animationType: nextAnimation.animationType || 'spell'
           });
           setAnimationState('playing');
         }, DAMAGE_NUMBER_COMPLETION_DELAY);
@@ -651,7 +690,8 @@ export const AnimationController: React.FC<AnimationControllerProps> = ({
               attackType,
               attackData,
               onComplete,
-              timestamp: Date.now()
+              timestamp: Date.now(),
+              animationType
             }
           ];
         });
@@ -666,12 +706,19 @@ export const AnimationController: React.FC<AnimationControllerProps> = ({
 
     // No animation playing, start this one immediately
     if (animationState === 'idle' || animationState === 'complete') {
-      const metadata = getAnimationWithFallback(attackType);
+      const metadata = getAnimationWithFallback(attackType, animationType, attackData.enemySpecies);
 
       if (process.env.NODE_ENV !== 'production') {
-        console.log(
-          `🎬 [AnimationController] Starting animation: ${attackType} (element: ${metadata.element}, type: ${metadata.type})`
-        );
+        // Log different details based on animation type
+        if (animationType === 'enemy-attack') {
+          console.log(
+            `🎬 [AnimationController] Starting enemy attack: ${attackData.enemySpecies || 'unknown'} (${attackType})`
+          );
+        } else {
+          console.log(
+            `🎬 [AnimationController] Starting spell: ${attackType} (element: ${(metadata as AnimationMetadata).element || 'unknown'}, type: ${(metadata as AnimationMetadata).type || 'unknown'})`
+          );
+        }
       }
 
       // Task 5.9: Log animation start time
@@ -680,11 +727,12 @@ export const AnimationController: React.FC<AnimationControllerProps> = ({
       setCurrentAnimation({
         type: attackType,
         data: attackData,
-        metadata
+        metadata,
+        animationType
       });
       setAnimationState('playing');
     }
-  }, [isActive, attackType, attackData, onComplete, animationState, animationQueue, getAnimationWithFallback]);
+  }, [isActive, attackType, attackData, onComplete, animationState, animationQueue, getAnimationWithFallback, animationType]);
 
   // ================================================================
   // CLEANUP
@@ -739,8 +787,8 @@ export const AnimationController: React.FC<AnimationControllerProps> = ({
   const AnimationComponent = currentAnimation.metadata.component;
 
   // Build props for the animation component
-  // Task 7.7: Pass critical hit and damage data for enhanced visuals
-  const animationProps: AnimationComponentProps = {
+  // For enemy animations, merge custom props from registry with animation data
+  const baseProps: AnimationComponentProps = {
     casterX: currentAnimation.data.casterX,
     casterY: currentAnimation.data.casterY,
     targetX: currentAnimation.data.targetX,
@@ -752,6 +800,10 @@ export const AnimationController: React.FC<AnimationControllerProps> = ({
     damage: currentAnimation.data.damage,
     element: currentAnimation.data.element
   };
+
+  // Merge custom props for enemy animations (variant, colors, etc.)
+  const customProps = (currentAnimation.metadata as EnemyAnimationMetadata).props || {};
+  const animationProps = { ...baseProps, ...customProps } as AnimationComponentProps;
 
   // Render the animation wrapped in error boundary
   // Task 5.1-5.3: Error boundary prevents crashes and provides graceful degradation
