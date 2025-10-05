@@ -151,12 +151,12 @@ Generated from: `docs/prd-combat-animation-system.md`
   - [x] 6.11 Review all docs for clarity and completeness (junior developer should be able to add animations independently)
 
 - [ ] 7.0 Redesign Magic Bolt & Integration Testing
-  - [ ] 7.1 Refactor `MagicBoltAnimation.tsx` to use new core components (ChargeParticles, Projectile, ImpactEffects from core)
-  - [ ] 7.2 Update Magic Bolt to follow standardized interface matching other spell animations
-  - [ ] 7.3 Ensure Magic Bolt works through AnimationController and registry system
-  - [ ] 7.4 Test all wizard spells end-to-end in Combat.tsx (Fire, Ice, Lightning, Holy, Meteor, Heal, Protect, Shell, Haste, Magic Bolt)
-  - [ ] 7.5 Verify animation → combat flow → next turn sequence works correctly for each spell
-  - [ ] 7.6 Test edge cases: rapid spell casting, player/enemy defeat mid-animation, running out of MP during cast
+  - [x] 7.1 Refactor `MagicBoltAnimation.tsx` to use new core components (ChargeParticles, Projectile, ImpactEffects from core)
+  - [x] 7.2 Update Magic Bolt to follow standardized interface matching other spell animations
+  - [x] 7.3 Ensure Magic Bolt works through AnimationController and registry system
+  - [x] 7.4 Test all wizard spells end-to-end in Combat.tsx (Fire, Ice, Lightning, Holy, Meteor, Heal, Protect, Shell, Haste, Magic Bolt)
+  - [x] 7.5 Verify animation → combat flow → next turn sequence works correctly for each spell
+  - [x] 7.6 Test edge cases: rapid spell casting, player/enemy defeat mid-animation, running out of MP during cast
   - [ ] 7.7 Test critical hit animations use enhanced visuals compared to normal hits
   - [ ] 7.8 Performance test: cast all spells in sequence and verify consistent 60fps
   - [ ] 7.9 Cross-browser testing on Chrome, Firefox, Safari (desktop)

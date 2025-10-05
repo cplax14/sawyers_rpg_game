@@ -9,6 +9,20 @@ import { ReactMonster, ReactPlayer } from '../../types/game';
 import { EnhancedCreature } from '../../types/creatures';
 import { AnimationController } from '../combat/animations/AnimationController';
 
+// TypeScript declarations for global objects
+declare global {
+  interface Window {
+    SpellData?: {
+      spells: Record<string, any>;
+      getSpell: (spellId: string) => any;
+    };
+    CharacterData?: {
+      classes: Record<string, any>;
+      getClass: (className: string) => any;
+    };
+  }
+}
+
 interface CombatProps {
   className?: string;
 }
@@ -165,41 +179,51 @@ export const Combat: React.FC<CombatProps> = ({
 
   // Get available spells for the player
   const getPlayerSpells = useCallback(() => {
-    const spells = [
-      {
+    // Get SpellData from global scope
+    const SpellData = typeof window !== 'undefined' ? (window as any).SpellData : null;
+
+    if (!SpellData || !player || !player.spells || player.spells.length === 0) {
+      // Fallback to basic spell if no spell data available
+      return [{
         id: 'magic_bolt',
         name: 'Magic Bolt',
         mpCost: 8,
-        damage: (player?.baseStats.magicAttack || 10) + (player && player.level <= 3 ? 6 : 0), // +6 magic damage for early levels
+        damage: (player?.baseStats.magicAttack || 10) + (player && player.level <= 3 ? 6 : 0),
         type: 'offensive' as const,
         element: 'arcane',
         description: 'A magical energy attack'
-      },
-      {
-        id: 'heal',
-        name: 'Heal',
-        mpCost: 12,
-        healing: 20 + (player?.baseStats.magicAttack || 10) * 0.5,
-        type: 'defensive' as const,
-        description: 'Restore HP'
-      },
-      {
-        id: 'shield',
-        name: 'Shield',
-        mpCost: 10,
-        defenseBoost: 5,
-        type: 'defensive' as const,
-        description: 'Temporarily increase defense'
-      }
-    ];
+      }];
+    }
 
-    // Filter spells based on player class or level
-    return spells.filter(spell => {
-      if (spell.id === 'heal' && combatState.playerMp < spell.mpCost) return false;
-      if (spell.id === 'magic_bolt' && combatState.playerMp < spell.mpCost) return false;
-      if (spell.id === 'shield' && combatState.playerMp < spell.mpCost) return false;
-      return true;
-    });
+    // Map player's spell IDs to full spell objects from SpellData
+    const playerSpells = player.spells
+      .map(spellId => {
+        const spellData = SpellData.getSpell(spellId);
+
+        if (!spellData) {
+          console.warn(`⚠️ Spell ID "${spellId}" not found in SpellData`);
+          return null;
+        }
+
+        // Transform spell data to combat spell format
+        return {
+          id: spellId,
+          name: spellData.name,
+          mpCost: spellData.mpCost,
+          damage: spellData.power
+            ? spellData.power + (player.baseStats.magicAttack || 10) * 0.5
+            : undefined,
+          healing: spellData.effects?.find((e: any) => e.type === 'heal')?.power
+            ? spellData.effects.find((e: any) => e.type === 'heal').power + (player.baseStats.magicAttack || 10) * 0.3
+            : undefined,
+          type: (spellData.type === 'healing' || spellData.type === 'support') ? 'defensive' as const : 'offensive' as const,
+          element: spellData.element || 'arcane',
+          description: spellData.description
+        };
+      })
+      .filter(spell => spell !== null && spell.mpCost <= combatState.playerMp);
+
+    return playerSpells;
   }, [player, combatState.playerMp]);
 
   // Get usable items in combat

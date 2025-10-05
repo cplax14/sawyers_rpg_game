@@ -65,6 +65,120 @@ describe('AnimationController Integration Tests', () => {
     isActive: true,
   };
 
+  describe('Integration with Magic Bolt Animation', () => {
+    it('successfully renders Magic Bolt animation', async () => {
+      // Arrange & Act
+      const { container } = render(
+        <AnimationController {...defaultProps} attackType="magic_bolt" />
+      );
+
+      // Assert - Animation controller wrapper should render
+      await waitFor(() => {
+        expect(container.querySelector('.animation-controller')).toBeInTheDocument();
+      });
+    });
+
+    it('calls onComplete after Magic Bolt animation finishes', async () => {
+      // Arrange
+      const onComplete = jest.fn();
+
+      // Act
+      render(
+        <AnimationController {...defaultProps} attackType="magic_bolt" onComplete={onComplete} />
+      );
+
+      // Assert - onComplete should be called after animation (950ms total)
+      await waitFor(
+        () => {
+          expect(onComplete).toHaveBeenCalled();
+        },
+        { timeout: 2000 }
+      );
+    });
+
+    it('validates particle counts for Magic Bolt phases', async () => {
+      // Arrange & Act
+      render(<AnimationController {...defaultProps} attackType="magic_bolt" />);
+
+      // Assert - Should not have any particle count errors
+      await waitFor(() => {
+        const errorCalls = consoleError.mock.calls.filter(call =>
+          call.some(arg => typeof arg === 'string' && arg.includes('Particle count'))
+        );
+        expect(errorCalls.length).toBe(0);
+      });
+    });
+
+    it('passes correct position data to Magic Bolt', async () => {
+      // Arrange
+      const customData = {
+        casterX: 150,
+        casterY: 200,
+        targetX: 450,
+        targetY: 350,
+      };
+
+      // Act
+      const { container } = render(
+        <AnimationController
+          {...defaultProps}
+          attackType="magic_bolt"
+          attackData={customData}
+        />
+      );
+
+      // Assert - Animation should render with custom positions
+      await waitFor(() => {
+        expect(container.querySelector('.animation-controller')).toBeInTheDocument();
+      });
+    });
+
+    it('loads Magic Bolt from registry with correct metadata', () => {
+      // Arrange & Act
+      const metadata = animationRegistry.getAnimationMetadata('magic_bolt');
+
+      // Assert - Magic Bolt should be in registry with correct properties
+      expect(metadata).toBeTruthy();
+      expect(metadata?.element).toBe('arcane');
+      expect(metadata?.type).toBe('projectile');
+      expect(metadata?.description).toContain('arcane');
+      expect(metadata?.component).toBeDefined();
+    });
+
+    it('uses Magic Bolt as default fallback animation', async () => {
+      // Arrange
+      const unknownAttackType = 'nonexistent_spell_123';
+      const onComplete = jest.fn();
+
+      // Act
+      render(
+        <AnimationController
+          {...defaultProps}
+          attackType={unknownAttackType}
+          onComplete={onComplete}
+        />
+      );
+
+      // Assert - Should use fallback (Magic Bolt) and complete successfully
+      await waitFor(
+        () => {
+          expect(onComplete).toHaveBeenCalled();
+        },
+        { timeout: 2000 }
+      );
+
+      // Should log a warning about using fallback
+      const fallbackWarnings = consoleWarn.mock.calls.filter(call =>
+        call.some(arg =>
+          typeof arg === 'string' &&
+          arg.includes('No animation found') &&
+          arg.includes(unknownAttackType)
+        )
+      );
+      expect(fallbackWarnings.length).toBeGreaterThan(0);
+    });
+  });
+
   describe('Integration with Fireball Animation', () => {
     it('successfully renders Fireball animation', async () => {
       // Arrange & Act
