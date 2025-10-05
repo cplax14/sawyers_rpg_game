@@ -31,6 +31,9 @@ const MonsterData = {
             evolutionItems: [],
             breedsWith: ["slime", "goblin"],
             areas: ["forest", "plains"],
+            breedingMaterialDrops: [
+                { materialId: "slime_gel", dropRate: 0.30, quantity: { min: 1, max: 3 } }
+            ],
             lootTable: {
                 level: 1,
                 goldRange: [3, 8],
@@ -76,6 +79,10 @@ const MonsterData = {
             evolutionItems: [],
             breedsWith: ["goblin", "orc", "slime"],
             areas: ["forest", "cave", "mountains"],
+            breedingMaterialDrops: [
+                { materialId: "goblin_tooth", dropRate: 0.28, quantity: { min: 1, max: 2 } },
+                { materialId: "leather_scraps", dropRate: 0.25, quantity: { min: 1, max: 2 } }
+            ],
             lootTable: {
                 level: 2,
                 goldRange: [5, 12],
@@ -127,6 +134,10 @@ const MonsterData = {
             evolutionItems: [],
             breedsWith: ["wolf", "bear", "fox"],
             areas: ["forest", "mountains", "plains"],
+            breedingMaterialDrops: [
+                { materialId: "wolf_fang", dropRate: 0.30, quantity: { min: 1, max: 2 } },
+                { materialId: "wolf_pelt", dropRate: 0.27, quantity: { min: 1, max: 1 } }
+            ],
             lootTable: {
                 level: 4,
                 goldRange: [8, 18],
@@ -179,6 +190,11 @@ const MonsterData = {
             evolutionItems: [],
             breedsWith: ["orc", "goblin", "troll"],
             areas: ["mountains", "cave", "wasteland"],
+            breedingMaterialDrops: [
+                { materialId: "orc_tusk", dropRate: 0.27, quantity: { min: 1, max: 2 } },
+                { materialId: "leather_scraps", dropRate: 0.25, quantity: { min: 1, max: 2 } },
+                { materialId: "iron_ore", dropRate: 0.25, quantity: { min: 1, max: 2 } }
+            ],
             lootTable: {
                 level: 8,
                 goldRange: [15, 35],
@@ -235,7 +251,10 @@ const MonsterData = {
             evolvesTo: ["fire_elemental"],
             evolutionItems: ["fire_gem"],
             breedsWith: ["ice_sprite", "thunder_sprite"],
-            areas: ["volcano", "desert", "fire_cave"]
+            areas: ["volcano", "desert", "fire_cave"],
+            breedingMaterialDrops: [
+                { materialId: "fire_essence", dropRate: 0.28, quantity: { min: 1, max: 2 } }
+            ]
         },
         
         // Rare Monsters
@@ -257,7 +276,10 @@ const MonsterData = {
             evolvesTo: ["young_dragon"],
             evolutionItems: ["dragon_scale"],
             breedsWith: ["dragon_whelp", "wyvern"],
-            areas: ["dragon_peak", "ancient_ruins"]
+            areas: ["dragon_peak", "ancient_ruins"],
+            breedingMaterialDrops: [
+                { materialId: "dragon_scale", dropRate: 0.25, quantity: { min: 1, max: 2 } }
+            ]
         },
         
         // Advanced Forest Monsters
@@ -280,6 +302,10 @@ const MonsterData = {
             evolutionItems: [],
             breedsWith: ["wolf", "dire_wolf"],
             areas: ["deep_forest", "wolf_den"],
+            breedingMaterialDrops: [
+                { materialId: "wolf_fang", dropRate: 0.28, quantity: { min: 1, max: 2 } },
+                { materialId: "wolf_pelt", dropRate: 0.27, quantity: { min: 1, max: 2 } }
+            ],
             lootTable: {
                 level: 6,
                 goldRange: [12, 25],
@@ -331,6 +357,10 @@ const MonsterData = {
             evolutionItems: [],
             breedsWith: ["alpha_wolf", "dire_wolf"],
             areas: ["wolf_den"],
+            breedingMaterialDrops: [
+                { materialId: "wolf_fang", dropRate: 0.27, quantity: { min: 1, max: 2 } },
+                { materialId: "wolf_pelt", dropRate: 0.28, quantity: { min: 1, max: 2 } }
+            ],
             lootTable: {
                 level: 25,
                 goldRange: [60, 120],
@@ -395,6 +425,9 @@ const MonsterData = {
             evolutionItems: [],
             breedsWith: ["wild_horse", "unicorn"],
             areas: ["plains", "grasslands"],
+            breedingMaterialDrops: [
+                { materialId: "leather_scraps", dropRate: 0.26, quantity: { min: 1, max: 2 } }
+            ],
             lootTable: {
                 level: 4,
                 goldRange: [8, 16],
@@ -446,6 +479,10 @@ const MonsterData = {
             evolutionItems: [],
             breedsWith: ["hawk", "fire_bat"],
             areas: ["plains", "mountains"],
+            breedingMaterialDrops: [
+                { materialId: "hawk_feather", dropRate: 0.30, quantity: { min: 2, max: 4 } },
+                { materialId: "sharp_talon", dropRate: 0.27, quantity: { min: 1, max: 2 } }
+            ],
             lootTable: {
                 level: 3,
                 goldRange: [6, 14],
@@ -498,6 +535,9 @@ const MonsterData = {
             evolutionItems: [],
             breedsWith: ["mountain_goat", "wild_horse"],
             areas: ["mountains", "mountain_base"],
+            breedingMaterialDrops: [
+                { materialId: "goat_horn", dropRate: 0.28, quantity: { min: 1, max: 2 } }
+            ],
             lootTable: {
                 level: 5,
                 goldRange: [10, 20],
@@ -549,6 +589,10 @@ const MonsterData = {
             evolutionItems: ["earth_gem"],
             breedsWith: ["rock_lizard", "cave_troll"],
             areas: ["mountains", "cave_entrance"],
+            breedingMaterialDrops: [
+                { materialId: "stone_scale", dropRate: 0.28, quantity: { min: 1, max: 2 } },
+                { materialId: "iron_ore", dropRate: 0.25, quantity: { min: 1, max: 2 } }
+            ],
             lootTable: {
                 level: 12,
                 goldRange: [20, 40],
@@ -607,6 +651,10 @@ const MonsterData = {
             evolutionItems: [],
             breedsWith: ["bat", "fire_bat"],
             areas: ["cave_entrance", "underground_lake"],
+            breedingMaterialDrops: [
+                { materialId: "bat_wing", dropRate: 0.28, quantity: { min: 1, max: 2 } },
+                { materialId: "echo_essence", dropRate: 0.26, quantity: { min: 1, max: 2 } }
+            ],
             lootTable: {
                 level: 4,
                 goldRange: [7, 15],
@@ -658,6 +706,11 @@ const MonsterData = {
             evolutionItems: ["crystal_shard"],
             breedsWith: ["crystal_spider"],
             areas: ["cave_entrance", "crystal_caves"],
+            breedingMaterialDrops: [
+                { materialId: "crystal_shard", dropRate: 0.28, quantity: { min: 1, max: 2 } },
+                { materialId: "crystal_silk", dropRate: 0.30, quantity: { min: 1, max: 3 } },
+                { materialId: "crystal_essence", dropRate: 0.25, quantity: { min: 1, max: 1 } }
+            ],
             lootTable: {
                 level: 13,
                 goldRange: [22, 45],
@@ -715,6 +768,11 @@ const MonsterData = {
             evolutionItems: ["precious_gem"],
             breedsWith: ["slime", "crystal_spider"],
             areas: ["cave_entrance", "crystal_caves"],
+            breedingMaterialDrops: [
+                { materialId: "liquid_gem", dropRate: 0.28, quantity: { min: 1, max: 2 } },
+                { materialId: "slime_gel", dropRate: 0.27, quantity: { min: 1, max: 2 } },
+                { materialId: "crystal_essence", dropRate: 0.26, quantity: { min: 1, max: 1 } }
+            ],
             lootTable: {
                 level: 14,
                 goldRange: [25, 50],
@@ -772,6 +830,10 @@ const MonsterData = {
             evolutionItems: [],
             breedsWith: ["cave_troll", "orc"],
             areas: ["cave_entrance", "deep_caves"],
+            breedingMaterialDrops: [
+                { materialId: "stone_scale", dropRate: 0.27, quantity: { min: 2, max: 3 } },
+                { materialId: "iron_ore", dropRate: 0.26, quantity: { min: 1, max: 2 } }
+            ],
             lootTable: {
                 level: 28,
                 goldRange: [70, 140],
@@ -836,6 +898,11 @@ const MonsterData = {
             evolutionItems: ["fire_gem"],
             breedsWith: ["bat", "fire_sprite"],
             areas: ["volcanic_region", "fire_caves"],
+            breedingMaterialDrops: [
+                { materialId: "flame_wing", dropRate: 0.30, quantity: { min: 1, max: 2 } },
+                { materialId: "fire_essence", dropRate: 0.28, quantity: { min: 1, max: 2 } },
+                { materialId: "bat_wing", dropRate: 0.25, quantity: { min: 1, max: 1 } }
+            ],
             lootTable: {
                 level: 15,
                 goldRange: [28, 55],
@@ -893,6 +960,11 @@ const MonsterData = {
             evolutionItems: ["dragon_scale"],
             breedsWith: ["salamander", "fire_sprite"],
             areas: ["volcanic_region", "lava_tubes"],
+            breedingMaterialDrops: [
+                { materialId: "molten_scale", dropRate: 0.29, quantity: { min: 1, max: 2 } },
+                { materialId: "fire_crystal", dropRate: 0.27, quantity: { min: 1, max: 2 } },
+                { materialId: "fire_essence", dropRate: 0.26, quantity: { min: 1, max: 1 } }
+            ],
             lootTable: {
                 level: 16,
                 goldRange: [30, 60],
@@ -950,6 +1022,11 @@ const MonsterData = {
             evolutionItems: [],
             breedsWith: [],
             areas: ["volcanic_region", "lava_chambers"],
+            breedingMaterialDrops: [
+                { materialId: "molten_core", dropRate: 0.28, quantity: { min: 1, max: 2 } },
+                { materialId: "lava_crystal", dropRate: 0.27, quantity: { min: 1, max: 2 } },
+                { materialId: "fire_crystal", dropRate: 0.25, quantity: { min: 1, max: 1 } }
+            ],
             lootTable: {
                 level: 32,
                 goldRange: [80, 160],
@@ -1014,6 +1091,10 @@ const MonsterData = {
             evolutionItems: ["sky_gem"],
             breedsWith: ["dragon_whelp", "wyvern"],
             areas: ["dragon_peak", "sky_fortress"],
+            breedingMaterialDrops: [
+                { materialId: "wyvern_scale", dropRate: 0.28, quantity: { min: 1, max: 2 } },
+                { materialId: "sky_gem", dropRate: 0.25, quantity: { min: 1, max: 1 } }
+            ],
             lootTable: {
                 level: 30,
                 goldRange: [100, 200],
@@ -1077,6 +1158,11 @@ const MonsterData = {
             evolutionItems: ["ancient_flame"],
             breedsWith: ["dragon_whelp", "salamander"],
             areas: ["dragon_peak", "ancient_ruins"],
+            breedingMaterialDrops: [
+                { materialId: "drake_scale", dropRate: 0.29, quantity: { min: 1, max: 2 } },
+                { materialId: "ancient_flame", dropRate: 0.26, quantity: { min: 1, max: 1 } },
+                { materialId: "dragon_scale", dropRate: 0.25, quantity: { min: 1, max: 1 } }
+            ],
             lootTable: {
                 level: 35,
                 goldRange: [150, 300],
@@ -1140,6 +1226,12 @@ const MonsterData = {
             evolutionItems: [],
             breedsWith: ["ancient_dragon"],
             areas: ["dragon_peak"],
+            breedingMaterialDrops: [
+                { materialId: "dragon_scale", dropRate: 0.30, quantity: { min: 2, max: 3 } },
+                { materialId: "dragon_heart", dropRate: 0.28, quantity: { min: 1, max: 1 } },
+                { materialId: "dragon_essence", dropRate: 0.27, quantity: { min: 1, max: 2 } },
+                { materialId: "ancient_flame", dropRate: 0.26, quantity: { min: 1, max: 1 } }
+            ],
             lootTable: {
                 level: 50,
                 goldRange: [500, 1500],
@@ -1204,6 +1296,11 @@ const MonsterData = {
             evolutionItems: ["nature_crystal"],
             breedsWith: ["fairy", "unicorn"],
             areas: ["mystic_grove", "enchanted_forest"],
+            breedingMaterialDrops: [
+                { materialId: "nature_essence", dropRate: 0.30, quantity: { min: 1, max: 2 } },
+                { materialId: "sprite_dust", dropRate: 0.28, quantity: { min: 1, max: 3 } },
+                { materialId: "healing_herb", dropRate: 0.27, quantity: { min: 2, max: 4 } }
+            ],
             lootTable: {
                 level: 20,
                 goldRange: [40, 80],
@@ -1260,7 +1357,11 @@ const MonsterData = {
             evolvesTo: ["fairy_queen"],
             evolutionItems: ["star_fragment"],
             breedsWith: ["nature_sprite", "phoenix_chick"],
-            areas: ["mystic_grove", "fairy_ring"]
+            areas: ["mystic_grove", "fairy_ring"],
+            breedingMaterialDrops: [
+                { materialId: "sprite_dust", dropRate: 0.29, quantity: { min: 2, max: 4 } },
+                { materialId: "healing_herb", dropRate: 0.26, quantity: { min: 1, max: 3 } }
+            ]
         },
 
         unicorn: {
@@ -1281,7 +1382,11 @@ const MonsterData = {
             evolvesTo: [],
             evolutionItems: [],
             breedsWith: ["unicorn", "wild_horse"],
-            areas: ["mystic_grove", "sacred_glade"]
+            areas: ["mystic_grove", "sacred_glade"],
+            breedingMaterialDrops: [
+                { materialId: "holy_crystal", dropRate: 0.27, quantity: { min: 1, max: 1 } },
+                { materialId: "healing_herb", dropRate: 0.28, quantity: { min: 2, max: 3 } }
+            ]
         },
 
         treant: {
@@ -1302,7 +1407,12 @@ const MonsterData = {
             evolvesTo: ["elder_treant"],
             evolutionItems: ["ancient_seed"],
             breedsWith: ["nature_sprite"],
-            areas: ["mystic_grove", "ancient_forest"]
+            areas: ["mystic_grove", "ancient_forest"],
+            breedingMaterialDrops: [
+                { materialId: "forest_crystal", dropRate: 0.28, quantity: { min: 1, max: 2 } },
+                { materialId: "nature_essence", dropRate: 0.27, quantity: { min: 1, max: 2 } },
+                { materialId: "healing_herb", dropRate: 0.26, quantity: { min: 2, max: 3 } }
+            ]
         },
 
         // Ancient Ruins Monsters
@@ -1324,7 +1434,12 @@ const MonsterData = {
             evolvesTo: ["titan_golem"],
             evolutionItems: ["ancient_core"],
             breedsWith: ["lava_golem"],
-            areas: ["ancient_ruins", "forgotten_temple"]
+            areas: ["ancient_ruins", "forgotten_temple"],
+            breedingMaterialDrops: [
+                { materialId: "ancient_core", dropRate: 0.27, quantity: { min: 1, max: 1 } },
+                { materialId: "mithril_ore", dropRate: 0.26, quantity: { min: 1, max: 1 } },
+                { materialId: "iron_ore", dropRate: 0.28, quantity: { min: 2, max: 3 } }
+            ]
         },
 
         shadow_wraith: {
@@ -1345,7 +1460,11 @@ const MonsterData = {
             evolvesTo: ["lich"],
             evolutionItems: ["soul_gem"],
             breedsWith: [],
-            areas: ["ancient_ruins", "shadow_realm"]
+            areas: ["ancient_ruins", "shadow_realm"],
+            breedingMaterialDrops: [
+                { materialId: "soul_gem", dropRate: 0.27, quantity: { min: 1, max: 1 } },
+                { materialId: "shadow_crystal", dropRate: 0.28, quantity: { min: 1, max: 2 } }
+            ]
         },
 
         ancient_spirit: {
@@ -1366,7 +1485,12 @@ const MonsterData = {
             evolvesTo: [],
             evolutionItems: [],
             breedsWith: ["shadow_wraith"],
-            areas: ["ancient_ruins"]
+            areas: ["ancient_ruins"],
+            breedingMaterialDrops: [
+                { materialId: "time_relic", dropRate: 0.26, quantity: { min: 1, max: 1 } },
+                { materialId: "mana_essence", dropRate: 0.28, quantity: { min: 1, max: 2 } },
+                { materialId: "soul_gem", dropRate: 0.25, quantity: { min: 1, max: 1 } }
+            ]
         },
 
         guardian_titan: {
@@ -1387,7 +1511,12 @@ const MonsterData = {
             evolvesTo: [],
             evolutionItems: [],
             breedsWith: [],
-            areas: ["ancient_ruins"]
+            areas: ["ancient_ruins"],
+            breedingMaterialDrops: [
+                { materialId: "adamantine_crystal", dropRate: 0.25, quantity: { min: 1, max: 1 } },
+                { materialId: "ancient_core", dropRate: 0.28, quantity: { min: 1, max: 2 } },
+                { materialId: "mithril_ore", dropRate: 0.27, quantity: { min: 1, max: 2 } }
+            ]
         },
 
         // Legendary Monsters
@@ -1409,7 +1538,12 @@ const MonsterData = {
             evolvesTo: ["phoenix"],
             evolutionItems: ["phoenix_feather", "fire_gem", "holy_crystal"],
             breedsWith: ["phoenix_chick"],
-            areas: ["sacred_mountain", "temple_ruins"]
+            areas: ["sacred_mountain", "temple_ruins"],
+            breedingMaterialDrops: [
+                { materialId: "phoenix_feather", dropRate: 0.28, quantity: { min: 1, max: 1 } },
+                { materialId: "holy_crystal", dropRate: 0.26, quantity: { min: 1, max: 1 } },
+                { materialId: "fire_essence", dropRate: 0.27, quantity: { min: 1, max: 2 } }
+            ]
         }
     },
     

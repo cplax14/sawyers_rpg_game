@@ -1164,6 +1164,7 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
 
     // Item drop chance calculation
     const items: ReactItem[] = [];
+    const breedingMaterialsDropped: { materialId: string; quantity: number }[] = [];
 
     // Common items (40% chance) - using items that exist in ItemData
     if (Math.random() < 0.4) {
@@ -1225,10 +1226,41 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
       items.push({ id: 'wolf_pelt', name: 'Wolf Pelt', type: 'material', rarity: 'uncommon', quantity: 1, icon: '🧥' });
     }
 
+    // Breeding Material Drops - Check MonsterData for breedingMaterialDrops
+    try {
+      // Access global MonsterData if available
+      const MonsterData = (window as any).MonsterData;
+      if (MonsterData && MonsterData.species && MonsterData.species[enemySpecies]) {
+        const monsterData = MonsterData.species[enemySpecies];
+
+        // Check if this monster has breeding material drops defined
+        if (monsterData.breedingMaterialDrops && Array.isArray(monsterData.breedingMaterialDrops)) {
+          monsterData.breedingMaterialDrops.forEach((dropInfo: any) => {
+            // Roll for each material drop
+            const roll = Math.random();
+            if (roll < dropInfo.dropRate) {
+              // Determine quantity within the defined range
+              const quantity = dropInfo.quantity
+                ? Math.floor(Math.random() * (dropInfo.quantity.max - dropInfo.quantity.min + 1)) + dropInfo.quantity.min
+                : 1;
+
+              breedingMaterialsDropped.push({
+                materialId: dropInfo.materialId,
+                quantity: quantity
+              });
+            }
+          });
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to load breeding material drops:', error);
+    }
+
     return {
       experience: baseExp,
       gold: baseGold,
-      items: items
+      items: items,
+      breedingMaterials: breedingMaterialsDropped
     };
   }, []);
 

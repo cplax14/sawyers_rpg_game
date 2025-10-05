@@ -59,7 +59,7 @@ interface CombatAction {
 export const Combat: React.FC<CombatProps> = ({
   className
 }) => {
-  const { state, endCombat, setCurrentScreen, addExperience: addExp, addGold: addPlayerGold, generateCombatRewards, updateStoryFlags, captureMonster } = useReactGame();
+  const { state, endCombat, setCurrentScreen, addExperience: addExp, addGold: addPlayerGold, generateCombatRewards, updateStoryFlags, captureMonster, addBreedingMaterial } = useReactGame();
   const isMobile = useIsMobile();
 
   const player = state.player;
@@ -737,7 +737,9 @@ export const Combat: React.FC<CombatProps> = ({
       }
 
       // Generate rewards to show in battle log
-      const rewardItems = generateCombatRewards(enemy?.species || 'unknown', enemy?.level || 1).items;
+      const combatRewards = generateCombatRewards(enemy?.species || 'unknown', enemy?.level || 1);
+      const rewardItems = combatRewards.items;
+      const breedingMaterialsDropped = combatRewards.breedingMaterials || [];
       let battleMessage = '';
 
       // Special message for captures
@@ -750,6 +752,23 @@ export const Combat: React.FC<CombatProps> = ({
         const itemNames = rewardItems.map(item => item.name).join(', ');
         battleMessage += ` Found: ${itemNames}`;
       }
+
+      // Add breeding materials to player inventory
+      if (breedingMaterialsDropped.length > 0 && addBreedingMaterial) {
+        breedingMaterialsDropped.forEach(material => {
+          addBreedingMaterial(material.materialId, material.quantity);
+        });
+
+        // Add to battle log message
+        const materialNames = breedingMaterialsDropped.map(m => {
+          // Try to get material name from BreedingMaterialData if available
+          const materialData = (window as any).BreedingMaterialData?.materials?.[m.materialId];
+          const materialName = materialData?.name || m.materialId.replace(/_/g, ' ');
+          return `${materialName} x${m.quantity}`;
+        }).join(', ');
+        battleMessage += ` Materials: ${materialNames}`;
+      }
+
       addBattleLog(battleMessage, 'system');
 
       // Set story flag for first monster encounter (unlocks Grassy Plains)
