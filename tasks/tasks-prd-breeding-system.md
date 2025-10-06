@@ -197,22 +197,22 @@ Based on PRD: `prd-breeding-system.md`
   - [x] 8.14 Add "Remove Exhaustion" button in creature details (costs gold)
   - [x] 8.15 Calculate recovery cost based on exhaustion level (e.g., 100 gold × exhaustion level)
 
-- [ ] 9.0 Implement Offspring Generation and Stat Inheritance
-  - [ ] 9.1 Enhance generateOffspring() to support all inheritance rules
-  - [ ] 9.2 Implement species determination logic (50/50 or recipe-based)
-  - [ ] 9.3 Call inheritStats() with proper generation calculation
-  - [ ] 9.4 Set offspring level to 1 (newborn creature)
-  - [ ] 9.5 Set offspring HP/MP to max for level 1
-  - [ ] 9.6 Copy base species abilities to offspring
-  - [ ] 9.7 Add inherited abilities from inheritAbilities() function
-  - [ ] 9.8 Set generation metadata (generation, parentIds)
-  - [ ] 9.9 Initialize breedingCount to 0
-  - [ ] 9.10 Initialize exhaustionLevel to 0
-  - [ ] 9.11 Set stat caps based on generation using calculateStatCaps()
-  - [ ] 9.12 Add createdAt timestamp
-  - [ ] 9.13 Set isWild to false (bred creatures are not wild)
-  - [ ] 9.14 Validate all offspring stats are within generation caps
-  - [ ] 9.15 Add offspring to creature collection via context action
+- [x] 9.0 Implement Offspring Generation and Stat Inheritance
+  - [x] 9.1 Enhance generateOffspring() to support all inheritance rules
+  - [x] 9.2 Implement species determination logic (50/50 or recipe-based)
+  - [x] 9.3 Call inheritStats() with proper generation calculation
+  - [x] 9.4 Set offspring level to 1 (newborn creature)
+  - [x] 9.5 Set offspring HP/MP to max for level 1
+  - [x] 9.6 Copy base species abilities to offspring
+  - [x] 9.7 Add inherited abilities from inheritAbilities() function
+  - [x] 9.8 Set generation metadata (generation, parentIds)
+  - [x] 9.9 Initialize breedingCount to 0
+  - [x] 9.10 Initialize exhaustionLevel to 0
+  - [x] 9.11 Set stat caps based on generation using calculateStatCaps()
+  - [x] 9.12 Add createdAt timestamp
+  - [x] 9.13 Set isWild to false (bred creatures are not wild)
+  - [x] 9.14 Validate all offspring stats are within generation caps
+  - [x] 9.15 Add offspring to creature collection via context action
 
 - [ ] 10.0 Add Rarity Upgrade and Special Abilities System
   - [ ] 10.1 Implement Mythic rarity tier in CreatureRarity type

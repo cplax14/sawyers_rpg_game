@@ -1,9 +1,10 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback, ReactNode } from 'react';
 import { AutoSaveManager } from '../utils/autoSave';
 import { InventoryState } from '../types/inventory';
-import { CreatureCollection } from '../types/creatures';
+import { CreatureCollection, EnhancedCreature } from '../types/creatures';
 import { ExperienceState } from '../types/experience';
 import { removeExhaustion } from '../utils/breedingEngine';
+import { BreedingRecipe } from '../types/breeding';
 
 // Global type declaration for auto-save manager
 declare global {
@@ -727,10 +728,208 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
       };
 
     // Breeding system reducer handlers
-    case 'BREED_CREATURES':
-      // Note: Actual breeding logic is handled by breedingEngine utility
-      // This action is dispatched after breeding completion to update state
-      return state;
+    case 'BREED_CREATURES': {
+      // Get parent creatures from collection
+      if (!state.creatures) return state;
+
+      const parent1 = state.creatures.creatures[action.payload.parent1Id];
+      const parent2 = state.creatures.creatures[action.payload.parent2Id];
+
+      if (!parent1 || !parent2) {
+        console.error('❌ [BREED_CREATURES] Parent creatures not found', action.payload);
+        return state;
+      }
+
+      // Load recipe if recipeId provided
+      let recipe: BreedingRecipe | undefined;
+      if (action.payload.recipeId) {
+        // Note: Recipe data would be loaded from breedingRecipes.js
+        // For now, we support breeding without recipes (50/50 species selection)
+        console.log('🧬 [BREED_CREATURES] Recipe breeding not yet implemented, using natural breeding');
+      }
+
+      // Import breeding utilities
+      const {
+        calculateBreedingCost,
+        generateOffspring,
+        validateBreeding,
+        applyExhaustion
+      } = require('../utils/breedingEngine');
+
+      // Calculate cost
+      const cost = calculateBreedingCost(parent1, parent2, recipe);
+
+      // Validate breeding requirements
+      const validation = validateBreeding(
+        parent1,
+        parent2,
+        state.player.gold,
+        state.breedingMaterials,
+        cost
+      );
+
+      if (!validation.valid) {
+        console.error('❌ [BREED_CREATURES] Breeding validation failed', validation.errors);
+        return state;
+      }
+
+      // Generate offspring
+      const result = generateOffspring(parent1, parent2, recipe);
+
+      if (!result.success || !result.offspring) {
+        console.error('❌ [BREED_CREATURES] Offspring generation failed');
+        return state;
+      }
+
+      // Create complete EnhancedCreature from offspring partial data
+      const offspringId = `creature_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+      const completeOffspring: EnhancedCreature = {
+        ...result.offspring,
+        creatureId: offspringId,
+        id: offspringId,
+        name: `${result.offspringSpecies} (Gen ${result.generation})`,
+
+        // Combat stats
+        hp: 100, // Level 1 base HP
+        maxHp: 100,
+        mp: 50, // Level 1 base MP
+        maxMp: 50,
+        baseStats: result.offspring.stats,
+        currentStats: result.offspring.stats,
+
+        // Required fields from EnhancedCreature
+        types: [result.offspring.species], // Simplified
+        abilities: result.offspring.inheritedAbilities || [],
+        captureRate: 0.5,
+        experience: 0,
+        gold: 10,
+        drops: [],
+        areas: [],
+        evolvesTo: [],
+        isWild: false,
+
+        // Enhanced classification
+        element: 'neutral' as const, // Default, could be inherited
+        creatureType: 'beast' as const, // Default, could be inherited
+        size: 'medium' as const,
+        habitat: [],
+
+        // Individual traits
+        personality: {
+          traits: ['docile'],
+          mood: 'content' as const,
+          loyalty: 50,
+          happiness: 100, // Newborn creatures are happy
+          energy: 100,
+          sociability: 50,
+        },
+        nature: {
+          name: 'Neutral',
+          statModifiers: {},
+          behaviorModifiers: {
+            aggression: 0,
+            defensiveness: 0,
+            cooperation: 0,
+          },
+        },
+        individualStats: {
+          hpIV: Math.floor(Math.random() * 32),
+          attackIV: Math.floor(Math.random() * 32),
+          defenseIV: Math.floor(Math.random() * 32),
+          magicAttackIV: Math.floor(Math.random() * 32),
+          magicDefenseIV: Math.floor(Math.random() * 32),
+          speedIV: Math.floor(Math.random() * 32),
+          hpEV: 0,
+          attackEV: 0,
+          defenseEV: 0,
+          magicAttackEV: 0,
+          magicDefenseEV: 0,
+          speedEV: 0,
+        },
+
+        // Genetics (partially duplicated from breeding metadata)
+        genetics: {
+          parentIds: [parent1.creatureId, parent2.creatureId],
+          generation: result.generation,
+          inheritedTraits: [],
+          mutations: [],
+          breedingPotential: 1,
+        },
+        breedingGroup: [],
+        fertility: 1,
+
+        // Collection status
+        collectionStatus: {
+          discovered: true,
+          captured: true,
+          timesCaptures: 1,
+          favorite: false,
+          tags: ['bred'],
+          notes: `Bred from ${parent1.name} and ${parent2.name}`,
+          completionLevel: 'captured' as const,
+        },
+
+        // Visual and lore
+        sprite: 'default.png',
+        description: `A ${result.offspringSpecies} born from breeding`,
+        loreText: `Generation ${result.generation} creature`,
+        discoveryLocation: 'Breeding Facility',
+        discoveredAt: new Date(),
+        capturedAt: new Date(),
+        timesEncountered: 0,
+      };
+
+      // Apply exhaustion to parents
+      const exhaustedParent1 = applyExhaustion(parent1);
+      const exhaustedParent2 = applyExhaustion(parent2);
+
+      // Deduct gold
+      const newGold = state.player.gold - cost.goldAmount;
+
+      // Deduct materials
+      const newMaterials = { ...state.breedingMaterials };
+      for (const material of cost.materials) {
+        const current = newMaterials[material.itemId] || 0;
+        const remaining = current - material.quantity;
+        if (remaining <= 0) {
+          delete newMaterials[material.itemId];
+        } else {
+          newMaterials[material.itemId] = remaining;
+        }
+      }
+
+      // Update creatures collection
+      const updatedCreatures = {
+        ...state.creatures,
+        creatures: {
+          ...state.creatures.creatures,
+          [offspringId]: completeOffspring,
+          [parent1.creatureId]: exhaustedParent1,
+          [parent2.creatureId]: exhaustedParent2,
+        },
+        totalCaptured: state.creatures.totalCaptured + 1,
+      };
+
+      console.log('✅ [BREED_CREATURES] Successfully bred creature:', {
+        offspring: completeOffspring.name,
+        species: result.offspringSpecies,
+        generation: result.generation,
+        rarity: result.offspring.rarity,
+        inheritedAbilities: result.inheritedAbilities,
+      });
+
+      return {
+        ...state,
+        creatures: updatedCreatures,
+        player: {
+          ...state.player,
+          gold: newGold,
+        },
+        breedingMaterials: newMaterials,
+        breedingAttempts: state.breedingAttempts + 1,
+      };
+    }
 
     case 'UPDATE_BREEDING_ATTEMPTS':
       return {
