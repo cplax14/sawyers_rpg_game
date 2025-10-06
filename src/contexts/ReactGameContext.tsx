@@ -305,6 +305,73 @@ const defaultSettings: GameSettings = {
   },
 };
 
+// Validation function for breeding data loaded from saves
+function validateBreedingData(creature: EnhancedCreature): EnhancedCreature {
+  const validated = { ...creature };
+
+  // Validate generation (0-5)
+  if (typeof validated.generation !== 'number' || validated.generation < 0 || validated.generation > 5) {
+    console.warn(`⚠️ Invalid generation ${validated.generation} for creature ${validated.id}, defaulting to 0`);
+    validated.generation = 0;
+  }
+
+  // Validate breedingCount
+  if (typeof validated.breedingCount !== 'number' || validated.breedingCount < 0) {
+    validated.breedingCount = 0;
+  }
+
+  // Validate exhaustionLevel
+  if (typeof validated.exhaustionLevel !== 'number' || validated.exhaustionLevel < 0) {
+    validated.exhaustionLevel = 0;
+  }
+
+  // Validate parentIds
+  if (!Array.isArray(validated.parentIds)) {
+    validated.parentIds = [undefined, undefined];
+  }
+
+  // Validate inheritedAbilities
+  if (!Array.isArray(validated.inheritedAbilities)) {
+    validated.inheritedAbilities = [];
+  }
+
+  // Validate passiveTraits
+  if (!Array.isArray(validated.passiveTraits)) {
+    validated.passiveTraits = [];
+  }
+
+  // Validate stat caps based on generation
+  const baseStatCap = 100;
+  const generationBonus = validated.generation * 0.1; // +10% per generation
+  const expectedCap = Math.floor(baseStatCap * (1 + generationBonus));
+
+  // Ensure stats don't exceed generation caps
+  if (validated.stats) {
+    const statKeys: (keyof PlayerStats)[] = ['attack', 'defense', 'magicAttack', 'magicDefense', 'speed', 'accuracy'];
+    statKeys.forEach(statKey => {
+      if (validated.stats[statKey] > expectedCap) {
+        console.warn(`⚠️ Stat ${statKey} (${validated.stats[statKey]}) exceeds gen ${validated.generation} cap (${expectedCap}), capping it`);
+        validated.stats[statKey] = expectedCap;
+      }
+    });
+  }
+
+  return validated;
+}
+
+// Migration function for old saves without breeding metadata
+function migrateCreatureToBreedingSystem(creature: any): EnhancedCreature {
+  return {
+    ...creature,
+    generation: creature.generation ?? 0,
+    breedingCount: creature.breedingCount ?? 0,
+    exhaustionLevel: creature.exhaustionLevel ?? 0,
+    parentIds: creature.parentIds ?? [undefined, undefined],
+    inheritedAbilities: creature.inheritedAbilities ?? [],
+    passiveTraits: creature.passiveTraits ?? []
+  };
+}
+
 // Initial state
 const initialState: ReactGameState = {
   player: null,
@@ -1117,6 +1184,10 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
           totalPlayTime: state.totalPlayTime + (Date.now() - state.sessionStartTime),
           settings: state.settings,
           timestamp: action.payload.timestamp,
+          // New inventory system data
+          inventoryState: state.inventoryState,
+          creatures: state.creatures,
+          experience: state.experience,
           // Breeding system data
           breedingAttempts: state.breedingAttempts,
           discoveredRecipes: state.discoveredRecipes,
@@ -1161,6 +1232,43 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         const parsedData = JSON.parse(savedData);
         console.log(`✅ Game loaded from slot ${action.payload.slotIndex + 1}`);
 
+        // Validate and migrate creature collection if present
+        let loadedCreatures = parsedData.creatures;
+        if (loadedCreatures && loadedCreatures.creatures) {
+          const validatedCreatures: Record<string, EnhancedCreature> = {};
+          let migrationCount = 0;
+          let validationCount = 0;
+
+          Object.keys(loadedCreatures.creatures).forEach(creatureId => {
+            const creature = loadedCreatures.creatures[creatureId];
+
+            // Check if creature needs migration (missing breeding fields)
+            const needsMigration = creature.generation === undefined ||
+                                   creature.breedingCount === undefined ||
+                                   creature.exhaustionLevel === undefined;
+
+            if (needsMigration) {
+              migrationCount++;
+              validatedCreatures[creatureId] = validateBreedingData(migrateCreatureToBreedingSystem(creature));
+            } else {
+              validationCount++;
+              validatedCreatures[creatureId] = validateBreedingData(creature);
+            }
+          });
+
+          loadedCreatures = {
+            ...loadedCreatures,
+            creatures: validatedCreatures
+          };
+
+          if (migrationCount > 0) {
+            console.log(`🔄 Migrated ${migrationCount} creatures to breeding system`);
+          }
+          if (validationCount > 0) {
+            console.log(`✅ Validated ${validationCount} creatures with breeding data`);
+          }
+        }
+
         return {
           ...state,
           player: parsedData.player,
@@ -1174,6 +1282,10 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
           settings: { ...state.settings, ...parsedData.settings },
           currentSaveSlot: action.payload.slotIndex,
           sessionStartTime: Date.now(), // Reset session start time
+          // New inventory system data
+          inventoryState: parsedData.inventoryState,
+          creatures: loadedCreatures,
+          experience: parsedData.experience,
           // Breeding system data with backward compatibility
           breedingAttempts: parsedData.breedingAttempts || 0,
           discoveredRecipes: parsedData.discoveredRecipes || [],
