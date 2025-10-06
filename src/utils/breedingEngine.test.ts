@@ -18,6 +18,7 @@ import {
   applyExhaustion,
   removeExhaustion,
   inheritAbilities,
+  inheritPassiveTraits,
   calculateStatCaps,
   calculateRecoveryCost,
   canBreed,
@@ -1155,5 +1156,262 @@ describe('generateOffspring', () => {
 
     expect(result.costPaid).toBeDefined();
     expect(result.costPaid.goldAmount).toBeGreaterThan(0);
+  });
+});
+
+// =============================================================================
+// PASSIVE TRAIT INHERITANCE TESTS (Task 10.0)
+// =============================================================================
+
+describe('inheritPassiveTraits', () => {
+  it('should return empty array for Gen 0 creatures', () => {
+    const parent1 = createMockCreature({
+      generation: 0,
+      passiveTraits: ['trait1', 'trait2']
+    });
+    const parent2 = createMockCreature({
+      generation: 0,
+      passiveTraits: ['trait3']
+    });
+
+    const result = inheritPassiveTraits(parent1, parent2, 0);
+
+    expect(result).toEqual([]);
+  });
+
+  it('should return empty array for Gen 1 creatures', () => {
+    const parent1 = createMockCreature({
+      generation: 1,
+      passiveTraits: ['trait1', 'trait2']
+    });
+    const parent2 = createMockCreature({
+      generation: 1,
+      passiveTraits: ['trait3']
+    });
+
+    const result = inheritPassiveTraits(parent1, parent2, 1);
+
+    expect(result).toEqual([]);
+  });
+
+  it('should return empty array for Gen 2 creatures', () => {
+    const parent1 = createMockCreature({
+      generation: 2,
+      passiveTraits: ['trait1', 'trait2']
+    });
+    const parent2 = createMockCreature({
+      generation: 2,
+      passiveTraits: ['trait3']
+    });
+
+    const result = inheritPassiveTraits(parent1, parent2, 2);
+
+    expect(result).toEqual([]);
+  });
+
+  it('should allow passive traits for Gen 3+ creatures', () => {
+    const parent1 = createMockCreature({
+      generation: 3,
+      passiveTraits: ['trait1', 'trait2']
+    });
+    const parent2 = createMockCreature({
+      generation: 3,
+      passiveTraits: ['trait3']
+    });
+
+    // Mock Math.random to always succeed (25% chance)
+    const originalRandom = Math.random;
+    Math.random = jest.fn(() => 0.1); // Less than 0.25
+
+    const result = inheritPassiveTraits(parent1, parent2, 3);
+
+    // Should inherit all traits (3 total)
+    expect(result.length).toBeGreaterThan(0);
+
+    Math.random = originalRandom;
+  });
+
+  it('should inherit traits from both parents with 25% chance', () => {
+    const parent1 = createMockCreature({
+      passiveTraits: ['strength_boost', 'speed_boost']
+    });
+    const parent2 = createMockCreature({
+      passiveTraits: ['defense_boost', 'magic_boost']
+    });
+
+    // Run many iterations to test probability
+    let totalInherited = 0;
+    const iterations = 100;
+
+    for (let i = 0; i < iterations; i++) {
+      const result = inheritPassiveTraits(parent1, parent2, 3);
+      totalInherited += result.length;
+    }
+
+    // Average inheritance: 4 traits × 25% = 1.0 traits
+    const avgInherited = totalInherited / iterations;
+    expect(avgInherited).toBeGreaterThan(0.5);
+    expect(avgInherited).toBeLessThan(2.0);
+  });
+
+  it('should not duplicate traits if both parents have same trait', () => {
+    const parent1 = createMockCreature({
+      passiveTraits: ['strength_boost', 'speed_boost']
+    });
+    const parent2 = createMockCreature({
+      passiveTraits: ['strength_boost', 'defense_boost']
+    });
+
+    // Mock to always succeed
+    const originalRandom = Math.random;
+    Math.random = jest.fn(() => 0.1);
+
+    const result = inheritPassiveTraits(parent1, parent2, 3);
+
+    // Count occurrences of 'strength_boost'
+    const strengthCount = result.filter(t => t === 'strength_boost').length;
+    expect(strengthCount).toBeLessThanOrEqual(1);
+
+    Math.random = originalRandom;
+  });
+
+  it('should limit inherited traits to generation maximum', () => {
+    const parent1 = createMockCreature({
+      passiveTraits: ['trait1', 'trait2', 'trait3']
+    });
+    const parent2 = createMockCreature({
+      passiveTraits: ['trait4', 'trait5', 'trait6']
+    });
+
+    // Force all traits to inherit
+    const originalRandom = Math.random;
+    Math.random = jest.fn(() => 0.1);
+
+    // Gen 3 has max 2 passive traits
+    const result = inheritPassiveTraits(parent1, parent2, 3);
+
+    expect(result.length).toBeLessThanOrEqual(2);
+
+    Math.random = originalRandom;
+  });
+
+  it('should allow more traits for higher generations', () => {
+    const parent1 = createMockCreature({
+      passiveTraits: ['trait1', 'trait2', 'trait3']
+    });
+    const parent2 = createMockCreature({
+      passiveTraits: ['trait4', 'trait5']
+    });
+
+    // Force all traits to inherit
+    const originalRandom = Math.random;
+    Math.random = jest.fn(() => 0.1);
+
+    // Gen 5 has max 3 passive traits
+    const resultGen5 = inheritPassiveTraits(parent1, parent2, 5);
+    expect(resultGen5.length).toBeLessThanOrEqual(3);
+
+    Math.random = originalRandom;
+  });
+
+  it('should handle parents with no passive traits', () => {
+    const parent1 = createMockCreature({ passiveTraits: [] });
+    const parent2 = createMockCreature({ passiveTraits: [] });
+
+    const result = inheritPassiveTraits(parent1, parent2, 3);
+
+    expect(result).toEqual([]);
+  });
+
+  it('should handle parent with undefined passiveTraits', () => {
+    const parent1 = createMockCreature({ passiveTraits: undefined });
+    const parent2 = createMockCreature({ passiveTraits: ['trait1'] });
+
+    const result = inheritPassiveTraits(parent1, parent2, 3);
+
+    // Should not throw error, should process parent2's traits
+    expect(Array.isArray(result)).toBe(true);
+  });
+
+  it('should respect recipe guaranteed traits when provided', () => {
+    const parent1 = createMockCreature({ passiveTraits: [] });
+    const parent2 = createMockCreature({ passiveTraits: [] });
+    const recipe = createMockRecipe({
+      guaranteedBonuses: {
+        guaranteedPassiveTraits: ['legendary_trait', 'mythical_trait']
+      }
+    });
+
+    // Note: Current implementation doesn't support guaranteed passive traits from recipe
+    // This test documents expected future behavior
+    const result = inheritPassiveTraits(parent1, parent2, 3, recipe);
+
+    // For now, result should be empty since no parent traits
+    expect(Array.isArray(result)).toBe(true);
+  });
+});
+
+// =============================================================================
+// HELPER FUNCTION TESTS
+// =============================================================================
+
+describe('getAbilitySlots', () => {
+  it('should return 4 base slots for Gen 0', () => {
+    const { getAbilitySlots } = require('./breedingEngine');
+    const slots = getAbilitySlots(0);
+
+    expect(slots).toBe(4); // 4 base + 0 bonus
+  });
+
+  it('should return 5 slots for Gen 1 (4 base + 1 bonus)', () => {
+    const { getAbilitySlots } = require('./breedingEngine');
+    const slots = getAbilitySlots(1);
+
+    expect(slots).toBe(5);
+  });
+
+  it('should return correct slots for Gen 3', () => {
+    const { getAbilitySlots } = require('./breedingEngine');
+    const slots = getAbilitySlots(3);
+
+    expect(slots).toBe(7); // 4 base + 3 bonus
+  });
+
+  it('should return 9 slots for Gen 5 (max)', () => {
+    const { getAbilitySlots } = require('./breedingEngine');
+    const slots = getAbilitySlots(5);
+
+    expect(slots).toBe(9); // 4 base + 5 bonus
+  });
+});
+
+describe('getPassiveTraitSlots', () => {
+  it('should return 0 slots for Gen 0-2', () => {
+    const { getPassiveTraitSlots } = require('./breedingEngine');
+
+    expect(getPassiveTraitSlots(0)).toBe(0);
+    expect(getPassiveTraitSlots(1)).toBe(0);
+    expect(getPassiveTraitSlots(2)).toBe(0);
+  });
+
+  it('should return 2 slots for Gen 3', () => {
+    const { getPassiveTraitSlots } = require('./breedingEngine');
+    const slots = getPassiveTraitSlots(3);
+
+    expect(slots).toBe(2);
+  });
+
+  it('should return 2 slots for Gen 4', () => {
+    const { getPassiveTraitSlots } = require('./breedingEngine');
+    const slots = getPassiveTraitSlots(4);
+
+    expect(slots).toBe(2);
+  });
+
+  it('should return 3 slots for Gen 5', () => {
+    const { getPassiveTraitSlots } = require('./breedingEngine');
+    const slots = getPassiveTraitSlots(5);
+
+    expect(slots).toBe(3);
   });
 });

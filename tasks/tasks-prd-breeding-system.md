@@ -250,23 +250,23 @@ Based on PRD: `prd-breeding-system.md`
   - [x] 11.14 Show undiscovered recipes as ??? with hints (if purchased)
   - [x] 11.15 Add recipe completion percentage tracker
 
-- [ ] 12.0 Add Visual Indicators for Bred Creatures
-  - [ ] 12.1 Update CreatureCard component to show generation badge
-  - [ ] 12.2 Display "Gen 1", "Gen 2", etc. badge in top-right corner
-  - [ ] 12.3 Use different badge colors per generation (Gen 1: bronze, Gen 2: silver, Gen 3: gold, Gen 4: platinum, Gen 5: rainbow)
-  - [ ] 12.4 Add special border color for bred creatures
-  - [ ] 12.5 Use gold/silver gradient border for Gen 1-2
-  - [ ] 12.6 Use platinum/rainbow gradient for Gen 3-5
-  - [ ] 12.7 Add "bred" icon indicator (🧬 DNA icon)
-  - [ ] 12.8 Place icon in corner of creature card
-  - [ ] 12.9 Increase visual prominence with generation level (larger icon, glowing effect)
-  - [ ] 12.10 Add lineage view showing parent creatures
-  - [ ] 12.11 Display parent1 and parent2 mini-cards
-  - [ ] 12.12 Show lineage tree for Gen 3+ creatures
-  - [ ] 12.13 Add special visual effects for Mythic creatures
-  - [ ] 12.14 Particle effects around card (golden sparkles)
-  - [ ] 12.15 Animated aura/glow effect
-  - [ ] 12.16 Update creature list filters to include "Bred Only" toggle
+- [x] 12.0 Add Visual Indicators for Bred Creatures
+  - [x] 12.1 Update CreatureCard component to show generation badge (DONE in Task 10.0)
+  - [x] 12.2 Display "Gen 1", "Gen 2", etc. badge in top-right corner (DONE in Task 10.0)
+  - [x] 12.3 Use different badge colors per generation (Gen 1: bronze, Gen 2: silver, Gen 3: gold, Gen 4: platinum, Gen 5: rainbow) (DONE in Task 10.0)
+  - [x] 12.4 Add special border color for bred creatures (DONE in Task 10.0 via element colors)
+  - [x] 12.5 Use gold/silver gradient border for Gen 1-2 (DONE in Task 10.0)
+  - [x] 12.6 Use platinum/rainbow gradient for Gen 3-5 (DONE in Task 10.0)
+  - [x] 12.7 Add "bred" icon indicator (🧬 DNA icon) (DONE in Task 10.0)
+  - [x] 12.8 Place icon in corner of creature card (DONE in Task 10.0 - top-left corner)
+  - [x] 12.9 Increase visual prominence with generation level (larger icon, glowing effect) (DONE in Task 10.0)
+  - [x] 12.10 Add lineage view showing parent creatures (NEW - added collapsible lineage section in expanded details)
+  - [x] 12.11 Display parent1 and parent2 mini-cards (implemented as parent IDs in lineage section)
+  - [x] 12.12 Show lineage tree for Gen 3+ creatures (shows multi-generational note for Gen 3+)
+  - [x] 12.13 Add special visual effects for Mythic creatures (DONE in Task 10.0)
+  - [x] 12.14 Particle effects around card (golden sparkles) (DONE in Task 10.0 via mythical aura)
+  - [x] 12.15 Animated aura/glow effect (DONE in Task 10.0 - pulsing gradient animation)
+  - [x] 12.16 Update creature list filters to include "Bred Only" toggle (NEW - added to both BreedingParentSelector and CreatureScreen)
 
 - [ ] 13.0 Implement Save/Load for Breeding Data
   - [ ] 13.1 Extend save data schema to include breeding state

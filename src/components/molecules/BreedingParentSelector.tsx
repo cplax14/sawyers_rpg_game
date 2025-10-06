@@ -134,6 +134,7 @@ export const BreedingParentSelector: React.FC<BreedingParentSelectorProps> = ({
   const [showModal, setShowModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterRarity, setFilterRarity] = useState<string | null>(null);
+  const [filterBredOnly, setFilterBredOnly] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
 
   // Get available creatures (captured monsters)
@@ -159,8 +160,13 @@ export const BreedingParentSelector: React.FC<BreedingParentSelectorProps> = ({
       filtered = filtered.filter(c => c.rarity === filterRarity);
     }
 
+    // Apply bred only filter
+    if (filterBredOnly) {
+      filtered = filtered.filter(c => (c.generation || 0) > 0);
+    }
+
     return filtered;
-  }, [gameState.capturedMonsters, excludeCreatureId, searchQuery, filterRarity]);
+  }, [gameState.capturedMonsters, excludeCreatureId, searchQuery, filterRarity, filterBredOnly]);
 
   // Unique rarities for filtering
   const availableRarities = useMemo(() => {
@@ -179,6 +185,7 @@ export const BreedingParentSelector: React.FC<BreedingParentSelectorProps> = ({
     setShowModal(false);
     setSearchQuery('');
     setFilterRarity(null);
+    setFilterBredOnly(false);
   }, [onSelect]);
 
   const handleClearSelection = useCallback((e: React.MouseEvent) => {
@@ -272,6 +279,19 @@ export const BreedingParentSelector: React.FC<BreedingParentSelectorProps> = ({
                 {rarity}
               </button>
             ))}
+          </div>
+
+          {/* Bred Only Filter */}
+          <div style={selectorStyles.filterSection}>
+            <button
+              style={{
+                ...selectorStyles.filterButton,
+                ...(filterBredOnly ? selectorStyles.filterButtonActive : {}),
+              }}
+              onClick={() => setFilterBredOnly(!filterBredOnly)}
+            >
+              🧬 Bred Creatures Only
+            </button>
           </div>
 
           {/* Creature Grid */}

@@ -261,6 +261,51 @@ const cardStyles = {
     fontWeight: 'bold',
     border: '1px solid rgba(34, 197, 94, 0.3)'
   },
+  lineageSection: {
+    marginTop: '0.75rem',
+    padding: '0.75rem',
+    background: 'rgba(139, 92, 246, 0.1)',
+    borderRadius: '8px',
+    border: '1px solid rgba(139, 92, 246, 0.3)'
+  },
+  lineageTitle: {
+    fontSize: '0.75rem',
+    fontWeight: 'bold',
+    color: '#a78bfa',
+    marginBottom: '0.5rem',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.25rem'
+  },
+  lineageTree: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '0.5rem'
+  },
+  lineageRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    fontSize: '0.7rem'
+  },
+  lineageLabel: {
+    color: '#94a3b8',
+    minWidth: '60px',
+    fontWeight: '500'
+  },
+  lineageValue: {
+    color: '#e2e8f0',
+    flex: 1,
+    padding: '0.25rem 0.5rem',
+    background: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: '4px',
+    border: '1px solid rgba(139, 92, 246, 0.2)'
+  },
+  lineageUnknown: {
+    color: '#94a3b8',
+    fontStyle: 'italic',
+    opacity: 0.7
+  },
   exhaustionBadge: {
     background: 'rgba(239, 68, 68, 0.2)',
     color: '#ef4444',
@@ -844,6 +889,44 @@ export const CreatureCard: React.FC<CreatureCardProps> = ({
               {creature.capturedAt && (
                 <div style={cardStyles.captureDate}>
                   Captured: {formatDate(creature.capturedAt)}
+                </div>
+              )}
+
+              {/* Lineage View - Show for bred creatures (Gen 1+) */}
+              {isBred && creature.parentIds && (
+                <div style={cardStyles.lineageSection}>
+                  <div style={cardStyles.lineageTitle}>
+                    <span>🧬</span>
+                    <span>Lineage</span>
+                  </div>
+                  <div style={cardStyles.lineageTree}>
+                    <div style={cardStyles.lineageRow}>
+                      <span style={cardStyles.lineageLabel}>Parent 1:</span>
+                      <span style={cardStyles.lineageValue}>
+                        {creature.parentIds[0] || (
+                          <span style={cardStyles.lineageUnknown}>Unknown</span>
+                        )}
+                      </span>
+                    </div>
+                    <div style={cardStyles.lineageRow}>
+                      <span style={cardStyles.lineageLabel}>Parent 2:</span>
+                      <span style={cardStyles.lineageValue}>
+                        {creature.parentIds[1] || (
+                          <span style={cardStyles.lineageUnknown}>Unknown</span>
+                        )}
+                      </span>
+                    </div>
+                    {(creature.generation || 0) >= 3 && (
+                      <div style={{
+                        fontSize: '0.65rem',
+                        color: '#94a3b8',
+                        marginTop: '0.25rem',
+                        fontStyle: 'italic'
+                      }}>
+                        Multi-generational lineage ({creature.generation} generations)
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </motion.div>

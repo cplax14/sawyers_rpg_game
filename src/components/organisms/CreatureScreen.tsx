@@ -297,6 +297,7 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
   const [viewMode, setViewMode] = useState<ViewMode>('bestiary');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<CreatureType | 'all'>('all');
+  const [filterBredOnly, setFilterBredOnly] = useState(false);
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
@@ -349,6 +350,11 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
       data = data.filter(creature => creature.creatureType === selectedType);
     }
 
+    // Apply bred only filter
+    if (filterBredOnly) {
+      data = data.filter(creature => (creature.generation || 0) > 0);
+    }
+
     // Apply sorting
     data.sort((a, b) => {
       let comparison = 0;
@@ -385,7 +391,7 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
     });
 
     return data;
-  }, [currentData, searchQuery, selectedType, sortBy, sortOrder]);
+  }, [currentData, searchQuery, selectedType, filterBredOnly, sortBy, sortOrder]);
 
   // Virtualized grid configuration for creatures
   const CREATURE_CARD_HEIGHT = isMobile ? 220 : 260;
@@ -899,6 +905,25 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
             <span>{type.name}</span>
           </motion.button>
         ))}
+
+        {/* Bred Only Filter - Special toggle button */}
+        <motion.button
+          style={{
+            ...creatureStyles.filterTab,
+            ...(filterBredOnly ? creatureStyles.filterTabActive : {}),
+            borderColor: filterBredOnly ? 'rgba(139, 92, 246, 0.5)' : 'rgba(212, 175, 55, 0.3)',
+            background: filterBredOnly ? 'rgba(139, 92, 246, 0.2)' : 'rgba(255, 255, 255, 0.05)'
+          }}
+          onClick={() => setFilterBredOnly(!filterBredOnly)}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.4 + CREATURE_TYPES.length * 0.02 }}
+        >
+          <span>🧬</span>
+          <span>Bred Only</span>
+        </motion.button>
       </motion.div>
 
       {/* Content */}
