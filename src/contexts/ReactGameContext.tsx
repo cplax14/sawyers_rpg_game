@@ -3,6 +3,7 @@ import { AutoSaveManager } from '../utils/autoSave';
 import { InventoryState } from '../types/inventory';
 import { CreatureCollection } from '../types/creatures';
 import { ExperienceState } from '../types/experience';
+import { removeExhaustion } from '../utils/breedingEngine';
 
 // Global type declaration for auto-save manager
 declare global {
@@ -271,7 +272,8 @@ export type ReactGameAction =
   | { type: 'DISCOVER_RECIPE'; payload: string }
   | { type: 'ADD_BREEDING_MATERIAL'; payload: { materialId: string; quantity: number } }
   | { type: 'REMOVE_BREEDING_MATERIAL'; payload: { materialId: string; quantity: number } }
-  | { type: 'APPLY_EXHAUSTION'; payload: { creatureId: string } };
+  | { type: 'APPLY_EXHAUSTION'; payload: { creatureId: string } }
+  | { type: 'REMOVE_EXHAUSTION'; payload: { creatureId: string; levelsToRemove: number; costGold?: number } };
 
 // Default settings
 const defaultSettings: GameSettings = {
@@ -809,6 +811,48 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         creatures: updatedCreatures
       };
 
+    case 'REMOVE_EXHAUSTION':
+      // Remove exhaustion from a creature (via items or gold payment)
+      if (!state.creatures) return state;
+
+      const creatureToRestore = state.creatures.creatures[action.payload.creatureId];
+      if (!creatureToRestore) return state;
+
+      const currentExhaustion = creatureToRestore.exhaustionLevel || 0;
+      if (currentExhaustion === 0) return state; // Already fully restored
+
+      // Calculate new exhaustion level
+      const levelsToRemove = action.payload.levelsToRemove === -1
+        ? currentExhaustion  // -1 means remove all
+        : action.payload.levelsToRemove;
+      const newExhaustion = Math.max(0, currentExhaustion - levelsToRemove);
+
+      // Recalculate stats without exhaustion penalty using removeExhaustion from breedingEngine
+      const restoredCreature = removeExhaustion(creatureToRestore, levelsToRemove);
+
+      // Deduct gold cost if specified
+      let updatedPlayerAfterRecovery = state.player;
+      if (action.payload.costGold && action.payload.costGold > 0) {
+        updatedPlayerAfterRecovery = {
+          ...state.player,
+          gold: state.player.gold - action.payload.costGold
+        };
+      }
+
+      const updatedCreaturesAfterRecovery = {
+        ...state.creatures,
+        creatures: {
+          ...state.creatures.creatures,
+          [action.payload.creatureId]: restoredCreature
+        }
+      };
+
+      return {
+        ...state,
+        player: updatedPlayerAfterRecovery,
+        creatures: updatedCreaturesAfterRecovery
+      };
+
     case 'SAVE_GAME':
       try {
         const saveData = {
@@ -961,6 +1005,7 @@ interface ReactGameContextType {
   // Breeding system functions
   breedCreatures: (parent1Id: string, parent2Id: string, recipeId?: string) => void;
   applyExhaustion: (creatureId: string) => void;
+  recoverExhaustion: (creatureId: string, levelsToRemove: number, costGold?: number) => void;
   discoverRecipe: (recipeId: string) => void;
   updateBreedingAttempts: (attempts: number) => void;
   addBreedingMaterial: (materialId: string, quantity: number) => void;
@@ -1380,6 +1425,10 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
     dispatch({ type: 'APPLY_EXHAUSTION', payload: { creatureId } });
   };
 
+  const recoverExhaustion = (creatureId: string, levelsToRemove: number, costGold?: number) => {
+    dispatch({ type: 'REMOVE_EXHAUSTION', payload: { creatureId, levelsToRemove, costGold } });
+  };
+
   const discoverRecipe = (recipeId: string) => {
     dispatch({ type: 'DISCOVER_RECIPE', payload: recipeId });
   };
@@ -1453,6 +1502,7 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
     updateExperienceState,
     breedCreatures,
     applyExhaustion,
+    recoverExhaustion,
     discoverRecipe,
     updateBreedingAttempts,
     addBreedingMaterial,

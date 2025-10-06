@@ -180,22 +180,22 @@ Based on PRD: `prd-breeding-system.md`
   - [x] 7.13 Integrate cost validation in breeding UI before allowing breeding (BreedingInterface.tsx)
   - [x] 7.14 Show cost breakdown tooltip (BreedingCostDisplay component already has this)
 
-- [ ] 8.0 Add Exhaustion and Recovery Mechanics
-  - [ ] 8.1 Update CreatureCard component to display exhaustion indicator
-  - [ ] 8.2 Show exhaustion debuff icon (grayed out, with stack count)
-  - [ ] 8.3 Display stat penalties in creature details (-20% per level)
-  - [ ] 8.4 Create exhaustion recovery items in items.js
-  - [ ] 8.5 Add "Revitalization Potion" (restores 1 exhaustion level, uncommon rarity)
-  - [ ] 8.6 Add "Full Restore" (removes all exhaustion, rare rarity)
-  - [ ] 8.7 Implement removeExhaustion(creature, levels) utility function
-  - [ ] 8.8 Remove exhaustion levels from creature
-  - [ ] 8.9 Recalculate stats without exhaustion penalties
+- [x] 8.0 Add Exhaustion and Recovery Mechanics
+  - [x] 8.1 Update CreatureCard component to display exhaustion indicator
+  - [x] 8.2 Show exhaustion debuff icon (grayed out, with stack count)
+  - [x] 8.3 Display stat penalties in creature details (-20% per level)
+  - [x] 8.4 Create exhaustion recovery items in items.js
+  - [x] 8.5 Add "Revitalization Potion" (restores 1 exhaustion level, uncommon rarity)
+  - [x] 8.6 Add "Full Restore" (removes all exhaustion, rare rarity)
+  - [x] 8.7 Implement removeExhaustion(creature, levels) utility function
+  - [x] 8.8 Remove exhaustion levels from creature
+  - [x] 8.9 Recalculate stats without exhaustion penalties
   - [ ] 8.10 Create rest mechanic system (optional implementation)
   - [ ] 8.11 Add REST_CREATURE action to game context
   - [ ] 8.12 Reduce exhaustion over time (e.g., 1 level per 30 minutes in-game or real-time)
-  - [ ] 8.13 Create gold-based instant recovery option
-  - [ ] 8.14 Add "Remove Exhaustion" button in creature details (costs gold)
-  - [ ] 8.15 Calculate recovery cost based on exhaustion level (e.g., 100 gold × exhaustion level)
+  - [x] 8.13 Create gold-based instant recovery option
+  - [x] 8.14 Add "Remove Exhaustion" button in creature details (costs gold)
+  - [x] 8.15 Calculate recovery cost based on exhaustion level (e.g., 100 gold × exhaustion level)
 
 - [ ] 9.0 Implement Offspring Generation and Stat Inheritance
   - [ ] 9.1 Enhance generateOffspring() to support all inheritance rules

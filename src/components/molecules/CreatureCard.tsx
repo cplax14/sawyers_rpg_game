@@ -260,6 +260,28 @@ const cardStyles = {
     fontSize: '0.6rem',
     fontWeight: 'bold',
     border: '1px solid rgba(34, 197, 94, 0.3)'
+  },
+  exhaustionBadge: {
+    background: 'rgba(239, 68, 68, 0.2)',
+    color: '#ef4444',
+    borderRadius: '12px',
+    padding: '0.2rem 0.4rem',
+    fontSize: '0.6rem',
+    fontWeight: 'bold',
+    border: '1px solid rgba(239, 68, 68, 0.3)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.25rem'
+  },
+  exhaustionOverlay: {
+    opacity: 0.6,
+    filter: 'grayscale(40%)'
+  },
+  statPenalty: {
+    color: '#ef4444',
+    fontSize: '0.65rem',
+    fontStyle: 'italic',
+    marginLeft: '0.25rem'
   }
 };
 
@@ -597,11 +619,20 @@ export const CreatureCard: React.FC<CreatureCardProps> = ({
                 Discovered
               </div>
             )}
+            {creature.exhaustionLevel && creature.exhaustionLevel > 0 && (
+              <div style={cardStyles.exhaustionBadge} title={`Exhausted: -${creature.exhaustionLevel * 20}% stats`}>
+                <span>😴</span>
+                <span>×{creature.exhaustionLevel}</span>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Avatar */}
-        <div style={getAvatarStyles()}>
+        <div style={{
+          ...getAvatarStyles(),
+          ...(creature.exhaustionLevel && creature.exhaustionLevel > 0 ? cardStyles.exhaustionOverlay : {})
+        }}>
           {creature.sprite ? (
             <img
               src={creature.sprite}
@@ -656,13 +687,43 @@ export const CreatureCard: React.FC<CreatureCardProps> = ({
                 </div>
                 <div style={cardStyles.statItem}>
                   <span style={cardStyles.statLabel}>ATK</span>
-                  <span style={cardStyles.statValue}>{creature.attack}</span>
+                  <span style={cardStyles.statValue}>
+                    {creature.attack}
+                    {creature.exhaustionLevel && creature.exhaustionLevel > 0 && (
+                      <span style={cardStyles.statPenalty}>
+                        (-{creature.exhaustionLevel * 20}%)
+                      </span>
+                    )}
+                  </span>
                 </div>
                 <div style={cardStyles.statItem}>
                   <span style={cardStyles.statLabel}>DEF</span>
-                  <span style={cardStyles.statValue}>{creature.defense}</span>
+                  <span style={cardStyles.statValue}>
+                    {creature.defense}
+                    {creature.exhaustionLevel && creature.exhaustionLevel > 0 && (
+                      <span style={cardStyles.statPenalty}>
+                        (-{creature.exhaustionLevel * 20}%)
+                      </span>
+                    )}
+                  </span>
                 </div>
               </div>
+
+              {/* Exhaustion Warning */}
+              {creature.exhaustionLevel && creature.exhaustionLevel > 0 && (
+                <div style={{
+                  fontSize: '0.7rem',
+                  color: '#ef4444',
+                  marginTop: '0.5rem',
+                  padding: '0.5rem',
+                  background: 'rgba(239, 68, 68, 0.1)',
+                  borderRadius: '6px',
+                  border: '1px solid rgba(239, 68, 68, 0.3)'
+                }}>
+                  <strong>Exhausted:</strong> All stats reduced by {creature.exhaustionLevel * 20}%.
+                  Use recovery items or rest to restore.
+                </div>
+              )}
 
               {/* Personality */}
               {creature.personality && (
