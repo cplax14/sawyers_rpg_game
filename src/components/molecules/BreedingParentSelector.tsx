@@ -137,9 +137,11 @@ export const BreedingParentSelector: React.FC<BreedingParentSelectorProps> = ({
   const [filterBredOnly, setFilterBredOnly] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
 
-  // Get available creatures (captured monsters)
+  // Get available creatures (from creatures collection)
   const availableCreatures = useMemo(() => {
-    const creatures = gameState.capturedMonsters || [];
+    // Use creatures collection instead of legacy capturedMonsters
+    const creaturesObj = gameState.creatures?.creatures || {};
+    const creatures = Object.values(creaturesObj);
 
     // Filter out the excluded creature
     let filtered = excludeCreatureId
@@ -166,15 +168,15 @@ export const BreedingParentSelector: React.FC<BreedingParentSelectorProps> = ({
     }
 
     return filtered;
-  }, [gameState.capturedMonsters, excludeCreatureId, searchQuery, filterRarity, filterBredOnly]);
+  }, [gameState.creatures?.creatures, excludeCreatureId, searchQuery, filterRarity, filterBredOnly]);
 
   // Unique rarities for filtering
   const availableRarities = useMemo(() => {
-    const rarities = new Set(
-      (gameState.capturedMonsters || []).map(c => c.rarity)
-    );
+    const creaturesObj = gameState.creatures?.creatures || {};
+    const creatures = Object.values(creaturesObj);
+    const rarities = new Set(creatures.map(c => c.rarity));
     return Array.from(rarities);
-  }, [gameState.capturedMonsters]);
+  }, [gameState.creatures?.creatures]);
 
   const handleSlotClick = useCallback(() => {
     setShowModal(true);
