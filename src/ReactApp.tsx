@@ -15,6 +15,7 @@ import { Combat } from './components/organisms/Combat';
 import ReactTestPanel from './components/ui/ReactTestPanel';
 import VictoryModal from './components/ui/VictoryModal';
 import InventoryManager from './components/organisms/InventoryManager';
+import RecipeDiscoveryManager from './components/organisms/RecipeDiscoveryManager';
 import { performanceMonitor } from './utils/performanceMonitor';
 import { ReactGameState } from './contexts/ReactGameContext';
 import { reactAppStyles } from './utils/temporaryStyles';
@@ -317,6 +318,9 @@ const GameShell: React.FC = () => {
 
       {/* Victory Modal */}
       <VictoryModal />
+
+      {/* Recipe Discovery Notifications */}
+      <RecipeDiscoveryManager />
     </div>
   );
 };

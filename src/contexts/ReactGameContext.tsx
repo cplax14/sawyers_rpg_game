@@ -485,9 +485,38 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
     case 'CAPTURE_MONSTER':
       const newCapturedMonsters = [...state.capturedMonsters, action.payload.monster];
 
+      // Check for recipe discovery after capturing a new creature
+      // Import will be handled at the top of the file
+      let newlyDiscoveredRecipes: string[] = [];
+      try {
+        const { checkRecipeDiscoveryAfterCapture } = require('../utils/recipeDiscovery');
+
+        // Convert captured monster to EnhancedCreature format for recipe check
+        const enhancedCreature = state.creatures?.creatures[action.payload.monster.id];
+
+        if (enhancedCreature && state.creatures) {
+          const discoveryResult = checkRecipeDiscoveryAfterCapture(
+            enhancedCreature,
+            state.creatures.creatures,
+            state.discoveredRecipes,
+            state.player?.level || 1,
+            state.storyFlags
+          );
+
+          newlyDiscoveredRecipes = discoveryResult.newlyDiscovered;
+
+          if (newlyDiscoveredRecipes.length > 0) {
+            console.log('✨ New recipes discovered:', newlyDiscoveredRecipes);
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to check recipe discovery:', error);
+      }
+
       return {
         ...state,
         capturedMonsters: newCapturedMonsters,
+        discoveredRecipes: [...state.discoveredRecipes, ...newlyDiscoveredRecipes],
       };
 
     case 'RELEASE_MONSTER':
@@ -911,6 +940,28 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         totalCaptured: state.creatures.totalCaptured + 1,
       };
 
+      // Check for recipe discovery after breeding
+      let newlyDiscoveredRecipesFromBreeding: string[] = [];
+      try {
+        const { checkRecipeDiscoveryAfterCapture } = require('../utils/recipeDiscovery');
+
+        const discoveryResult = checkRecipeDiscoveryAfterCapture(
+          completeOffspring,
+          updatedCreatures.creatures,
+          state.discoveredRecipes,
+          state.player?.level || 1,
+          state.storyFlags
+        );
+
+        newlyDiscoveredRecipesFromBreeding = discoveryResult.newlyDiscovered;
+
+        if (newlyDiscoveredRecipesFromBreeding.length > 0) {
+          console.log('✨ New recipes discovered from breeding:', newlyDiscoveredRecipesFromBreeding);
+        }
+      } catch (error) {
+        console.warn('Failed to check recipe discovery after breeding:', error);
+      }
+
       console.log('✅ [BREED_CREATURES] Successfully bred creature:', {
         offspring: completeOffspring.name,
         species: result.offspringSpecies,
@@ -928,6 +979,7 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         },
         breedingMaterials: newMaterials,
         breedingAttempts: state.breedingAttempts + 1,
+        discoveredRecipes: [...state.discoveredRecipes, ...newlyDiscoveredRecipesFromBreeding],
       };
     }
 

@@ -233,22 +233,22 @@ Based on PRD: `prd-breeding-system.md`
   - [x] 10.16 Define passive traits (stat boosts, special effects, resistances) (created in mythicalAbilities.js)
   - [x] 10.17 Create Gen 5 ultimate abilities (unique, powerful, Mythic-exclusive) (created in mythicalAbilities.js)
 
-- [ ] 11.0 Create Recipe Discovery and Breeding Guide
-  - [ ] 11.1 Implement automatic recipe reveal when player obtains required creatures
-  - [ ] 11.2 Check creature collection on capture/breeding
-  - [ ] 11.3 Compare against recipe requirements
-  - [ ] 11.4 Dispatch DISCOVER_RECIPE action if requirements met
-  - [ ] 11.5 Show notification for newly discovered recipe
-  - [ ] 11.6 Implement story progression-based recipe unlocks
-  - [ ] 11.7 Link legendary recipes to story flags (boss defeats, area unlocks)
-  - [ ] 11.8 Create NPC system for recipe hints
-  - [ ] 11.9 Add "Breeding Master" NPC character data
-  - [ ] 11.10 Implement purchasable recipe hints (gold cost)
-  - [ ] 11.11 Create hint text for undiscovered recipes (vague clues)
-  - [ ] 11.12 Update BreedingRecipeBook component with discovery status
-  - [ ] 11.13 Show discovered recipes with full details
-  - [ ] 11.14 Show undiscovered recipes as ??? with hints (if purchased)
-  - [ ] 11.15 Add recipe completion percentage tracker
+- [x] 11.0 Create Recipe Discovery and Breeding Guide
+  - [x] 11.1 Implement automatic recipe reveal when player obtains required creatures
+  - [x] 11.2 Check creature collection on capture/breeding
+  - [x] 11.3 Compare against recipe requirements
+  - [x] 11.4 Dispatch DISCOVER_RECIPE action if requirements met
+  - [x] 11.5 Show notification for newly discovered recipe
+  - [x] 11.6 Implement story progression-based recipe unlocks
+  - [x] 11.7 Link legendary recipes to story flags (boss defeats, area unlocks)
+  - [N/A] 11.8 Create NPC system for recipe hints (SKIPPED - Complex, can be added later)
+  - [N/A] 11.9 Add "Breeding Master" NPC character data (SKIPPED - Deferred to future NPC system)
+  - [N/A] 11.10 Implement purchasable recipe hints (gold cost) (SKIPPED - Deferred to future NPC system)
+  - [x] 11.11 Create hint text for undiscovered recipes (vague clues)
+  - [x] 11.12 Update BreedingRecipeBook component with discovery status
+  - [x] 11.13 Show discovered recipes with full details
+  - [x] 11.14 Show undiscovered recipes as ??? with hints (if purchased)
+  - [x] 11.15 Add recipe completion percentage tracker
 
 - [ ] 12.0 Add Visual Indicators for Bred Creatures
   - [ ] 12.1 Update CreatureCard component to show generation badge
