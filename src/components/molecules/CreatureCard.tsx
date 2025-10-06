@@ -282,6 +282,49 @@ const cardStyles = {
     fontSize: '0.65rem',
     fontStyle: 'italic',
     marginLeft: '0.25rem'
+  },
+  generationBadge: {
+    position: 'absolute' as const,
+    top: '0.5rem',
+    right: '0.5rem',
+    borderRadius: '50%',
+    width: '32px',
+    height: '32px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '0.7rem',
+    fontWeight: 'bold',
+    border: '2px solid',
+    zIndex: 2,
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)'
+  },
+  mythicalAura: {
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: '12px',
+    pointerEvents: 'none' as const,
+    zIndex: 0,
+    animation: 'mythicalPulse 2s ease-in-out infinite'
+  },
+  bredIndicator: {
+    position: 'absolute' as const,
+    top: '0.5rem',
+    left: '0.5rem',
+    background: 'rgba(139, 92, 246, 0.3)',
+    borderRadius: '6px',
+    padding: '0.2rem 0.4rem',
+    fontSize: '0.6rem',
+    fontWeight: 'bold',
+    color: '#a78bfa',
+    border: '1px solid rgba(139, 92, 246, 0.5)',
+    zIndex: 2,
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.25rem'
   }
 };
 
@@ -307,6 +350,16 @@ const rarityColors = {
   epic: { bg: 'rgba(168, 85, 247, 0.2)', color: '#a855f7', border: 'rgba(168, 85, 247, 0.3)' },
   legendary: { bg: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', border: 'rgba(245, 158, 11, 0.3)' },
   mythical: { bg: 'rgba(236, 72, 153, 0.2)', color: '#ec4899', border: 'rgba(236, 72, 153, 0.3)' }
+};
+
+// Generation badge colors
+const generationColors = {
+  0: { bg: 'rgba(107, 114, 128, 0.3)', color: '#9ca3af', border: '#6b7280' }, // Wild - Gray
+  1: { bg: 'rgba(205, 127, 50, 0.3)', color: '#cd7f32', border: '#b8860b' }, // Gen 1 - Bronze
+  2: { bg: 'rgba(192, 192, 192, 0.3)', color: '#c0c0c0', border: '#a8a8a8' }, // Gen 2 - Silver
+  3: { bg: 'rgba(255, 215, 0, 0.3)', color: '#ffd700', border: '#daa520' }, // Gen 3 - Gold
+  4: { bg: 'rgba(229, 228, 226, 0.3)', color: '#e5e4e2', border: '#c0c0c0' }, // Gen 4 - Platinum
+  5: { bg: 'linear-gradient(135deg, #ff0080, #ff8c00, #40e0d0, #9b59b6)', color: '#fff', border: '#fff' } // Gen 5 - Rainbow
 };
 
 // Element emojis for avatar fallback
@@ -519,6 +572,25 @@ export const CreatureCard: React.FC<CreatureCardProps> = ({
     return actions;
   };
 
+  // Get generation badge styling
+  const getGenerationBadgeStyle = () => {
+    const generation = creature.generation || 0;
+    const genColor = generationColors[generation as keyof typeof generationColors] || generationColors[0];
+
+    return {
+      ...cardStyles.generationBadge,
+      background: genColor.bg,
+      color: genColor.color,
+      borderColor: genColor.border
+    };
+  };
+
+  // Check if creature is bred (Gen 1+)
+  const isBred = (creature.generation || 0) > 0;
+
+  // Check if creature is mythical rarity
+  const isMythical = creature.rarity === 'mythical';
+
   return (
     <motion.div
       className={className}
@@ -534,6 +606,41 @@ export const CreatureCard: React.FC<CreatureCardProps> = ({
       transition={{ duration: 0.3 }}
       layout
     >
+      {/* Mythical Aura Effect */}
+      {isMythical && (
+        <motion.div
+          style={{
+            ...cardStyles.mythicalAura,
+            background: 'radial-gradient(circle, rgba(236, 72, 153, 0.2) 0%, transparent 70%)',
+            boxShadow: '0 0 40px rgba(236, 72, 153, 0.4), inset 0 0 40px rgba(236, 72, 153, 0.2)'
+          }}
+          animate={{
+            opacity: [0.3, 0.6, 0.3],
+            scale: [1, 1.02, 1]
+          }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            ease: 'easeInOut'
+          }}
+        />
+      )}
+
+      {/* Bred Creature Indicator */}
+      {isBred && (
+        <div style={cardStyles.bredIndicator}>
+          <span>🧬</span>
+          <span>Bred</span>
+        </div>
+      )}
+
+      {/* Generation Badge */}
+      {isBred && (
+        <div style={getGenerationBadgeStyle()} title={`Generation ${creature.generation}`}>
+          G{creature.generation}
+        </div>
+      )}
+
       {/* Content */}
       <div style={cardStyles.content}>
         {/* Header */}

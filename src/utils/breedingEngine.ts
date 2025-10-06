@@ -22,6 +22,7 @@ import {
   DEFAULT_RARITY_UPGRADE,
   DEFAULT_ABILITY_INHERITANCE,
   DEFAULT_EXHAUSTION_CONFIG,
+  DEFAULT_PASSIVE_TRAIT_CONFIG,
 } from '../types/breeding';
 import { EnhancedCreature, CreatureRarity } from '../types/creatures';
 import { PlayerStats } from '../types/game';
@@ -161,6 +162,12 @@ export function generateOffspring(
     messages.push(`Inherited ${inheritedAbilities.length} abilities from parents`);
   }
 
+  // Inherit passive traits (Gen 3+, 25% chance per parent trait)
+  const inheritedPassiveTraits = inheritPassiveTraits(parent1, parent2, generation, recipe);
+  if (inheritedPassiveTraits.length > 0) {
+    messages.push(`Inherited ${inheritedPassiveTraits.length} passive traits`);
+  }
+
   // Calculate stat caps based on generation
   const statCaps = calculateStatCaps(generation);
 
@@ -173,6 +180,7 @@ export function generateOffspring(
     breedingCount: 0,
     exhaustionLevel: 0,
     inheritedAbilities,
+    passiveTraits: inheritedPassiveTraits,
     parentIds: [parent1.creatureId, parent2.creatureId],
     statCaps,
     // Stats will be set properly when creating the full creature
@@ -633,4 +641,90 @@ export function validateBreedingCost(
     goldShortfall,
     missingMaterials,
   };
+}
+
+// =============================================================================
+// PASSIVE TRAIT INHERITANCE
+// =============================================================================
+
+/**
+ * Determine which passive traits are inherited from parents.
+ *
+ * Rules:
+ * - Gen 3+: Can have passive traits
+ * - 25% chance to inherit each parent trait
+ * - 5% chance to mutate a new random trait
+ * - Maximum of 3 inherited traits
+ *
+ * @param parent1 - First parent creature
+ * @param parent2 - Second parent creature
+ * @param generation - Offspring generation
+ * @param recipe - Optional breeding recipe
+ * @returns Array of inherited passive trait IDs
+ */
+export function inheritPassiveTraits(
+  parent1: EnhancedCreature,
+  parent2: EnhancedCreature,
+  generation: number,
+  recipe?: BreedingRecipe
+): string[] {
+  const config = DEFAULT_PASSIVE_TRAIT_CONFIG;
+
+  // Gen 0-2 creatures cannot have passive traits
+  if (generation < 3) {
+    return [];
+  }
+
+  const inheritedTraits: string[] = [];
+
+  // Collect parent traits
+  const parent1Traits = parent1.passiveTraits || [];
+  const parent2Traits = parent2.passiveTraits || [];
+
+  // Roll for each parent's traits (25% chance)
+  for (const traitId of parent1Traits) {
+    if (Math.random() < config.inheritChance) {
+      inheritedTraits.push(traitId);
+    }
+  }
+
+  for (const traitId of parent2Traits) {
+    if (Math.random() < config.inheritChance && !inheritedTraits.includes(traitId)) {
+      inheritedTraits.push(traitId);
+    }
+  }
+
+  // 5% chance to mutate a new random trait (would need trait pool to implement)
+  // This is a placeholder for future implementation
+  if (Math.random() < config.mutationChance) {
+    // TODO: Randomly select a trait from available pool based on generation
+    // For now, we skip this as it requires the trait data to be loaded
+  }
+
+  // Limit to max traits for this generation
+  const maxTraitsForGen = config.traitsByGeneration[generation] || 0;
+  return inheritedTraits.slice(0, Math.min(maxTraitsForGen, config.maxInheritedTraits));
+}
+
+/**
+ * Get the maximum number of ability slots for a given generation.
+ *
+ * @param generation - Generation level (0-5)
+ * @returns Total ability slots (base + bonus)
+ */
+export function getAbilitySlots(generation: number): number {
+  const slots = DEFAULT_ABILITY_INHERITANCE.abilitySlotsByGeneration[generation] ||
+    DEFAULT_ABILITY_INHERITANCE.abilitySlotsByGeneration[0];
+
+  return slots.baseSlots + slots.bonusSlots;
+}
+
+/**
+ * Get the maximum number of passive trait slots for a given generation.
+ *
+ * @param generation - Generation level (0-5)
+ * @returns Number of passive trait slots
+ */
+export function getPassiveTraitSlots(generation: number): number {
+  return DEFAULT_PASSIVE_TRAIT_CONFIG.traitsByGeneration[generation] || 0;
 }

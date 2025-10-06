@@ -214,24 +214,24 @@ Based on PRD: `prd-breeding-system.md`
   - [x] 9.14 Validate all offspring stats are within generation caps
   - [x] 9.15 Add offspring to creature collection via context action
 
-- [ ] 10.0 Add Rarity Upgrade and Special Abilities System
-  - [ ] 10.1 Implement Mythic rarity tier in CreatureRarity type
-  - [ ] 10.2 Update rollRarityUpgrade() to support Legendary → Mythic (10%)
-  - [ ] 10.3 Define Mythic tier stat bonuses (+50% compared to Legendary)
-  - [ ] 10.4 Create Mythic ultimate abilities in abilities data
-  - [ ] 10.5 Add visual effects for Mythic creatures (particle effects, aura)
-  - [ ] 10.6 Implement generation-based ability slot unlocks
-  - [ ] 10.7 Gen 2: +1 bonus ability slot
-  - [ ] 10.8 Gen 3: +2 bonus ability slots + 1 passive trait slot
-  - [ ] 10.9 Gen 4: +3 bonus ability slots + 2 passive trait slots
-  - [ ] 10.10 Gen 5: +4 bonus ability slots + 3 passive trait slots + ultimate ability
-  - [ ] 10.11 Create ability selection modal for inheritance conflicts
-  - [ ] 10.12 Show inherited abilities, natural abilities, and total available slots
-  - [ ] 10.13 Allow player to choose which abilities to keep
-  - [ ] 10.14 Save ability selection to creature data
-  - [ ] 10.15 Add passive trait system (new feature for Gen 3+)
-  - [ ] 10.16 Define passive traits (stat boosts, special effects, resistances)
-  - [ ] 10.17 Create Gen 5 ultimate abilities (unique, powerful, Mythic-exclusive)
+- [x] 10.0 Add Rarity Upgrade and Special Abilities System
+  - [x] 10.1 Implement Mythic rarity tier in CreatureRarity type (already exists as 'mythical')
+  - [x] 10.2 Update rollRarityUpgrade() to support Legendary → Mythic (10%) (already implemented)
+  - [x] 10.3 Define Mythic tier stat bonuses (+50% compared to Legendary) (via rarity multiplier: mythical = 32)
+  - [x] 10.4 Create Mythic ultimate abilities in abilities data (created mythicalAbilities.js)
+  - [x] 10.5 Add visual effects for Mythic creatures (particle effects, aura) (added to CreatureCard)
+  - [x] 10.6 Implement generation-based ability slot unlocks (DEFAULT_ABILITY_INHERITANCE config)
+  - [x] 10.7 Gen 2: +1 bonus ability slot (configured in abilitySlotsByGeneration)
+  - [x] 10.8 Gen 3: +2 bonus ability slots + 1 passive trait slot (configured)
+  - [x] 10.9 Gen 4: +3 bonus ability slots + 2 passive trait slots (configured)
+  - [x] 10.10 Gen 5: +4 bonus ability slots + 3 passive trait slots + ultimate ability (configured)
+  - [x] 10.11 Create ability selection modal for inheritance conflicts (AbilitySelectionModal.tsx)
+  - [x] 10.12 Show inherited abilities, natural abilities, and total available slots (implemented)
+  - [x] 10.13 Allow player to choose which abilities to keep (implemented)
+  - [x] 10.14 Save ability selection to creature data (onConfirm callback)
+  - [x] 10.15 Add passive trait system (new feature for Gen 3+) (PassiveTrait type added)
+  - [x] 10.16 Define passive traits (stat boosts, special effects, resistances) (created in mythicalAbilities.js)
+  - [x] 10.17 Create Gen 5 ultimate abilities (unique, powerful, Mythic-exclusive) (created in mythicalAbilities.js)
 
 - [ ] 11.0 Create Recipe Discovery and Breeding Guide
   - [ ] 11.1 Implement automatic recipe reveal when player obtains required creatures

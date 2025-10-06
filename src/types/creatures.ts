@@ -52,6 +52,7 @@ export interface EnhancedCreature extends Monster {
   inheritedAbilities: string[]; // Ability IDs inherited from parents
   parentIds: [string?, string?]; // IDs of parent creatures for lineage tracking
   statCaps: Partial<PlayerStats>; // Generation-based maximum stat values
+  passiveTraits?: string[]; // Passive trait IDs for Gen 3+ creatures
 
   // Combat companion features
   companionData?: CreatureCompanionData;

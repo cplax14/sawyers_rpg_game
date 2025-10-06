@@ -465,6 +465,115 @@ export interface BreedingValidation {
 }
 
 // =============================================================================
+// PASSIVE TRAIT SYSTEM
+// =============================================================================
+
+/**
+ * Passive trait that provides bonuses without needing to be activated
+ */
+export interface PassiveTrait {
+  /** Unique trait identifier */
+  id: string;
+
+  /** Display name */
+  name: string;
+
+  /** Trait description */
+  description: string;
+
+  /** Trait rarity tier */
+  rarity: CreatureRarity;
+
+  /** Trait category */
+  category: 'stat_boost' | 'resistance' | 'special_effect' | 'regeneration' | 'critical';
+
+  /** Stat modifiers applied passively */
+  statModifiers?: Partial<PlayerStats>;
+
+  /** Percentage-based stat modifiers */
+  percentModifiers?: {
+    /** HP bonus percentage */
+    hpBonus?: number;
+    /** MP bonus percentage */
+    mpBonus?: number;
+    /** All stats bonus percentage */
+    allStatsBonus?: number;
+    /** Attack bonus percentage */
+    attackBonus?: number;
+    /** Defense bonus percentage */
+    defenseBonus?: number;
+    /** Magic bonus percentage */
+    magicBonus?: number;
+  };
+
+  /** Element resistances (0-100%) */
+  resistances?: {
+    fire?: number;
+    water?: number;
+    earth?: number;
+    air?: number;
+    light?: number;
+    dark?: number;
+    ice?: number;
+    lightning?: number;
+    nature?: number;
+  };
+
+  /** Special effects */
+  specialEffects?: {
+    /** Type of special effect */
+    type: 'regeneration' | 'critical_chance' | 'counter_attack' | 'first_strike' | 'last_stand';
+    /** Effect value/percentage */
+    value: number;
+    /** Effect description */
+    description: string;
+  }[];
+
+  /** Generation requirement to unlock this trait */
+  minGeneration: number;
+
+  /** Whether this is a Gen 5 exclusive trait */
+  isUltimate?: boolean;
+
+  /** Icon/sprite identifier */
+  icon?: string;
+}
+
+/**
+ * Configuration for passive trait inheritance
+ */
+export interface PassiveTraitConfig {
+  /** Chance to inherit passive trait from parents */
+  inheritChance: number;
+
+  /** Maximum passive traits that can be inherited */
+  maxInheritedTraits: number;
+
+  /** Chance to randomly mutate a new passive trait */
+  mutationChance: number;
+
+  /** Generation-based passive trait availability */
+  traitsByGeneration: Record<number, number>;
+}
+
+/**
+ * Default passive trait configuration
+ */
+export const DEFAULT_PASSIVE_TRAIT_CONFIG: PassiveTraitConfig = {
+  inheritChance: 0.25, // 25% chance per parent trait
+  maxInheritedTraits: 3,
+  mutationChance: 0.05, // 5% chance to gain new trait
+  traitsByGeneration: {
+    0: 0, // No passive traits for wild creatures
+    1: 0, // No passive traits for Gen 1
+    2: 0, // No passive traits for Gen 2
+    3: 1, // 1 passive trait slot for Gen 3
+    4: 2, // 2 passive trait slots for Gen 4
+    5: 3, // 3 passive trait slots for Gen 5
+  },
+};
+
+// =============================================================================
 // HELPER TYPES
 // =============================================================================
 
