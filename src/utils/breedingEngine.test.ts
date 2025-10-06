@@ -22,6 +22,7 @@ import {
   calculateRecoveryCost,
   canBreed,
   validateBreeding,
+  validateBreedingCost,
 } from './breedingEngine';
 import { EnhancedCreature, CreatureRarity } from '../types/creatures';
 import { PlayerStats } from '../types/game';
@@ -837,6 +838,162 @@ describe('validateBreeding', () => {
     expect(result.valid).toBe(false);
     expect(result.errors.length).toBeGreaterThan(0);
     expect(result.errors[0]).toContain('Exhausted');
+  });
+
+  it('should validate gold cost when provided', () => {
+    const parent1 = createMockCreature({ level: 10 });
+    const parent2 = createMockCreature({ level: 10 });
+    const cost = calculateBreedingCost(parent1, parent2);
+    const playerGold = cost.goldAmount + 500; // Ensure we have enough
+    const playerMaterials = {};
+
+    const result = validateBreeding(parent1, parent2, playerGold, playerMaterials, cost);
+
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+  });
+
+  it('should error when insufficient gold', () => {
+    const parent1 = createMockCreature({ level: 10 });
+    const parent2 = createMockCreature({ level: 10 });
+    const cost = calculateBreedingCost(parent1, parent2);
+    const playerGold = 100; // Not enough
+    const playerMaterials = {};
+
+    const result = validateBreeding(parent1, parent2, playerGold, playerMaterials, cost);
+
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.includes('Insufficient gold'))).toBe(true);
+  });
+
+  it('should error when missing materials', () => {
+    const parent1 = createMockCreature({ level: 10 });
+    const parent2 = createMockCreature({ level: 10 });
+    const recipe = createMockRecipe({
+      materials: [
+        { itemId: 'slime_gel', quantity: 5, name: 'Slime Gel' },
+      ],
+    });
+    const cost = calculateBreedingCost(parent1, parent2, recipe);
+    const playerGold = 10000;
+    const playerMaterials = { slime_gel: 2 }; // Not enough
+
+    const result = validateBreeding(parent1, parent2, playerGold, playerMaterials, cost);
+
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.includes('Slime Gel'))).toBe(true);
+  });
+
+  it('should add warning for exhausted parents', () => {
+    const parent1 = createMockCreature({ generation: 1, exhaustionLevel: 2 });
+    const parent2 = createMockCreature({ generation: 1, exhaustionLevel: 1 });
+
+    const result = validateBreeding(parent1, parent2);
+
+    expect(result.warnings.length).toBeGreaterThan(0);
+    expect(result.warnings[0]).toContain('exhausted');
+  });
+});
+
+describe('validateBreedingCost', () => {
+  it('should return canAfford true when player has resources', () => {
+    const cost = {
+      goldAmount: 1000,
+      costBreakdown: {
+        baseCost: 1000,
+        rarityMultiplier: 1,
+        generationMultiplier: 1,
+        breedingCountMultiplier: 1,
+        totalGold: 1000,
+      },
+      materials: [
+        { itemId: 'slime_gel', quantity: 3, name: 'Slime Gel' },
+      ],
+    };
+    const playerGold = 1500;
+    const playerMaterials = { slime_gel: 5 };
+
+    const result = validateBreedingCost(cost, playerGold, playerMaterials);
+
+    expect(result.canAfford).toBe(true);
+    expect(result.goldShortfall).toBe(0);
+    expect(result.missingMaterials).toHaveLength(0);
+  });
+
+  it('should calculate gold shortfall', () => {
+    const cost = {
+      goldAmount: 1000,
+      costBreakdown: {
+        baseCost: 1000,
+        rarityMultiplier: 1,
+        generationMultiplier: 1,
+        breedingCountMultiplier: 1,
+        totalGold: 1000,
+      },
+      materials: [],
+    };
+    const playerGold = 600;
+    const playerMaterials = {};
+
+    const result = validateBreedingCost(cost, playerGold, playerMaterials);
+
+    expect(result.canAfford).toBe(false);
+    expect(result.goldShortfall).toBe(400);
+  });
+
+  it('should identify missing materials', () => {
+    const cost = {
+      goldAmount: 1000,
+      costBreakdown: {
+        baseCost: 1000,
+        rarityMultiplier: 1,
+        generationMultiplier: 1,
+        breedingCountMultiplier: 1,
+        totalGold: 1000,
+      },
+      materials: [
+        { itemId: 'slime_gel', quantity: 5, name: 'Slime Gel' },
+        { itemId: 'goblin_tooth', quantity: 3, name: 'Goblin Tooth' },
+      ],
+    };
+    const playerGold = 2000;
+    const playerMaterials = { slime_gel: 2 }; // Missing goblin_tooth, not enough slime_gel
+
+    const result = validateBreedingCost(cost, playerGold, playerMaterials);
+
+    expect(result.canAfford).toBe(false);
+    expect(result.missingMaterials).toHaveLength(2);
+    expect(result.missingMaterials[0]).toEqual({
+      itemId: 'slime_gel',
+      quantity: 3, // Need 3 more
+      name: 'Slime Gel',
+    });
+    expect(result.missingMaterials[1]).toEqual({
+      itemId: 'goblin_tooth',
+      quantity: 3, // Need all 3
+      name: 'Goblin Tooth',
+    });
+  });
+
+  it('should handle empty materials requirement', () => {
+    const cost = {
+      goldAmount: 500,
+      costBreakdown: {
+        baseCost: 500,
+        rarityMultiplier: 1,
+        generationMultiplier: 1,
+        breedingCountMultiplier: 1,
+        totalGold: 500,
+      },
+      materials: [],
+    };
+    const playerGold = 1000;
+    const playerMaterials = {};
+
+    const result = validateBreedingCost(cost, playerGold, playerMaterials);
+
+    expect(result.canAfford).toBe(true);
+    expect(result.missingMaterials).toHaveLength(0);
   });
 });
 

@@ -38,7 +38,12 @@ import {
   isQuestItem,
   formatQuantity,
   formatValue,
-  formatWeight
+  formatWeight,
+  addMaterial,
+  removeMaterial,
+  getMaterialQuantity,
+  hasMaterials,
+  getMissingMaterials
 } from './itemUtils';
 
 import { EnhancedItem, ItemCategory, ItemType, ItemFilter } from '../types/inventory';
@@ -764,6 +769,185 @@ describe('itemUtils', () => {
       expect(formatWeight(5.5)).toBe('5.5');
       expect(formatWeight(10)).toBe('10.0');
       expect(formatWeight(undefined)).toBe('0');
+    });
+  });
+
+  // ================================
+  // BREEDING MATERIAL MANAGEMENT TESTS
+  // ================================
+
+  describe('addMaterial', () => {
+    it('should add material to empty inventory', () => {
+      const materials = {};
+      const result = addMaterial(materials, 'slime_gel', 5);
+
+      expect(result).toEqual({ slime_gel: 5 });
+      expect(materials).toEqual({}); // Original should be unchanged (immutable)
+    });
+
+    it('should add to existing material quantity', () => {
+      const materials = { slime_gel: 3 };
+      const result = addMaterial(materials, 'slime_gel', 5);
+
+      expect(result).toEqual({ slime_gel: 8 });
+    });
+
+    it('should add new material alongside existing ones', () => {
+      const materials = { slime_gel: 3 };
+      const result = addMaterial(materials, 'goblin_tooth', 2);
+
+      expect(result).toEqual({ slime_gel: 3, goblin_tooth: 2 });
+    });
+  });
+
+  describe('removeMaterial', () => {
+    it('should remove material from inventory', () => {
+      const materials = { slime_gel: 5 };
+      const result = removeMaterial(materials, 'slime_gel', 3);
+
+      expect(result).toEqual({ slime_gel: 2 });
+    });
+
+    it('should remove material entry when quantity reaches 0', () => {
+      const materials = { slime_gel: 5 };
+      const result = removeMaterial(materials, 'slime_gel', 5);
+
+      expect(result).toEqual({});
+    });
+
+    it('should return null when insufficient materials', () => {
+      const materials = { slime_gel: 3 };
+      const result = removeMaterial(materials, 'slime_gel', 5);
+
+      expect(result).toBeNull();
+    });
+
+    it('should return null when material does not exist', () => {
+      const materials = {};
+      const result = removeMaterial(materials, 'slime_gel', 1);
+
+      expect(result).toBeNull();
+    });
+
+    it('should not modify other materials when removing one', () => {
+      const materials = { slime_gel: 5, goblin_tooth: 3 };
+      const result = removeMaterial(materials, 'slime_gel', 2);
+
+      expect(result).toEqual({ slime_gel: 3, goblin_tooth: 3 });
+    });
+  });
+
+  describe('getMaterialQuantity', () => {
+    it('should return quantity of existing material', () => {
+      const materials = { slime_gel: 5 };
+      const quantity = getMaterialQuantity(materials, 'slime_gel');
+
+      expect(quantity).toBe(5);
+    });
+
+    it('should return 0 for non-existent material', () => {
+      const materials = { slime_gel: 5 };
+      const quantity = getMaterialQuantity(materials, 'goblin_tooth');
+
+      expect(quantity).toBe(0);
+    });
+
+    it('should return 0 for empty inventory', () => {
+      const materials = {};
+      const quantity = getMaterialQuantity(materials, 'slime_gel');
+
+      expect(quantity).toBe(0);
+    });
+  });
+
+  describe('hasMaterials', () => {
+    it('should return true when all materials are available', () => {
+      const materials = { slime_gel: 5, goblin_tooth: 3 };
+      const requirements = [
+        { itemId: 'slime_gel', quantity: 3 },
+        { itemId: 'goblin_tooth', quantity: 2 }
+      ];
+
+      expect(hasMaterials(materials, requirements)).toBe(true);
+    });
+
+    it('should return false when any material is insufficient', () => {
+      const materials = { slime_gel: 5, goblin_tooth: 1 };
+      const requirements = [
+        { itemId: 'slime_gel', quantity: 3 },
+        { itemId: 'goblin_tooth', quantity: 2 }
+      ];
+
+      expect(hasMaterials(materials, requirements)).toBe(false);
+    });
+
+    it('should return false when material is missing', () => {
+      const materials = { slime_gel: 5 };
+      const requirements = [
+        { itemId: 'slime_gel', quantity: 3 },
+        { itemId: 'goblin_tooth', quantity: 2 }
+      ];
+
+      expect(hasMaterials(materials, requirements)).toBe(false);
+    });
+
+    it('should return true for empty requirements', () => {
+      const materials = { slime_gel: 5 };
+      const requirements: Array<{ itemId: string; quantity: number }> = [];
+
+      expect(hasMaterials(materials, requirements)).toBe(true);
+    });
+  });
+
+  describe('getMissingMaterials', () => {
+    it('should return empty array when all materials are available', () => {
+      const materials = { slime_gel: 5, goblin_tooth: 3 };
+      const requirements = [
+        { itemId: 'slime_gel', quantity: 3, name: 'Slime Gel' },
+        { itemId: 'goblin_tooth', quantity: 2, name: 'Goblin Tooth' }
+      ];
+
+      const missing = getMissingMaterials(materials, requirements);
+      expect(missing).toEqual([]);
+    });
+
+    it('should return missing materials with shortfall amounts', () => {
+      const materials = { slime_gel: 2, goblin_tooth: 1 };
+      const requirements = [
+        { itemId: 'slime_gel', quantity: 5, name: 'Slime Gel' },
+        { itemId: 'goblin_tooth', quantity: 3, name: 'Goblin Tooth' }
+      ];
+
+      const missing = getMissingMaterials(materials, requirements);
+      expect(missing).toEqual([
+        { itemId: 'slime_gel', quantity: 3, name: 'Slime Gel' },
+        { itemId: 'goblin_tooth', quantity: 2, name: 'Goblin Tooth' }
+      ]);
+    });
+
+    it('should return completely missing materials', () => {
+      const materials = {};
+      const requirements = [
+        { itemId: 'slime_gel', quantity: 5, name: 'Slime Gel' }
+      ];
+
+      const missing = getMissingMaterials(materials, requirements);
+      expect(missing).toEqual([
+        { itemId: 'slime_gel', quantity: 5, name: 'Slime Gel' }
+      ]);
+    });
+
+    it('should return partial missing materials', () => {
+      const materials = { slime_gel: 5 };
+      const requirements = [
+        { itemId: 'slime_gel', quantity: 3, name: 'Slime Gel' },
+        { itemId: 'goblin_tooth', quantity: 2, name: 'Goblin Tooth' }
+      ];
+
+      const missing = getMissingMaterials(materials, requirements);
+      expect(missing).toEqual([
+        { itemId: 'goblin_tooth', quantity: 2, name: 'Goblin Tooth' }
+      ]);
     });
   });
 });

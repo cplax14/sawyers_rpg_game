@@ -532,17 +532,24 @@ export function canBreed(creature: EnhancedCreature, maxExhaustion: number = 5):
  *
  * @param parent1 - First parent
  * @param parent2 - Second parent
- * @returns Validation result with errors
+ * @param playerGold - Player's current gold
+ * @param playerMaterials - Player's breeding materials inventory
+ * @param cost - Calculated breeding cost
+ * @returns Validation result with errors and warnings
  */
 export function validateBreeding(
   parent1: EnhancedCreature,
-  parent2: EnhancedCreature
-): { valid: boolean; errors: string[] } {
+  parent2: EnhancedCreature,
+  playerGold: number = 0,
+  playerMaterials: Record<string, number> = {},
+  cost?: BreedingCost
+): { valid: boolean; errors: string[]; warnings: string[] } {
   const errors: string[] = [];
+  const warnings: string[] = [];
 
   if (!parent1 || !parent2) {
     errors.push('Two parent creatures are required');
-    return { valid: false, errors };
+    return { valid: false, errors, warnings };
   }
 
   if (parent1.creatureId === parent2.creatureId) {
@@ -557,8 +564,73 @@ export function validateBreeding(
     errors.push(`${parent2.name} cannot breed (generation or exhaustion limit)`);
   }
 
+  // Validate cost if provided
+  if (cost) {
+    // Check gold
+    if (cost.goldAmount > playerGold) {
+      const shortfall = cost.goldAmount - playerGold;
+      errors.push(`Insufficient gold (need ${shortfall.toLocaleString()} more)`);
+    }
+
+    // Check materials
+    for (const material of cost.materials) {
+      const available = playerMaterials[material.itemId] || 0;
+      if (available < material.quantity) {
+        const needed = material.quantity - available;
+        errors.push(`Need ${needed} more ${material.name}`);
+      }
+    }
+  }
+
+  // Add warnings for exhaustion
+  const parent1Exhaustion = parent1.exhaustionLevel || 0;
+  const parent2Exhaustion = parent2.exhaustionLevel || 0;
+
+  if (parent1Exhaustion > 0 || parent2Exhaustion > 0) {
+    warnings.push('One or both parents are exhausted (reduced stats)');
+  }
+
   return {
     valid: errors.length === 0,
     errors,
+    warnings,
+  };
+}
+
+/**
+ * Validate if player can afford a breeding cost.
+ *
+ * @param cost - Breeding cost to validate
+ * @param playerGold - Player's current gold
+ * @param playerMaterials - Player's breeding materials inventory
+ * @returns Validation result with missing resources
+ */
+export function validateBreedingCost(
+  cost: BreedingCost,
+  playerGold: number,
+  playerMaterials: Record<string, number>
+): {
+  canAfford: boolean;
+  goldShortfall: number;
+  missingMaterials: BreedingMaterialRequirement[];
+} {
+  const goldShortfall = Math.max(0, cost.goldAmount - playerGold);
+  const missingMaterials: BreedingMaterialRequirement[] = [];
+
+  // Check each material requirement
+  for (const material of cost.materials) {
+    const available = playerMaterials[material.itemId] || 0;
+    if (available < material.quantity) {
+      missingMaterials.push({
+        ...material,
+        quantity: material.quantity - available, // Store the shortage amount
+      });
+    }
+  }
+
+  return {
+    canAfford: goldShortfall === 0 && missingMaterials.length === 0,
+    goldShortfall,
+    missingMaterials,
   };
 }
