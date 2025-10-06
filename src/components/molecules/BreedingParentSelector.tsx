@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../atoms/Button';
 import { Modal } from '../atoms/Modal';
 import { CreatureCard } from './CreatureCard';
-import { useGameState } from '../../hooks/useGameState';
+import { useCreatures } from '../../hooks/useCreatures';
 import { useResponsive } from '../../hooks/useResponsive';
 import { EnhancedCreature } from '../../types/creatures';
 
@@ -128,7 +128,7 @@ export const BreedingParentSelector: React.FC<BreedingParentSelectorProps> = ({
   label,
   excludeCreatureId,
 }) => {
-  const { gameState } = useGameState();
+  const { collection } = useCreatures();
   const { isMobile } = useResponsive();
 
   const [showModal, setShowModal] = useState(false);
@@ -139,9 +139,8 @@ export const BreedingParentSelector: React.FC<BreedingParentSelectorProps> = ({
 
   // Get available creatures (from creatures collection)
   const availableCreatures = useMemo(() => {
-    // Use creatures collection instead of legacy capturedMonsters
-    const creaturesObj = gameState.creatures?.creatures || {};
-    const creatures = Object.values(creaturesObj);
+    // Use useCreatures hook which handles initialization properly
+    const creatures = Object.values(collection.creatures || {});
 
     // Filter out the excluded creature
     let filtered = excludeCreatureId
@@ -168,15 +167,14 @@ export const BreedingParentSelector: React.FC<BreedingParentSelectorProps> = ({
     }
 
     return filtered;
-  }, [gameState.creatures?.creatures, excludeCreatureId, searchQuery, filterRarity, filterBredOnly]);
+  }, [collection.creatures, excludeCreatureId, searchQuery, filterRarity, filterBredOnly]);
 
   // Unique rarities for filtering
   const availableRarities = useMemo(() => {
-    const creaturesObj = gameState.creatures?.creatures || {};
-    const creatures = Object.values(creaturesObj);
+    const creatures = Object.values(collection.creatures || {});
     const rarities = new Set(creatures.map(c => c.rarity));
     return Array.from(rarities);
-  }, [gameState.creatures?.creatures]);
+  }, [collection.creatures]);
 
   const handleSlotClick = useCallback(() => {
     setShowModal(true);
