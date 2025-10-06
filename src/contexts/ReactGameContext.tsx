@@ -1408,6 +1408,10 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
             .catch((error: Error) => {
               console.error('❌ [POST-BREED] Auto-save error:', error);
             });
+        } else {
+          console.error('❌ [POST-BREED] AutoSaveManager not initialized! Offspring will not be persisted.');
+          console.error('💡 [POST-BREED] Make sure useAutoSave() hook is called in ReactApp or a top-level component.');
+          console.error('🔍 [POST-BREED] Check that GameShell component includes: useAutoSave({ autoStart: true, autoSaveSlot: 0 })');
         }
       }, 300); // 300ms delay ensures state propagation to all hooks/components
 

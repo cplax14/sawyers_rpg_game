@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { ReactGameProvider } from './contexts/ReactGameContext';
 import { LoadingSpinner } from './components/atoms';
-import { useGameState, useUI, useDataPreloader } from './hooks';
+import { useGameState, useUI, useDataPreloader, useAutoSave } from './hooks';
 import {
   LazyMainMenu,
   LazyCharacterSelection,
@@ -140,6 +140,12 @@ const GameShell: React.FC = () => {
   const { state } = useGameState();
   const { currentScreen, isLoading, error } = useUI();
   const { preloadCriticalData, isDataReady } = useDataPreloader();
+
+  // Initialize auto-save system (CRITICAL: enables window.gameAutoSaveManager)
+  useAutoSave({
+    autoStart: true,
+    autoSaveSlot: 0
+  });
 
   const [isInitializing, setIsInitializing] = useState(true);
   const [initError, setInitError] = useState<string | null>(null);
