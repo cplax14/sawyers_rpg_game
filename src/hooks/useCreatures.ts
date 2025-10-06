@@ -326,19 +326,26 @@ export function useCreatures(): UseCreaturesReturn {
       const globalCreatureCount = Object.keys(gameState.creatures.creatures || {}).length;
       const localCreatureCount = Object.keys(collection.creatures).length;
 
+      // Use lastUpdated timestamp to detect ANY changes (additions, updates, etc.)
+      // This is more reliable than count comparison because breeding can add 1 creature
+      // while also updating 2 existing creatures (parent exhaustion), keeping count the same
+      const lastGlobalUpdate = gameState.creatures.lastUpdated || 0;
+      const lastLocalUpdate = collection.lastUpdated || 0;
+
       console.log('🔄 useCreatures: Syncing collection from global state', {
         globalCreatureCount,
         localCreatureCount,
-        needsSync: globalCreatureCount !== localCreatureCount,
-        lastUpdated: gameState.creatures.lastUpdated,
+        lastGlobalUpdate,
+        lastLocalUpdate,
+        timestampChanged: lastGlobalUpdate !== lastLocalUpdate,
         hasActiveTeam: !!gameState.creatures.activeTeam,
         activeTeamLength: gameState.creatures.activeTeam?.length || 0,
         activeTeamIds: gameState.creatures.activeTeam || [],
         totalCreatures: globalCreatureCount
       });
 
-      // Only update if there's an actual change
-      if (globalCreatureCount !== localCreatureCount ||
+      // Only update if there's an actual change (use timestamp comparison instead of count)
+      if (lastGlobalUpdate !== lastLocalUpdate ||
           JSON.stringify(gameState.creatures.activeTeam) !== JSON.stringify(collection.activeTeam)) {
 
         console.log('📝 useCreatures: Updating local collection (change detected)');
@@ -357,6 +364,7 @@ export function useCreatures(): UseCreaturesReturn {
           breedingHistory: gameState.creatures?.breedingHistory || prev.breedingHistory,
           activeTrades: gameState.creatures?.activeTrades || prev.activeTrades,
           tradeHistory: gameState.creatures?.tradeHistory || prev.tradeHistory,
+          lastUpdated: gameState.creatures?.lastUpdated || Date.now(), // Track last sync time
           // Merge creatures (combine captured monsters with any saved creatures)
           creatures: {
             ...prev.creatures,
@@ -369,7 +377,7 @@ export function useCreatures(): UseCreaturesReturn {
         console.log('⏭️ useCreatures: No changes detected, skipping update');
       }
     }
-  }, [gameState.creatures, gameState.creatures?.lastUpdated, collection.creatures, collection.activeTeam]);
+  }, [gameState.creatures, gameState.creatures?.lastUpdated]);
 
   // Filter creatures based on current filter
   useEffect(() => {
