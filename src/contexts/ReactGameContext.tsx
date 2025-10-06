@@ -983,6 +983,8 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
       }
 
       // Update creatures collection
+      // CRITICAL FIX: Force new reference with lastUpdated timestamp
+      // This ensures React detects the state change and triggers re-renders in useCreatures hook
       const updatedCreatures = {
         ...state.creatures,
         creatures: {
@@ -992,7 +994,16 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
           [parent2.creatureId]: exhaustedParent2,
         },
         totalCaptured: state.creatures.totalCaptured + 1,
+        lastUpdated: Date.now(), // Force reference change to trigger React updates
       };
+
+      console.log('✅ [BREED_CREATURES] Updated creatures collection:', {
+        offspringId,
+        offspringName: completeOffspring.name,
+        totalCreaturesNow: Object.keys(updatedCreatures.creatures).length,
+        updatedReference: updatedCreatures !== state.creatures,
+        lastUpdated: updatedCreatures.lastUpdated
+      });
 
       // Check for recipe discovery after breeding
       let newlyDiscoveredRecipesFromBreeding: string[] = [];
@@ -1018,6 +1029,14 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         rarity: result.offspring.rarity,
         inheritedAbilities: result.inheritedAbilities,
       });
+
+      // CRITICAL FIX: Trigger auto-save to persist offspring to localStorage
+      setTimeout(() => {
+        if (window.gameAutoSaveManager) {
+          console.log('💾 [BREED_CREATURES] Triggering auto-save to persist offspring');
+          window.gameAutoSaveManager.forceSave();
+        }
+      }, 100);
 
       return {
         ...state,

@@ -333,6 +333,9 @@ export interface CreatureCollection {
   showStats: boolean;
   groupBy: 'species' | 'type' | 'element' | 'rarity' | 'level';
   filter: CreatureFilter;
+
+  // State tracking (forces React re-renders when creatures change)
+  lastUpdated?: number; // Timestamp of last modification
 }
 
 export interface CreatureFilter {
