@@ -1030,13 +1030,8 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         inheritedAbilities: result.inheritedAbilities,
       });
 
-      // CRITICAL FIX: Trigger auto-save to persist offspring to localStorage
-      setTimeout(() => {
-        if (window.gameAutoSaveManager) {
-          console.log('💾 [BREED_CREATURES] Triggering auto-save to persist offspring');
-          window.gameAutoSaveManager.forceSave();
-        }
-      }, 100);
+      // REMOVED: Auto-save trigger moved to external effect (see useEffect in ReactGameProvider)
+      // Triggering save from inside reducer reads stale state before React re-renders
 
       return {
         ...state,
@@ -1393,6 +1388,32 @@ interface ReactGameProviderProps {
 
 export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(reactGameReducer, initialState);
+
+  // Auto-save after breeding completes (runs after state update and re-render)
+  useEffect(() => {
+    // Only trigger if breeding just occurred (lastUpdated changed)
+    if (state.creatures?.lastUpdated) {
+      // Small delay to ensure React has completed all renders and child component updates
+      const saveTimer = setTimeout(() => {
+        if (window.gameAutoSaveManager) {
+          console.log('💾 [POST-BREED] Triggering auto-save after state update complete');
+          window.gameAutoSaveManager.forceSave()
+            .then((success: boolean) => {
+              if (success) {
+                console.log('✅ [POST-BREED] Auto-save successful, offspring persisted');
+              } else {
+                console.error('❌ [POST-BREED] Auto-save failed');
+              }
+            })
+            .catch((error: Error) => {
+              console.error('❌ [POST-BREED] Auto-save error:', error);
+            });
+        }
+      }, 300); // 300ms delay ensures state propagation to all hooks/components
+
+      return () => clearTimeout(saveTimer);
+    }
+  }, [state.creatures?.lastUpdated, state.breedingAttempts]); // Trigger on breeding changes
 
   // Initialize save slots from localStorage on mount
   useEffect(() => {
