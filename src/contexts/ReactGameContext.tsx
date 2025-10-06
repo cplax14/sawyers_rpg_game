@@ -3,8 +3,9 @@ import { AutoSaveManager } from '../utils/autoSave';
 import { InventoryState } from '../types/inventory';
 import { CreatureCollection, EnhancedCreature } from '../types/creatures';
 import { ExperienceState } from '../types/experience';
-import { removeExhaustion } from '../utils/breedingEngine';
+import { removeExhaustion, calculateBreedingCost, generateOffspring, validateBreeding, applyExhaustion } from '../utils/breedingEngine';
 import { BreedingRecipe } from '../types/breeding';
+import { checkRecipeDiscoveryAfterCapture } from '../utils/recipeDiscovery';
 
 // Global type declaration for auto-save manager
 declare global {
@@ -553,31 +554,25 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
       const newCapturedMonsters = [...state.capturedMonsters, action.payload.monster];
 
       // Check for recipe discovery after capturing a new creature
-      // Import will be handled at the top of the file
       let newlyDiscoveredRecipes: string[] = [];
-      try {
-        const { checkRecipeDiscoveryAfterCapture } = require('../utils/recipeDiscovery');
 
-        // Convert captured monster to EnhancedCreature format for recipe check
-        const enhancedCreature = state.creatures?.creatures[action.payload.monster.id];
+      // Convert captured monster to EnhancedCreature format for recipe check
+      const enhancedCreature = state.creatures?.creatures[action.payload.monster.id];
 
-        if (enhancedCreature && state.creatures) {
-          const discoveryResult = checkRecipeDiscoveryAfterCapture(
-            enhancedCreature,
-            state.creatures.creatures,
-            state.discoveredRecipes,
-            state.player?.level || 1,
-            state.storyFlags
-          );
+      if (enhancedCreature && state.creatures) {
+        const discoveryResult = checkRecipeDiscoveryAfterCapture(
+          enhancedCreature,
+          state.creatures.creatures,
+          state.discoveredRecipes,
+          state.player?.level || 1,
+          state.storyFlags
+        );
 
-          newlyDiscoveredRecipes = discoveryResult.newlyDiscovered;
+        newlyDiscoveredRecipes = discoveryResult.newlyDiscovered;
 
-          if (newlyDiscoveredRecipes.length > 0) {
-            console.log('✨ New recipes discovered:', newlyDiscoveredRecipes);
-          }
+        if (newlyDiscoveredRecipes.length > 0) {
+          console.log('✨ New recipes discovered:', newlyDiscoveredRecipes);
         }
-      } catch (error) {
-        console.warn('Failed to check recipe discovery:', error);
       }
 
       return {
@@ -844,14 +839,6 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         console.log('🧬 [BREED_CREATURES] Recipe breeding not yet implemented, using natural breeding');
       }
 
-      // Import breeding utilities
-      const {
-        calculateBreedingCost,
-        generateOffspring,
-        validateBreeding,
-        applyExhaustion
-      } = require('../utils/breedingEngine');
-
       // Calculate cost
       const cost = calculateBreedingCost(parent1, parent2, recipe);
 
@@ -1009,24 +996,19 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
 
       // Check for recipe discovery after breeding
       let newlyDiscoveredRecipesFromBreeding: string[] = [];
-      try {
-        const { checkRecipeDiscoveryAfterCapture } = require('../utils/recipeDiscovery');
 
-        const discoveryResult = checkRecipeDiscoveryAfterCapture(
-          completeOffspring,
-          updatedCreatures.creatures,
-          state.discoveredRecipes,
-          state.player?.level || 1,
-          state.storyFlags
-        );
+      const discoveryResult = checkRecipeDiscoveryAfterCapture(
+        completeOffspring,
+        updatedCreatures.creatures,
+        state.discoveredRecipes,
+        state.player?.level || 1,
+        state.storyFlags
+      );
 
-        newlyDiscoveredRecipesFromBreeding = discoveryResult.newlyDiscovered;
+      newlyDiscoveredRecipesFromBreeding = discoveryResult.newlyDiscovered;
 
-        if (newlyDiscoveredRecipesFromBreeding.length > 0) {
-          console.log('✨ New recipes discovered from breeding:', newlyDiscoveredRecipesFromBreeding);
-        }
-      } catch (error) {
-        console.warn('Failed to check recipe discovery after breeding:', error);
+      if (newlyDiscoveredRecipesFromBreeding.length > 0) {
+        console.log('✨ New recipes discovered from breeding:', newlyDiscoveredRecipesFromBreeding);
       }
 
       console.log('✅ [BREED_CREATURES] Successfully bred creature:', {
