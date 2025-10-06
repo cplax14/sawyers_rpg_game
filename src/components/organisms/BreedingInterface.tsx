@@ -245,7 +245,16 @@ export const BreedingInterface: React.FC<BreedingInterfaceProps> = ({
       const recipe = undefined; // TODO: Find matching recipe
       const result = generateOffspring(selectedParent1, selectedParent2, recipe);
 
-      // Show result modal
+      console.log('🧬 Breeding dispatched, waiting for state propagation...');
+
+      // CRITICAL FIX: Wait for React state update to propagate
+      // This ensures the useCreatures hook receives the updated gameState.creatures
+      // before we show the success modal and user navigates to collection
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      console.log('✅ State should be propagated, showing result modal');
+
+      // Now show result modal (state has propagated to useCreatures hook)
       setBreedingResult(result);
       setShowResultModal(true);
 
