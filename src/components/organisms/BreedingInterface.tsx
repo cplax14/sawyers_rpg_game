@@ -168,7 +168,7 @@ export const BreedingInterface: React.FC<BreedingInterfaceProps> = ({
   className,
   onClose,
 }) => {
-  const { gameState, dispatch } = useGameState();
+  const { state: gameState, dispatch } = useGameState();
   const { isMobile } = useResponsive();
 
   // Local state
@@ -230,20 +230,20 @@ export const BreedingInterface: React.FC<BreedingInterfaceProps> = ({
       // Simulate breeding process with delay for UX
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Generate offspring
-      const recipe = undefined; // TODO: Find matching recipe
-      const result = generateOffspring(selectedParent1, selectedParent2, recipe);
-
       // Dispatch breeding action to update game state
+      // The reducer will handle offspring generation, cost deduction, and exhaustion internally
       dispatch({
         type: 'BREED_CREATURES',
         payload: {
           parent1Id: selectedParent1.creatureId,
           parent2Id: selectedParent2.creatureId,
-          offspring: result.offspring!,
-          cost: breedingCost,
+          recipeId: undefined, // TODO: Find matching recipe based on parents
         },
       });
+
+      // Generate result for UI display (reducer already updated state)
+      const recipe = undefined; // TODO: Find matching recipe
+      const result = generateOffspring(selectedParent1, selectedParent2, recipe);
 
       // Show result modal
       setBreedingResult(result);
@@ -254,7 +254,13 @@ export const BreedingInterface: React.FC<BreedingInterfaceProps> = ({
       setSelectedParent2(null);
     } catch (error) {
       console.error('Breeding failed:', error);
-      // TODO: Show error message to user
+
+      // Show user-friendly error message
+      const errorMessage = error instanceof Error
+        ? error.message
+        : 'An unknown error occurred during breeding';
+
+      alert(`Breeding Failed: ${errorMessage}`);
     } finally {
       setIsBreeding(false);
     }

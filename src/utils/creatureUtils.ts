@@ -234,8 +234,8 @@ export const isBreedingEligible = (creature: EnhancedCreature): boolean => {
   // Must be captured
   if (!creature.capturedAt) return false;
 
-  // Must be above minimum level (usually 10)
-  if (creature.level < 10) return false;
+  // Level requirement removed - players can breed at any level
+  // Previously required level 10, now allows breeding at level 1+
 
   // Must have fertility above 0
   if (creature.fertility <= 0) return false;
