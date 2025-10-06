@@ -5,6 +5,7 @@ import { LoadingSpinner } from '../atoms/LoadingSpinner';
 import { CreatureCard } from '../molecules/CreatureCard';
 import { VirtualizedGrid } from '../atoms/VirtualizedGrid';
 import { LazyVirtualizedGrid } from './LazyVirtualizedGrid';
+import { BreedingInterface } from './BreedingInterface';
 import { useCreatures } from '../../hooks/useCreatures';
 import { useVirtualizedGrid } from '../../hooks/useVirtualizedGrid';
 import { useLazyCreatureLoading } from '../../hooks/useLazyLoading';
@@ -297,6 +298,7 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
   const [viewMode, setViewMode] = useState<ViewMode>('bestiary');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<CreatureType | 'all'>('all');
+  const [filterBredOnly, setFilterBredOnly] = useState(false);
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
@@ -349,6 +351,11 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
       data = data.filter(creature => creature.creatureType === selectedType);
     }
 
+    // Apply bred only filter
+    if (filterBredOnly) {
+      data = data.filter(creature => (creature.generation || 0) > 0);
+    }
+
     // Apply sorting
     data.sort((a, b) => {
       let comparison = 0;
@@ -385,7 +392,7 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
     });
 
     return data;
-  }, [currentData, searchQuery, selectedType, sortBy, sortOrder]);
+  }, [currentData, searchQuery, selectedType, filterBredOnly, sortBy, sortOrder]);
 
   // Virtualized grid configuration for creatures
   const CREATURE_CARD_HEIGHT = isMobile ? 220 : 260;
@@ -899,6 +906,25 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
             <span>{type.name}</span>
           </motion.button>
         ))}
+
+        {/* Bred Only Filter - Special toggle button */}
+        <motion.button
+          style={{
+            ...creatureStyles.filterTab,
+            ...(filterBredOnly ? creatureStyles.filterTabActive : {}),
+            borderColor: filterBredOnly ? 'rgba(139, 92, 246, 0.5)' : 'rgba(212, 175, 55, 0.3)',
+            background: filterBredOnly ? 'rgba(139, 92, 246, 0.2)' : 'rgba(255, 255, 255, 0.05)'
+          }}
+          onClick={() => setFilterBredOnly(!filterBredOnly)}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.4 + CREATURE_TYPES.length * 0.02 }}
+        >
+          <span>🧬</span>
+          <span>Bred Only</span>
+        </motion.button>
       </motion.div>
 
       {/* Content */}
@@ -1032,95 +1058,22 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
           </div>
         )}
 
-        {/* Breeding Panel */}
+        {/* Breeding Panel - Use unified BreedingInterface component */}
         {viewMode === 'breeding' && (
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 50 }}
             style={{
-              position: 'fixed',
-              bottom: '2rem',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              background: 'rgba(0, 0, 0, 0.9)',
-              border: '2px solid #ff6b6b',
-              borderRadius: '16px',
-              padding: '1.5rem',
-              zIndex: 1000,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '1rem',
-              maxWidth: '90vw',
-              flexWrap: 'wrap',
-              justifyContent: 'center'
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              zIndex: 10
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>
-                  {selectedParent1 ? '✅' : '👤'}
-                </div>
-                <div style={{ fontSize: '0.9rem', color: '#ff6b6b' }}>
-                  Parent 1
-                </div>
-                <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>
-                  {selectedParent1 ? selectedParent1.name : 'Select first parent'}
-                </div>
-              </div>
-
-              <div style={{ fontSize: '2rem', color: '#ff6b6b' }}>+</div>
-
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>
-                  {selectedParent2 ? '✅' : '👤'}
-                </div>
-                <div style={{ fontSize: '0.9rem', color: '#ff6b6b' }}>
-                  Parent 2
-                </div>
-                <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>
-                  {selectedParent2 ? selectedParent2.name : 'Select second parent'}
-                </div>
-              </div>
-
-              <div style={{ fontSize: '2rem', color: '#ff6b6b' }}>=</div>
-
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🥚</div>
-                <div style={{ fontSize: '0.9rem', color: '#ff6b6b' }}>
-                  Offspring
-                </div>
-                <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>
-                  {selectedParent1 && selectedParent2 ? 'Ready to breed!' : 'Awaiting parents'}
-                </div>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-              <Button
-                variant="primary"
-                size="md"
-                disabled={!selectedParent1 || !selectedParent2}
-                onClick={handleBreed}
-                style={{
-                  background: selectedParent1 && selectedParent2 ? '#ff6b6b' : '#666',
-                  borderColor: selectedParent1 && selectedParent2 ? '#ff6b6b' : '#666'
-                }}
-              >
-                🥚 Breed
-              </Button>
-
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => {
-                  setSelectedParent1(null);
-                  setSelectedParent2(null);
-                }}
-              >
-                Clear
-              </Button>
-            </div>
+            <BreedingInterface onClose={() => setViewMode('collection')} />
           </motion.div>
         )}
 

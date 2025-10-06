@@ -45,6 +45,15 @@ export interface EnhancedCreature extends Monster {
   breedingGroup: string[];
   fertility: number;
 
+  // Breeding metadata (instant breeding system)
+  generation: number; // 0-5, higher generations have stat bonuses
+  breedingCount: number; // Times this creature has been used for breeding
+  exhaustionLevel: number; // Exhaustion stacks from breeding (-20% stats per level)
+  inheritedAbilities: string[]; // Ability IDs inherited from parents
+  parentIds: [string?, string?]; // IDs of parent creatures for lineage tracking
+  statCaps: Partial<PlayerStats>; // Generation-based maximum stat values
+  passiveTraits?: string[]; // Passive trait IDs for Gen 3+ creatures
+
   // Combat companion features
   companionData?: CreatureCompanionData;
 
@@ -324,6 +333,9 @@ export interface CreatureCollection {
   showStats: boolean;
   groupBy: 'species' | 'type' | 'element' | 'rarity' | 'level';
   filter: CreatureFilter;
+
+  // State tracking (forces React re-renders when creatures change)
+  lastUpdated?: number; // Timestamp of last modification
 }
 
 export interface CreatureFilter {

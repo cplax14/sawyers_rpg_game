@@ -844,20 +844,27 @@ export const useInventory = () => {
     };
   }, []);
 
-  // Auto-save integration
-  useEffect(() => {
-    const saveInventory = async () => {
-      try {
-        await saveGame(gameState, { slot: 0 }); // Auto-save to slot 0
-      } catch (error) {
-        console.error('Failed to auto-save inventory:', error);
-      }
-    };
-
-    // Save after significant changes
-    const timer = setTimeout(saveInventory, 1000);
-    return () => clearTimeout(timer);
-  }, [inventoryState, saveGame, gameState]);
+  // Auto-save integration - DISABLED
+  // The main AutoSaveManager handles inventory persistence as part of game state.
+  // This redundant auto-save was causing save corruption ("Save NaN") due to
+  // incorrect parameter structure and conflicts with the main auto-save system.
+  //
+  // Previous implementation had:
+  // - Wrong parameter: { slot: 0 } instead of { slotNumber: 0 }
+  // - Excessive saves: triggered on every inventory change
+  // - State conflicts: race conditions with main auto-save
+  //
+  // useEffect(() => {
+  //   const saveInventory = async () => {
+  //     try {
+  //       await saveGame(gameState, { slotNumber: 0 });
+  //     } catch (error) {
+  //       console.error('Failed to auto-save inventory:', error);
+  //     }
+  //   };
+  //   const timer = setTimeout(saveInventory, 1000);
+  //   return () => clearTimeout(timer);
+  // }, [inventoryState, saveGame, gameState]);
 
   // Computed values
   const statistics = useMemo(() => ({

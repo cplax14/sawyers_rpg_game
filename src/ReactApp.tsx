@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { ReactGameProvider } from './contexts/ReactGameContext';
 import { LoadingSpinner } from './components/atoms';
-import { useGameState, useUI, useDataPreloader } from './hooks';
+import { useGameState, useUI, useDataPreloader, useAutoSave } from './hooks';
 import {
   LazyMainMenu,
   LazyCharacterSelection,
@@ -15,6 +15,9 @@ import { Combat } from './components/organisms/Combat';
 import ReactTestPanel from './components/ui/ReactTestPanel';
 import VictoryModal from './components/ui/VictoryModal';
 import InventoryManager from './components/organisms/InventoryManager';
+import RecipeDiscoveryManager from './components/organisms/RecipeDiscoveryManager';
+import { BreedingInterface } from './components/organisms/BreedingInterface';
+import { CreatureScreen } from './components/organisms/CreatureScreen';
 import { performanceMonitor } from './utils/performanceMonitor';
 import { ReactGameState } from './contexts/ReactGameContext';
 import { reactAppStyles } from './utils/temporaryStyles';
@@ -139,6 +142,12 @@ const GameShell: React.FC = () => {
   const { state } = useGameState();
   const { currentScreen, isLoading, error } = useUI();
   const { preloadCriticalData, isDataReady } = useDataPreloader();
+
+  // Initialize auto-save system (CRITICAL: enables window.gameAutoSaveManager)
+  useAutoSave({
+    autoStart: true,
+    autoSaveSlot: 0
+  });
 
   const [isInitializing, setIsInitializing] = useState(true);
   const [initError, setInitError] = useState<string | null>(null);
@@ -317,6 +326,9 @@ const GameShell: React.FC = () => {
 
       {/* Victory Modal */}
       <VictoryModal />
+
+      {/* Recipe Discovery Notifications */}
+      <RecipeDiscoveryManager />
     </div>
   );
 };
@@ -356,6 +368,12 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({ currentScreen, gameState })
             onClose={() => navigateToScreen('area')}
           />
         );
+
+      case 'breeding':
+        return <BreedingInterface onClose={() => navigateToScreen('area')} />;
+
+      case 'creatures':
+        return <CreatureScreen onClose={() => navigateToScreen('area')} />;
 
       case 'settings':
         return (

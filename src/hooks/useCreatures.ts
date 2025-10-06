@@ -313,47 +313,99 @@ export function useCreatures(): UseCreaturesReturn {
     });
 
     // Merge new creatures with existing collection
-    setCollection(prev => ({
-      ...prev,
-      creatures: { ...prev.creatures, ...newCreaturesMap },
-      totalCaptured: capturedMonsters.length
-    }));
-  }, [gameState.capturedMonsters, gameState.currentArea, gameState.player?.name, convertReactMonsterToEnhancedCreature]);
+    setCollection(prev => {
+      const newCollection = {
+        ...prev,
+        creatures: { ...prev.creatures, ...newCreaturesMap },
+        totalCaptured: capturedMonsters.length,
+        lastUpdated: Date.now() // Update timestamp for sync detection
+      };
+
+      // ONLY sync to global if global state is empty or missing creatures
+      // This prevents overwriting creatures created by other systems (e.g., breeding)
+      const globalCreatureCount = Object.keys(gameState.creatures?.creatures || {}).length;
+      const localCreatureCount = Object.keys(newCollection.creatures).length;
+
+      if (globalCreatureCount === 0) {
+        console.log('🔄 [useCreatures] Initial sync: Pushing captured creatures to empty global state', {
+          newCreatureIds: Object.keys(newCreaturesMap),
+          totalInCollection: localCreatureCount
+        });
+
+        // Use setTimeout to avoid "Cannot update component during render" warning
+        setTimeout(() => {
+          updateGameState({ creatures: newCollection });
+        }, 0);
+      } else {
+        console.log('⏭️ [useCreatures] Skipping sync: Global state already has creatures', {
+          globalCount: globalCreatureCount,
+          localCount: localCreatureCount,
+          reason: 'Preventing overwrite of existing creatures (possibly from breeding)'
+        });
+      }
+
+      return newCollection;
+    });
+  }, [gameState.capturedMonsters, gameState.currentArea, gameState.player?.name, convertReactMonsterToEnhancedCreature, updateGameState]);
 
   // Initialize activeTeam and other collection data from global state
   useEffect(() => {
     if (gameState.creatures) {
-      console.log('🔄 useCreatures: Loading collection from global state', {
+      const globalCreatureCount = Object.keys(gameState.creatures.creatures || {}).length;
+      const localCreatureCount = Object.keys(collection.creatures).length;
+
+      // Use lastUpdated timestamp to detect ANY changes (additions, updates, etc.)
+      // This is more reliable than count comparison because breeding can add 1 creature
+      // while also updating 2 existing creatures (parent exhaustion), keeping count the same
+      const lastGlobalUpdate = gameState.creatures.lastUpdated || 0;
+      const lastLocalUpdate = collection.lastUpdated || 0;
+
+      console.log('🔄 useCreatures: Syncing collection from global state', {
+        globalCreatureCount,
+        localCreatureCount,
+        lastGlobalUpdate,
+        lastLocalUpdate,
+        timestampChanged: lastGlobalUpdate !== lastLocalUpdate,
         hasActiveTeam: !!gameState.creatures.activeTeam,
         activeTeamLength: gameState.creatures.activeTeam?.length || 0,
         activeTeamIds: gameState.creatures.activeTeam || [],
-        totalCreatures: Object.keys(gameState.creatures.creatures || {}).length
+        totalCreatures: globalCreatureCount
       });
 
-      // Restore the entire collection from global state
-      setCollection(prev => ({
-        ...prev,
-        activeTeam: gameState.creatures.activeTeam || [],
-        reserves: gameState.creatures.reserves || [],
-        bestiary: gameState.creatures.bestiary || prev.bestiary,
-        totalDiscovered: gameState.creatures.totalDiscovered || prev.totalDiscovered,
-        totalCaptured: gameState.creatures.totalCaptured || prev.totalCaptured,
-        completionPercentage: gameState.creatures.completionPercentage || prev.completionPercentage,
-        favoriteSpecies: gameState.creatures.favoriteSpecies || prev.favoriteSpecies,
-        activeBreeding: gameState.creatures.activeBreeding || prev.activeBreeding,
-        breedingHistory: gameState.creatures.breedingHistory || prev.breedingHistory,
-        activeTrades: gameState.creatures.activeTrades || prev.activeTrades,
-        tradeHistory: gameState.creatures.tradeHistory || prev.tradeHistory,
-        // Merge creatures (combine captured monsters with any saved creatures)
-        creatures: {
-          ...prev.creatures,
-          ...(gameState.creatures.creatures || {})
-        }
-      }));
+      // Only update if there's an actual change (use timestamp comparison instead of count)
+      if (lastGlobalUpdate !== lastLocalUpdate ||
+          JSON.stringify(gameState.creatures.activeTeam) !== JSON.stringify(collection.activeTeam)) {
 
-      console.log('✅ useCreatures: Collection loaded from global state');
+        console.log('📝 useCreatures: Updating local collection (change detected)');
+
+        // Restore the entire collection from global state
+        setCollection(prev => ({
+          ...prev,
+          activeTeam: gameState.creatures?.activeTeam || [],
+          reserves: gameState.creatures?.reserves || [],
+          bestiary: gameState.creatures?.bestiary || prev.bestiary,
+          totalDiscovered: gameState.creatures?.totalDiscovered || prev.totalDiscovered,
+          totalCaptured: gameState.creatures?.totalCaptured || prev.totalCaptured,
+          completionPercentage: gameState.creatures?.completionPercentage || prev.completionPercentage,
+          favoriteSpecies: gameState.creatures?.favoriteSpecies || prev.favoriteSpecies,
+          activeBreeding: gameState.creatures?.activeBreeding || prev.activeBreeding,
+          breedingHistory: gameState.creatures?.breedingHistory || prev.breedingHistory,
+          activeTrades: gameState.creatures?.activeTrades || prev.activeTrades,
+          tradeHistory: gameState.creatures?.tradeHistory || prev.tradeHistory,
+          lastUpdated: gameState.creatures?.lastUpdated || Date.now(), // Track last sync time
+          // Merge creatures (combine captured monsters with any saved creatures)
+          creatures: {
+            ...prev.creatures,
+            ...(gameState.creatures?.creatures || {})
+          }
+        }));
+
+        console.log('✅ useCreatures: Collection updated from global state');
+      } else {
+        console.log('⏭️ useCreatures: No changes detected, skipping update');
+      }
     }
-  }, [gameState.creatures]);
+  }, [gameState.creatures, gameState.creatures?.lastUpdated]);
 
   // Filter creatures based on current filter
   useEffect(() => {

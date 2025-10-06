@@ -416,10 +416,19 @@ export class SaveSystemManager {
   ): SaveMetadata {
     const now = new Date();
 
+    // Validate slotNumber to prevent NaN in save names
+    const validSlotNumber = typeof slotNumber === 'number' && !isNaN(slotNumber) && isFinite(slotNumber)
+      ? slotNumber
+      : 0; // Default to slot 0
+
+    if (slotNumber !== validSlotNumber) {
+      console.warn(`⚠️ Invalid slotNumber ${slotNumber}, defaulting to ${validSlotNumber}`);
+    }
+
     return {
       id: uuidv4(),
-      slotNumber,
-      name: saveName || `Save ${slotNumber + 1}`,
+      slotNumber: validSlotNumber,
+      name: saveName || `Save ${validSlotNumber + 1}`,
       createdAt: now,
       lastModified: now,
       lastAccessed: now,

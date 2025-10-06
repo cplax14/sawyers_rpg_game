@@ -39,6 +39,9 @@ export const defaultMockGameState: ReactGameState = {
   settings: { ...mockGameSettings },
   saveSlots: [],
   currentSaveSlot: null,
+  breedingAttempts: 0,
+  discoveredRecipes: [],
+  breedingMaterials: {},
 };
 
 // Mock dispatch function
@@ -113,6 +116,15 @@ export const mockGameContextActions = {
   updateInventoryState: jest.fn(),
   updateCreatureCollection: jest.fn(),
   updateExperienceState: jest.fn(),
+  updateGameState: jest.fn(),
+
+  // Breeding system
+  breedCreatures: jest.fn(),
+  applyExhaustion: jest.fn(),
+  discoverRecipe: jest.fn(),
+  updateBreedingAttempts: jest.fn(),
+  addBreedingMaterial: jest.fn(),
+  removeBreedingMaterial: jest.fn(),
 
   // Game reset
   resetGame: jest.fn(),
@@ -218,6 +230,9 @@ export function createMinimalGameState(overrides?: Partial<ReactGameState>): Rea
     settings: { ...mockGameSettings },
     saveSlots: [],
     currentSaveSlot: null,
+    breedingAttempts: 0,
+    discoveredRecipes: [],
+    breedingMaterials: {},
     ...overrides,
   };
 }

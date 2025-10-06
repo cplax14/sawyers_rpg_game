@@ -129,14 +129,35 @@ export const useAutoSave = (options: UseAutoSaveOptions = {}): UseAutoSaveResult
   const [lastAutoSave, setLastAutoSave] = useState<Date | null>(null);
   const [pauseReason, setPauseReason] = useState<PauseReason | null>(null);
 
-  const config = useMemo(() => ({
-    ...createDefaultAutoSaveConfig(),
-    autoSaveSlot: options.autoSaveSlot ?? 0,
-    interval: (state.settings.autoSaveInterval * 60 * 1000), // Convert minutes to milliseconds
-    enabled: state.settings.autoSave,
-    maxFailures: state.settings.autoSaveMaxFailures,
-    ...options.config
-  }), [options.config, options.autoSaveSlot, state.settings]);
+  const config = useMemo(() => {
+    // Defensive validation of settings to prevent NaN/undefined
+    const safeAutoSaveInterval = typeof state.settings.autoSaveInterval === 'number' &&
+                                  !isNaN(state.settings.autoSaveInterval) &&
+                                  isFinite(state.settings.autoSaveInterval)
+      ? state.settings.autoSaveInterval
+      : 2.5; // Default 2.5 minutes
+
+    const safeAutoSaveSlot = typeof options.autoSaveSlot === 'number' &&
+                             !isNaN(options.autoSaveSlot) &&
+                             isFinite(options.autoSaveSlot)
+      ? options.autoSaveSlot
+      : 0;
+
+    const safeMaxFailures = typeof state.settings.autoSaveMaxFailures === 'number' &&
+                            !isNaN(state.settings.autoSaveMaxFailures) &&
+                            isFinite(state.settings.autoSaveMaxFailures)
+      ? state.settings.autoSaveMaxFailures
+      : 3;
+
+    return {
+      ...createDefaultAutoSaveConfig(),
+      autoSaveSlot: safeAutoSaveSlot,
+      interval: safeAutoSaveInterval * 60 * 1000, // Convert minutes to milliseconds
+      enabled: state.settings.autoSave ?? true,
+      maxFailures: safeMaxFailures,
+      ...options.config
+    };
+  }, [options.config, options.autoSaveSlot, state.settings]);
 
   // Initialize auto-save manager
   const initializeAutoSave = useCallback(() => {

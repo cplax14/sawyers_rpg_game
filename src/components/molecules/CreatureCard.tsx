@@ -260,6 +260,116 @@ const cardStyles = {
     fontSize: '0.6rem',
     fontWeight: 'bold',
     border: '1px solid rgba(34, 197, 94, 0.3)'
+  },
+  lineageSection: {
+    marginTop: '0.75rem',
+    padding: '0.75rem',
+    background: 'rgba(139, 92, 246, 0.1)',
+    borderRadius: '8px',
+    border: '1px solid rgba(139, 92, 246, 0.3)'
+  },
+  lineageTitle: {
+    fontSize: '0.75rem',
+    fontWeight: 'bold',
+    color: '#a78bfa',
+    marginBottom: '0.5rem',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.25rem'
+  },
+  lineageTree: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '0.5rem'
+  },
+  lineageRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    fontSize: '0.7rem'
+  },
+  lineageLabel: {
+    color: '#94a3b8',
+    minWidth: '60px',
+    fontWeight: '500'
+  },
+  lineageValue: {
+    color: '#e2e8f0',
+    flex: 1,
+    padding: '0.25rem 0.5rem',
+    background: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: '4px',
+    border: '1px solid rgba(139, 92, 246, 0.2)'
+  },
+  lineageUnknown: {
+    color: '#94a3b8',
+    fontStyle: 'italic',
+    opacity: 0.7
+  },
+  exhaustionBadge: {
+    background: 'rgba(239, 68, 68, 0.2)',
+    color: '#ef4444',
+    borderRadius: '12px',
+    padding: '0.2rem 0.4rem',
+    fontSize: '0.6rem',
+    fontWeight: 'bold',
+    border: '1px solid rgba(239, 68, 68, 0.3)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.25rem'
+  },
+  exhaustionOverlay: {
+    opacity: 0.6,
+    filter: 'grayscale(40%)'
+  },
+  statPenalty: {
+    color: '#ef4444',
+    fontSize: '0.65rem',
+    fontStyle: 'italic',
+    marginLeft: '0.25rem'
+  },
+  generationBadge: {
+    position: 'absolute' as const,
+    top: '0.5rem',
+    right: '0.5rem',
+    borderRadius: '50%',
+    width: '32px',
+    height: '32px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '0.7rem',
+    fontWeight: 'bold',
+    border: '2px solid',
+    zIndex: 2,
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)'
+  },
+  mythicalAura: {
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: '12px',
+    pointerEvents: 'none' as const,
+    zIndex: 0,
+    animation: 'mythicalPulse 2s ease-in-out infinite'
+  },
+  bredIndicator: {
+    position: 'absolute' as const,
+    top: '0.5rem',
+    left: '0.5rem',
+    background: 'rgba(139, 92, 246, 0.3)',
+    borderRadius: '6px',
+    padding: '0.2rem 0.4rem',
+    fontSize: '0.6rem',
+    fontWeight: 'bold',
+    color: '#a78bfa',
+    border: '1px solid rgba(139, 92, 246, 0.5)',
+    zIndex: 2,
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.25rem'
   }
 };
 
@@ -285,6 +395,16 @@ const rarityColors = {
   epic: { bg: 'rgba(168, 85, 247, 0.2)', color: '#a855f7', border: 'rgba(168, 85, 247, 0.3)' },
   legendary: { bg: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', border: 'rgba(245, 158, 11, 0.3)' },
   mythical: { bg: 'rgba(236, 72, 153, 0.2)', color: '#ec4899', border: 'rgba(236, 72, 153, 0.3)' }
+};
+
+// Generation badge colors
+const generationColors = {
+  0: { bg: 'rgba(107, 114, 128, 0.3)', color: '#9ca3af', border: '#6b7280' }, // Wild - Gray
+  1: { bg: 'rgba(205, 127, 50, 0.3)', color: '#cd7f32', border: '#b8860b' }, // Gen 1 - Bronze
+  2: { bg: 'rgba(192, 192, 192, 0.3)', color: '#c0c0c0', border: '#a8a8a8' }, // Gen 2 - Silver
+  3: { bg: 'rgba(255, 215, 0, 0.3)', color: '#ffd700', border: '#daa520' }, // Gen 3 - Gold
+  4: { bg: 'rgba(229, 228, 226, 0.3)', color: '#e5e4e2', border: '#c0c0c0' }, // Gen 4 - Platinum
+  5: { bg: 'linear-gradient(135deg, #ff0080, #ff8c00, #40e0d0, #9b59b6)', color: '#fff', border: '#fff' } // Gen 5 - Rainbow
 };
 
 // Element emojis for avatar fallback
@@ -497,6 +617,25 @@ export const CreatureCard: React.FC<CreatureCardProps> = ({
     return actions;
   };
 
+  // Get generation badge styling
+  const getGenerationBadgeStyle = () => {
+    const generation = creature.generation || 0;
+    const genColor = generationColors[generation as keyof typeof generationColors] || generationColors[0];
+
+    return {
+      ...cardStyles.generationBadge,
+      background: genColor.bg,
+      color: genColor.color,
+      borderColor: genColor.border
+    };
+  };
+
+  // Check if creature is bred (Gen 1+)
+  const isBred = (creature.generation || 0) > 0;
+
+  // Check if creature is mythical rarity
+  const isMythical = creature.rarity === 'mythical';
+
   return (
     <motion.div
       className={className}
@@ -512,6 +651,41 @@ export const CreatureCard: React.FC<CreatureCardProps> = ({
       transition={{ duration: 0.3 }}
       layout
     >
+      {/* Mythical Aura Effect */}
+      {isMythical && (
+        <motion.div
+          style={{
+            ...cardStyles.mythicalAura,
+            background: 'radial-gradient(circle, rgba(236, 72, 153, 0.2) 0%, transparent 70%)',
+            boxShadow: '0 0 40px rgba(236, 72, 153, 0.4), inset 0 0 40px rgba(236, 72, 153, 0.2)'
+          }}
+          animate={{
+            opacity: [0.3, 0.6, 0.3],
+            scale: [1, 1.02, 1]
+          }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            ease: 'easeInOut'
+          }}
+        />
+      )}
+
+      {/* Bred Creature Indicator */}
+      {isBred && (
+        <div style={cardStyles.bredIndicator}>
+          <span>🧬</span>
+          <span>Bred</span>
+        </div>
+      )}
+
+      {/* Generation Badge */}
+      {isBred && (
+        <div style={getGenerationBadgeStyle()} title={`Generation ${creature.generation}`}>
+          G{creature.generation}
+        </div>
+      )}
+
       {/* Content */}
       <div style={cardStyles.content}>
         {/* Header */}
@@ -597,11 +771,20 @@ export const CreatureCard: React.FC<CreatureCardProps> = ({
                 Discovered
               </div>
             )}
+            {creature.exhaustionLevel && creature.exhaustionLevel > 0 && (
+              <div style={cardStyles.exhaustionBadge} title={`Exhausted: -${creature.exhaustionLevel * 20}% stats`}>
+                <span>😴</span>
+                <span>×{creature.exhaustionLevel}</span>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Avatar */}
-        <div style={getAvatarStyles()}>
+        <div style={{
+          ...getAvatarStyles(),
+          ...(creature.exhaustionLevel && creature.exhaustionLevel > 0 ? cardStyles.exhaustionOverlay : {})
+        }}>
           {creature.sprite ? (
             <img
               src={creature.sprite}
@@ -656,13 +839,43 @@ export const CreatureCard: React.FC<CreatureCardProps> = ({
                 </div>
                 <div style={cardStyles.statItem}>
                   <span style={cardStyles.statLabel}>ATK</span>
-                  <span style={cardStyles.statValue}>{creature.attack}</span>
+                  <span style={cardStyles.statValue}>
+                    {creature.attack}
+                    {creature.exhaustionLevel && creature.exhaustionLevel > 0 && (
+                      <span style={cardStyles.statPenalty}>
+                        (-{creature.exhaustionLevel * 20}%)
+                      </span>
+                    )}
+                  </span>
                 </div>
                 <div style={cardStyles.statItem}>
                   <span style={cardStyles.statLabel}>DEF</span>
-                  <span style={cardStyles.statValue}>{creature.defense}</span>
+                  <span style={cardStyles.statValue}>
+                    {creature.defense}
+                    {creature.exhaustionLevel && creature.exhaustionLevel > 0 && (
+                      <span style={cardStyles.statPenalty}>
+                        (-{creature.exhaustionLevel * 20}%)
+                      </span>
+                    )}
+                  </span>
                 </div>
               </div>
+
+              {/* Exhaustion Warning */}
+              {creature.exhaustionLevel && creature.exhaustionLevel > 0 && (
+                <div style={{
+                  fontSize: '0.7rem',
+                  color: '#ef4444',
+                  marginTop: '0.5rem',
+                  padding: '0.5rem',
+                  background: 'rgba(239, 68, 68, 0.1)',
+                  borderRadius: '6px',
+                  border: '1px solid rgba(239, 68, 68, 0.3)'
+                }}>
+                  <strong>Exhausted:</strong> All stats reduced by {creature.exhaustionLevel * 20}%.
+                  Use recovery items or rest to restore.
+                </div>
+              )}
 
               {/* Personality */}
               {creature.personality && (
@@ -676,6 +889,44 @@ export const CreatureCard: React.FC<CreatureCardProps> = ({
               {creature.capturedAt && (
                 <div style={cardStyles.captureDate}>
                   Captured: {formatDate(creature.capturedAt)}
+                </div>
+              )}
+
+              {/* Lineage View - Show for bred creatures (Gen 1+) */}
+              {isBred && creature.parentIds && (
+                <div style={cardStyles.lineageSection}>
+                  <div style={cardStyles.lineageTitle}>
+                    <span>🧬</span>
+                    <span>Lineage</span>
+                  </div>
+                  <div style={cardStyles.lineageTree}>
+                    <div style={cardStyles.lineageRow}>
+                      <span style={cardStyles.lineageLabel}>Parent 1:</span>
+                      <span style={cardStyles.lineageValue}>
+                        {creature.parentIds[0] || (
+                          <span style={cardStyles.lineageUnknown}>Unknown</span>
+                        )}
+                      </span>
+                    </div>
+                    <div style={cardStyles.lineageRow}>
+                      <span style={cardStyles.lineageLabel}>Parent 2:</span>
+                      <span style={cardStyles.lineageValue}>
+                        {creature.parentIds[1] || (
+                          <span style={cardStyles.lineageUnknown}>Unknown</span>
+                        )}
+                      </span>
+                    </div>
+                    {(creature.generation || 0) >= 3 && (
+                      <div style={{
+                        fontSize: '0.65rem',
+                        color: '#94a3b8',
+                        marginTop: '0.25rem',
+                        fontStyle: 'italic'
+                      }}>
+                        Multi-generational lineage ({creature.generation} generations)
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </motion.div>

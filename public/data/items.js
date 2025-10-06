@@ -561,6 +561,30 @@ const ItemData = {
             effect: { type: "utility", function: "teleport_town" },
             value: 250,
             icon: "💎"
+        },
+
+        // ================================================
+        // CREATURE RECOVERY ITEMS
+        // ================================================
+        revitalization_potion: {
+            name: "Revitalization Potion",
+            description: "Removes 1 level of exhaustion from a creature. Restores vitality after breeding.",
+            type: "consumable",
+            category: "creature_recovery",
+            rarity: "uncommon",
+            effect: { type: "remove_exhaustion", amount: 1 },
+            value: 150,
+            icon: "🧪✨"
+        },
+        full_restore: {
+            name: "Full Restore",
+            description: "Completely removes all exhaustion from a creature. Returns it to peak condition.",
+            type: "consumable",
+            category: "creature_recovery",
+            rarity: "rare",
+            effect: { type: "remove_exhaustion", amount: -1 }, // -1 means remove all
+            value: 400,
+            icon: "💫"
         }
     },
 

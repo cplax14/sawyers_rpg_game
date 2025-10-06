@@ -1,8 +1,11 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback, ReactNode } from 'react';
 import { AutoSaveManager } from '../utils/autoSave';
 import { InventoryState } from '../types/inventory';
-import { CreatureCollection } from '../types/creatures';
+import { CreatureCollection, EnhancedCreature } from '../types/creatures';
 import { ExperienceState } from '../types/experience';
+import { removeExhaustion, calculateBreedingCost, generateOffspring, validateBreeding, applyExhaustion } from '../utils/breedingEngine';
+import { BreedingRecipe } from '../types/breeding';
+import { checkRecipeDiscoveryAfterCapture } from '../utils/recipeDiscovery';
 
 // Global type declaration for auto-save manager
 declare global {
@@ -144,7 +147,7 @@ export interface ReactGameState {
 
   // UI state
   isLoading: boolean;
-  currentScreen: 'menu' | 'character-selection' | 'world-map' | 'area' | 'combat' | 'inventory' | 'settings';
+  currentScreen: 'menu' | 'character-selection' | 'world-map' | 'area' | 'combat' | 'inventory' | 'breeding' | 'creatures' | 'settings';
   error: string | null;
 
   // Combat state
@@ -170,6 +173,11 @@ export interface ReactGameState {
   // Save system
   saveSlots: SaveSlot[];
   currentSaveSlot: number | null;
+
+  // Breeding system
+  breedingAttempts: number;
+  discoveredRecipes: string[];
+  breedingMaterials: Record<string, number>;
 }
 
 export interface GameSettings {
@@ -259,7 +267,15 @@ export type ReactGameAction =
   // New inventory system actions
   | { type: 'UPDATE_INVENTORY_STATE'; payload: InventoryState }
   | { type: 'UPDATE_CREATURE_COLLECTION'; payload: CreatureCollection }
-  | { type: 'UPDATE_EXPERIENCE_STATE'; payload: ExperienceState };
+  | { type: 'UPDATE_EXPERIENCE_STATE'; payload: ExperienceState }
+  // Breeding system actions
+  | { type: 'BREED_CREATURES'; payload: { parent1Id: string; parent2Id: string; recipeId?: string } }
+  | { type: 'UPDATE_BREEDING_ATTEMPTS'; payload: number }
+  | { type: 'DISCOVER_RECIPE'; payload: string }
+  | { type: 'ADD_BREEDING_MATERIAL'; payload: { materialId: string; quantity: number } }
+  | { type: 'REMOVE_BREEDING_MATERIAL'; payload: { materialId: string; quantity: number } }
+  | { type: 'APPLY_EXHAUSTION'; payload: { creatureId: string } }
+  | { type: 'REMOVE_EXHAUSTION'; payload: { creatureId: string; levelsToRemove: number; costGold?: number } };
 
 // Default settings
 const defaultSettings: GameSettings = {
@@ -290,6 +306,73 @@ const defaultSettings: GameSettings = {
   },
 };
 
+// Validation function for breeding data loaded from saves
+function validateBreedingData(creature: EnhancedCreature): EnhancedCreature {
+  const validated = { ...creature };
+
+  // Validate generation (0-5)
+  if (typeof validated.generation !== 'number' || validated.generation < 0 || validated.generation > 5) {
+    console.warn(`⚠️ Invalid generation ${validated.generation} for creature ${validated.id}, defaulting to 0`);
+    validated.generation = 0;
+  }
+
+  // Validate breedingCount
+  if (typeof validated.breedingCount !== 'number' || validated.breedingCount < 0) {
+    validated.breedingCount = 0;
+  }
+
+  // Validate exhaustionLevel
+  if (typeof validated.exhaustionLevel !== 'number' || validated.exhaustionLevel < 0) {
+    validated.exhaustionLevel = 0;
+  }
+
+  // Validate parentIds
+  if (!Array.isArray(validated.parentIds)) {
+    validated.parentIds = [undefined, undefined];
+  }
+
+  // Validate inheritedAbilities
+  if (!Array.isArray(validated.inheritedAbilities)) {
+    validated.inheritedAbilities = [];
+  }
+
+  // Validate passiveTraits
+  if (!Array.isArray(validated.passiveTraits)) {
+    validated.passiveTraits = [];
+  }
+
+  // Validate stat caps based on generation
+  const baseStatCap = 100;
+  const generationBonus = validated.generation * 0.1; // +10% per generation
+  const expectedCap = Math.floor(baseStatCap * (1 + generationBonus));
+
+  // Ensure stats don't exceed generation caps
+  if (validated.stats) {
+    const statKeys: (keyof PlayerStats)[] = ['attack', 'defense', 'magicAttack', 'magicDefense', 'speed', 'accuracy'];
+    statKeys.forEach(statKey => {
+      if (validated.stats[statKey] > expectedCap) {
+        console.warn(`⚠️ Stat ${statKey} (${validated.stats[statKey]}) exceeds gen ${validated.generation} cap (${expectedCap}), capping it`);
+        validated.stats[statKey] = expectedCap;
+      }
+    });
+  }
+
+  return validated;
+}
+
+// Migration function for old saves without breeding metadata
+function migrateCreatureToBreedingSystem(creature: any): EnhancedCreature {
+  return {
+    ...creature,
+    generation: creature.generation ?? 0,
+    breedingCount: creature.breedingCount ?? 0,
+    exhaustionLevel: creature.exhaustionLevel ?? 0,
+    parentIds: creature.parentIds ?? [undefined, undefined],
+    inheritedAbilities: creature.inheritedAbilities ?? [],
+    passiveTraits: creature.passiveTraits ?? []
+  };
+}
+
 // Initial state
 const initialState: ReactGameState = {
   player: null,
@@ -310,6 +393,38 @@ const initialState: ReactGameState = {
   settings: defaultSettings,
   saveSlots: [],
   currentSaveSlot: null,
+  breedingAttempts: 0,
+  discoveredRecipes: [],
+  breedingMaterials: {},
+  // Initialize creatures collection to prevent undefined errors
+  creatures: {
+    creatures: {},
+    bestiary: {},
+    activeTeam: [],
+    reserves: [],
+    totalDiscovered: 0,
+    totalCaptured: 0,
+    completionPercentage: 0,
+    favoriteSpecies: [],
+    activeBreeding: [],
+    breedingHistory: [],
+    activeTrades: [],
+    tradeHistory: [],
+    autoSort: true,
+    showStats: true,
+    groupBy: 'species',
+    filter: {
+      types: [],
+      elements: [],
+      rarities: [],
+      completionLevels: [],
+      favorites: false,
+      companions: false,
+      breedable: false,
+      searchText: '',
+    },
+    lastUpdated: 0, // Will be updated when breeding occurs
+  },
 };
 
 // Game reducer function
@@ -467,9 +582,32 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
     case 'CAPTURE_MONSTER':
       const newCapturedMonsters = [...state.capturedMonsters, action.payload.monster];
 
+      // Check for recipe discovery after capturing a new creature
+      let newlyDiscoveredRecipes: string[] = [];
+
+      // Convert captured monster to EnhancedCreature format for recipe check
+      const enhancedCreature = state.creatures?.creatures[action.payload.monster.id];
+
+      if (enhancedCreature && state.creatures) {
+        const discoveryResult = checkRecipeDiscoveryAfterCapture(
+          enhancedCreature,
+          state.creatures.creatures,
+          state.discoveredRecipes,
+          state.player?.level || 1,
+          state.storyFlags
+        );
+
+        newlyDiscoveredRecipes = discoveryResult.newlyDiscovered;
+
+        if (newlyDiscoveredRecipes.length > 0) {
+          console.log('✨ New recipes discovered:', newlyDiscoveredRecipes);
+        }
+      }
+
       return {
         ...state,
         capturedMonsters: newCapturedMonsters,
+        discoveredRecipes: [...state.discoveredRecipes, ...newlyDiscoveredRecipes],
       };
 
     case 'RELEASE_MONSTER':
@@ -709,6 +847,387 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         experience: action.payload
       };
 
+    // Breeding system reducer handlers
+    case 'BREED_CREATURES': {
+      // Get parent creatures from collection
+      if (!state.creatures) {
+        console.error('❌ BREED_CREATURES: Creatures collection not initialized');
+        return state;
+      }
+
+      const parent1 = state.creatures.creatures[action.payload.parent1Id];
+      const parent2 = state.creatures.creatures[action.payload.parent2Id];
+
+      if (!parent1 || !parent2) {
+        console.error('❌ BREED_CREATURES: Parent creatures not found', {
+          parent1Id: action.payload.parent1Id,
+          parent2Id: action.payload.parent2Id
+        });
+        return state;
+      }
+
+      // Load recipe if recipeId provided
+      let recipe: BreedingRecipe | undefined;
+      if (action.payload.recipeId) {
+        console.log('🧬 Recipe breeding not yet implemented, using natural breeding');
+      }
+
+      // Calculate cost
+      const cost = calculateBreedingCost(parent1, parent2, recipe);
+
+      // Validate breeding requirements
+      const validation = validateBreeding(
+        parent1,
+        parent2,
+        state.player.gold,
+        state.breedingMaterials,
+        cost
+      );
+
+      if (!validation.valid) {
+        console.error('❌ [BREED_CREATURES] Breeding validation failed', validation.errors);
+        return state;
+      }
+
+      // Generate offspring
+      const result = generateOffspring(parent1, parent2, recipe);
+
+      if (!result.success || !result.offspring) {
+        console.error('❌ [BREED_CREATURES] Offspring generation failed');
+        return state;
+      }
+
+      // Create complete EnhancedCreature from offspring partial data
+      const offspringId = `creature_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+      const completeOffspring: EnhancedCreature = {
+        ...result.offspring,
+        creatureId: offspringId,
+        id: offspringId,
+        name: `${result.offspringSpecies} (Gen ${result.generation})`,
+
+        // Combat stats
+        hp: 100, // Level 1 base HP
+        maxHp: 100,
+        mp: 50, // Level 1 base MP
+        maxMp: 50,
+        baseStats: result.offspring.stats,
+        currentStats: result.offspring.stats,
+
+        // Required fields from EnhancedCreature
+        types: [result.offspring.species], // Simplified
+        abilities: result.offspring.inheritedAbilities || [],
+        captureRate: 0.5,
+        experience: 0,
+        gold: 10,
+        drops: [],
+        areas: [],
+        evolvesTo: [],
+        isWild: false,
+
+        // Enhanced classification
+        element: 'neutral' as const, // Default, could be inherited
+        creatureType: 'beast' as const, // Default, could be inherited
+        size: 'medium' as const,
+        habitat: [],
+
+        // Individual traits
+        personality: {
+          traits: ['docile'],
+          mood: 'content' as const,
+          loyalty: 50,
+          happiness: 100, // Newborn creatures are happy
+          energy: 100,
+          sociability: 50,
+        },
+        nature: {
+          name: 'Neutral',
+          statModifiers: {},
+          behaviorModifiers: {
+            aggression: 0,
+            defensiveness: 0,
+            cooperation: 0,
+          },
+        },
+        individualStats: {
+          hpIV: Math.floor(Math.random() * 32),
+          attackIV: Math.floor(Math.random() * 32),
+          defenseIV: Math.floor(Math.random() * 32),
+          magicAttackIV: Math.floor(Math.random() * 32),
+          magicDefenseIV: Math.floor(Math.random() * 32),
+          speedIV: Math.floor(Math.random() * 32),
+          hpEV: 0,
+          attackEV: 0,
+          defenseEV: 0,
+          magicAttackEV: 0,
+          magicDefenseEV: 0,
+          speedEV: 0,
+        },
+
+        // Genetics (partially duplicated from breeding metadata)
+        genetics: {
+          parentIds: [parent1.creatureId, parent2.creatureId],
+          generation: result.generation,
+          inheritedTraits: [],
+          mutations: [],
+          breedingPotential: 1,
+        },
+        breedingGroup: [],
+        fertility: 1,
+
+        // Collection status
+        collectionStatus: {
+          discovered: true,
+          captured: true,
+          timesCaptures: 1,
+          favorite: false,
+          tags: ['bred'],
+          notes: `Bred from ${parent1.name} and ${parent2.name}`,
+          completionLevel: 'captured' as const,
+        },
+
+        // Visual and lore
+        sprite: 'default.png',
+        description: `A ${result.offspringSpecies} born from breeding`,
+        loreText: `Generation ${result.generation} creature`,
+        discoveryLocation: 'Breeding Facility',
+        discoveredAt: new Date(),
+        capturedAt: new Date(),
+        timesEncountered: 0,
+      };
+
+      // Apply exhaustion to parents
+      const exhaustedParent1 = applyExhaustion(parent1);
+      const exhaustedParent2 = applyExhaustion(parent2);
+
+      // Deduct gold
+      const newGold = state.player.gold - cost.goldAmount;
+
+      // Deduct materials
+      const newMaterials = { ...state.breedingMaterials };
+      for (const material of cost.materials) {
+        const current = newMaterials[material.itemId] || 0;
+        const remaining = current - material.quantity;
+        if (remaining <= 0) {
+          delete newMaterials[material.itemId];
+        } else {
+          newMaterials[material.itemId] = remaining;
+        }
+      }
+
+      // Update creatures collection
+      // CRITICAL FIX: Force new reference with lastUpdated timestamp
+      // This ensures React detects the state change and triggers re-renders in useCreatures hook
+      const updatedCreatures = {
+        ...state.creatures,
+        creatures: {
+          ...state.creatures.creatures,
+          [offspringId]: completeOffspring,
+          [parent1.creatureId]: exhaustedParent1,
+          [parent2.creatureId]: exhaustedParent2,
+        },
+        totalCaptured: state.creatures.totalCaptured + 1,
+        lastUpdated: Date.now(), // Force reference change to trigger React updates
+      };
+
+      // Check for recipe discovery after breeding
+      let newlyDiscoveredRecipesFromBreeding: string[] = [];
+
+      const discoveryResult = checkRecipeDiscoveryAfterCapture(
+        completeOffspring,
+        updatedCreatures.creatures,
+        state.discoveredRecipes,
+        state.player?.level || 1,
+        state.storyFlags
+      );
+
+      newlyDiscoveredRecipesFromBreeding = discoveryResult.newlyDiscovered;
+
+      if (newlyDiscoveredRecipesFromBreeding.length > 0) {
+        console.log('✨ New recipes discovered:', newlyDiscoveredRecipesFromBreeding);
+      }
+
+      console.log('✅ Breeding successful:', {
+        offspring: completeOffspring.name,
+        species: result.offspringSpecies,
+        generation: result.generation,
+        rarity: result.offspring.rarity
+      });
+
+      // REMOVED: Auto-save trigger moved to external effect (see useEffect in ReactGameProvider)
+      // Triggering save from inside reducer reads stale state before React re-renders
+
+      return {
+        ...state,
+        creatures: updatedCreatures,
+        player: {
+          ...state.player,
+          gold: newGold,
+        },
+        breedingMaterials: newMaterials,
+        breedingAttempts: state.breedingAttempts + 1,
+        discoveredRecipes: [...state.discoveredRecipes, ...newlyDiscoveredRecipesFromBreeding],
+      };
+    }
+
+    case 'UPDATE_BREEDING_ATTEMPTS':
+      return {
+        ...state,
+        breedingAttempts: action.payload
+      };
+
+    case 'RENAME_MONSTER': {
+      if (!state.creatures) return state;
+
+      const targetCreature = state.creatures.creatures[action.payload.monsterId];
+      if (!targetCreature) {
+        console.warn('❌ [RENAME_MONSTER] Creature not found:', action.payload.monsterId);
+        return state;
+      }
+
+      // Update creature name/nickname
+      const updatedCreature = {
+        ...targetCreature,
+        name: action.payload.nickname,
+        nickname: action.payload.nickname
+      };
+
+      const updatedCreatures = {
+        ...state.creatures,
+        creatures: {
+          ...state.creatures.creatures,
+          [action.payload.monsterId]: updatedCreature
+        },
+        lastUpdated: Date.now() // Trigger state propagation
+      };
+
+      console.log('✅ [RENAME_MONSTER] Creature renamed:', {
+        id: action.payload.monsterId,
+        oldName: targetCreature.name,
+        newName: action.payload.nickname
+      });
+
+      return {
+        ...state,
+        creatures: updatedCreatures
+      };
+    }
+
+    case 'DISCOVER_RECIPE':
+      if (state.discoveredRecipes.includes(action.payload)) return state;
+      return {
+        ...state,
+        discoveredRecipes: [...state.discoveredRecipes, action.payload]
+      };
+
+    case 'ADD_BREEDING_MATERIAL':
+      const currentMaterialQuantity = state.breedingMaterials[action.payload.materialId] || 0;
+      return {
+        ...state,
+        breedingMaterials: {
+          ...state.breedingMaterials,
+          [action.payload.materialId]: currentMaterialQuantity + action.payload.quantity
+        }
+      };
+
+    case 'REMOVE_BREEDING_MATERIAL':
+      const existingQuantity = state.breedingMaterials[action.payload.materialId] || 0;
+      const newQuantity = Math.max(0, existingQuantity - action.payload.quantity);
+      const updatedMaterials = { ...state.breedingMaterials };
+
+      if (newQuantity <= 0) {
+        delete updatedMaterials[action.payload.materialId];
+      } else {
+        updatedMaterials[action.payload.materialId] = newQuantity;
+      }
+
+      return {
+        ...state,
+        breedingMaterials: updatedMaterials
+      };
+
+    case 'APPLY_EXHAUSTION':
+      // Update creature exhaustion in creatures collection
+      if (!state.creatures) return state;
+
+      const targetCreature = state.creatures.creatures[action.payload.creatureId];
+      if (!targetCreature) return state;
+
+      const newExhaustionLevel = (targetCreature.exhaustionLevel || 0) + 1;
+      const newBreedingCount = (targetCreature.breedingCount || 0) + 1;
+
+      // Apply -20% stat penalty per exhaustion level to creature's stats
+      // Note: We apply penalty directly to stats since EnhancedCreature uses Monster.stats
+      const exhaustionMultiplier = 1 - (newExhaustionLevel * 0.2);
+      const penalizedStats = {
+        attack: Math.floor(targetCreature.stats.attack * exhaustionMultiplier),
+        defense: Math.floor(targetCreature.stats.defense * exhaustionMultiplier),
+        magicAttack: Math.floor(targetCreature.stats.magicAttack * exhaustionMultiplier),
+        magicDefense: Math.floor(targetCreature.stats.magicDefense * exhaustionMultiplier),
+        speed: Math.floor(targetCreature.stats.speed * exhaustionMultiplier),
+        accuracy: Math.floor(targetCreature.stats.accuracy * exhaustionMultiplier)
+      };
+
+      const updatedCreatures = {
+        ...state.creatures,
+        creatures: {
+          ...state.creatures.creatures,
+          [action.payload.creatureId]: {
+            ...targetCreature,
+            exhaustionLevel: newExhaustionLevel,
+            breedingCount: newBreedingCount,
+            stats: penalizedStats
+          }
+        }
+      };
+
+      return {
+        ...state,
+        creatures: updatedCreatures
+      };
+
+    case 'REMOVE_EXHAUSTION':
+      // Remove exhaustion from a creature (via items or gold payment)
+      if (!state.creatures) return state;
+
+      const creatureToRestore = state.creatures.creatures[action.payload.creatureId];
+      if (!creatureToRestore) return state;
+
+      const currentExhaustion = creatureToRestore.exhaustionLevel || 0;
+      if (currentExhaustion === 0) return state; // Already fully restored
+
+      // Calculate new exhaustion level
+      const levelsToRemove = action.payload.levelsToRemove === -1
+        ? currentExhaustion  // -1 means remove all
+        : action.payload.levelsToRemove;
+      const newExhaustion = Math.max(0, currentExhaustion - levelsToRemove);
+
+      // Recalculate stats without exhaustion penalty using removeExhaustion from breedingEngine
+      const restoredCreature = removeExhaustion(creatureToRestore, levelsToRemove);
+
+      // Deduct gold cost if specified
+      let updatedPlayerAfterRecovery = state.player;
+      if (action.payload.costGold && action.payload.costGold > 0) {
+        updatedPlayerAfterRecovery = {
+          ...state.player,
+          gold: state.player.gold - action.payload.costGold
+        };
+      }
+
+      const updatedCreaturesAfterRecovery = {
+        ...state.creatures,
+        creatures: {
+          ...state.creatures.creatures,
+          [action.payload.creatureId]: restoredCreature
+        }
+      };
+
+      return {
+        ...state,
+        player: updatedPlayerAfterRecovery,
+        creatures: updatedCreaturesAfterRecovery
+      };
+
     case 'SAVE_GAME':
       try {
         const saveData = {
@@ -721,7 +1240,15 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
           completedQuests: state.completedQuests,
           totalPlayTime: state.totalPlayTime + (Date.now() - state.sessionStartTime),
           settings: state.settings,
-          timestamp: action.payload.timestamp
+          timestamp: action.payload.timestamp,
+          // New inventory system data
+          inventoryState: state.inventoryState,
+          creatures: state.creatures,
+          experience: state.experience,
+          // Breeding system data
+          breedingAttempts: state.breedingAttempts,
+          discoveredRecipes: state.discoveredRecipes,
+          breedingMaterials: state.breedingMaterials
         };
 
         // Save to localStorage
@@ -762,6 +1289,43 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         const parsedData = JSON.parse(savedData);
         console.log(`✅ Game loaded from slot ${action.payload.slotIndex + 1}`);
 
+        // Validate and migrate creature collection if present
+        let loadedCreatures = parsedData.creatures;
+        if (loadedCreatures && loadedCreatures.creatures) {
+          const validatedCreatures: Record<string, EnhancedCreature> = {};
+          let migrationCount = 0;
+          let validationCount = 0;
+
+          Object.keys(loadedCreatures.creatures).forEach(creatureId => {
+            const creature = loadedCreatures.creatures[creatureId];
+
+            // Check if creature needs migration (missing breeding fields)
+            const needsMigration = creature.generation === undefined ||
+                                   creature.breedingCount === undefined ||
+                                   creature.exhaustionLevel === undefined;
+
+            if (needsMigration) {
+              migrationCount++;
+              validatedCreatures[creatureId] = validateBreedingData(migrateCreatureToBreedingSystem(creature));
+            } else {
+              validationCount++;
+              validatedCreatures[creatureId] = validateBreedingData(creature);
+            }
+          });
+
+          loadedCreatures = {
+            ...loadedCreatures,
+            creatures: validatedCreatures
+          };
+
+          if (migrationCount > 0) {
+            console.log(`🔄 Migrated ${migrationCount} creatures to breeding system`);
+          }
+          if (validationCount > 0) {
+            console.log(`✅ Validated ${validationCount} creatures with breeding data`);
+          }
+        }
+
         return {
           ...state,
           player: parsedData.player,
@@ -774,7 +1338,15 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
           totalPlayTime: parsedData.totalPlayTime || 0,
           settings: { ...state.settings, ...parsedData.settings },
           currentSaveSlot: action.payload.slotIndex,
-          sessionStartTime: Date.now() // Reset session start time
+          sessionStartTime: Date.now(), // Reset session start time
+          // New inventory system data
+          inventoryState: parsedData.inventoryState,
+          creatures: loadedCreatures,
+          experience: parsedData.experience,
+          // Breeding system data with backward compatibility
+          breedingAttempts: parsedData.breedingAttempts || 0,
+          discoveredRecipes: parsedData.discoveredRecipes || [],
+          breedingMaterials: parsedData.breedingMaterials || {}
         };
       } catch (error) {
         console.error('Load failed:', error);
@@ -850,6 +1422,15 @@ interface ReactGameContextType {
   updateCreatureCollection: (creatures: CreatureCollection) => void;
   updateExperienceState: (experience: ExperienceState) => void;
 
+  // Breeding system functions
+  breedCreatures: (parent1Id: string, parent2Id: string, recipeId?: string) => void;
+  applyExhaustion: (creatureId: string) => void;
+  recoverExhaustion: (creatureId: string, levelsToRemove: number, costGold?: number) => void;
+  discoverRecipe: (recipeId: string) => void;
+  updateBreedingAttempts: (attempts: number) => void;
+  addBreedingMaterial: (materialId: string, quantity: number) => void;
+  removeBreedingMaterial: (materialId: string, quantity: number) => void;
+
   // Computed properties
   isPlayerCreated: boolean;
   canAccessArea: (areaId: string) => boolean;
@@ -868,6 +1449,30 @@ interface ReactGameProviderProps {
 
 export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(reactGameReducer, initialState);
+
+  // Auto-save after breeding completes (runs after state update and re-render)
+  useEffect(() => {
+    // Only trigger if breeding just occurred (lastUpdated changed)
+    if (state.creatures?.lastUpdated) {
+      const saveTimer = setTimeout(() => {
+        if (window.gameAutoSaveManager) {
+          window.gameAutoSaveManager.forceSave()
+            .then((success: boolean) => {
+              if (!success) {
+                console.error('❌ Auto-save failed after breeding');
+              }
+            })
+            .catch((error: Error) => {
+              console.error('❌ Auto-save error:', error);
+            });
+        } else {
+          console.error('❌ AutoSaveManager not initialized - changes will not persist');
+        }
+      }, 500);
+
+      return () => clearTimeout(saveTimer);
+    }
+  }, [state.creatures?.lastUpdated]); // Removed state.breedingAttempts - redundant dependency
 
   // Initialize save slots from localStorage on mount
   useEffect(() => {
@@ -1048,6 +1653,7 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
 
     // Item drop chance calculation
     const items: ReactItem[] = [];
+    const breedingMaterialsDropped: { materialId: string; quantity: number }[] = [];
 
     // Common items (40% chance) - using items that exist in ItemData
     if (Math.random() < 0.4) {
@@ -1109,10 +1715,41 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
       items.push({ id: 'wolf_pelt', name: 'Wolf Pelt', type: 'material', rarity: 'uncommon', quantity: 1, icon: '🧥' });
     }
 
+    // Breeding Material Drops - Check MonsterData for breedingMaterialDrops
+    try {
+      // Access global MonsterData if available
+      const MonsterData = (window as any).MonsterData;
+      if (MonsterData && MonsterData.species && MonsterData.species[enemySpecies]) {
+        const monsterData = MonsterData.species[enemySpecies];
+
+        // Check if this monster has breeding material drops defined
+        if (monsterData.breedingMaterialDrops && Array.isArray(monsterData.breedingMaterialDrops)) {
+          monsterData.breedingMaterialDrops.forEach((dropInfo: any) => {
+            // Roll for each material drop
+            const roll = Math.random();
+            if (roll < dropInfo.dropRate) {
+              // Determine quantity within the defined range
+              const quantity = dropInfo.quantity
+                ? Math.floor(Math.random() * (dropInfo.quantity.max - dropInfo.quantity.min + 1)) + dropInfo.quantity.min
+                : 1;
+
+              breedingMaterialsDropped.push({
+                materialId: dropInfo.materialId,
+                quantity: quantity
+              });
+            }
+          });
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to load breeding material drops:', error);
+    }
+
     return {
       experience: baseExp,
       gold: baseGold,
-      items: items
+      items: items,
+      breedingMaterials: breedingMaterialsDropped
     };
   }, []);
 
@@ -1223,6 +1860,35 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
     dispatch({ type: 'UPDATE_EXPERIENCE_STATE', payload: experience });
   };
 
+  // Breeding system helper functions
+  const breedCreatures = (parent1Id: string, parent2Id: string, recipeId?: string) => {
+    dispatch({ type: 'BREED_CREATURES', payload: { parent1Id, parent2Id, recipeId } });
+  };
+
+  const applyExhaustion = (creatureId: string) => {
+    dispatch({ type: 'APPLY_EXHAUSTION', payload: { creatureId } });
+  };
+
+  const recoverExhaustion = (creatureId: string, levelsToRemove: number, costGold?: number) => {
+    dispatch({ type: 'REMOVE_EXHAUSTION', payload: { creatureId, levelsToRemove, costGold } });
+  };
+
+  const discoverRecipe = (recipeId: string) => {
+    dispatch({ type: 'DISCOVER_RECIPE', payload: recipeId });
+  };
+
+  const updateBreedingAttempts = (attempts: number) => {
+    dispatch({ type: 'UPDATE_BREEDING_ATTEMPTS', payload: attempts });
+  };
+
+  const addBreedingMaterial = (materialId: string, quantity: number) => {
+    dispatch({ type: 'ADD_BREEDING_MATERIAL', payload: { materialId, quantity } });
+  };
+
+  const removeBreedingMaterial = (materialId: string, quantity: number) => {
+    dispatch({ type: 'REMOVE_BREEDING_MATERIAL', payload: { materialId, quantity } });
+  };
+
   // Computed properties
   const isPlayerCreated = state.player !== null;
 
@@ -1278,6 +1944,13 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
     updateInventoryState,
     updateCreatureCollection,
     updateExperienceState,
+    breedCreatures,
+    applyExhaustion,
+    recoverExhaustion,
+    discoverRecipe,
+    updateBreedingAttempts,
+    addBreedingMaterial,
+    removeBreedingMaterial,
     isPlayerCreated,
     canAccessArea,
     getInventoryByType,

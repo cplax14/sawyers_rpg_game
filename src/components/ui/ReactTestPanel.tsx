@@ -164,6 +164,22 @@ const ReactTestPanel: React.FC<ReactTestPanelProps> = ({ isVisible = true }) => 
               <Button
                 variant="secondary"
                 size="sm"
+                onClick={() => setCurrentScreen('creatures')}
+              >
+                🐉 Creatures
+              </Button>
+
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setCurrentScreen('breeding')}
+              >
+                🧬 Breeding
+              </Button>
+
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={() => setCurrentScreen('world-map')}
               >
                 World Map

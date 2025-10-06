@@ -734,6 +734,120 @@ export const getCategoryStats = (items: EnhancedItem[]) => {
 };
 
 // ================================
+// BREEDING MATERIAL MANAGEMENT
+// ================================
+
+/**
+ * Add breeding material to inventory
+ *
+ * @param materials - Current materials inventory
+ * @param materialId - Material item ID
+ * @param quantity - Quantity to add
+ * @returns Updated materials inventory
+ */
+export const addMaterial = (
+  materials: Record<string, number>,
+  materialId: string,
+  quantity: number
+): Record<string, number> => {
+  const currentQuantity = materials[materialId] || 0;
+  return {
+    ...materials,
+    [materialId]: currentQuantity + quantity,
+  };
+};
+
+/**
+ * Remove breeding material from inventory
+ *
+ * @param materials - Current materials inventory
+ * @param materialId - Material item ID
+ * @param quantity - Quantity to remove
+ * @returns Updated materials inventory or null if insufficient
+ */
+export const removeMaterial = (
+  materials: Record<string, number>,
+  materialId: string,
+  quantity: number
+): Record<string, number> | null => {
+  const currentQuantity = materials[materialId] || 0;
+
+  if (currentQuantity < quantity) {
+    return null; // Insufficient materials
+  }
+
+  const newQuantity = currentQuantity - quantity;
+  const newMaterials = { ...materials };
+
+  if (newQuantity === 0) {
+    // Remove the material entry if quantity is 0
+    delete newMaterials[materialId];
+  } else {
+    newMaterials[materialId] = newQuantity;
+  }
+
+  return newMaterials;
+};
+
+/**
+ * Get quantity of a specific material
+ *
+ * @param materials - Current materials inventory
+ * @param materialId - Material item ID
+ * @returns Quantity available (0 if not found)
+ */
+export const getMaterialQuantity = (
+  materials: Record<string, number>,
+  materialId: string
+): number => {
+  return materials[materialId] || 0;
+};
+
+/**
+ * Check if player has all required materials
+ *
+ * @param materials - Current materials inventory
+ * @param requirements - Required materials with quantities
+ * @returns True if all materials are available
+ */
+export const hasMaterials = (
+  materials: Record<string, number>,
+  requirements: Array<{ itemId: string; quantity: number }>
+): boolean => {
+  return requirements.every(req => {
+    const available = getMaterialQuantity(materials, req.itemId);
+    return available >= req.quantity;
+  });
+};
+
+/**
+ * Get missing materials from requirements
+ *
+ * @param materials - Current materials inventory
+ * @param requirements - Required materials with quantities
+ * @returns Array of missing materials with shortfall amounts
+ */
+export const getMissingMaterials = (
+  materials: Record<string, number>,
+  requirements: Array<{ itemId: string; quantity: number; name: string }>
+): Array<{ itemId: string; quantity: number; name: string }> => {
+  const missing: Array<{ itemId: string; quantity: number; name: string }> = [];
+
+  for (const req of requirements) {
+    const available = getMaterialQuantity(materials, req.itemId);
+    if (available < req.quantity) {
+      missing.push({
+        itemId: req.itemId,
+        quantity: req.quantity - available,
+        name: req.name,
+      });
+    }
+  }
+
+  return missing;
+};
+
+// ================================
 // UTILITY FUNCTIONS
 // ================================
 
@@ -870,6 +984,13 @@ export default {
   filterByCategories,
   groupByCategory,
   getCategoryStats,
+
+  // Breeding Material Management
+  addMaterial,
+  removeMaterial,
+  getMaterialQuantity,
+  hasMaterials,
+  getMissingMaterials,
 
   // Utilities
   generateItemInstanceId,
