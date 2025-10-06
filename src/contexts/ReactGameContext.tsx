@@ -396,6 +396,35 @@ const initialState: ReactGameState = {
   breedingAttempts: 0,
   discoveredRecipes: [],
   breedingMaterials: {},
+  // Initialize creatures collection to prevent undefined errors
+  creatures: {
+    creatures: {},
+    bestiary: {},
+    activeTeam: [],
+    reserves: [],
+    totalDiscovered: 0,
+    totalCaptured: 0,
+    completionPercentage: 0,
+    favoriteSpecies: [],
+    activeBreeding: [],
+    breedingHistory: [],
+    activeTrades: [],
+    tradeHistory: [],
+    autoSort: true,
+    showStats: true,
+    groupBy: 'species',
+    filter: {
+      types: [],
+      elements: [],
+      rarities: [],
+      completionLevels: [],
+      favorites: false,
+      companions: false,
+      breedable: false,
+      searchText: '',
+    },
+    lastUpdated: 0, // Will be updated when breeding occurs
+  },
 };
 
 // Game reducer function
@@ -821,22 +850,26 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
     // Breeding system reducer handlers
     case 'BREED_CREATURES': {
       // Get parent creatures from collection
-      if (!state.creatures) return state;
+      if (!state.creatures) {
+        console.error('❌ BREED_CREATURES: Creatures collection not initialized');
+        return state;
+      }
 
       const parent1 = state.creatures.creatures[action.payload.parent1Id];
       const parent2 = state.creatures.creatures[action.payload.parent2Id];
 
       if (!parent1 || !parent2) {
-        console.error('❌ [BREED_CREATURES] Parent creatures not found', action.payload);
+        console.error('❌ BREED_CREATURES: Parent creatures not found', {
+          parent1Id: action.payload.parent1Id,
+          parent2Id: action.payload.parent2Id
+        });
         return state;
       }
 
       // Load recipe if recipeId provided
       let recipe: BreedingRecipe | undefined;
       if (action.payload.recipeId) {
-        // Note: Recipe data would be loaded from breedingRecipes.js
-        // For now, we support breeding without recipes (50/50 species selection)
-        console.log('🧬 [BREED_CREATURES] Recipe breeding not yet implemented, using natural breeding');
+        console.log('🧬 Recipe breeding not yet implemented, using natural breeding');
       }
 
       // Calculate cost
@@ -997,14 +1030,6 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         lastUpdated: Date.now(), // Force reference change to trigger React updates
       };
 
-      console.log('✅ [BREED_CREATURES] Updated creatures collection:', {
-        offspringId,
-        offspringName: completeOffspring.name,
-        totalCreaturesNow: Object.keys(updatedCreatures.creatures).length,
-        updatedReference: updatedCreatures !== state.creatures,
-        lastUpdated: updatedCreatures.lastUpdated
-      });
-
       // Check for recipe discovery after breeding
       let newlyDiscoveredRecipesFromBreeding: string[] = [];
 
@@ -1019,15 +1044,14 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
       newlyDiscoveredRecipesFromBreeding = discoveryResult.newlyDiscovered;
 
       if (newlyDiscoveredRecipesFromBreeding.length > 0) {
-        console.log('✨ New recipes discovered from breeding:', newlyDiscoveredRecipesFromBreeding);
+        console.log('✨ New recipes discovered:', newlyDiscoveredRecipesFromBreeding);
       }
 
-      console.log('✅ [BREED_CREATURES] Successfully bred creature:', {
+      console.log('✅ Breeding successful:', {
         offspring: completeOffspring.name,
         species: result.offspringSpecies,
         generation: result.generation,
-        rarity: result.offspring.rarity,
-        inheritedAbilities: result.inheritedAbilities,
+        rarity: result.offspring.rarity
       });
 
       // REMOVED: Auto-save trigger moved to external effect (see useEffect in ReactGameProvider)
@@ -1051,6 +1075,43 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         ...state,
         breedingAttempts: action.payload
       };
+
+    case 'RENAME_MONSTER': {
+      if (!state.creatures) return state;
+
+      const targetCreature = state.creatures.creatures[action.payload.monsterId];
+      if (!targetCreature) {
+        console.warn('❌ [RENAME_MONSTER] Creature not found:', action.payload.monsterId);
+        return state;
+      }
+
+      // Update creature name/nickname
+      const updatedCreature = {
+        ...targetCreature,
+        name: action.payload.nickname,
+        nickname: action.payload.nickname
+      };
+
+      const updatedCreatures = {
+        ...state.creatures,
+        creatures: {
+          ...state.creatures.creatures,
+          [action.payload.monsterId]: updatedCreature
+        },
+        lastUpdated: Date.now() // Trigger state propagation
+      };
+
+      console.log('✅ [RENAME_MONSTER] Creature renamed:', {
+        id: action.payload.monsterId,
+        oldName: targetCreature.name,
+        newName: action.payload.nickname
+      });
+
+      return {
+        ...state,
+        creatures: updatedCreatures
+      };
+    }
 
     case 'DISCOVER_RECIPE':
       if (state.discoveredRecipes.includes(action.payload)) return state;
@@ -1393,31 +1454,25 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
   useEffect(() => {
     // Only trigger if breeding just occurred (lastUpdated changed)
     if (state.creatures?.lastUpdated) {
-      // Small delay to ensure React has completed all renders and child component updates
       const saveTimer = setTimeout(() => {
         if (window.gameAutoSaveManager) {
-          console.log('💾 [POST-BREED] Triggering auto-save after state update complete');
           window.gameAutoSaveManager.forceSave()
             .then((success: boolean) => {
-              if (success) {
-                console.log('✅ [POST-BREED] Auto-save successful, offspring persisted');
-              } else {
-                console.error('❌ [POST-BREED] Auto-save failed');
+              if (!success) {
+                console.error('❌ Auto-save failed after breeding');
               }
             })
             .catch((error: Error) => {
-              console.error('❌ [POST-BREED] Auto-save error:', error);
+              console.error('❌ Auto-save error:', error);
             });
         } else {
-          console.error('❌ [POST-BREED] AutoSaveManager not initialized! Offspring will not be persisted.');
-          console.error('💡 [POST-BREED] Make sure useAutoSave() hook is called in ReactApp or a top-level component.');
-          console.error('🔍 [POST-BREED] Check that GameShell component includes: useAutoSave({ autoStart: true, autoSaveSlot: 0 })');
+          console.error('❌ AutoSaveManager not initialized - changes will not persist');
         }
-      }, 300); // 300ms delay ensures state propagation to all hooks/components
+      }, 500);
 
       return () => clearTimeout(saveTimer);
     }
-  }, [state.creatures?.lastUpdated, state.breedingAttempts]); // Trigger on breeding changes
+  }, [state.creatures?.lastUpdated]); // Removed state.breedingAttempts - redundant dependency
 
   // Initialize save slots from localStorage on mount
   useEffect(() => {

@@ -68,10 +68,75 @@ const localStorageMock = {
 global.localStorage = localStorageMock as any;
 
 // Mock IndexedDB for save system tests
+const createMockIDBRequest = () => {
+  const request: any = {
+    result: null,
+    error: null,
+    source: null,
+    transaction: null,
+    readyState: 'pending',
+    onerror: null,
+    onsuccess: null,
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    dispatchEvent: jest.fn(),
+  };
+  return request;
+};
+
+const createMockIDBTransaction = () => {
+  const transaction: any = {
+    objectStore: jest.fn(() => ({
+      get: jest.fn(() => createMockIDBRequest()),
+      put: jest.fn(() => createMockIDBRequest()),
+      delete: jest.fn(() => createMockIDBRequest()),
+      clear: jest.fn(() => createMockIDBRequest()),
+      getAll: jest.fn(() => createMockIDBRequest()),
+    })),
+    abort: jest.fn(),
+    commit: jest.fn(),
+    onerror: null,
+    onabort: null,
+    oncomplete: null,
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    dispatchEvent: jest.fn(),
+  };
+  return transaction;
+};
+
+const createMockIDBDatabase = () => {
+  const db: any = {
+    name: 'mock-db',
+    version: 1,
+    objectStoreNames: { contains: jest.fn(() => true) },
+    transaction: jest.fn(() => createMockIDBTransaction()),
+    close: jest.fn(),
+    createObjectStore: jest.fn(),
+    deleteObjectStore: jest.fn(),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    dispatchEvent: jest.fn(),
+  };
+  return db;
+};
+
 const indexedDBMock = {
-  open: jest.fn(),
-  deleteDatabase: jest.fn(),
+  open: jest.fn(() => {
+    const request = createMockIDBRequest();
+    // Simulate successful database open
+    setTimeout(() => {
+      request.result = createMockIDBDatabase();
+      request.readyState = 'done';
+      if (request.onsuccess) {
+        request.onsuccess({ target: request } as any);
+      }
+    }, 0);
+    return request;
+  }),
+  deleteDatabase: jest.fn(() => createMockIDBRequest()),
   cmp: jest.fn(),
+  databases: jest.fn(() => Promise.resolve([])),
 };
 global.indexedDB = indexedDBMock as any;
 
@@ -161,4 +226,41 @@ jest.mock('./config/firebase', () => {
       VITE_USE_FIREBASE_EMULATOR: 'false'
     }
   }
+};
+
+// Mock window.CharacterData for game data
+(window as any).CharacterData = {
+  getClass: jest.fn((className: string) => ({
+    id: className,
+    name: className.charAt(0).toUpperCase() + className.slice(1),
+    description: `Test ${className} class`,
+    startingSpells: [],
+    baseStats: {
+      attack: 10,
+      defense: 10,
+      magicAttack: 10,
+      magicDefense: 10,
+      speed: 10,
+      accuracy: 85,
+    },
+  })),
+  getAllClasses: jest.fn(() => []),
+};
+
+// Mock window.MonsterData for creature/monster data
+(window as any).MonsterData = {
+  getMonster: jest.fn((id: string) => null),
+  getAllMonsters: jest.fn(() => []),
+};
+
+// Mock window.ItemData for item data
+(window as any).ItemData = {
+  getItem: jest.fn((id: string) => null),
+  getAllItems: jest.fn(() => []),
+};
+
+// Mock window.AreaData for area data
+(window as any).AreaData = {
+  getArea: jest.fn((id: string) => null),
+  getAllAreas: jest.fn(() => []),
 };

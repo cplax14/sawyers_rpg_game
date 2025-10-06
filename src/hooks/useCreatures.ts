@@ -313,12 +313,40 @@ export function useCreatures(): UseCreaturesReturn {
     });
 
     // Merge new creatures with existing collection
-    setCollection(prev => ({
-      ...prev,
-      creatures: { ...prev.creatures, ...newCreaturesMap },
-      totalCaptured: capturedMonsters.length
-    }));
-  }, [gameState.capturedMonsters, gameState.currentArea, gameState.player?.name, convertReactMonsterToEnhancedCreature]);
+    setCollection(prev => {
+      const newCollection = {
+        ...prev,
+        creatures: { ...prev.creatures, ...newCreaturesMap },
+        totalCaptured: capturedMonsters.length,
+        lastUpdated: Date.now() // Update timestamp for sync detection
+      };
+
+      // ONLY sync to global if global state is empty or missing creatures
+      // This prevents overwriting creatures created by other systems (e.g., breeding)
+      const globalCreatureCount = Object.keys(gameState.creatures?.creatures || {}).length;
+      const localCreatureCount = Object.keys(newCollection.creatures).length;
+
+      if (globalCreatureCount === 0) {
+        console.log('🔄 [useCreatures] Initial sync: Pushing captured creatures to empty global state', {
+          newCreatureIds: Object.keys(newCreaturesMap),
+          totalInCollection: localCreatureCount
+        });
+
+        // Use setTimeout to avoid "Cannot update component during render" warning
+        setTimeout(() => {
+          updateGameState({ creatures: newCollection });
+        }, 0);
+      } else {
+        console.log('⏭️ [useCreatures] Skipping sync: Global state already has creatures', {
+          globalCount: globalCreatureCount,
+          localCount: localCreatureCount,
+          reason: 'Preventing overwrite of existing creatures (possibly from breeding)'
+        });
+      }
+
+      return newCollection;
+    });
+  }, [gameState.capturedMonsters, gameState.currentArea, gameState.player?.name, convertReactMonsterToEnhancedCreature, updateGameState]);
 
   // Initialize activeTeam and other collection data from global state
   useEffect(() => {

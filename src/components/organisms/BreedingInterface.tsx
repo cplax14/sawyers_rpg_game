@@ -30,7 +30,7 @@ const breedingStyles = {
     color: '#f4f4f4',
     padding: '1rem',
     boxSizing: 'border-box' as const,
-    overflow: 'hidden',
+    overflow: 'auto',
   },
   header: {
     textAlign: 'center' as const,
@@ -245,16 +245,10 @@ export const BreedingInterface: React.FC<BreedingInterfaceProps> = ({
       const recipe = undefined; // TODO: Find matching recipe
       const result = generateOffspring(selectedParent1, selectedParent2, recipe);
 
-      console.log('🧬 Breeding dispatched, waiting for state propagation...');
+      // Wait for React state update to propagate to all hooks
+      await new Promise(resolve => setTimeout(resolve, 500));
 
-      // CRITICAL FIX: Wait for React state update to propagate
-      // This ensures the useCreatures hook receives the updated gameState.creatures
-      // before we show the success modal and user navigates to collection
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      console.log('✅ State should be propagated, showing result modal');
-
-      // Now show result modal (state has propagated to useCreatures hook)
+      // Show result modal
       setBreedingResult(result);
       setShowResultModal(true);
 
@@ -279,7 +273,12 @@ export const BreedingInterface: React.FC<BreedingInterfaceProps> = ({
   const handleResultClose = useCallback(() => {
     setShowResultModal(false);
     setBreedingResult(null);
-  }, []);
+
+    // Navigate back to collection view so user can see the new creature
+    if (onClose) {
+      onClose();
+    }
+  }, [onClose]);
 
   // Handle breed again from result modal
   const handleBreedAgain = useCallback(() => {
