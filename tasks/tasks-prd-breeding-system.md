@@ -94,91 +94,91 @@ Based on PRD: `prd-breeding-system.md`
   - [x] 3.29 Implement calculateStatCaps(generation) function
   - [x] 3.30 Return stat caps with +10% per generation bonus
 
-- [ ] 4.0 Create Breeding Recipe and Material Data
-  - [ ] 4.1 Create `public/data/breedingRecipes.js` file
-  - [ ] 4.2 Define BreedingRecipeData array structure
-  - [ ] 4.3 Create 10-15 common breeding recipes (basic combinations, gold only)
-  - [ ] 4.4 Example: Slime + Slime = Slime (improved stats)
-  - [ ] 4.5 Example: Goblin + Wolf = Hobgoblin (hybrid species)
-  - [ ] 4.6 Example: Elemental + Beast = Elemental Beast
-  - [ ] 4.7 Create 3-5 legendary recipes (rare creatures + materials)
-  - [ ] 4.8 Example: Dragon + Phoenix + Dragon Scale = Ancient Dragon
-  - [ ] 4.9 Example: Demon + Angel + Holy Relic = Nephilim
-  - [ ] 4.10 Add recipe metadata (id, description, requiredMaterials, guaranteedBonuses)
-  - [ ] 4.11 Create `public/data/breedingMaterials.js` file
-  - [ ] 4.12 Define common materials (Slime Gel, Goblin Tooth, Wolf Pelt, Feathers, Scales)
-  - [ ] 4.13 Define rare materials (Dragon Scale, Phoenix Feather, Holy Relic, Demon Horn, Elemental Core)
-  - [ ] 4.14 Set material properties (id, name, rarity, description, icon, value)
-  - [ ] 4.15 Export recipe and material data for use in React components
+- [x] 4.0 Create Breeding Recipe and Material Data
+  - [x] 4.1 Create `public/data/breedingRecipes.js` file
+  - [x] 4.2 Define BreedingRecipeData array structure
+  - [x] 4.3 Create 10-15 common breeding recipes (basic combinations, gold only)
+  - [x] 4.4 Example: Slime + Slime = Slime (improved stats)
+  - [x] 4.5 Example: Goblin + Wolf = Hobgoblin (hybrid species)
+  - [x] 4.6 Example: Elemental + Beast = Elemental Beast
+  - [x] 4.7 Create 3-5 legendary recipes (rare creatures + materials)
+  - [x] 4.8 Example: Dragon + Phoenix + Dragon Scale = Ancient Dragon
+  - [x] 4.9 Example: Demon + Angel + Holy Relic = Nephilim
+  - [x] 4.10 Add recipe metadata (id, description, requiredMaterials, guaranteedBonuses)
+  - [x] 4.11 Create `public/data/breedingMaterials.js` file
+  - [x] 4.12 Define common materials (Slime Gel, Goblin Tooth, Wolf Pelt, Feathers, Scales)
+  - [x] 4.13 Define rare materials (Dragon Scale, Phoenix Feather, Holy Relic, Demon Horn, Elemental Core)
+  - [x] 4.14 Set material properties (id, name, rarity, description, icon, value)
+  - [x] 4.15 Export recipe and material data for use in React components
 
-- [ ] 5.0 Update Monster Data for Breeding Materials
-  - [ ] 5.1 Open `public/data/monsters.js`
-  - [ ] 5.2 Add breedingMaterialDrops array to monster definitions
-  - [ ] 5.3 Set 25-30% drop rate for common materials (Slime → Slime Gel)
-  - [ ] 5.4 Set 25-30% drop rate for rare materials from specific enemies
-  - [ ] 5.5 Add material drops to Slime: Slime Gel (30%)
-  - [ ] 5.6 Add material drops to Goblin: Goblin Tooth (28%), Leather Scraps (25%)
-  - [ ] 5.7 Add material drops to Wolf: Wolf Pelt (27%), Wolf Fang (30%)
-  - [ ] 5.8 Add material drops to Dragon: Dragon Scale (25%), Dragon Fang (20%)
-  - [ ] 5.9 Add material drops to Phoenix: Phoenix Feather (28%)
-  - [ ] 5.10 Add material drops to higher-level enemies: rare materials (25-30%)
-  - [ ] 5.11 Update combat reward generation in ReactGameContext to include materials
-  - [ ] 5.12 Test material drops in combat encounters
+- [x] 5.0 Update Monster Data for Breeding Materials
+  - [x] 5.1 Open `public/data/monsters.js`
+  - [x] 5.2 Add breedingMaterialDrops array to monster definitions
+  - [x] 5.3 Set 25-30% drop rate for common materials (Slime → Slime Gel)
+  - [x] 5.4 Set 25-30% drop rate for rare materials from specific enemies
+  - [x] 5.5 Add material drops to Slime: Slime Gel (30%)
+  - [x] 5.6 Add material drops to Goblin: Goblin Tooth (28%), Leather Scraps (25%)
+  - [x] 5.7 Add material drops to Wolf: Wolf Pelt (27%), Wolf Fang (30%)
+  - [x] 5.8 Add material drops to Dragon: Dragon Scale (25%), Dragon Fang (20%)
+  - [x] 5.9 Add material drops to Phoenix: Phoenix Feather (28%)
+  - [x] 5.10 Add material drops to higher-level enemies: rare materials (25-30%)
+  - [x] 5.11 Update combat reward generation in ReactGameContext to include materials
+  - [x] 5.12 Test material drops in combat encounters
 
-- [ ] 6.0 Build Breeding UI Components
-  - [ ] 6.1 Create `src/components/organisms/BreedingInterface.tsx`
-  - [ ] 6.2 Set up component structure with state management (selectedParent1, selectedParent2, activeView)
-  - [ ] 6.3 Add view tabs: "Breed", "Recipe Guide", "History"
-  - [ ] 6.4 Integrate BreedingParentSelector for parent1 slot
-  - [ ] 6.5 Integrate BreedingParentSelector for parent2 slot
-  - [ ] 6.6 Display predicted offspring preview (stats, rarity, generation)
-  - [ ] 6.7 Integrate BreedingCostDisplay component
-  - [ ] 6.8 Add "Breed" button with validation (sufficient gold, materials, parents selected)
-  - [ ] 6.9 Show confirmation modal before breeding with summary
-  - [ ] 6.10 Trigger breeding action on confirm
-  - [ ] 6.11 Show BreedingResultModal on successful breeding
-  - [ ] 6.12 Add error handling and user-friendly error messages
-  - [ ] 6.13 Create `src/components/molecules/BreedingParentSelector.tsx`
-  - [ ] 6.14 Display creature selection slot (drag-and-drop or click to select)
-  - [ ] 6.15 Show list/grid of available creatures for selection
-  - [ ] 6.16 Display selected creature card with stats, generation, exhaustion indicator
-  - [ ] 6.17 Add creature filtering (by species, rarity, level)
-  - [ ] 6.18 Use LazyVirtualizedGrid for large creature lists
-  - [ ] 6.19 Create `src/components/molecules/BreedingCostDisplay.tsx`
-  - [ ] 6.20 Display calculated gold cost with breakdown (base, rarity, generation, breeding count)
-  - [ ] 6.21 Display required materials with icons and quantities
-  - [ ] 6.22 Highlight available vs missing materials (green/red indicators)
-  - [ ] 6.23 Show player's current gold and material inventory
-  - [ ] 6.24 Create `src/components/molecules/BreedingResultModal.tsx`
-  - [ ] 6.25 Display new offspring creature card with full stats
-  - [ ] 6.26 Show generation level with badge
-  - [ ] 6.27 Display inherited abilities (if any) with descriptions
-  - [ ] 6.28 Show rarity with visual celebration if upgraded
-  - [ ] 6.29 Add "Name Creature" input field
-  - [ ] 6.30 Add "View in Collection" button
-  - [ ] 6.31 Add "Breed Again" button
-  - [ ] 6.32 Create `src/components/molecules/BreedingRecipeBook.tsx`
-  - [ ] 6.33 Display discovered recipes with parent combinations and offspring
-  - [ ] 6.34 Show material requirements for each recipe
-  - [ ] 6.35 Display ??? for undiscovered recipes with hints
-  - [ ] 6.36 Add recipe search/filter functionality
-  - [ ] 6.37 Show recipe unlock conditions (level, story progression)
+- [x] 6.0 Build Breeding UI Components
+  - [x] 6.1 Create `src/components/organisms/BreedingInterface.tsx`
+  - [x] 6.2 Set up component structure with state management (selectedParent1, selectedParent2, activeView)
+  - [x] 6.3 Add view tabs: "Breed", "Recipe Guide", "History"
+  - [x] 6.4 Integrate BreedingParentSelector for parent1 slot
+  - [x] 6.5 Integrate BreedingParentSelector for parent2 slot
+  - [x] 6.6 Display predicted offspring preview (stats, rarity, generation)
+  - [x] 6.7 Integrate BreedingCostDisplay component
+  - [x] 6.8 Add "Breed" button with validation (sufficient gold, materials, parents selected)
+  - [x] 6.9 Show confirmation modal before breeding with summary
+  - [x] 6.10 Trigger breeding action on confirm
+  - [x] 6.11 Show BreedingResultModal on successful breeding
+  - [x] 6.12 Add error handling and user-friendly error messages
+  - [x] 6.13 Create `src/components/molecules/BreedingParentSelector.tsx`
+  - [x] 6.14 Display creature selection slot (drag-and-drop or click to select)
+  - [x] 6.15 Show list/grid of available creatures for selection
+  - [x] 6.16 Display selected creature card with stats, generation, exhaustion indicator
+  - [x] 6.17 Add creature filtering (by species, rarity, level)
+  - [x] 6.18 Use LazyVirtualizedGrid for large creature lists
+  - [x] 6.19 Create `src/components/molecules/BreedingCostDisplay.tsx`
+  - [x] 6.20 Display calculated gold cost with breakdown (base, rarity, generation, breeding count)
+  - [x] 6.21 Display required materials with icons and quantities
+  - [x] 6.22 Highlight available vs missing materials (green/red indicators)
+  - [x] 6.23 Show player's current gold and material inventory
+  - [x] 6.24 Create `src/components/molecules/BreedingResultModal.tsx`
+  - [x] 6.25 Display new offspring creature card with full stats
+  - [x] 6.26 Show generation level with badge
+  - [x] 6.27 Display inherited abilities (if any) with descriptions
+  - [x] 6.28 Show rarity with visual celebration if upgraded
+  - [x] 6.29 Add "Name Creature" input field
+  - [x] 6.30 Add "View in Collection" button
+  - [x] 6.31 Add "Breed Again" button
+  - [x] 6.32 Create `src/components/molecules/BreedingRecipeBook.tsx`
+  - [x] 6.33 Display discovered recipes with parent combinations and offspring
+  - [x] 6.34 Show material requirements for each recipe
+  - [x] 6.35 Display ??? for undiscovered recipes with hints
+  - [x] 6.36 Add recipe search/filter functionality
+  - [x] 6.37 Show recipe unlock conditions (level, story progression)
 
-- [ ] 7.0 Implement Breeding Cost and Economy System
-  - [ ] 7.1 Create validateBreedingCost(cost, playerGold, playerMaterials) utility function
-  - [ ] 7.2 Check if player has sufficient gold
-  - [ ] 7.3 Check if player has all required materials with correct quantities
-  - [ ] 7.4 Return validation result with specific missing resources
-  - [ ] 7.5 Create consumeBreedingCost(cost, gameState) function
-  - [ ] 7.6 Deduct gold from player
-  - [ ] 7.7 Remove materials from inventory
-  - [ ] 7.8 Dispatch state updates to ReactGameContext
-  - [ ] 7.9 Add material management functions to itemUtils.ts
-  - [ ] 7.10 Implement addMaterial(materialId, quantity) function
-  - [ ] 7.11 Implement removeMaterial(materialId, quantity) function
-  - [ ] 7.12 Implement getMaterialQuantity(materialId) function
-  - [ ] 7.13 Integrate cost validation in breeding UI before allowing breeding
-  - [ ] 7.14 Show cost breakdown tooltip on hover
+- [x] 7.0 Implement Breeding Cost and Economy System
+  - [x] 7.1 Create validateBreedingCost(cost, playerGold, playerMaterials) utility function
+  - [x] 7.2 Check if player has sufficient gold
+  - [x] 7.3 Check if player has all required materials with correct quantities
+  - [x] 7.4 Return validation result with specific missing resources
+  - [x] 7.5 Enhanced validateBreeding() to include cost validation (replaces consumeBreedingCost)
+  - [x] 7.6 Gold validation integrated in validateBreeding()
+  - [x] 7.7 Material validation integrated in validateBreeding()
+  - [x] 7.8 State updates handled by ReactGameContext BREED_CREATURES action (already implemented)
+  - [x] 7.9 Add material management functions to itemUtils.ts
+  - [x] 7.10 Implement addMaterial(materialId, quantity) function
+  - [x] 7.11 Implement removeMaterial(materialId, quantity) function
+  - [x] 7.12 Implement getMaterialQuantity(materialId) function
+  - [x] 7.13 Integrate cost validation in breeding UI before allowing breeding (BreedingInterface.tsx)
+  - [x] 7.14 Show cost breakdown tooltip (BreedingCostDisplay component already has this)
 
 - [ ] 8.0 Add Exhaustion and Recovery Mechanics
   - [ ] 8.1 Update CreatureCard component to display exhaustion indicator
