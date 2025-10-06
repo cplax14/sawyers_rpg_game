@@ -147,7 +147,7 @@ export interface ReactGameState {
 
   // UI state
   isLoading: boolean;
-  currentScreen: 'menu' | 'character-selection' | 'world-map' | 'area' | 'combat' | 'inventory' | 'settings';
+  currentScreen: 'menu' | 'character-selection' | 'world-map' | 'area' | 'combat' | 'inventory' | 'breeding' | 'creatures' | 'settings';
   error: string | null;
 
   // Combat state

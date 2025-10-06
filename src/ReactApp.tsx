@@ -16,6 +16,8 @@ import ReactTestPanel from './components/ui/ReactTestPanel';
 import VictoryModal from './components/ui/VictoryModal';
 import InventoryManager from './components/organisms/InventoryManager';
 import RecipeDiscoveryManager from './components/organisms/RecipeDiscoveryManager';
+import { BreedingInterface } from './components/organisms/BreedingInterface';
+import { CreatureScreen } from './components/organisms/CreatureScreen';
 import { performanceMonitor } from './utils/performanceMonitor';
 import { ReactGameState } from './contexts/ReactGameContext';
 import { reactAppStyles } from './utils/temporaryStyles';
@@ -366,6 +368,12 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({ currentScreen, gameState })
             onClose={() => navigateToScreen('area')}
           />
         );
+
+      case 'breeding':
+        return <BreedingInterface onClose={() => navigateToScreen('area')} />;
+
+      case 'creatures':
+        return <CreatureScreen onClose={() => navigateToScreen('area')} />;
 
       case 'settings':
         return (
