@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../atoms/Button';
 import { Modal } from '../atoms/Modal';
 import { LoadingSpinner } from '../atoms/LoadingSpinner';
+import { HelpTooltip } from '../atoms/HelpTooltip';
 import { BreedingParentSelector } from '../molecules/BreedingParentSelector';
 import { BreedingCostDisplay } from '../molecules/BreedingCostDisplay';
 import { BreedingResultModal } from '../molecules/BreedingResultModal';
@@ -306,10 +307,27 @@ export const BreedingInterface: React.FC<BreedingInterfaceProps> = ({
           transition={{ duration: 0.3 }}
         >
           <div style={breedingStyles.previewSection}>
-            <h3 style={breedingStyles.previewTitle}>Offspring Preview</h3>
+            <h3 style={breedingStyles.previewTitle}>
+              Offspring Preview
+              <HelpTooltip
+                title="Offspring Preview"
+                content="Generation determines stat caps (+10% per gen). Offspring will inherit 70-90% of parent stats with 40% chance for better parent's value. Each parent's abilities have 30% inheritance chance."
+                position="right"
+                maxWidth={280}
+                style={{ marginLeft: '0.5rem' }}
+              />
+            </h3>
             <div style={breedingStyles.previewContent}>
               <div style={breedingStyles.previewRow}>
-                <span style={breedingStyles.previewLabel}>Generation:</span>
+                <span style={breedingStyles.previewLabel}>
+                  Generation:
+                  <HelpTooltip
+                    content="Max generation is 5. Each generation grants +10% stat caps (+5% per gen bonus on base stats). Higher gens unlock more ability slots."
+                    position="top"
+                    maxWidth={250}
+                    style={{ marginLeft: '0.25rem' }}
+                  />
+                </span>
                 <span style={breedingStyles.previewValue}>
                   Gen {Math.min(Math.max(selectedParent1.generation || 0, selectedParent2.generation || 0) + 1, 5)}
                 </span>
@@ -321,7 +339,15 @@ export const BreedingInterface: React.FC<BreedingInterfaceProps> = ({
                 </span>
               </div>
               <div style={breedingStyles.previewRow}>
-                <span style={breedingStyles.previewLabel}>Rarity Upgrade Chance:</span>
+                <span style={breedingStyles.previewLabel}>
+                  Rarity Upgrade Chance:
+                  <HelpTooltip
+                    content="10% chance to upgrade rarity tier. Legendary can become Mythical with incredible stat multipliers and ultimate abilities!"
+                    position="top"
+                    maxWidth={250}
+                    style={{ marginLeft: '0.25rem' }}
+                  />
+                </span>
                 <span style={breedingStyles.previewValue}>10%</span>
               </div>
             </div>
@@ -356,6 +382,8 @@ export const BreedingInterface: React.FC<BreedingInterfaceProps> = ({
           disabled={!validation.valid || isBreeding}
           onClick={handleBreedClick}
           loading={isBreeding}
+          aria-label={isBreeding ? 'Breeding creatures in progress' : 'Breed selected creatures'}
+          aria-busy={isBreeding}
         >
           {isBreeding ? 'Breeding...' : 'Breed Creatures'}
         </Button>
@@ -368,6 +396,7 @@ export const BreedingInterface: React.FC<BreedingInterfaceProps> = ({
               setSelectedParent1(null);
               setSelectedParent2(null);
             }}
+            aria-label="Clear selected parent creatures"
           >
             Clear Selection
           </Button>
@@ -387,6 +416,13 @@ export const BreedingInterface: React.FC<BreedingInterfaceProps> = ({
       >
         <h1 style={{ ...breedingStyles.title, fontSize: isMobile ? '1.5rem' : '2rem' }}>
           Creature Breeding
+          <HelpTooltip
+            title="Creature Breeding System"
+            content="Combine two creatures to create offspring with inherited stats and abilities. Higher generation creatures have better stat caps. There's a 10% chance for rarity upgrades!"
+            position="bottom"
+            maxWidth={300}
+            style={{ marginLeft: '0.5rem' }}
+          />
         </h1>
         <p style={breedingStyles.subtitle}>
           Combine two creatures to create powerful offspring
@@ -408,6 +444,9 @@ export const BreedingInterface: React.FC<BreedingInterfaceProps> = ({
           onClick={() => setActiveTab('breed')}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
+          aria-label="Breed creatures tab"
+          aria-pressed={activeTab === 'breed'}
+          role="tab"
         >
           <span>🧬</span>
           <span>Breed</span>
@@ -421,6 +460,9 @@ export const BreedingInterface: React.FC<BreedingInterfaceProps> = ({
           onClick={() => setActiveTab('recipes')}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
+          aria-label="View breeding recipes tab"
+          aria-pressed={activeTab === 'recipes'}
+          role="tab"
         >
           <span>📖</span>
           <span>Recipes</span>
@@ -434,6 +476,9 @@ export const BreedingInterface: React.FC<BreedingInterfaceProps> = ({
           onClick={() => setActiveTab('history')}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
+          aria-label="View breeding history tab"
+          aria-pressed={activeTab === 'history'}
+          role="tab"
         >
           <span>📜</span>
           <span>History</span>

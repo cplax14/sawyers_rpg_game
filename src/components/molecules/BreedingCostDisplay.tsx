@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { HelpTooltip } from '../atoms/HelpTooltip';
 import { BreedingCost } from '../../types/breeding';
 
 interface BreedingCostDisplayProps {
@@ -171,7 +172,16 @@ export const BreedingCostDisplay: React.FC<BreedingCostDisplayProps> = ({
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3 }}
     >
-      <div style={costStyles.title}>Breeding Cost</div>
+      <div style={costStyles.title}>
+        Breeding Cost
+        <HelpTooltip
+          title="Breeding Costs"
+          content="Costs increase with parent level, rarity, generation, and breeding count. Both parents gain exhaustion (-20% stats per level) after breeding. Use Revitalization Potions to restore them!"
+          position="bottom"
+          maxWidth={280}
+          style={{ marginLeft: '0.5rem' }}
+        />
+      </div>
 
       {/* Gold Cost */}
       <div style={costStyles.section}>
