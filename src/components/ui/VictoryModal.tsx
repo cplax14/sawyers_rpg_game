@@ -189,7 +189,7 @@ const VictoryModal: React.FC<VictoryModalProps> = ({ isVisible, onClose }) => {
           </div>
         )}
 
-        {state.player && state.player.experience >= state.player.experienceToNext && (
+        {state.lastCombatRewards?.didLevelUp && (
           <div style={{
             background: 'linear-gradient(45deg, #10b981, #059669)',
             borderRadius: '12px',
@@ -201,7 +201,7 @@ const VictoryModal: React.FC<VictoryModalProps> = ({ isVisible, onClose }) => {
               ⭐ Level Up! ⭐
             </h3>
             <p style={{ margin: 0, color: '#f0f9ff' }}>
-              Congratulations! You reached level {state.player.level}!
+              Congratulations! You reached level {state.lastCombatRewards.newLevel || state.player?.level}!
             </p>
           </div>
         )}

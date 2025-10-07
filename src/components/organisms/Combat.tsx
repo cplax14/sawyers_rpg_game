@@ -74,6 +74,15 @@ export const Combat: React.FC<CombatProps> = ({
   const playerElementRef = useRef<HTMLDivElement>(null);
   const enemyElementRef = useRef<HTMLDivElement>(null);
 
+  // Capture initial enemy data to prevent null reference in rewards
+  const initialEnemyDataRef = useRef<{
+    species: string;
+    level: number;
+    experience: number;
+    gold: number;
+    name: string;
+  } | null>(null);
+
   // Generate enemy monster
   const enemy = useMemo(() => {
     if (!currentEncounter) return null;
@@ -152,14 +161,23 @@ export const Combat: React.FC<CombatProps> = ({
     enemySpecies?: string;
   } | null>(null);
 
-  // Reset battle ended flag when new combat starts
+  // Reset battle ended flag and capture enemy data when new combat starts
   useEffect(() => {
-    if (currentEncounter) {
+    if (currentEncounter && enemy) {
       // Only reset when we have a new encounter (new combat starting)
       battleEndedRef.current = false;
       enemyTurnExecutingRef.current = false;
+
+      // Capture initial enemy data for rewards calculation
+      initialEnemyDataRef.current = {
+        species: enemy.species,
+        level: enemy.level,
+        experience: enemy.experience,
+        gold: enemy.gold,
+        name: enemy.name
+      };
     }
-  }, [currentEncounter]);
+  }, [currentEncounter, enemy]);
 
   // Calculate player weapon damage
   const getPlayerWeaponDamage = useCallback(() => {
@@ -698,13 +716,20 @@ export const Combat: React.FC<CombatProps> = ({
     const modalDelay = (result === 'victory' || result === 'captured') ? 2000 : 0;
 
     if (result === 'victory' || result === 'captured') {
-      // Capture rewards before enemy/encounter might become null
-      const rewardEnemy = enemy || (currentEncounter ? {
+      // Use captured initial enemy data (prevents null reference)
+      const rewardEnemy = initialEnemyDataRef.current || (enemy ? {
+        species: enemy.species,
+        level: enemy.level,
+        experience: enemy.experience,
+        gold: enemy.gold,
+        name: enemy.name
+      } : (currentEncounter ? {
+        species: currentEncounter.species,
+        level: currentEncounter.level,
         experience: currentEncounter.level * 12,
         gold: currentEncounter.level * 6,
-        name: currentEncounter.species.replace(/_/g, ' '),
-        level: currentEncounter.level
-      } : null);
+        name: currentEncounter.species.replace(/_/g, ' ')
+      } : null));
 
       const expGained = rewardEnemy?.experience || 0;
       const goldGained = rewardEnemy?.gold || 0;
@@ -715,29 +740,19 @@ export const Combat: React.FC<CombatProps> = ({
         return;
       }
 
-      // Add experience and gold through ReactGameContext
-      if (player) {
-        console.log('🎯 Combat: Attempting to add exp/gold:', {
-          playerId: player.id || 'no-id',
-          playerName: player.name,
-          expGained,
-          goldGained,
-          hasId: !!player.id
-        });
+      // NOTE: XP and gold are added by the END_COMBAT reducer action, not here
+      // Removed duplicate addExp/addPlayerGold calls that were causing double-counting
+      console.log('🎯 Combat: Rewards will be added by END_COMBAT reducer:', {
+        expGained,
+        goldGained,
+        playerCurrentXP: player?.experience || 0
+      });
 
-        // Try with or without ID - check what the functions actually expect
-        if (player.id) {
-          addExp(player.id, expGained);
-          addPlayerGold(player.id, goldGained);
-        } else {
-          // Fallback: try with player name or just call without ID
-          addExp(player.name || 'player', expGained);
-          addPlayerGold(player.name || 'player', goldGained);
-        }
-      }
-
-      // Generate rewards to show in battle log
-      const combatRewards = generateCombatRewards(enemy?.species || 'unknown', enemy?.level || 1);
+      // Generate rewards to show in battle log (use captured enemy data)
+      const combatRewards = generateCombatRewards(
+        rewardEnemy?.species || 'unknown',
+        rewardEnemy?.level || 1
+      );
       const rewardItems = combatRewards.items;
       const breedingMaterialsDropped = combatRewards.breedingMaterials || [];
       let battleMessage = '';

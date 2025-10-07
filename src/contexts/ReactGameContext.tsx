@@ -6,6 +6,7 @@ import { ExperienceState } from '../types/experience';
 import { removeExhaustion, calculateBreedingCost, generateOffspring, validateBreeding, applyExhaustion } from '../utils/breedingEngine';
 import { BreedingRecipe } from '../types/breeding';
 import { checkRecipeDiscoveryAfterCapture } from '../utils/recipeDiscovery';
+import { ExperienceCalculator } from '../utils/experienceUtils';
 
 // Global type declaration for auto-save manager
 declare global {
@@ -172,6 +173,9 @@ export interface ReactGameState {
     gold: number;
     items: ReactItem[];
     capturedMonsterId?: string; // Track which monster was just captured
+    didLevelUp?: boolean; // Track if player leveled up from this combat
+    previousLevel?: number; // Level before combat
+    newLevel?: number; // Level after combat
   } | null;
 
   // Game session data
@@ -461,8 +465,8 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
 
       const startingSpells = characterClassData?.startingSpells || [];
 
-      // This will be enhanced with actual class data
-      const baseStats = {
+      // Initialize base stats based on character class data
+      const baseStats: PlayerStats = characterClassData?.baseStats || {
         attack: 10,
         defense: 10,
         magicAttack: 10,
@@ -470,6 +474,7 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         speed: 10,
         accuracy: 85,
       };
+
       const newPlayer: ReactPlayer = {
         id: `player_${Date.now()}`,
         name,
@@ -480,7 +485,7 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         mp: 50,
         maxMp: 50,
         experience: 0,
-        experienceToNext: 100,
+        experienceToNext: 100, // Matches BASE_XP_PER_LEVEL from experienceUtils.ts
         gold: 100,
         baseStats,
         stats: { ...baseStats },
@@ -703,6 +708,11 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
       }
       const { experience, gold, items } = action.payload;
 
+      // Track level-up information
+      let didLevelUp = false;
+      let previousLevel = state.player?.level || 1;
+      let levelAfterCombat = previousLevel;
+
       // Add experience and gold to player
       let updatedPlayerFromCombat = state.player;
       if (updatedPlayerFromCombat) {
@@ -712,30 +722,39 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
           gold: updatedPlayerFromCombat.gold + gold
         };
 
-        // Check for level up
-        while (updatedPlayerFromCombat.experience >= updatedPlayerFromCombat.experienceToNext && updatedPlayerFromCombat.level < 100) {
+        // Check for level up using proper level calculation
+        const calculatedLevel = ExperienceCalculator.calculateLevel(updatedPlayerFromCombat.experience);
+        if (calculatedLevel > updatedPlayerFromCombat.level && calculatedLevel <= 100) {
+          // Player leveled up!
+          didLevelUp = true;
+          levelAfterCombat = calculatedLevel;
+          const levelDifference = calculatedLevel - updatedPlayerFromCombat.level;
+          console.log(`🎉 LEVEL UP! ${updatedPlayerFromCombat.level} → ${calculatedLevel} (gained ${levelDifference} levels)`);
+
           updatedPlayerFromCombat = {
             ...updatedPlayerFromCombat,
-            level: updatedPlayerFromCombat.level + 1,
-            experienceToNext: (updatedPlayerFromCombat.level + 1) * 100,
-            maxHp: updatedPlayerFromCombat.maxHp + 10,
-            maxMp: updatedPlayerFromCombat.maxMp + 5,
-            hp: updatedPlayerFromCombat.maxHp + 10,
-            mp: updatedPlayerFromCombat.maxMp + 5
+            level: calculatedLevel,
+            experienceToNext: ExperienceCalculator.getXPForNextLevel(updatedPlayerFromCombat.experience),
+            maxHp: updatedPlayerFromCombat.maxHp + (10 * levelDifference),
+            maxMp: updatedPlayerFromCombat.maxMp + (5 * levelDifference),
+            hp: updatedPlayerFromCombat.maxHp + (10 * levelDifference),
+            mp: updatedPlayerFromCombat.maxMp + (5 * levelDifference)
           };
         }
       }
 
       // Add items to inventory
       const updatedInventoryFromCombat = [...state.inventory];
-      items.forEach(newItem => {
-        const existingItemIndex = updatedInventoryFromCombat.findIndex(item => item.id === newItem.id);
-        if (existingItemIndex !== -1) {
-          updatedInventoryFromCombat[existingItemIndex].quantity += newItem.quantity;
-        } else {
-          updatedInventoryFromCombat.push(newItem);
-        }
-      });
+      if (items && Array.isArray(items)) {
+        items.forEach(newItem => {
+          const existingItemIndex = updatedInventoryFromCombat.findIndex(item => item.id === newItem.id);
+          if (existingItemIndex !== -1) {
+            updatedInventoryFromCombat[existingItemIndex].quantity += newItem.quantity;
+          } else {
+            updatedInventoryFromCombat.push(newItem);
+          }
+        });
+      }
 
       return {
         ...state,
@@ -743,7 +762,14 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         inventory: updatedInventoryFromCombat,
         currentEncounter: null,
         showVictoryModal: true,
-        lastCombatRewards: { experience, gold, items },
+        lastCombatRewards: {
+          experience,
+          gold,
+          items,
+          didLevelUp,
+          previousLevel,
+          newLevel: levelAfterCombat
+        },
         // Keep current screen as 'combat' to show victory modal, let VictoryModal handle navigation
         currentScreen: state.currentScreen
       };
@@ -763,10 +789,11 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
 
     case 'LEVEL_UP_PLAYER':
       if (!state.player) return state;
+      const newLevel = state.player.level + 1;
       const levelUpPlayer = {
         ...state.player,
-        level: state.player.level + 1,
-        experienceToNext: (state.player.level + 1) * 100, // Simple formula
+        level: newLevel,
+        experienceToNext: ExperienceCalculator.getXPForNextLevel(state.player.experience),
         maxHp: state.player.maxHp + 10,
         maxMp: state.player.maxMp + 5,
         hp: state.player.maxHp + 10, // Heal to full on level up
@@ -792,19 +819,35 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         incomingExpType: typeof action.payload.experience
       });
       const newExp = state.player.experience + action.payload.experience;
+
+      // Validate XP before updating
+      if (isNaN(newExp) || newExp < 0) {
+        console.error('❌ Invalid XP calculation!', {
+          currentXP: state.player.experience,
+          addedXP: action.payload.experience,
+          result: newExp
+        });
+        return state; // Don't update with invalid data
+      }
+
       console.log('🔍 ADD_EXPERIENCE Result:', { newExp, isNaN: isNaN(newExp) });
       let updatedPlayer = { ...state.player, experience: newExp };
 
-      // Check for level up
-      while (updatedPlayer.experience >= updatedPlayer.experienceToNext && updatedPlayer.level < 100) {
+      // Check for level up using proper level calculation
+      const calculatedLevel = ExperienceCalculator.calculateLevel(updatedPlayer.experience);
+      if (calculatedLevel > updatedPlayer.level && calculatedLevel <= 100) {
+        // Player leveled up!
+        const levelDifference = calculatedLevel - updatedPlayer.level;
+        console.log(`🎉 LEVEL UP! ${updatedPlayer.level} → ${calculatedLevel} (gained ${levelDifference} levels)`);
+
         updatedPlayer = {
           ...updatedPlayer,
-          level: updatedPlayer.level + 1,
-          experienceToNext: (updatedPlayer.level + 1) * 100,
-          maxHp: updatedPlayer.maxHp + 10,
-          maxMp: updatedPlayer.maxMp + 5,
-          hp: updatedPlayer.maxHp + 10,
-          mp: updatedPlayer.maxMp + 5
+          level: calculatedLevel,
+          experienceToNext: ExperienceCalculator.getXPForNextLevel(updatedPlayer.experience),
+          maxHp: updatedPlayer.maxHp + (10 * levelDifference),
+          maxMp: updatedPlayer.maxMp + (5 * levelDifference),
+          hp: updatedPlayer.maxHp + (10 * levelDifference),
+          mp: updatedPlayer.maxMp + (5 * levelDifference)
         };
         // Trigger auto-save for level up
         setTimeout(() => {

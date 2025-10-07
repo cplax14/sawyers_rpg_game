@@ -203,15 +203,23 @@ export function useExperience(): UseExperienceReturn {
   }, [updateGameState, gameState.playerStats]);
 
   // Experience calculation formulas
+  // CONSOLIDATED: Using the same formula as experienceUtils.ts
+  // Formula: BASE_XP = 100, scaling = 1.15^level (cumulative)
   const getExperienceForLevel = useCallback((level: number): number => {
     if (level <= 1) return 0;
+    if (level > 100) level = 100; // Max level cap
 
-    // Exponential growth formula: base * level^2.5 + linear * level
-    const base = 50;
-    const exponential = 1.8;
-    const linear = 25;
+    // Calculate cumulative XP required to reach this level
+    let totalXP = 0;
+    const BASE_XP_PER_LEVEL = 100;
+    const XP_SCALING_FACTOR = 1.15;
 
-    return Math.floor(base * Math.pow(level, exponential) + linear * level);
+    for (let i = 2; i <= level; i++) {
+      const levelXP = Math.floor(BASE_XP_PER_LEVEL * Math.pow(XP_SCALING_FACTOR, i - 2));
+      totalXP += levelXP;
+    }
+
+    return totalXP;
   }, []);
 
   const getExperienceToNext = useCallback((level?: number): number => {
