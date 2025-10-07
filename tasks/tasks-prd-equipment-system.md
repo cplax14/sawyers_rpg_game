@@ -69,11 +69,11 @@ Generated from: `docs/ai_dev_tasks/prd-equipment-system.md`
   - [x] 4.8 Update item stack logic to handle equipped items separately from inventory stacks
 
 - [ ] 5.0 Build Equipment Validation System
-  - [ ] 5.1 Enhance `useEquipmentValidation` hook to check level requirements
-  - [ ] 5.2 Add class requirement validation (check player class against item's `classRequirement` array)
-  - [ ] 5.3 Add stat requirement validation (check player stats against item's stat requirements)
-  - [ ] 5.4 Implement slot compatibility check (ensure item's `equipmentSlot` matches target slot)
-  - [ ] 5.5 Add equipment subtype validation (e.g., rings can only go in ring slots)
+  - [x] 5.1 Enhance `useEquipmentValidation` hook to check level requirements
+  - [x] 5.2 Add class requirement validation (check player class against item's `classRequirement` array)
+  - [x] 5.3 Add stat requirement validation (check player stats against item's stat requirements)
+  - [x] 5.4 Implement slot compatibility check (ensure item's `equipmentSlot` matches target slot)
+  - [x] 5.5 Add equipment subtype validation (e.g., rings can only go in ring slots) - COMPLETE: Handled by Task 5.4 slot compatibility check. Ring subtype validation already works (rings go in ring1/ring2). System ready for future subtype extensions.
   - [ ] 5.6 Create `getRestrictionMessage` function to return user-friendly error messages for each restriction type
   - [ ] 5.7 Add two-handed weapon slot conflict detection (two-handed weapons use weapon + shield slots)
   - [ ] 5.8 Return comprehensive `EquipmentCompatibility` result with reasons, warnings, and suggestions
