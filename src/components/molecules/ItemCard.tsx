@@ -6,7 +6,7 @@ import { LoadingSpinner } from '../atoms/LoadingSpinner';
 import { useInventory } from '../../hooks/useInventory';
 import { useGameState } from '../../contexts/ReactGameContext';
 import { useResponsive } from '../../hooks';
-import { EnhancedItem, ItemCategory, ItemType } from '../../types/inventory';
+import { EnhancedItem, ItemCategory } from '../../types/inventory';
 
 interface ItemCardProps {
   item: EnhancedItem;
@@ -103,6 +103,19 @@ const cardStyles = {
     color: '#d4af37',
     whiteSpace: 'nowrap' as const,
     border: '1px solid rgba(212, 175, 55, 0.3)'
+  },
+  equippedBadge: {
+    background: 'rgba(34, 197, 94, 0.2)',
+    borderRadius: '12px',
+    padding: '0.25rem 0.5rem',
+    fontSize: '0.7rem',
+    fontWeight: 'bold',
+    color: '#22c55e',
+    whiteSpace: 'nowrap' as const,
+    border: '1px solid rgba(34, 197, 94, 0.4)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.25rem'
   },
   description: {
     fontSize: '0.8rem',
@@ -225,6 +238,35 @@ const rarityGlow = {
   mythical: 'rgba(236, 72, 153, 0.2)'
 };
 
+// Helper function to get equipment icon based on equipment slot
+const getEquipmentIcon = (item: EnhancedItem): string => {
+  if (!item.equipmentSlot) return '⚡'; // Generic equipped icon
+
+  switch (item.equipmentSlot) {
+    case 'weapon':
+      return '⚔️';
+    case 'armor':
+      return '🛡️';
+    case 'helmet':
+      return '⛑️';
+    case 'necklace':
+      return '📿';
+    case 'shield':
+      return '🛡️';
+    case 'gloves':
+      return '🧤';
+    case 'boots':
+      return '👢';
+    case 'ring1':
+    case 'ring2':
+      return '💍';
+    case 'charm':
+      return '🔮';
+    default:
+      return '⚡';
+  }
+};
+
 export const ItemCard: React.FC<ItemCardProps> = ({
   item,
   onUse,
@@ -240,7 +282,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
 }) => {
   const { gameState } = useGameState();
   const { isMobile } = useResponsive();
-  const { useItem, isLoading: inventoryLoading } = useInventory();
+  const { useItem } = useInventory();
 
   // Local state
   const [isLoading, setIsLoading] = useState(false);
@@ -272,7 +314,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
 
   // Handle item usage
   const handleUse = useCallback(async () => {
-    if (disabled || isLoading || inventoryLoading) return;
+    if (disabled || isLoading) return;
 
     setIsLoading(true);
     try {
@@ -302,7 +344,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [item, onUse, useItem, disabled, isLoading, inventoryLoading]);
+  }, [item, onUse, useItem, disabled, isLoading]);
 
   // Handle card click (inspect)
   const handleCardClick = useCallback(() => {
@@ -374,9 +416,23 @@ export const ItemCard: React.FC<ItemCardProps> = ({
             </p>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', flexWrap: 'wrap' }}>
             {/* Rarity Indicator */}
             <RarityIndicator rarity={item.rarity} size={size} />
+
+            {/* Equipped Badge */}
+            {item.equipped && (
+              <motion.div
+                style={cardStyles.equippedBadge}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.15, type: 'spring' }}
+                title="This item is currently equipped"
+              >
+                <span>{getEquipmentIcon(item)}</span>
+                <span>Equipped</span>
+              </motion.div>
+            )}
 
             {/* Quantity Badge */}
             {showQuantity && item.quantity && item.quantity > 1 && (
@@ -460,7 +516,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
                   e.stopPropagation();
                   handleUse();
                 }}
-                disabled={isLoading || inventoryLoading}
+                disabled={isLoading}
                 style={cardStyles.primaryAction}
               >
                 {isLoading ? 'Using...' : 'Use'}
@@ -476,7 +532,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
                   e.stopPropagation();
                   onSell(item);
                 }}
-                disabled={isLoading || inventoryLoading}
+                disabled={isLoading}
                 style={cardStyles.actionButton}
               >
                 Sell
@@ -491,7 +547,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
                   e.stopPropagation();
                   onDrop(item);
                 }}
-                disabled={isLoading || inventoryLoading}
+                disabled={isLoading}
                 style={cardStyles.actionButton}
               >
                 Drop
@@ -503,7 +559,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
 
       {/* Loading Overlay */}
       <AnimatePresence>
-        {(isLoading || inventoryLoading) && (
+        {isLoading && (
           <motion.div
             style={cardStyles.loadingOverlay}
             initial={{ opacity: 0 }}

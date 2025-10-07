@@ -458,20 +458,43 @@ export const useEquipment = () => {
        */
 
       // Step 1: Validate inventory space if we're replacing an item
+      // TASK 4.6: Only count BAG items (non-equipped) toward capacity
       // When replacing, we remove 1 item and add 1 item back, so net change is 0
       // However, if inventory is at max capacity, we still need to ensure the swap can complete
       if (currentItem) {
-        const currentInventoryCount = mainInventory.items.reduce((total, slot) => {
-          return total + (slot.item ? slot.quantity : 0);
+        // Count only items in the bag (exclude equipped items)
+        const currentBagItemCount = mainInventory.items.reduce((total, slot) => {
+          if (!slot.item) return total;
+
+          // Check if this item is currently equipped
+          const equipment = gameState.state.player?.equipment;
+          const isEquipped = equipment && [
+            equipment.weapon,
+            equipment.armor,
+            equipment.accessory,
+            equipment.helmet,
+            equipment.necklace,
+            equipment.shield,
+            equipment.gloves,
+            equipment.boots,
+            equipment.ring1,
+            equipment.ring2,
+            equipment.charm
+          ].includes(slot.item.id);
+
+          // Skip equipped items when counting bag capacity
+          if (isEquipped) return total;
+
+          return total + slot.quantity;
         }, 0);
 
         const MAX_INVENTORY_CAPACITY = 10000;
 
-        // After removing the new item, we'll have currentInventoryCount - 1
+        // After removing the new item, we'll have currentBagItemCount - 1
         // We need to be able to add the old item back, so check if we'd exceed capacity
         // Since we're doing a swap (remove 1, add 1), this should always work
         // But we check as a safety measure for edge cases
-        if (currentInventoryCount - 1 + 1 > MAX_INVENTORY_CAPACITY) {
+        if (currentBagItemCount - 1 + 1 > MAX_INVENTORY_CAPACITY) {
           return {
             success: false,
             equipped: null,
@@ -592,16 +615,38 @@ export const useEquipment = () => {
         };
       }
 
-      // Calculate current inventory size (count all items including stacks)
-      const currentInventoryCount = mainInventory.items.reduce((total, slot) => {
-        return total + (slot.item ? slot.quantity : 0);
+      // TASK 4.6: Calculate BAG size (exclude equipped items from capacity)
+      // Only count items in the bag, not items currently equipped
+      const currentBagItemCount = mainInventory.items.reduce((total, slot) => {
+        if (!slot.item) return total;
+
+        // Check if this item is currently equipped
+        const equipment = gameState.state.player?.equipment;
+        const isEquipped = equipment && [
+          equipment.weapon,
+          equipment.armor,
+          equipment.accessory,
+          equipment.helmet,
+          equipment.necklace,
+          equipment.shield,
+          equipment.gloves,
+          equipment.boots,
+          equipment.ring1,
+          equipment.ring2,
+          equipment.charm
+        ].includes(slot.item.id);
+
+        // Skip equipped items when counting bag capacity
+        if (isEquipped) return total;
+
+        return total + slot.quantity;
       }, 0);
 
       // Maximum inventory capacity (very high to not restrict players)
       const MAX_INVENTORY_CAPACITY = 10000;
 
-      // Check if adding the unequipped item would exceed capacity
-      if (currentInventoryCount >= MAX_INVENTORY_CAPACITY) {
+      // Check if adding the unequipped item would exceed bag capacity
+      if (currentBagItemCount >= MAX_INVENTORY_CAPACITY) {
         return {
           success: false,
           equipped: null,

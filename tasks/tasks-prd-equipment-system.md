@@ -58,15 +58,15 @@ Generated from: `docs/ai_dev_tasks/prd-equipment-system.md`
   - [x] 3.8 VERIFIED: Equipment initialization complete in CREATE_PLAYER action (lines 487-501) - all 10 slots initialized to null, mock data also correct
   - [x] 3.9 Export equipment-related action creators from ReactGameContext
 
-- [ ] 4.0 Integrate Equipment with Inventory System
+- [x] 4.0 Integrate Equipment with Inventory System
   - [x] 4.1 Update `useInventory` hook to mark equipped items with `equipped: true` flag
   - [x] 4.2 Add filter in `getFilteredItems` to exclude equipped items by default (with option to include)
-  - [ ] 4.3 Update inventory UI to show visual indicator (icon/badge) for equipped items
-  - [ ] 4.4 Prevent `removeItem` from removing equipped items (throw error or return false)
-  - [ ] 4.5 Update `addItem` to properly handle items being added back when unequipped
-  - [ ] 4.6 Ensure inventory capacity checks account for equipped items vs. bag items
-  - [ ] 4.7 Add `isItemEquipped(itemId: string): boolean` utility function to inventory hook
-  - [ ] 4.8 Update item stack logic to handle equipped items separately from inventory stacks
+  - [x] 4.3 Update inventory UI to show visual indicator (icon/badge) for equipped items
+  - [x] 4.4 Prevent `removeItem` from removing equipped items (throw error or return false)
+  - [x] 4.5 Update `addItem` to properly handle items being added back when unequipped
+  - [x] 4.6 Ensure inventory capacity checks account for equipped items vs. bag items
+  - [x] 4.7 Add `isItemEquipped(itemId: string): boolean` utility function to inventory hook
+  - [x] 4.8 Update item stack logic to handle equipped items separately from inventory stacks
 
 - [ ] 5.0 Build Equipment Validation System
   - [ ] 5.1 Enhance `useEquipmentValidation` hook to check level requirements
