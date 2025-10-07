@@ -35,17 +35,17 @@ Generated from: `docs/ai_dev_tasks/prd-equipment-system.md`
   - [x] 1.6 Update item type definitions to ensure compatibility with EnhancedItem interface
   - [x] 1.7 Create migration utility to validate and update legacy item data if needed
 
-- [ ] 2.0 Fix and Enhance useEquipment Hook Core Functionality
-  - [ ] 2.1 Fix `equipItem` function (line 344-426) to accept `itemId: string` and `slot: EquipmentSlot` parameters instead of `item: EnhancedItem`
-  - [ ] 2.2 Add item lookup by ID at the start of `equipItem` to fetch the full item object
-  - [ ] 2.3 Fix compatibility check on line 373 to use correct variable references
-  - [ ] 2.4 Fix infinite loop in `useEffect` on lines 541-547 by properly memoizing dependencies
-  - [ ] 2.5 Memoize `baseStats` calculation (lines 604-606) using `useMemo` to prevent recreation on every render
-  - [ ] 2.6 Update `equipItem` to handle automatic unequipping of old item in the same slot
-  - [ ] 2.7 Implement proper inventory space validation before unequipping items
-  - [ ] 2.8 Add error handling and return proper `EquipItemResult` with success/error states
-  - [ ] 2.9 Ensure `calculateFinalStats` properly combines base stats + equipment bonuses + level bonuses
-  - [ ] 2.10 Fix `compareEquipment` function to correctly calculate stat differences and net scores
+- [x] 2.0 Fix and Enhance useEquipment Hook Core Functionality
+  - [x] 2.1 Fix `equipItem` function (line 344-426) to accept `itemId: string` and `slot: EquipmentSlot` parameters instead of `item: EnhancedItem`
+  - [x] 2.2 Add item lookup by ID at the start of `equipItem` to fetch the full item object
+  - [x] 2.3 Fix compatibility check on line 373 to use correct variable references
+  - [x] 2.4 Fix infinite loop in `useEffect` on lines 541-547 by properly memoizing dependencies
+  - [x] 2.5 Memoize `baseStats` calculation (lines 604-606) using `useMemo` to prevent recreation on every render
+  - [x] 2.6 Update `equipItem` to handle automatic unequipping of old item in the same slot
+  - [x] 2.7 Implement proper inventory space validation before unequipping items (10,000 item capacity limit)
+  - [x] 2.8 Add error handling and return proper `EquipItemResult` with success/error states
+  - [x] 2.9 Ensure `calculateFinalStats` properly combines base stats + equipment bonuses + level bonuses
+  - [x] 2.10 Fix `compareEquipment` function to correctly calculate stat differences and net scores
 
 - [ ] 3.0 Implement Equipment State in ReactGameContext
   - [ ] 3.1 Add `EQUIP_ITEM` action to the game state reducer

@@ -9,7 +9,7 @@ import { useEquipment } from '../../hooks/useEquipment';
 import { useCreatures } from '../../hooks/useCreatures';
 import { useCombat, useGameState } from '../../hooks/useGameState';
 import { SaveSystemManager } from '../../utils/saveSystemManager';
-import { EnhancedItem, EquipmentItem, ItemCategory } from '../../types/inventory';
+import { EnhancedItem, ItemCategory } from '../../types/inventory';
 import { EnhancedCreature } from '../../types/creatures';
 import { ReactGameState } from '../../types/game';
 
@@ -42,38 +42,74 @@ describe('Inventory System Integration Tests', () => {
       id: 'health_potion',
       name: 'Health Potion',
       category: 'consumables',
-      itemType: 'consumable',
+      type: 'consumable',
       rarity: 'common',
       quantity: 5,
       value: 50,
       usable: true,
       stackable: true,
+      maxStack: 99,
+      weight: 0.1,
+      sellValue: 25,
+      canTrade: true,
+      canDrop: true,
+      canDestroy: true,
+      consumeOnUse: true,
+      useInCombat: true,
+      useOutOfCombat: true,
       description: 'Restores 50 HP',
+      icon: '🧪',
       effects: [{ type: 'heal', value: 50 }]
     },
     {
       id: 'steel_sword',
       name: 'Steel Sword',
       category: 'equipment',
-      itemType: 'weapon',
+      type: 'equipment',
       rarity: 'uncommon',
       quantity: 1,
       value: 200,
       equipmentSlot: 'weapon',
-      stats: { attack: 25, durability: 100 },
-      description: 'A sharp steel blade'
+      equipmentSubtype: 'sword',
+      statModifiers: { attack: 25 },
+      stackable: false,
+      maxStack: 1,
+      weight: 3,
+      sellValue: 100,
+      canTrade: true,
+      canDrop: true,
+      canDestroy: true,
+      usable: false,
+      consumeOnUse: false,
+      useInCombat: false,
+      useOutOfCombat: false,
+      description: 'A sharp steel blade',
+      icon: '⚔️'
     },
     {
       id: 'leather_armor',
       name: 'Leather Armor',
       category: 'equipment',
-      itemType: 'armor',
+      type: 'equipment',
       rarity: 'common',
       quantity: 1,
       value: 150,
       equipmentSlot: 'armor',
-      stats: { defense: 15, durability: 80 },
-      description: 'Basic leather protection'
+      equipmentSubtype: 'chestplate',
+      statModifiers: { defense: 15 },
+      stackable: false,
+      maxStack: 1,
+      weight: 5,
+      sellValue: 75,
+      canTrade: true,
+      canDrop: true,
+      canDestroy: true,
+      usable: false,
+      consumeOnUse: false,
+      useInCombat: false,
+      useOutOfCombat: false,
+      description: 'Basic leather protection',
+      icon: '🦺'
     }
   ];
 

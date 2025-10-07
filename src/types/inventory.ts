@@ -418,16 +418,28 @@ export interface RaritySettings {
 
 export type ItemCategory = 'consumables' | 'equipment' | 'materials' | 'quest' | 'misc';
 
-export type EquipmentSlot = 'weapon' | 'armor' | 'accessory';
+export type EquipmentSlot =
+  | 'helmet'
+  | 'necklace'
+  | 'armor'
+  | 'weapon'
+  | 'shield'
+  | 'gloves'
+  | 'boots'
+  | 'ring1'
+  | 'ring2'
+  | 'charm';
 
 export type EquipmentSubtype =
-  | 'sword' | 'bow' | 'staff' | 'dagger'  // weapons
-  | 'helmet' | 'chestplate' | 'boots' | 'gloves'  // armor pieces
+  | 'sword' | 'bow' | 'staff' | 'dagger' | 'axe' | 'mace'  // weapons
+  | 'helmet' | 'chestplate' | 'boots' | 'gloves' | 'shield'  // armor pieces
   | 'ring' | 'necklace' | 'charm';  // accessories
 
 export interface EnhancedItem extends Item {
   // Enhanced categorization
   category: ItemCategory;
+
+  // Equipment-specific fields (only present for equipment items)
   equipmentSlot?: EquipmentSlot;
   equipmentSubtype?: EquipmentSubtype;
 
@@ -436,6 +448,8 @@ export interface EnhancedItem extends Item {
   classRequirement?: string[];
 
   // Enhanced stats and effects
+  // Note: Base Item has 'stats', EnhancedItem uses 'statModifiers' for clarity
+  // Both refer to stat bonuses provided by the item (Partial<PlayerStats>)
   statModifiers?: Partial<PlayerStats>;
   activeEffects?: ItemEffect[];
   passiveEffects?: ItemEffect[];
@@ -505,29 +519,8 @@ export interface EquipmentComparison {
 // DETAILED EQUIPMENT SLOT DEFINITIONS
 // =============================================================================
 
-export const EQUIPMENT_SLOTS: Record<EquipmentSlot, EquipmentSlotInfo> = {
-  weapon: {
-    slot: 'weapon',
-    displayName: 'Main Hand',
-    icon: '⚔️',
-    acceptedSubtypes: ['sword', 'bow', 'staff', 'dagger'],
-    required: false
-  },
-  armor: {
-    slot: 'armor',
-    displayName: 'Chest Armor',
-    icon: '🛡️',
-    acceptedSubtypes: ['chestplate'],
-    required: false
-  },
-  accessory: {
-    slot: 'accessory',
-    displayName: 'Accessory',
-    icon: '💍',
-    acceptedSubtypes: ['ring', 'necklace', 'charm'],
-    required: false
-  }
-} as const;
+// Legacy EQUIPMENT_SLOTS removed - use EXTENDED_EQUIPMENT_SLOTS instead
+// The old 3-slot system (weapon, armor, accessory) has been replaced with the 10-slot system
 
 export const EXTENDED_EQUIPMENT_SLOTS = {
   helmet: {
@@ -538,8 +531,8 @@ export const EXTENDED_EQUIPMENT_SLOTS = {
     required: false,
     position: { x: 1, y: 0 } // Grid position for UI
   },
-  chestplate: {
-    slot: 'chestplate' as const,
+  armor: {
+    slot: 'armor' as const,
     displayName: 'Chest Armor',
     icon: '🛡️',
     acceptedSubtypes: ['chestplate'],
@@ -569,6 +562,14 @@ export const EXTENDED_EQUIPMENT_SLOTS = {
     acceptedSubtypes: ['sword', 'bow', 'staff', 'dagger'],
     required: false,
     position: { x: 0, y: 0 }
+  },
+  shield: {
+    slot: 'shield' as const,
+    displayName: 'Off Hand',
+    icon: '🛡️',
+    acceptedSubtypes: ['shield'],
+    required: false,
+    position: { x: 1, y: 3 }
   },
   ring1: {
     slot: 'ring1' as const,

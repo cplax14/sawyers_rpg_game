@@ -44,9 +44,20 @@ export interface PlayerStats {
 }
 
 export interface Equipment {
+  // Main equipment slots
   weapon: string | null; // Item ID
-  armor: string | null;  // Item ID
-  accessory: string | null; // Item ID
+  armor: string | null;  // Item ID (legacy - now maps to chestplate)
+  accessory: string | null; // Item ID (legacy - general accessory slot)
+
+  // Extended equipment slots (10-slot system)
+  helmet: string | null; // Item ID
+  necklace: string | null; // Item ID
+  shield: string | null; // Item ID
+  gloves: string | null; // Item ID
+  boots: string | null; // Item ID
+  ring1: string | null; // Item ID
+  ring2: string | null; // Item ID
+  charm: string | null; // Item ID
 }
 
 export interface ReactArea {
@@ -473,9 +484,19 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         baseStats,
         stats: { ...baseStats },
         equipment: {
+          // Legacy slots
           weapon: null,
           armor: null,
           accessory: null,
+          // Extended slots (10-slot system)
+          helmet: null,
+          necklace: null,
+          shield: null,
+          gloves: null,
+          boots: null,
+          ring1: null,
+          ring2: null,
+          charm: null,
         },
         spells: startingSpells,
       };
