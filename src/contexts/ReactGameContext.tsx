@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback, ReactNode } from 'react';
 import { AutoSaveManager } from '../utils/autoSave';
-import { InventoryState } from '../types/inventory';
+import { InventoryState, EquipmentSlot } from '../types/inventory';
 import { CreatureCollection, EnhancedCreature } from '../types/creatures';
 import { ExperienceState } from '../types/experience';
 import { removeExhaustion, calculateBreedingCost, generateOffspring, validateBreeding, applyExhaustion } from '../utils/breedingEngine';
@@ -252,7 +252,8 @@ export type ReactGameAction =
   | { type: 'ADD_ITEM'; payload: { item: ReactItem; quantity: number } }
   | { type: 'REMOVE_ITEM'; payload: { itemId: string; quantity: number } }
   | { type: 'USE_ITEM'; payload: { itemId: string } }
-  | { type: 'EQUIP_ITEM'; payload: { playerId: string; itemId: string } }
+  | { type: 'EQUIP_ITEM'; payload: { slot: EquipmentSlot; itemId: string } }
+  | { type: 'UNEQUIP_ITEM'; payload: { slot: EquipmentSlot } }
   | { type: 'ADD_TO_INVENTORY'; payload: ReactItem[] }
   | { type: 'REMOVE_FROM_INVENTORY'; payload: { itemId: string; quantity?: number } }
   | { type: 'UPDATE_ITEM_QUANTITY'; payload: { itemId: string; quantity: number } }
@@ -836,6 +837,68 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         },
       };
 
+    case 'EQUIP_ITEM':
+      // Equipment state update - business logic handled in useEquipment hook
+      // Reducer provides basic safety checks for defensive programming
+      if (!state.player) {
+        console.warn('⚠️ [EQUIP_ITEM] Cannot equip item: No player found');
+        return state;
+      }
+
+      const { slot, itemId: equipItemId } = action.payload;
+
+      // Basic validation: slot must be a valid equipment slot
+      const validSlots = ['weapon', 'armor', 'accessory', 'helmet', 'necklace', 'shield', 'gloves', 'boots', 'ring1', 'ring2', 'charm'];
+      if (!validSlots.includes(slot)) {
+        console.warn(`⚠️ [EQUIP_ITEM] Invalid equipment slot: ${slot}`);
+        return state;
+      }
+
+      // Basic validation: itemId must be a non-empty string
+      if (!equipItemId || typeof equipItemId !== 'string' || equipItemId.trim() === '') {
+        console.warn(`⚠️ [EQUIP_ITEM] Invalid itemId: ${equipItemId}`);
+        return state;
+      }
+
+      return {
+        ...state,
+        player: {
+          ...state.player,
+          equipment: {
+            ...state.player.equipment,
+            [slot]: equipItemId
+          }
+        }
+      };
+
+    case 'UNEQUIP_ITEM':
+      // Unequip item from slot - business logic handled in useEquipment hook
+      // Reducer provides basic safety checks for defensive programming
+      if (!state.player) {
+        console.warn('⚠️ [UNEQUIP_ITEM] Cannot unequip item: No player found');
+        return state;
+      }
+
+      const { slot: unequipSlot } = action.payload;
+
+      // Basic validation: slot must be a valid equipment slot
+      const validUnequipSlots = ['weapon', 'armor', 'accessory', 'helmet', 'necklace', 'shield', 'gloves', 'boots', 'ring1', 'ring2', 'charm'];
+      if (!validUnequipSlots.includes(unequipSlot)) {
+        console.warn(`⚠️ [UNEQUIP_ITEM] Invalid equipment slot: ${unequipSlot}`);
+        return state;
+      }
+
+      return {
+        ...state,
+        player: {
+          ...state.player,
+          equipment: {
+            ...state.player.equipment,
+            [unequipSlot]: null
+          }
+        }
+      };
+
     case 'UPDATE_PLAYER_STATS':
       if (!state.player) return state;
       return {
@@ -1417,6 +1480,11 @@ interface ReactGameContextType {
   addExperience: (playerId: string, experience: number) => void;
   addGold: (playerId: string, gold: number) => void;
   updatePlayerStats: (playerId: string, stats: Partial<PlayerStats>) => void;
+
+  // Equipment action creators
+  equipItem: (slot: EquipmentSlot, itemId: string) => void;
+  unequipItem: (slot: EquipmentSlot) => void;
+
   navigateToArea: (areaId: string) => void;
   unlockArea: (areaId: string) => void;
   addItems: (items: ReactItem[]) => void;
@@ -1583,6 +1651,15 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
 
   const updatePlayer = (updates: Partial<ReactPlayer>) => {
     dispatch({ type: 'UPDATE_PLAYER', payload: updates });
+  };
+
+  // Equipment action creators
+  const equipItem = (slot: EquipmentSlot, itemId: string) => {
+    dispatch({ type: 'EQUIP_ITEM', payload: { slot, itemId } });
+  };
+
+  const unequipItem = (slot: EquipmentSlot) => {
+    dispatch({ type: 'UNEQUIP_ITEM', payload: { slot } });
   };
 
   const navigateToArea = (areaId: string) => {
@@ -1942,6 +2019,8 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
     addExperience,
     addGold,
     updatePlayerStats,
+    equipItem,
+    unequipItem,
     navigateToArea,
     unlockArea,
     addItems,

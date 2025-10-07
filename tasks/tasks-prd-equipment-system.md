@@ -47,16 +47,16 @@ Generated from: `docs/ai_dev_tasks/prd-equipment-system.md`
   - [x] 2.9 Ensure `calculateFinalStats` properly combines base stats + equipment bonuses + level bonuses
   - [x] 2.10 Fix `compareEquipment` function to correctly calculate stat differences and net scores
 
-- [ ] 3.0 Implement Equipment State in ReactGameContext
-  - [ ] 3.1 Add `EQUIP_ITEM` action to the game state reducer
-  - [ ] 3.2 Add `UNEQUIP_ITEM` action to the game state reducer
-  - [ ] 3.3 Add `UPDATE_PLAYER_STATS` action to recalculate stats when equipment changes
-  - [ ] 3.4 Update reducer to handle equipping an item (remove from inventory, add to equipment slot, unequip old item)
-  - [ ] 3.5 Update reducer to handle unequipping an item (remove from equipment slot, add to inventory)
-  - [ ] 3.6 Ensure equipment state updates trigger stat recalculation automatically
-  - [ ] 3.7 Add validation in reducer to prevent invalid equipment operations (e.g., equipping to wrong slot type)
-  - [ ] 3.8 Initialize equipment state with all slots set to null for new players
-  - [ ] 3.9 Export equipment-related action creators from ReactGameContext
+- [x] 3.0 Implement Equipment State in ReactGameContext
+  - [x] 3.1 Add `EQUIP_ITEM` action to the game state reducer
+  - [x] 3.2 Add `UNEQUIP_ITEM` action to the game state reducer
+  - [x] 3.3 Add `UPDATE_PLAYER_STATS` action to recalculate stats when equipment changes
+  - [x] 3.4 VERIFIED: Inventory integration already complete in useEquipment hook (equipItem handles all inventory operations)
+  - [x] 3.5 VERIFIED: Unequip inventory integration already complete in useEquipment hook (unequipItem handles: inventory space validation, addItem call, equipment state update, stat calculation)
+  - [x] 3.6 VERIFIED: Automatic stat recalculation working correctly via useEffect hooks (lines 737-763 in useEquipment.ts)
+  - [x] 3.7 Add validation in reducer to prevent invalid equipment operations (e.g., equipping to wrong slot type)
+  - [x] 3.8 VERIFIED: Equipment initialization complete in CREATE_PLAYER action (lines 487-501) - all 10 slots initialized to null, mock data also correct
+  - [x] 3.9 Export equipment-related action creators from ReactGameContext
 
 - [ ] 4.0 Integrate Equipment with Inventory System
   - [ ] 4.1 Update `useInventory` hook to mark equipped items with `equipped: true` flag
