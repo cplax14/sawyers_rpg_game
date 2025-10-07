@@ -13,6 +13,7 @@ import { InventoryFeedback } from '../molecules/InventoryFeedback';
 import { useInventory } from '../../hooks/useInventory';
 import { usePlayer } from '../../hooks/useGameState';
 import { useResponsiveInventory } from '../../hooks/useResponsiveInventory';
+import { ExperienceCalculator } from '../../utils/experienceUtils';
 import { useInventoryKeyboardShortcuts } from '../../hooks/useInventoryKeyboardShortcuts';
 import { useCombatInventoryRestrictions, isTabAllowedInCombat } from '../../hooks/useCombatInventoryRestrictions';
 import { useInventoryPause } from '../../hooks/useGamePause';
@@ -287,8 +288,10 @@ const InventoryManagerInner: React.FC<InventoryManagerProps> = ({
         return creatureCount > 0 ? creatureCount.toString() : undefined;
 
       case 'stats':
-        // Show current level
-        return player?.level ? `Lv.${player.level}` : undefined;
+        // Show current level calculated from experience
+        if (!player?.experience) return undefined;
+        const calculatedLevel = ExperienceCalculator.calculateLevel(player.experience);
+        return `Lv.${calculatedLevel}`;
 
       default:
         return undefined;

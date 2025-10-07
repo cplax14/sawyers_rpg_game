@@ -458,6 +458,7 @@ export interface EnhancedItem extends Item {
   stackable: boolean;
   maxStack: number;
   weight: number;
+  equipped?: boolean; // Dynamically computed flag indicating if item is currently equipped
 
   // Visual and metadata
   sprite?: string;
@@ -879,7 +880,7 @@ export interface InventoryFilter {
   equipmentSlots: EquipmentSlot[];
   usableOnly: boolean;
   tradableOnly: boolean;
-  showEquipped: boolean;
+  showEquipped?: boolean; // Whether to include equipped items in results (default: false)
   minLevel?: number;
   maxLevel?: number;
   searchText: string;

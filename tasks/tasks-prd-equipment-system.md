@@ -59,8 +59,8 @@ Generated from: `docs/ai_dev_tasks/prd-equipment-system.md`
   - [x] 3.9 Export equipment-related action creators from ReactGameContext
 
 - [ ] 4.0 Integrate Equipment with Inventory System
-  - [ ] 4.1 Update `useInventory` hook to mark equipped items with `equipped: true` flag
-  - [ ] 4.2 Add filter in `getFilteredItems` to exclude equipped items by default (with option to include)
+  - [x] 4.1 Update `useInventory` hook to mark equipped items with `equipped: true` flag
+  - [x] 4.2 Add filter in `getFilteredItems` to exclude equipped items by default (with option to include)
   - [ ] 4.3 Update inventory UI to show visual indicator (icon/badge) for equipped items
   - [ ] 4.4 Prevent `removeItem` from removing equipped items (throw error or return false)
   - [ ] 4.5 Update `addItem` to properly handle items being added back when unequipped

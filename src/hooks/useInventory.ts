@@ -42,6 +42,8 @@ const DEFAULT_INVENTORY_CONFIG = {
 };
 
 // Convert ReactItem to EnhancedItem
+// Note: This helper is used during initialization. The equipped flag is added dynamically
+// by the inventory hook based on current equipment state.
 const convertToEnhancedItem = (reactItem: ReactItem): EnhancedItem => {
   return {
     ...reactItem,
@@ -71,6 +73,29 @@ export const useInventory = () => {
   const gameState = useGameState();
   const { saveGame } = useSaveSystem();
 
+  // Helper function to check if an item is currently equipped
+  const isItemEquipped = useCallback((itemId: string): boolean => {
+    const equipment = gameState.state.player?.equipment;
+    if (!equipment) return false;
+
+    // Check all equipment slots (10-slot system)
+    const equippedItemIds = [
+      equipment.weapon,
+      equipment.armor,
+      equipment.accessory,
+      equipment.helmet,
+      equipment.necklace,
+      equipment.shield,
+      equipment.gloves,
+      equipment.boots,
+      equipment.ring1,
+      equipment.ring2,
+      equipment.charm
+    ];
+
+    return equippedItemIds.includes(itemId);
+  }, [gameState.state.player?.equipment]);
+
   // Enhanced inventory state
   const [inventoryState, setInventoryState] = useState<InventoryState>(() => {
     // Initialize with default containers
@@ -96,7 +121,7 @@ export const useInventory = () => {
         equipmentSlots: [],
         usableOnly: false,
         tradableOnly: false,
-        showEquipped: true,
+        showEquipped: false, // By default, hide equipped items from inventory view
         searchText: ''
       },
       sortBy: 'name',
@@ -128,7 +153,7 @@ export const useInventory = () => {
         equipmentSlots: [],
         usableOnly: false,
         tradableOnly: false,
-        showEquipped: true,
+        showEquipped: false, // By default, hide equipped items from inventory view
         searchText: ''
       },
       savedFilters: {}
@@ -700,6 +725,25 @@ export const useInventory = () => {
     }
   }, [inventoryState, setInventoryState, generateOperationId, emitEvent, addItem]);
 
+  // Helper function to mark items with equipped flag
+  const markEquippedItems = useCallback((slots: InventorySlot[]): InventorySlot[] => {
+    return slots.map(slot => {
+      if (!slot.item) return slot;
+
+      // Check if this item is currently equipped
+      const equipped = isItemEquipped(slot.item.id);
+
+      // Return slot with updated item that has equipped flag
+      return {
+        ...slot,
+        item: {
+          ...slot.item,
+          equipped
+        }
+      };
+    });
+  }, [isItemEquipped]);
+
   // Get filtered and sorted items
   const getFilteredItems = useCallback((
     containerId: string = 'main',
@@ -708,8 +752,18 @@ export const useInventory = () => {
     const container = inventoryState.containers[containerId];
     if (!container) return [];
 
-    const activeFilter = filter || container.filters;
+    const activeFilter: InventoryFilter = filter ? { ...container.filters, ...filter } : container.filters;
     let items = container.items.filter(slot => slot.item !== null);
+
+    // Mark items with equipped flag BEFORE filtering
+    items = markEquippedItems(items);
+
+    // Filter out equipped items by default (unless showEquipped is explicitly true)
+    // Default behavior: exclude equipped items (showEquipped defaults to false if undefined)
+    const shouldShowEquipped = activeFilter.showEquipped === true;
+    if (!shouldShowEquipped) {
+      items = items.filter(slot => !slot.item?.equipped);
+    }
 
     // Apply filters
     if (activeFilter.categories.length > 0) {
@@ -758,17 +812,19 @@ export const useInventory = () => {
     });
 
     return items;
-  }, [inventoryState]);
+  }, [inventoryState, markEquippedItems]);
 
   // Get items by category with convenience function
   const getItemsByCategory = useCallback((category: string, containerId: string = 'main'): EnhancedItem[] => {
     const container = inventoryState.containers[containerId];
     if (!container) return [];
 
-    return container.items
-      .filter(slot => slot.item && slot.item.category === category)
-      .map(slot => slot.item!);
-  }, [inventoryState]);
+    // Get items and mark them with equipped flag
+    const slots = container.items.filter(slot => slot.item && slot.item.category === category);
+    const markedSlots = markEquippedItems(slots);
+
+    return markedSlots.map(slot => slot.item!);
+  }, [inventoryState, markEquippedItems]);
 
   // Search items with convenience function
   const searchItems = useCallback((query: string, items?: EnhancedItem[]): EnhancedItem[] => {
@@ -911,6 +967,7 @@ export const useInventory = () => {
     getItemsByCategory,
     searchItems,
     getTotalItemCount,
+    isItemEquipped, // Equipment integration
 
     // Filter and sort
     updateFilter,
