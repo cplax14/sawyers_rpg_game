@@ -242,7 +242,9 @@ describe('equipmentUtils', () => {
       );
 
       expect(result.compatible).toBe(false);
-      expect(result.unmetRequirements[0]).toContain('mage class');
+      // New kid-friendly message format
+      expect(result.unmetRequirements[0]).toContain('Only Warriors and Paladins');
+      expect(result.unmetRequirements[0]).toContain('can use this');
     });
 
     it('should fail for insufficient stats', () => {
@@ -255,7 +257,9 @@ describe('equipmentUtils', () => {
       );
 
       expect(result.compatible).toBe(false);
-      expect(result.unmetRequirements[0]).toContain('attack: 8');
+      // New kid-friendly message format
+      expect(result.unmetRequirements[0]).toContain('You need 8 Attack');
+      expect(result.unmetRequirements[0]).toContain('You have 5');
     });
 
     it('should generate warnings for suboptimal usage', () => {

@@ -164,31 +164,97 @@ export function checkEquipmentCompatibility(
   const warnings: string[] = [];
   const recommendations: string[] = [];
 
-  // Check if item is meant for this slot
-  if (item.equipmentSlot && item.equipmentSlot !== slot) {
-    unmetRequirements.push(`Item cannot be equipped in ${slot} slot (requires ${item.equipmentSlot})`);
+  // Check slot compatibility FIRST (most fundamental requirement)
+  // Special case: "ring" type items can go in either ring1 or ring2
+  const itemSlot = item.equipmentSlot?.toLowerCase();
+  const normalizedTargetSlot = slot.toLowerCase();
+
+  if (itemSlot) {
+    // Check if item slot matches target slot
+    const isRingSlotCompatible = itemSlot === 'ring' &&
+      (normalizedTargetSlot === 'ring1' || normalizedTargetSlot === 'ring2');
+
+    const isSlotMatch = itemSlot === normalizedTargetSlot;
+
+    if (!isRingSlotCompatible && !isSlotMatch) {
+      // Use centralized message function
+      const message = getRestrictionMessage('slot', {
+        itemSlot,
+        targetSlot: normalizedTargetSlot
+      });
+
+      unmetRequirements.push(message);
+
+      // Return early - no point checking other requirements if slot is wrong
+      return {
+        compatible: false,
+        requirements: item.requirements ? [item.requirements] : [],
+        unmetRequirements,
+        warnings,
+        recommendations
+      };
+    }
   }
 
   // Check level requirements
-  if (item.requirements?.level && playerLevel < item.requirements.level) {
-    unmetRequirements.push(`Requires level ${item.requirements.level} (current: ${playerLevel})`);
+  // Support both legacy item.requirements.level and new item.levelRequirement
+  const requiredLevel = item.levelRequirement || item.requirements?.level;
+  if (requiredLevel && playerLevel < requiredLevel) {
+    // Use centralized message function
+    const message = getRestrictionMessage('level', {
+      requiredLevel,
+      playerLevel
+    });
+
+    unmetRequirements.push(message);
   }
 
   // Check class requirements
-  if (item.requirements?.classes && item.requirements.classes.length > 0) {
-    if (!item.requirements.classes.includes(playerClass)) {
-      unmetRequirements.push(`Not compatible with ${playerClass} class (requires: ${item.requirements.classes.join(', ')})`);
+  // Support both legacy item.classRequirement and new item.requirements.classes
+  // Priority: item.classRequirement first (legacy), then item.requirements.classes
+  const requiredClasses = item.classRequirement || item.requirements?.classes;
+  if (requiredClasses && requiredClasses.length > 0) {
+    // Normalize player class for case-insensitive comparison
+    const normalizedPlayerClass = playerClass?.toLowerCase() || '';
+
+    // Check if player's class is in the allowed list (case-insensitive)
+    const isClassAllowed = requiredClasses.some(
+      requiredClass => requiredClass.toLowerCase() === normalizedPlayerClass
+    );
+
+    if (!isClassAllowed) {
+      // Use centralized message function
+      const message = getRestrictionMessage('class', {
+        requiredClasses,
+        itemType: item.type || 'item'
+      });
+
+      unmetRequirements.push(message);
     }
   }
 
   // Check stat requirements
   if (item.requirements?.stats) {
-    Object.entries(item.requirements.stats).forEach(([stat, required]) => {
-      const currentValue = currentStats[stat as keyof PlayerStats];
-      if (currentValue < required) {
-        unmetRequirements.push(`Requires ${stat}: ${required} (current: ${currentValue})`);
+    const requiredStats = item.requirements.stats;
+
+    // Check each stat requirement and collect ALL unmet requirements
+    for (const [statKey, requiredValue] of Object.entries(requiredStats)) {
+      if (requiredValue !== undefined) {
+        const playerStatValue = currentStats[statKey as keyof PlayerStats] || 0;
+
+        if (playerStatValue < requiredValue) {
+          // Use centralized message function
+          const message = getRestrictionMessage('stat', {
+            statName: statKey,
+            requiredStatValue: requiredValue,
+            playerStatValue,
+            itemType: item.type || 'item'
+          });
+
+          unmetRequirements.push(message);
+        }
       }
-    });
+    }
   }
 
   // Generate warnings for suboptimal usage
@@ -506,6 +572,254 @@ export function getRarityMultiplier(rarity: string): number {
 }
 
 /**
+ * Format a list of class names into a kid-friendly readable string
+ * @param classes - Array of class names to format
+ * @returns Formatted string like "Warriors", "Warriors and Mages", or "Warriors, Mages, and Clerics"
+ *
+ * @example
+ * formatClassList(['warrior']) => 'Warriors'
+ * formatClassList(['warrior', 'mage']) => 'Warriors and Mages'
+ * formatClassList(['warrior', 'mage', 'cleric']) => 'Warriors, Mages, and Clerics'
+ */
+export function formatClassList(classes: string[]): string {
+  if (!classes || classes.length === 0) {
+    return 'Unknown classes';
+  }
+
+  // Capitalize and pluralize each class name
+  const capitalizedClasses = classes.map(className => {
+    // Capitalize first letter, keep rest of original case
+    const capitalized = className.charAt(0).toUpperCase() + className.slice(1).toLowerCase();
+
+    // Add 's' for plural (simple pluralization)
+    // Handle special cases if needed
+    if (capitalized.endsWith('s')) {
+      return capitalized; // Already plural or ends in 's'
+    } else {
+      return capitalized + 's'; // Add 's' for plural
+    }
+  });
+
+  if (capitalizedClasses.length === 1) {
+    return capitalizedClasses[0]; // "Warriors"
+  } else if (capitalizedClasses.length === 2) {
+    return `${capitalizedClasses[0]} and ${capitalizedClasses[1]}`; // "Warriors and Mages"
+  } else {
+    // For 3+ classes: "Warriors, Mages, and Clerics"
+    const lastClass = capitalizedClasses[capitalizedClasses.length - 1];
+    const otherClasses = capitalizedClasses.slice(0, -1);
+    return `${otherClasses.join(', ')}, and ${lastClass}`;
+  }
+}
+
+/**
+ * Format a stat name from camelCase to readable Title Case with spaces
+ * @param statKey - The stat key in camelCase (e.g., 'attack', 'magicAttack', 'magicDefense')
+ * @returns Formatted stat name (e.g., 'Attack', 'Magic Attack', 'Magic Defense')
+ *
+ * @example
+ * formatStatName('attack') => 'Attack'
+ * formatStatName('magicAttack') => 'Magic Attack'
+ * formatStatName('magicDefense') => 'Magic Defense'
+ * formatStatName('criticalChance') => 'Critical Chance'
+ */
+export function formatStatName(statKey: string): string {
+  // Convert camelCase to Title Case with spaces
+  // Example: magicAttack -> Magic Attack
+  const withSpaces = statKey.replace(/([A-Z])/g, ' $1');
+
+  // Capitalize the first letter and trim any leading space
+  return withSpaces.charAt(0).toUpperCase() + withSpaces.slice(1).trim();
+}
+
+/**
+ * Format a slot name for kid-friendly display
+ * @param slot - The equipment slot name (e.g., 'weapon', 'ring1', 'ring2', 'helmet')
+ * @returns Formatted slot name (e.g., 'weapon', 'ring', 'helmet')
+ *
+ * @example
+ * formatSlotNameForDisplay('weapon') => 'weapon'
+ * formatSlotNameForDisplay('ring1') => 'ring'
+ * formatSlotNameForDisplay('ring2') => 'ring'
+ * formatSlotNameForDisplay('helmet') => 'helmet'
+ */
+export function formatSlotNameForDisplay(slot: string): string {
+  const normalized = slot.toLowerCase();
+
+  // Special case: ring1 and ring2 both display as "ring"
+  if (normalized === 'ring1' || normalized === 'ring2') {
+    return 'ring';
+  }
+
+  return normalized;
+}
+
+/**
+ * Get the correct article (a or an) for a word
+ * @param word - The word to check
+ * @returns 'a' or 'an' based on whether the word starts with a vowel sound
+ *
+ * @example
+ * getArticle('helmet') => 'a'
+ * getArticle('armor') => 'an'
+ * getArticle('ring') => 'a'
+ */
+export function getArticle(word: string): string {
+  const vowels = ['a', 'e', 'i', 'o', 'u'];
+  const firstLetter = word.charAt(0).toLowerCase();
+
+  return vowels.includes(firstLetter) ? 'an' : 'a';
+}
+
+/**
+ * Context for generating restriction messages
+ */
+export interface RestrictionMessageContext {
+  // Level restriction context
+  requiredLevel?: number;
+  playerLevel?: number;
+
+  // Class restriction context
+  requiredClasses?: string[];
+  playerClass?: string;
+
+  // Stat restriction context
+  statName?: string;
+  requiredStatValue?: number;
+  playerStatValue?: number;
+
+  // Slot restriction context
+  itemSlot?: string;
+  targetSlot?: string;
+
+  // Item type for contextual messages
+  itemType?: string;
+}
+
+/**
+ * Restriction types supported by the equipment system
+ */
+export type RestrictionType = 'level' | 'class' | 'stat' | 'slot';
+
+/**
+ * Generate user-friendly error messages for equipment restrictions
+ *
+ * This centralized function provides consistent, kid-friendly error messages
+ * for all equipment restriction types. All messages are age-appropriate for
+ * children ages 7-12 and use encouraging, clear language.
+ *
+ * @param restrictionType - The type of restriction that failed
+ * @param context - Context data needed to generate the specific message
+ * @returns A kid-friendly error message explaining why the item can't be equipped
+ *
+ * @example
+ * // Level restriction
+ * getRestrictionMessage('level', {
+ *   requiredLevel: 10,
+ *   playerLevel: 5
+ * })
+ * // => "You need to be level 10 to use this item! (You're level 5)"
+ *
+ * @example
+ * // Class restriction
+ * getRestrictionMessage('class', {
+ *   requiredClasses: ['warrior', 'knight'],
+ *   itemType: 'sword'
+ * })
+ * // => "Only Warriors and Knights can use this sword!"
+ *
+ * @example
+ * // Stat restriction
+ * getRestrictionMessage('stat', {
+ *   statName: 'strength',
+ *   requiredStatValue: 15,
+ *   playerStatValue: 10,
+ *   itemType: 'greatsword'
+ * })
+ * // => "You need 15 Strength to use this greatsword! (You have 10)"
+ *
+ * @example
+ * // Slot restriction
+ * getRestrictionMessage('slot', {
+ *   itemSlot: 'helmet',
+ *   targetSlot: 'weapon'
+ * })
+ * // => "This is a helmet! It goes in the helmet slot, not the weapon slot."
+ */
+export function getRestrictionMessage(
+  restrictionType: RestrictionType,
+  context: RestrictionMessageContext
+): string {
+  switch (restrictionType) {
+    case 'level': {
+      const { requiredLevel, playerLevel } = context;
+
+      if (requiredLevel === undefined) {
+        return 'This item has a level requirement!';
+      }
+
+      if (playerLevel === undefined) {
+        return `You need to be level ${requiredLevel} to use this item!`;
+      }
+
+      return `You need to be level ${requiredLevel} to use this item! (You're level ${playerLevel})`;
+    }
+
+    case 'class': {
+      const { requiredClasses, itemType = 'item' } = context;
+
+      if (!requiredClasses || requiredClasses.length === 0) {
+        return 'This item has class restrictions!';
+      }
+
+      // Use formatClassList to create kid-friendly class list
+      const formattedClasses = formatClassList(requiredClasses);
+
+      return `Only ${formattedClasses} can use this ${itemType}!`;
+    }
+
+    case 'stat': {
+      const { statName, requiredStatValue, playerStatValue, itemType = 'item' } = context;
+
+      if (statName === undefined || requiredStatValue === undefined) {
+        return 'This item has stat requirements!';
+      }
+
+      // Format stat name for display (camelCase to Title Case)
+      const formattedStatName = formatStatName(statName);
+
+      if (playerStatValue === undefined) {
+        return `You need ${requiredStatValue} ${formattedStatName} to use this ${itemType}!`;
+      }
+
+      return `You need ${requiredStatValue} ${formattedStatName} to use this ${itemType}! (You have ${playerStatValue})`;
+    }
+
+    case 'slot': {
+      const { itemSlot, targetSlot } = context;
+
+      if (!itemSlot || !targetSlot) {
+        return 'This item cannot be equipped in this slot!';
+      }
+
+      // Format slot names for kid-friendly display
+      const formattedItemSlot = formatSlotNameForDisplay(itemSlot);
+      const formattedTargetSlot = formatSlotNameForDisplay(targetSlot);
+
+      // Get correct article (a/an)
+      const article = getArticle(formattedItemSlot);
+
+      return `This is ${article} ${formattedItemSlot}! It goes in the ${formattedItemSlot} slot, not the ${formattedTargetSlot} slot.`;
+    }
+
+    default: {
+      // Fallback for unknown restriction types
+      return 'This item cannot be equipped right now!';
+    }
+  }
+}
+
+/**
  * Equipment utilities export
  */
 export const equipmentUtils = {
@@ -519,5 +833,10 @@ export const equipmentUtils = {
   getSlotPriority,
   formatStatValue,
   calculateDurabilityImpact,
-  getRarityMultiplier
+  getRarityMultiplier,
+  formatClassList,
+  formatStatName,
+  formatSlotNameForDisplay,
+  getArticle,
+  getRestrictionMessage
 };

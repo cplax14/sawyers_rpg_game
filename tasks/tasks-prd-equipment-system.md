@@ -74,7 +74,7 @@ Generated from: `docs/ai_dev_tasks/prd-equipment-system.md`
   - [x] 5.3 Add stat requirement validation (check player stats against item's stat requirements)
   - [x] 5.4 Implement slot compatibility check (ensure item's `equipmentSlot` matches target slot)
   - [x] 5.5 Add equipment subtype validation (e.g., rings can only go in ring slots) - COMPLETE: Handled by Task 5.4 slot compatibility check. Ring subtype validation already works (rings go in ring1/ring2). System ready for future subtype extensions.
-  - [ ] 5.6 Create `getRestrictionMessage` function to return user-friendly error messages for each restriction type
+  - [x] 5.6 Create `getRestrictionMessage` function to return user-friendly error messages for each restriction type - COMPLETE: Implemented centralized `getRestrictionMessage()` function with 4 restriction types (level, class, stat, slot), comprehensive TypeScript interfaces, 37 unit tests, full integration with `checkEquipmentCompatibility()`, kid-friendly messages for ages 7-12
   - [ ] 5.7 Add two-handed weapon slot conflict detection (two-handed weapons use weapon + shield slots)
   - [ ] 5.8 Return comprehensive `EquipmentCompatibility` result with reasons, warnings, and suggestions
   - [ ] 5.9 Add validation for durability (if item durability is 0, cannot equip)
