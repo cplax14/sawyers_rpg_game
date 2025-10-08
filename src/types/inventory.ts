@@ -11,13 +11,16 @@ import { Item, Equipment, PlayerStats, ItemEffect } from './game';
 // ITEM ENHANCEMENTS
 // =============================================================================
 
-export type ItemRarity = 'common' | 'rare' | 'epic' | 'legendary';
+export type ItemRarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary' | 'artifact' | 'unique';
 
 export const RARITY_COLORS = {
   common: '#22c55e',     // green
+  uncommon: '#10b981',   // emerald green
   rare: '#3b82f6',       // blue
   epic: '#a855f7',       // purple
-  legendary: '#f97316'   // orange
+  legendary: '#f97316',  // orange
+  artifact: '#dc2626',   // red
+  unique: '#fbbf24'      // gold/amber
 } as const;
 
 // =============================================================================
@@ -65,6 +68,29 @@ export const RARITY_SYSTEM: Record<ItemRarity, RarityDefinition> = {
     icon: '●',
     effects: []
   },
+  uncommon: {
+    name: 'uncommon',
+    displayName: 'Uncommon',
+    color: '#10b981',
+    backgroundColor: '#d1fae5',
+    borderColor: '#059669',
+    textColor: '#064e3b',
+    glowColor: '#10b98180',
+    dropRate: 50,
+    valueMultiplier: 1.5,
+    statBonusRange: [5, 15],
+    description: 'Better than average equipment with minor enhancements',
+    tier: 2,
+    icon: '◆',
+    effects: [
+      {
+        type: 'stat_bonus',
+        description: 'Minor stat bonuses',
+        value: 10,
+        conditions: []
+      }
+    ]
+  },
   rare: {
     name: 'rare',
     displayName: 'Rare',
@@ -76,8 +102,8 @@ export const RARITY_SYSTEM: Record<ItemRarity, RarityDefinition> = {
     dropRate: 25,
     valueMultiplier: 2.5,
     statBonusRange: [10, 25],
-    description: 'Uncommon equipment with enhanced properties',
-    tier: 2,
+    description: 'Rare equipment with enhanced properties',
+    tier: 3,
     icon: '◆',
     effects: [
       {
@@ -100,7 +126,7 @@ export const RARITY_SYSTEM: Record<ItemRarity, RarityDefinition> = {
     valueMultiplier: 6.0,
     statBonusRange: [25, 50],
     description: 'Powerful equipment with unique abilities',
-    tier: 3,
+    tier: 4,
     icon: '★',
     effects: [
       {
@@ -129,7 +155,7 @@ export const RARITY_SYSTEM: Record<ItemRarity, RarityDefinition> = {
     valueMultiplier: 15.0,
     statBonusRange: [50, 100],
     description: 'Extraordinary equipment of immense power',
-    tier: 4,
+    tier: 5,
     icon: '✦',
     effects: [
       {
@@ -148,6 +174,82 @@ export const RARITY_SYSTEM: Record<ItemRarity, RarityDefinition> = {
         type: 'set_bonus_chance',
         description: 'Higher chance for set bonuses',
         value: 50,
+        conditions: []
+      }
+    ]
+  },
+  artifact: {
+    name: 'artifact',
+    displayName: 'Artifact',
+    color: '#dc2626',
+    backgroundColor: '#fee2e2',
+    borderColor: '#b91c1c',
+    textColor: '#7f1d1d',
+    glowColor: '#dc262680',
+    dropRate: 0.3,
+    valueMultiplier: 25.0,
+    statBonusRange: [75, 150],
+    description: 'Ancient artifacts of legendary power',
+    tier: 6,
+    icon: '⬟',
+    effects: [
+      {
+        type: 'stat_bonus',
+        description: 'Exceptional stat bonuses',
+        value: 100,
+        conditions: []
+      },
+      {
+        type: 'special_ability',
+        description: 'Multiple special abilities',
+        value: 100,
+        conditions: []
+      },
+      {
+        type: 'set_bonus_chance',
+        description: 'Guaranteed set bonuses',
+        value: 100,
+        conditions: []
+      }
+    ]
+  },
+  unique: {
+    name: 'unique',
+    displayName: 'Unique',
+    color: '#fbbf24',
+    backgroundColor: '#fef3c7',
+    borderColor: '#f59e0b',
+    textColor: '#78350f',
+    glowColor: '#fbbf2480',
+    dropRate: 0.1,
+    valueMultiplier: 50.0,
+    statBonusRange: [100, 200],
+    description: 'One-of-a-kind equipment of unparalleled power',
+    tier: 7,
+    icon: '◈',
+    effects: [
+      {
+        type: 'stat_bonus',
+        description: 'Unmatched stat bonuses',
+        value: 150,
+        conditions: []
+      },
+      {
+        type: 'special_ability',
+        description: 'Unique special abilities',
+        value: 100,
+        conditions: []
+      },
+      {
+        type: 'set_bonus_chance',
+        description: 'Guaranteed set bonuses',
+        value: 100,
+        conditions: []
+      },
+      {
+        type: 'upgrade_bonus',
+        description: 'Enhanced upgrade potential',
+        value: 200,
         conditions: []
       }
     ]
@@ -444,8 +546,9 @@ export interface EnhancedItem extends Item {
   equipmentSubtype?: EquipmentSubtype;
 
   // Requirements and restrictions
-  levelRequirement?: number;
-  classRequirement?: string[];
+  levelRequirement?: number; // Direct level requirement (legacy support)
+  classRequirement?: string[]; // Direct class requirement (legacy support)
+  requirements?: EquipmentRequirement; // Comprehensive requirements object
 
   // Enhanced stats and effects
   // Note: Base Item has 'stats', EnhancedItem uses 'statModifiers' for clarity
@@ -661,6 +764,12 @@ export interface StatModifier {
 // =============================================================================
 // EQUIPMENT COMPATIBILITY RULES
 // =============================================================================
+
+export interface EquipmentRequirement {
+  level?: number;
+  classes?: string[];
+  stats?: Partial<PlayerStats>;
+}
 
 export interface EquipmentCompatibility {
   canEquip: boolean;
