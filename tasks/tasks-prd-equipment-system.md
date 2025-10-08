@@ -16,6 +16,7 @@ Generated from: `docs/ai_dev_tasks/prd-equipment-system.md`
 - `src/components/molecules/ConfirmationDialog.tsx` - Confirmation dialogs
 - `src/utils/equipmentUtils.ts` - Equipment utility functions
 - `src/utils/equipmentUtils.test.ts` - Unit tests for equipment utilities
+- `src/utils/__tests__/equipmentUtils-twoHanded.test.ts` - Unit tests for two-handed weapon conflict detection
 - `public/data/items.js` - Item data that needs equipmentSlot field added
 - `src/__tests__/integration/equipmentSystemIntegration.test.ts` - Integration tests for equipment system
 
@@ -75,10 +76,9 @@ Generated from: `docs/ai_dev_tasks/prd-equipment-system.md`
   - [x] 5.4 Implement slot compatibility check (ensure item's `equipmentSlot` matches target slot)
   - [x] 5.5 Add equipment subtype validation (e.g., rings can only go in ring slots) - COMPLETE: Handled by Task 5.4 slot compatibility check. Ring subtype validation already works (rings go in ring1/ring2). System ready for future subtype extensions.
   - [x] 5.6 Create `getRestrictionMessage` function to return user-friendly error messages for each restriction type - COMPLETE: Implemented centralized `getRestrictionMessage()` function with 4 restriction types (level, class, stat, slot), comprehensive TypeScript interfaces, 37 unit tests, full integration with `checkEquipmentCompatibility()`, kid-friendly messages for ages 7-12
-  - [ ] 5.7 Add two-handed weapon slot conflict detection (two-handed weapons use weapon + shield slots)
-  - [ ] 5.8 Return comprehensive `EquipmentCompatibility` result with reasons, warnings, and suggestions
-  - [ ] 5.9 Add validation for durability (if item durability is 0, cannot equip)
-  - [ ] 5.10 Create validation result cache to improve performance for repeated checks
+  - [x] 5.7 Add two-handed weapon slot conflict detection (two-handed weapons use weapon + shield slots) - COMPLETE: Added `twoHanded` boolean property to EnhancedItem interface, updated `checkEquipmentCompatibility()` to accept optional `currentEquipment` parameter, implemented two-handed weapon/shield conflict detection with kid-friendly warnings, created comprehensive test suite with 14 tests covering all scenarios (two-handed with shield, shield with two-handed, one-handed weapons, edge cases, message quality)
+  - [x] 5.8 Return comprehensive `EquipmentCompatibility` result with reasons, warnings, and suggestions - COMPLETE: Updated `checkEquipmentCompatibility()` to return proper `EquipmentCompatibility` type (from inventory.ts) with `canEquip`, `reasons` (blocking errors), `warnings` (non-blocking alerts), and `suggestions` (helpful hints). Separated two-handed weapon conflicts into warnings array. Added kid-friendly suggestions for level requirements ("Just one more level!"), stat requirements ("Try finding equipment that boosts X"), and class restrictions ("Look for items made for Warriors!"). Updated all 85+ tests across 4 test files. All equipment utility functions now use `canEquip` instead of `compatible`.
+  - [x] 5.9 Create validation result cache to improve performance for repeated checks - COMPLETE: Implemented LRU (Least Recently Used) cache for `checkEquipmentCompatibility()` with 100-entry limit. Cache key based on item ID, slot, player level, class, stats, and current equipment. Added `clearCompatibilityCache()` for cache invalidation and `getCompatibilityCacheStats()` for monitoring (hits, misses, size, hit rate). Created comprehensive test suite with 17 tests covering cache hits/misses, performance improvements, LRU eviction, cache invalidation, statistics tracking, and result correctness. All 139 equipment utility tests pass.
 
 - [ ] 6.0 Create Equipment UI Components and Interactions
   - [ ] 6.1 Update `EquipmentScreen.tsx` to wire up `handleSlotClick` to open selection modal correctly

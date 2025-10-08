@@ -5,12 +5,17 @@
 import {
   checkEquipmentCompatibility,
   formatSlotNameForDisplay,
-  getArticle
+  getArticle,
+  clearCompatibilityCache
 } from '../equipmentUtils';
 import { EnhancedItem } from '../../types/inventory';
 import { PlayerStats } from '../../types/game';
 
 describe('equipmentUtils - Slot Compatibility', () => {
+  beforeEach(() => {
+    clearCompatibilityCache();
+  });
+
   // Mock player stats for testing
   const mockPlayerStats: PlayerStats = {
     attack: 20,
@@ -48,8 +53,8 @@ describe('equipmentUtils - Slot Compatibility', () => {
         mockPlayerStats
       );
 
-      expect(result.compatible).toBe(true);
-      expect(result.unmetRequirements).toHaveLength(0);
+      expect(result.canEquip).toBe(true);
+      expect(result.reasons).toHaveLength(0);
     });
 
     it('should reject item in wrong slot', () => {
@@ -75,10 +80,10 @@ describe('equipmentUtils - Slot Compatibility', () => {
         mockPlayerStats
       );
 
-      expect(result.compatible).toBe(false);
-      expect(result.unmetRequirements).toHaveLength(1);
-      expect(result.unmetRequirements[0]).toMatch(/helmet/i);
-      expect(result.unmetRequirements[0]).toMatch(/weapon/i);
+      expect(result.canEquip).toBe(false);
+      expect(result.reasons).toHaveLength(1);
+      expect(result.reasons[0]).toMatch(/helmet/i);
+      expect(result.reasons[0]).toMatch(/weapon/i);
     });
 
     it('should allow ring in ring1 slot', () => {
@@ -104,8 +109,8 @@ describe('equipmentUtils - Slot Compatibility', () => {
         mockPlayerStats
       );
 
-      expect(result.compatible).toBe(true);
-      expect(result.unmetRequirements).toHaveLength(0);
+      expect(result.canEquip).toBe(true);
+      expect(result.reasons).toHaveLength(0);
     });
 
     it('should allow ring in ring2 slot', () => {
@@ -131,8 +136,8 @@ describe('equipmentUtils - Slot Compatibility', () => {
         mockPlayerStats
       );
 
-      expect(result.compatible).toBe(true);
-      expect(result.unmetRequirements).toHaveLength(0);
+      expect(result.canEquip).toBe(true);
+      expect(result.reasons).toHaveLength(0);
     });
 
     it('should reject ring in non-ring slot', () => {
@@ -158,10 +163,10 @@ describe('equipmentUtils - Slot Compatibility', () => {
         mockPlayerStats
       );
 
-      expect(result.compatible).toBe(false);
-      expect(result.unmetRequirements).toHaveLength(1);
-      expect(result.unmetRequirements[0]).toMatch(/ring/i);
-      expect(result.unmetRequirements[0]).toMatch(/weapon/i);
+      expect(result.canEquip).toBe(false);
+      expect(result.reasons).toHaveLength(1);
+      expect(result.reasons[0]).toMatch(/ring/i);
+      expect(result.reasons[0]).toMatch(/weapon/i);
     });
 
     it('should handle case-insensitive slot names', () => {
@@ -187,8 +192,8 @@ describe('equipmentUtils - Slot Compatibility', () => {
         mockPlayerStats
       );
 
-      expect(result.compatible).toBe(true);
-      expect(result.unmetRequirements).toHaveLength(0);
+      expect(result.canEquip).toBe(true);
+      expect(result.reasons).toHaveLength(0);
     });
 
     it('should generate kid-friendly error messages', () => {
@@ -214,11 +219,11 @@ describe('equipmentUtils - Slot Compatibility', () => {
         mockPlayerStats
       );
 
-      expect(result.compatible).toBe(false);
-      expect(result.unmetRequirements[0]).toContain('This is');
-      expect(result.unmetRequirements[0]).toContain('gloves');
-      expect(result.unmetRequirements[0]).toContain('boots');
-      expect(result.unmetRequirements[0]).toContain('slot');
+      expect(result.canEquip).toBe(false);
+      expect(result.reasons[0]).toContain('This is');
+      expect(result.reasons[0]).toContain('gloves');
+      expect(result.reasons[0]).toContain('boots');
+      expect(result.reasons[0]).toContain('slot');
     });
 
     it('should return early if slot is wrong (not check other requirements)', () => {
@@ -246,12 +251,12 @@ describe('equipmentUtils - Slot Compatibility', () => {
         mockPlayerStats
       );
 
-      expect(result.compatible).toBe(false);
+      expect(result.canEquip).toBe(false);
       // Should ONLY have slot error, not level requirement error
-      expect(result.unmetRequirements).toHaveLength(1);
-      expect(result.unmetRequirements[0]).toMatch(/weapon/i);
-      expect(result.unmetRequirements[0]).toMatch(/helmet/i);
-      expect(result.unmetRequirements[0]).not.toMatch(/level/i);
+      expect(result.reasons).toHaveLength(1);
+      expect(result.reasons[0]).toMatch(/weapon/i);
+      expect(result.reasons[0]).toMatch(/helmet/i);
+      expect(result.reasons[0]).not.toMatch(/level/i);
     });
   });
 

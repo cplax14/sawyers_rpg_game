@@ -14,6 +14,155 @@ import {
 } from '../types/inventory';
 import { PlayerStats } from '../types/game';
 
+/**
+ * Compatibility check cache entry
+ */
+interface CacheEntry {
+  result: EquipmentCompatibility;
+  timestamp: number;
+}
+
+/**
+ * LRU Cache for equipment compatibility checks
+ * Improves performance by caching validation results
+ */
+class CompatibilityCache {
+  private cache: Map<string, CacheEntry> = new Map();
+  private maxSize: number;
+  private stats = {
+    hits: 0,
+    misses: 0
+  };
+
+  constructor(maxSize: number = 100) {
+    this.maxSize = maxSize;
+  }
+
+  /**
+   * Generate a cache key from compatibility check parameters
+   */
+  private generateKey(
+    itemId: string,
+    slot: EquipmentSlot,
+    playerLevel: number,
+    playerClass: string,
+    currentStats: PlayerStats,
+    currentEquipment?: EquipmentSet
+  ): string {
+    // Include relevant stats that affect compatibility
+    const statsKey = `${currentStats.attack}_${currentStats.defense}_${currentStats.magicAttack}_${currentStats.magicDefense}_${currentStats.speed}_${currentStats.accuracy}`;
+
+    // Include equipped items that could affect compatibility (two-handed conflicts)
+    const equipmentKey = currentEquipment
+      ? `${currentEquipment.weapon?.id || 'none'}_${currentEquipment.shield?.id || 'none'}`
+      : 'no_equipment';
+
+    return `${itemId}|${slot}|${playerLevel}|${playerClass}|${statsKey}|${equipmentKey}`;
+  }
+
+  /**
+   * Get cached compatibility result
+   */
+  get(
+    itemId: string,
+    slot: EquipmentSlot,
+    playerLevel: number,
+    playerClass: string,
+    currentStats: PlayerStats,
+    currentEquipment?: EquipmentSet
+  ): EquipmentCompatibility | null {
+    const key = this.generateKey(itemId, slot, playerLevel, playerClass, currentStats, currentEquipment);
+    const entry = this.cache.get(key);
+
+    if (entry) {
+      this.stats.hits++;
+      // Move to end (most recently used)
+      this.cache.delete(key);
+      this.cache.set(key, entry);
+      return entry.result;
+    }
+
+    this.stats.misses++;
+    return null;
+  }
+
+  /**
+   * Store compatibility result in cache
+   */
+  set(
+    itemId: string,
+    slot: EquipmentSlot,
+    playerLevel: number,
+    playerClass: string,
+    currentStats: PlayerStats,
+    result: EquipmentCompatibility,
+    currentEquipment?: EquipmentSet
+  ): void {
+    const key = this.generateKey(itemId, slot, playerLevel, playerClass, currentStats, currentEquipment);
+
+    // If cache is full, remove oldest entry (first in Map)
+    if (this.cache.size >= this.maxSize) {
+      const firstKey = this.cache.keys().next().value;
+      if (firstKey) {
+        this.cache.delete(firstKey);
+      }
+    }
+
+    this.cache.set(key, {
+      result,
+      timestamp: Date.now()
+    });
+  }
+
+  /**
+   * Clear all cached entries
+   */
+  clear(): void {
+    this.cache.clear();
+    this.stats.hits = 0;
+    this.stats.misses = 0;
+  }
+
+  /**
+   * Get cache statistics (for monitoring/debugging)
+   */
+  getStats(): { hits: number; misses: number; size: number; hitRate: number } {
+    const total = this.stats.hits + this.stats.misses;
+    return {
+      hits: this.stats.hits,
+      misses: this.stats.misses,
+      size: this.cache.size,
+      hitRate: total > 0 ? this.stats.hits / total : 0
+    };
+  }
+
+  /**
+   * Reset cache statistics
+   */
+  resetStats(): void {
+    this.stats.hits = 0;
+    this.stats.misses = 0;
+  }
+}
+
+// Global cache instance
+const compatibilityCache = new CompatibilityCache(100);
+
+/**
+ * Clear the compatibility cache
+ * Call this when player state changes significantly (level up, stat changes, equipment changes)
+ */
+export function clearCompatibilityCache(): void {
+  compatibilityCache.clear();
+}
+
+/**
+ * Get cache statistics (for monitoring/debugging)
+ */
+export function getCompatibilityCacheStats(): { hits: number; misses: number; size: number; hitRate: number } {
+  return compatibilityCache.getStats();
+}
+
 export interface StatCalculationResult {
   baseStats: PlayerStats;
   equipmentBonuses: PlayerStats;
@@ -29,6 +178,7 @@ export interface StatBreakdown {
   totalContribution: number;
 }
 
+// Legacy type - use EquipmentCompatibility from inventory.ts instead
 export interface CompatibilityCheckResult {
   compatible: boolean;
   requirements: EquipmentRequirement[];
@@ -152,17 +302,42 @@ export function calculateEquipmentStats(
 
 /**
  * Check equipment compatibility for a player
+ *
+ * Returns comprehensive compatibility information including:
+ * - canEquip: Whether the item can be equipped (no blocking errors)
+ * - reasons: Blocking errors that prevent equipping (level, class, stat, slot requirements)
+ * - warnings: Non-blocking warnings (two-handed conflicts, suboptimal usage)
+ * - suggestions: Helpful hints for the player (leveling up, stat improvements, build recommendations)
+ *
+ * This function uses an LRU cache to improve performance for repeated checks.
+ * Cache is automatically managed and invalidated when player state changes.
  */
 export function checkEquipmentCompatibility(
   item: EnhancedItem,
   slot: EquipmentSlot,
   playerLevel: number,
   playerClass: string,
-  currentStats: PlayerStats
-): CompatibilityCheckResult {
-  const unmetRequirements: string[] = [];
+  currentStats: PlayerStats,
+  currentEquipment?: EquipmentSet
+): EquipmentCompatibility {
+  // Check cache first
+  const cachedResult = compatibilityCache.get(
+    item.id,
+    slot,
+    playerLevel,
+    playerClass,
+    currentStats,
+    currentEquipment
+  );
+
+  if (cachedResult) {
+    return cachedResult;
+  }
+
+  // Cache miss - perform full validation
+  const reasons: string[] = [];
   const warnings: string[] = [];
-  const recommendations: string[] = [];
+  const suggestions: string[] = [];
 
   // Check slot compatibility FIRST (most fundamental requirement)
   // Special case: "ring" type items can go in either ring1 or ring2
@@ -183,15 +358,14 @@ export function checkEquipmentCompatibility(
         targetSlot: normalizedTargetSlot
       });
 
-      unmetRequirements.push(message);
+      reasons.push(message);
 
       // Return early - no point checking other requirements if slot is wrong
       return {
-        compatible: false,
-        requirements: item.requirements ? [item.requirements] : [],
-        unmetRequirements,
+        canEquip: false,
+        reasons,
         warnings,
-        recommendations
+        suggestions
       };
     }
   }
@@ -206,7 +380,17 @@ export function checkEquipmentCompatibility(
       playerLevel
     });
 
-    unmetRequirements.push(message);
+    reasons.push(message);
+
+    // Add helpful suggestion for level requirement
+    const levelsNeeded = requiredLevel - playerLevel;
+    if (levelsNeeded === 1) {
+      suggestions.push('Just one more level to go! Keep adventuring!');
+    } else if (levelsNeeded <= 3) {
+      suggestions.push('Almost there! A few more adventures and you can use this item!');
+    } else {
+      suggestions.push('Keep leveling up to unlock this awesome item!');
+    }
   }
 
   // Check class requirements
@@ -229,7 +413,10 @@ export function checkEquipmentCompatibility(
         itemType: item.type || 'item'
       });
 
-      unmetRequirements.push(message);
+      reasons.push(message);
+
+      // Add suggestion about class-appropriate items
+      suggestions.push(`Look for items made for ${playerClass}s!`);
     }
   }
 
@@ -251,23 +438,46 @@ export function checkEquipmentCompatibility(
             itemType: item.type || 'item'
           });
 
-          unmetRequirements.push(message);
+          reasons.push(message);
+
+          // Add suggestion for stat improvement
+          const formattedStatName = formatStatName(statKey);
+          const pointsNeeded = requiredValue - playerStatValue;
+          suggestions.push(`Try finding equipment that boosts your ${formattedStatName} by ${pointsNeeded}!`);
         }
       }
     }
   }
 
-  // Generate warnings for suboptimal usage
+  // Check two-handed weapon slot conflicts (NON-BLOCKING - goes to warnings)
+  if (currentEquipment) {
+    // Case 1: Equipping a two-handed weapon when a shield is equipped
+    if (item.twoHanded && slot === 'weapon' && currentEquipment.shield) {
+      warnings.push(
+        `This is a two-handed weapon! Equipping it will unequip your ${currentEquipment.shield.name} from the shield slot.`
+      );
+    }
+
+    // Case 2: Equipping a shield when a two-handed weapon is equipped
+    if (slot === 'shield' && currentEquipment.weapon?.twoHanded) {
+      warnings.push(
+        `You have a two-handed weapon equipped! Equipping this shield will unequip your ${currentEquipment.weapon.name}.`
+      );
+    }
+  }
+
+  // Generate warnings for suboptimal usage (NON-BLOCKING)
   if (item.rarity === 'legendary' && playerLevel < 20) {
-    warnings.push('This legendary item may be too powerful for your current level');
+    warnings.push('This legendary item may be too powerful for your current level!');
   }
 
   if (item.rarity === 'common' && playerLevel > 50) {
-    warnings.push('This common item may be underpowered for your level');
+    warnings.push('This common item may be underpowered for your level.');
+    suggestions.push('Look for rarer items with better stats!');
   }
 
-  // Generate recommendations
-  if (item.statModifiers) {
+  // Generate helpful suggestions based on item properties
+  if (item.statModifiers && reasons.length === 0) {
     const strongestStat = Object.entries(item.statModifiers)
       .reduce((max, [stat, modifier]) =>
         modifier.value > (max?.modifier.value || 0) ? { stat, modifier } : max,
@@ -275,17 +485,30 @@ export function checkEquipmentCompatibility(
       );
 
     if (strongestStat) {
-      recommendations.push(`Best suited for ${strongestStat.stat}-focused builds`);
+      const formattedStat = formatStatName(strongestStat.stat);
+      suggestions.push(`Great for ${formattedStat}-focused builds!`);
     }
   }
 
-  return {
-    compatible: unmetRequirements.length === 0,
-    requirements: item.requirements ? [item.requirements] : [],
-    unmetRequirements,
+  const result: EquipmentCompatibility = {
+    canEquip: reasons.length === 0,
+    reasons,
     warnings,
-    recommendations
+    suggestions
   };
+
+  // Store result in cache before returning
+  compatibilityCache.set(
+    item.id,
+    slot,
+    playerLevel,
+    playerClass,
+    currentStats,
+    result,
+    currentEquipment
+  );
+
+  return result;
 }
 
 /**
@@ -389,7 +612,7 @@ export function generateEquipmentRecommendations(
         const compatibility = checkEquipmentCompatibility(
           item, equipmentSlot, playerLevel, playerClass, baseStats
         );
-        return compatibility.compatible;
+        return compatibility.canEquip;
       })
       .map(item => {
         const comparison = compareEquipment(currentItem, item, baseStats);
@@ -462,7 +685,7 @@ export function optimizeEquipmentSet(
         const compatibility = checkEquipmentCompatibility(
           item, equipmentSlot, playerLevel, playerClass, baseStats
         );
-        return compatibility.compatible;
+        return compatibility.canEquip;
       })
       .reduce((best, item) => {
         if (!best) return item;
@@ -838,5 +1061,7 @@ export const equipmentUtils = {
   formatStatName,
   formatSlotNameForDisplay,
   getArticle,
-  getRestrictionMessage
+  getRestrictionMessage,
+  clearCompatibilityCache,
+  getCompatibilityCacheStats
 };

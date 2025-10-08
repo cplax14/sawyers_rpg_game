@@ -544,6 +544,7 @@ export interface EnhancedItem extends Item {
   // Equipment-specific fields (only present for equipment items)
   equipmentSlot?: EquipmentSlot;
   equipmentSubtype?: EquipmentSubtype;
+  twoHanded?: boolean; // True if weapon requires both weapon + shield slots
 
   // Requirements and restrictions
   levelRequirement?: number; // Direct level requirement (legacy support)
@@ -593,6 +594,7 @@ export interface EnhancedItem extends Item {
 export interface EquipmentSet extends Equipment {
   // Extend base Equipment with additional slots
   helmet?: EnhancedItem | null;
+  shield?: EnhancedItem | null;
   chestplate?: EnhancedItem | null;
   boots?: EnhancedItem | null;
   gloves?: EnhancedItem | null;
@@ -773,11 +775,12 @@ export interface EquipmentRequirement {
 
 export interface EquipmentCompatibility {
   canEquip: boolean;
-  reasons: CompatibilityReason[];
-  warnings: CompatibilityWarning[];
-  suggestions: string[];
+  reasons: string[]; // Blocking errors preventing equipping (level, class, stat, slot requirements)
+  warnings: string[]; // Non-blocking warnings (two-handed conflicts, suboptimal usage)
+  suggestions: string[]; // Helpful hints for the player
 }
 
+// Detailed compatibility types (for advanced usage if needed)
 export interface CompatibilityReason {
   type: 'level_requirement' | 'class_requirement' | 'stat_requirement' | 'slot_conflict' | 'set_requirement';
   satisfied: boolean;
@@ -787,7 +790,7 @@ export interface CompatibilityReason {
 }
 
 export interface CompatibilityWarning {
-  type: 'stat_decrease' | 'set_bonus_lost' | 'durability_low' | 'weight_limit';
+  type: 'stat_decrease' | 'set_bonus_lost' | 'durability_low' | 'weight_limit' | 'two_handed_conflict';
   severity: 'low' | 'medium' | 'high';
   description: string;
   affectedStats?: string[];

@@ -3,11 +3,15 @@
  * Tests Task 5.2 implementation
  */
 
-import { checkEquipmentCompatibility, formatClassList } from '../equipmentUtils';
+import { checkEquipmentCompatibility, formatClassList, clearCompatibilityCache } from '../equipmentUtils';
 import { EnhancedItem, EquipmentSlot } from '../../types/inventory';
 import { PlayerStats } from '../../types/game';
 
 describe('Equipment Class Requirement Validation (Task 5.2)', () => {
+  beforeEach(() => {
+    clearCompatibilityCache();
+  });
+
   const mockStats: PlayerStats = {
     attack: 15,
     defense: 12,
@@ -51,8 +55,8 @@ describe('Equipment Class Requirement Validation (Task 5.2)', () => {
         mockStats
       );
 
-      expect(result.compatible).toBe(true);
-      expect(result.unmetRequirements).not.toContain(
+      expect(result.canEquip).toBe(true);
+      expect(result.reasons).not.toContain(
         expect.stringContaining('Only')
       );
     });
@@ -91,8 +95,8 @@ describe('Equipment Class Requirement Validation (Task 5.2)', () => {
         mockStats
       );
 
-      expect(result.compatible).toBe(true);
-      expect(result.unmetRequirements).toHaveLength(0);
+      expect(result.canEquip).toBe(true);
+      expect(result.reasons).toHaveLength(0);
     });
 
     it('should reject item when player class does not match requirement', () => {
@@ -129,8 +133,8 @@ describe('Equipment Class Requirement Validation (Task 5.2)', () => {
         mockStats
       );
 
-      expect(result.compatible).toBe(false);
-      expect(result.unmetRequirements).toContain(
+      expect(result.canEquip).toBe(false);
+      expect(result.reasons).toContain(
         'Only Warriors can use this equipment!'
       );
     });
@@ -172,8 +176,8 @@ describe('Equipment Class Requirement Validation (Task 5.2)', () => {
         mockStats
       );
 
-      expect(result1.compatible).toBe(true);
-      expect(result1.unmetRequirements).toHaveLength(0);
+      expect(result1.canEquip).toBe(true);
+      expect(result1.reasons).toHaveLength(0);
 
       // Test with Warrior - should be rejected
       const result2 = checkEquipmentCompatibility(
@@ -184,8 +188,8 @@ describe('Equipment Class Requirement Validation (Task 5.2)', () => {
         mockStats
       );
 
-      expect(result2.compatible).toBe(false);
-      expect(result2.unmetRequirements).toContain(
+      expect(result2.canEquip).toBe(false);
+      expect(result2.reasons).toContain(
         'Only Mages, Clerics, and Druids can use this equipment!'
       );
     });
@@ -225,7 +229,7 @@ describe('Equipment Class Requirement Validation (Task 5.2)', () => {
         mockStats
       );
 
-      expect(result1.compatible).toBe(true);
+      expect(result1.canEquip).toBe(true);
 
       // Test with "PALADIN" (uppercase) - should match "Paladin"
       const result2 = checkEquipmentCompatibility(
@@ -236,7 +240,7 @@ describe('Equipment Class Requirement Validation (Task 5.2)', () => {
         mockStats
       );
 
-      expect(result2.compatible).toBe(true);
+      expect(result2.canEquip).toBe(true);
     });
 
     it('should use classRequirement over requirements.classes when both exist (legacy priority)', () => {
@@ -277,7 +281,7 @@ describe('Equipment Class Requirement Validation (Task 5.2)', () => {
         mockStats
       );
 
-      expect(result1.compatible).toBe(true);
+      expect(result1.canEquip).toBe(true);
 
       // Mage should be rejected (requirements.classes is ignored)
       const result2 = checkEquipmentCompatibility(
@@ -288,7 +292,7 @@ describe('Equipment Class Requirement Validation (Task 5.2)', () => {
         mockStats
       );
 
-      expect(result2.compatible).toBe(false);
+      expect(result2.canEquip).toBe(false);
     });
   });
 
@@ -371,11 +375,11 @@ describe('Equipment Class Requirement Validation (Task 5.2)', () => {
         mockStats
       );
 
-      expect(result1.compatible).toBe(false);
-      expect(result1.unmetRequirements).toContain(
+      expect(result1.canEquip).toBe(false);
+      expect(result1.reasons).toContain(
         "You need to be level 20 to use this item! (You're level 10)"
       );
-      expect(result1.unmetRequirements).not.toContain(
+      expect(result1.reasons).not.toContain(
         expect.stringContaining('Only Warriors and Paladins')
       );
 
@@ -388,8 +392,8 @@ describe('Equipment Class Requirement Validation (Task 5.2)', () => {
         mockStats
       );
 
-      expect(result2.compatible).toBe(false);
-      expect(result2.unmetRequirements).toContain(
+      expect(result2.canEquip).toBe(false);
+      expect(result2.reasons).toContain(
         'Only Warriors and Paladins can use this equipment!'
       );
 
@@ -402,8 +406,8 @@ describe('Equipment Class Requirement Validation (Task 5.2)', () => {
         mockStats
       );
 
-      expect(result3.compatible).toBe(true);
-      expect(result3.unmetRequirements).toHaveLength(0);
+      expect(result3.canEquip).toBe(true);
+      expect(result3.reasons).toHaveLength(0);
     });
   });
 });
