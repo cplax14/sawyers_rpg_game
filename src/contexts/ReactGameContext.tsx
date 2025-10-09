@@ -1809,26 +1809,60 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
 
     // Equipment drops based on enemy type and level (15% chance) - using actual ItemData items
     if (Math.random() < 0.15) {
-      const equipmentDrops = [
-        // Weapons
-        { id: 'iron_sword', name: 'Iron Sword', type: 'weapon', rarity: 'common', quantity: 1, icon: '⚔️' },
-        { id: 'steel_dagger', name: 'Steel Dagger', type: 'weapon', rarity: 'common', quantity: 1, icon: '🗡️' },
-        { id: 'oak_staff', name: 'Oak Staff', type: 'weapon', rarity: 'common', quantity: 1, icon: '🪄' },
-        // Armor
-        { id: 'leather_vest', name: 'Leather Vest', type: 'armor', rarity: 'common', quantity: 1, icon: '🦺' },
-        { id: 'chain_mail', name: 'Chain Mail', type: 'armor', rarity: 'common', quantity: 1, icon: '🛡️' },
-        { id: 'cloth_robe', name: 'Cloth Robe', type: 'armor', rarity: 'common', quantity: 1, icon: '👘' },
-        // Accessories
-        { id: 'health_ring', name: 'Health Ring', type: 'accessory', rarity: 'common', quantity: 1, icon: '💍' },
-        { id: 'mana_crystal', name: 'Mana Crystal', type: 'accessory', rarity: 'common', quantity: 1, icon: '💎' },
+      // Helper function to load full item data from ItemData
+      const getFullItemData = (itemId: string): ReactItem | null => {
+        if (typeof window === 'undefined' || !(window as any).ItemData) {
+          return null;
+        }
+
+        const ItemData = (window as any).ItemData;
+        const item = ItemData.getItem(itemId);
+
+        if (!item) {
+          return null;
+        }
+
+        // Transform to EnhancedItem format with all required fields
+        return {
+          id: itemId,
+          name: item.name,
+          description: item.description || '',
+          type: item.type,
+          category: item.type === 'weapon' || item.type === 'armor' || item.type === 'accessory' ? 'equipment' : 'consumables',
+          rarity: item.rarity as ItemRarity,
+          icon: item.icon,
+          value: item.value || 0,
+          equipmentSlot: item.equipmentSlot,
+          equipmentSubtype: item.equipmentSubtype,
+          statModifiers: item.statModifiers,
+          stackable: item.type === 'consumable' || item.type === 'material',
+          maxStack: item.type === 'consumable' || item.type === 'material' ? 99 : 1,
+          weight: item.weight || 1,
+          sellValue: item.sellValue || Math.floor((item.value || 0) * 0.5),
+          canTrade: item.canTrade !== false,
+          canDrop: item.canDrop !== false,
+          canDestroy: item.canDestroy !== false,
+          usable: item.type === 'consumable',
+          consumeOnUse: item.type === 'consumable',
+          quantity: 1
+        } as ReactItem;
+      };
+
+      const equipmentIds = [
+        'iron_sword', 'steel_dagger', 'oak_staff',
+        'leather_vest', 'chain_mail', 'cloth_robe',
+        'health_ring', 'mana_crystal'
       ];
 
-      // Filter equipment appropriate for enemy level
-      const appropriateEquipment = equipmentDrops.filter(item => {
-        if (enemyLevel >= 5 && item.rarity === 'uncommon') return true;
-        if (enemyLevel <= 8 && item.rarity === 'common') return true;
-        return false;
-      });
+      // Filter equipment appropriate for enemy level and load full data
+      const appropriateEquipment = equipmentIds
+        .map(id => getFullItemData(id))
+        .filter((item): item is ReactItem => {
+          if (!item) return false;
+          if (enemyLevel >= 5 && item.rarity === 'uncommon') return true;
+          if (enemyLevel <= 8 && item.rarity === 'common') return true;
+          return false;
+        });
 
       if (appropriateEquipment.length > 0) {
         const randomEquipment = appropriateEquipment[Math.floor(Math.random() * appropriateEquipment.length)];

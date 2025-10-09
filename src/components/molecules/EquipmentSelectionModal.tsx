@@ -167,7 +167,7 @@ export const EquipmentSelectionModal: React.FC<EquipmentSelectionModalProps> = (
         item, slot, playerLevel, playerClass, baseStats
       );
 
-      if (compatibility.compatible) {
+      if (compatibility.canEquip) {
         compatible.push(item);
       } else {
         incompatible.push(item);
@@ -250,7 +250,7 @@ export const EquipmentSelectionModal: React.FC<EquipmentSelectionModalProps> = (
       item, slot, playerLevel, playerClass, baseStats
     );
 
-    if (compatibility.compatible) {
+    if (compatibility.canEquip) {
       setSelectedItem(item);
     }
   };
@@ -265,7 +265,7 @@ export const EquipmentSelectionModal: React.FC<EquipmentSelectionModalProps> = (
     if (!item.statModifiers) return 'No stat bonuses';
 
     return Object.entries(item.statModifiers)
-      .map(([stat, modifier]) => `${stat}: +${modifier.value}`)
+      .map(([stat, value]) => `${stat}: +${value}`)
       .join(', ');
   };
 
@@ -386,7 +386,7 @@ export const EquipmentSelectionModal: React.FC<EquipmentSelectionModalProps> = (
 
                       {!isCompatible && (
                         <div style={modalStyles.incompatibleText}>
-                          {compatibility.unmetRequirements.join(', ')}
+                          {compatibility.reasons.join(', ')}
                         </div>
                       )}
                     </motion.div>
@@ -459,7 +459,7 @@ export const EquipmentSelectionModal: React.FC<EquipmentSelectionModalProps> = (
                 playerLevel,
                 playerClass,
                 baseStats
-              ).compatible
+              ).canEquip
             }
             loading={isLoading}
             size="md"
@@ -470,7 +470,7 @@ export const EquipmentSelectionModal: React.FC<EquipmentSelectionModalProps> = (
               playerLevel,
               playerClass,
               baseStats
-            ).compatible
+            ).canEquip
               ? 'Cannot Equip'
               : 'Equip Item'
             }

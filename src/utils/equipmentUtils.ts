@@ -313,13 +313,32 @@ export function calculateEquipmentStats(
  * Cache is automatically managed and invalidated when player state changes.
  */
 export function checkEquipmentCompatibility(
-  item: EnhancedItem,
+  item: EnhancedItem | null | undefined,
   slot: EquipmentSlot,
   playerLevel: number,
   playerClass: string,
   currentStats: PlayerStats,
   currentEquipment?: EquipmentSet
 ): EquipmentCompatibility {
+  // Handle null/undefined item or slot gracefully
+  if (!item) {
+    return {
+      canEquip: false,
+      reasons: ['No item selected'],
+      warnings: [],
+      suggestions: []
+    };
+  }
+
+  if (!slot) {
+    return {
+      canEquip: false,
+      reasons: ['No equipment slot specified'],
+      warnings: [],
+      suggestions: []
+    };
+  }
+
   // Check cache first
   const cachedResult = compatibilityCache.get(
     item.id,
@@ -342,7 +361,7 @@ export function checkEquipmentCompatibility(
   // Check slot compatibility FIRST (most fundamental requirement)
   // Special case: "ring" type items can go in either ring1 or ring2
   const itemSlot = item.equipmentSlot?.toLowerCase();
-  const normalizedTargetSlot = slot.toLowerCase();
+  const normalizedTargetSlot = slot?.toLowerCase();
 
   if (itemSlot) {
     // Check if item slot matches target slot

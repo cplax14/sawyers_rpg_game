@@ -288,7 +288,7 @@ const ItemData = {
             name: "Health Ring",
             description: "A ring that increases the wearer's vitality.",
             type: "accessory",
-            equipmentSlot: "ring1",
+            equipmentSlot: "ring",
             equipmentSubtype: "ring",
             rarity: "common",
             statModifiers: { maxHp: 20 },

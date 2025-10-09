@@ -435,6 +435,104 @@ export const useInventory = () => {
     }
   }, [inventoryState, generateOperationId, gameState, emitEvent, isItemEquipped]);
 
+  // Drop item from inventory (permanently destroy)
+  const dropItem = useCallback(async (
+    itemId: string,
+    quantity: number = 1,
+    containerId: string = 'main'
+  ): Promise<InventoryOperation> => {
+    const operationId = generateOperationId();
+    const operation: InventoryOperation = {
+      id: operationId,
+      type: 'drop',
+      timestamp: new Date(),
+      item: {} as EnhancedItem,
+      quantity,
+      result: 'failed'
+    };
+
+    try {
+      const container = inventoryState.containers[containerId];
+      if (!container) {
+        throw new InventoryException(InventoryError.INVALID_OPERATION, `Container ${containerId} not found`);
+      }
+
+      const targetSlot = container.items.find(slot => slot.item?.id === itemId);
+      if (!targetSlot || !targetSlot.item) {
+        throw new InventoryException(InventoryError.ITEM_NOT_FOUND, `Item ${itemId} not found`);
+      }
+
+      // Check if item can be dropped
+      if (!targetSlot.item.canDrop) {
+        throw new InventoryException(
+          InventoryError.INVALID_OPERATION,
+          'This item cannot be dropped (quest item or special item)'
+        );
+      }
+
+      // Prevent dropping equipped items
+      if (isItemEquipped(itemId)) {
+        throw new InventoryException(
+          InventoryError.INVALID_OPERATION,
+          "You can't drop an equipped item! Unequip it first."
+        );
+      }
+
+      if (targetSlot.quantity < quantity) {
+        throw new InventoryException(InventoryError.INVALID_QUANTITY, 'Insufficient quantity to drop');
+      }
+
+      operation.item = targetSlot.item;
+      operation.sourceSlot = targetSlot.slotId;
+
+      // Update quantity or remove item
+      const remainingQuantity = targetSlot.quantity - quantity;
+      if (remainingQuantity === 0) {
+        targetSlot.item = null;
+        targetSlot.quantity = 0;
+      } else {
+        targetSlot.quantity = remainingQuantity;
+      }
+
+      // Update inventory state
+      setInventoryState(prev => ({
+        ...prev,
+        containers: {
+          ...prev.containers,
+          [containerId]: container
+        },
+        usedCapacity: remainingQuantity === 0 ? prev.usedCapacity - 1 : prev.usedCapacity,
+        totalWeight: prev.totalWeight - quantity,
+        recentOperations: [operation, ...prev.recentOperations.slice(0, 49)]
+      }));
+
+      // Update game state for backward compatibility
+      gameState.removeItem(itemId, quantity);
+
+      operation.result = 'success';
+
+      // Emit event
+      emitEvent({
+        type: 'item_dropped',
+        timestamp: new Date(),
+        item: operation.item,
+        quantity,
+        container: containerId,
+        slot: targetSlot.slotId,
+        metadata: { operationId, droppedPermanently: true }
+      });
+
+      console.log(`✅ Dropped ${quantity}x ${operation.item.name} from inventory`);
+
+      return operation;
+
+    } catch (error) {
+      operation.error = error instanceof InventoryException ? error.message : String(error);
+      console.error('❌ Failed to drop item:', operation.error);
+      return operation;
+    }
+  }, [inventoryState, generateOperationId, gameState, emitEvent, isItemEquipped]);
+
   // Use item with comprehensive effect application
   const useItem = useCallback(async (itemId: string, quantity: number = 1): Promise<UseItemResult> => {
     try {
@@ -990,6 +1088,7 @@ export const useInventory = () => {
     addItem,
     removeItem,
     useItem,
+    dropItem,
 
     // Stacking operations
     consolidateInventoryStacks,

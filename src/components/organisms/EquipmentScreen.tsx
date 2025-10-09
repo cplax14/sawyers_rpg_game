@@ -264,9 +264,14 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
 
   // Get equipable items from inventory
   const equipableItems = useMemo(() => {
-    return getFilteredItems({
-      category: 'equipment',
-      equipped: false
+    return getFilteredItems('main', {
+      categories: ['equipment'],
+      showEquipped: false,
+      rarities: [],
+      equipmentSlots: [],
+      usableOnly: false,
+      tradableOnly: false,
+      searchText: ''
     });
   }, [getFilteredItems]);
 
@@ -339,9 +344,26 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
   const availableItems = useMemo(() => {
     if (!selectedSlot) return [];
 
-    return equipableItems.filter(item =>
-      item.equipmentSlot === selectedSlot
-    );
+    // equipableItems is InventorySlot[], need to access slot.item
+    return equipableItems
+      .filter(slot => {
+        if (!slot.item?.equipmentSlot) return false;
+
+        const itemSlot = slot.item.equipmentSlot.toLowerCase();
+        const targetSlot = selectedSlot.toLowerCase();
+
+        // Special case: "ring" type items can go in ring1 OR ring2
+        // Items with equipmentSlot="ring1" or "ring" should work in both ring slots
+        if ((targetSlot === 'ring1' || targetSlot === 'ring2') &&
+            (itemSlot === 'ring1' || itemSlot === 'ring2' || itemSlot === 'ring')) {
+          return true;
+        }
+
+        // Normal case: exact slot match
+        return itemSlot === targetSlot;
+      })
+      .map(slot => slot.item!)
+      .filter(Boolean);
   }, [selectedSlot, equipableItems]);
 
   // Get items with validation status
@@ -393,15 +415,15 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
   }, []);
 
   // Get rarity style
-  const getRarityStyle = useCallback((rarity: string) => {
+  const getRarityBorderColor = useCallback((rarity: string): string => {
     switch (rarity) {
-      case 'common': return equipmentStyles.rarityCommon;
-      case 'uncommon': return equipmentStyles.rarityUncommon;
-      case 'rare': return equipmentStyles.rarityRare;
-      case 'epic': return equipmentStyles.rarityEpic;
-      case 'legendary': return equipmentStyles.rarityLegendary;
-      case 'mythical': return equipmentStyles.rarityMythical;
-      default: return {};
+      case 'common': return '#10b981';
+      case 'uncommon': return '#3b82f6';
+      case 'rare': return '#8b5cf6';
+      case 'epic': return '#f59e0b';
+      case 'legendary': return '#ef4444';
+      case 'mythical': return '#ec4899';
+      default: return '#d4af37';
     }
   }, []);
 
@@ -498,18 +520,37 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
                         ...equipmentStyles.equipmentSlot,
                         ...position,
                         transform: 'translate(-50%, -50%)',
-                        ...(equippedItem ? equipmentStyles.equipmentSlotFilled : {}),
-                        ...(isSelected ? { borderColor: '#f59e0b', background: 'rgba(245, 158, 11, 0.3)' } : {}),
-                        ...(equippedItem ? getRarityStyle(equippedItem.rarity) : {})
+                        // Use full border declaration to avoid mixing with borderColor
+                        border: isSelected
+                          ? '2px solid #f59e0b'
+                          : equippedItem
+                          ? `2px solid ${getRarityBorderColor(equippedItem.rarity)}`
+                          : equipmentStyles.equipmentSlot.border,
+                        background: isSelected
+                          ? 'rgba(245, 158, 11, 0.3)'
+                          : equippedItem
+                          ? 'rgba(212, 175, 55, 0.2)'
+                          : equipmentStyles.equipmentSlot.background
                       }}
                       onClick={() => handleSlotClick(equipmentSlot)}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
                       {equippedItem ? (
-                        <div style={equipmentStyles.itemSlot}>
-                          {equippedItem.name.slice(0, 3)}
-                        </div>
+                        <span style={{
+                          fontSize: '0.65rem',
+                          fontWeight: 'bold',
+                          textAlign: 'center',
+                          display: 'block',
+                          lineHeight: '1.2',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          padding: '0 4px',
+                          textShadow: '0 1px 2px rgba(0, 0, 0, 0.8)'
+                        }}>
+                          {equippedItem.name.slice(0, 8)}
+                        </span>
                       ) : (
                         <span style={{ fontSize: '0.6rem' }}>
                           {slotNames[equipmentSlot]}
@@ -558,9 +599,9 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
           <div style={equipmentStyles.statsCard}>
             <h3 style={equipmentStyles.statsTitle}>Character Stats</h3>
 
-            {Object.entries(finalStats).map(([stat, value]) => {
-              const bonus = equipmentBonuses[stat as keyof PlayerStats] || 0;
-              const baseValue = value - bonus;
+            {Object.entries(finalStats).map(([stat, statCalc]) => {
+              const finalValue = statCalc.finalValue || 0;
+              const bonus = statCalc.equipmentBonus || 0;
 
               return (
                 <div key={stat} style={equipmentStyles.statRow}>
@@ -569,7 +610,8 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
                   </span>
                   <div>
                     <span style={equipmentStyles.statValue}>
-                      {formatStatValue(baseValue, bonus)}
+                      {finalValue}
+                      {bonus > 0 && <span style={equipmentStyles.statBonus}> (+{bonus})</span>}
                     </span>
                   </div>
                 </div>

@@ -39,9 +39,23 @@ export const useEquipment = () => {
   const gameState = useGameState();
   const { inventoryState, addItem, removeItem, addEventListener } = useInventory();
 
-  // Equipment state
-  const [equipmentState, setEquipmentState] = useState<EquipmentState>(() => {
-    const initialEquipped: EquipmentSet = {
+  // Equipment cache key for localStorage persistence
+  const EQUIPMENT_CACHE_KEY = `equipment_cache_${gameState.state.player?.id || 'temp'}`;
+
+  // Load equipped items from cache
+  const loadEquippedItemsFromCache = useCallback((): EquipmentSet => {
+    try {
+      const cached = localStorage.getItem(EQUIPMENT_CACHE_KEY);
+      if (cached) {
+        const parsedCache = JSON.parse(cached);
+        console.log('✅ [useEquipment] Loaded equipped items from cache:', parsedCache);
+        return parsedCache;
+      }
+    } catch (error) {
+      console.warn('⚠️ [useEquipment] Failed to load equipment cache:', error);
+    }
+
+    return {
       weapon: null,
       armor: null,
       accessory: null,
@@ -54,6 +68,54 @@ export const useEquipment = () => {
       necklace: null,
       charm: null
     };
+  }, [EQUIPMENT_CACHE_KEY]);
+
+  // Save equipped items to cache
+  const saveEquippedItemsToCache = useCallback((equipped: EquipmentSet) => {
+    try {
+      localStorage.setItem(EQUIPMENT_CACHE_KEY, JSON.stringify(equipped));
+      console.log('💾 [useEquipment] Saved equipped items to cache');
+    } catch (error) {
+      console.error('❌ [useEquipment] Failed to save equipment cache:', error);
+    }
+  }, [EQUIPMENT_CACHE_KEY]);
+
+  // Equipment state
+  const [equipmentState, setEquipmentState] = useState<EquipmentState>(() => {
+    const player = gameState.state.player;
+    const mainInventory = inventoryState.containers.main;
+
+    // Start with cached equipment items
+    const initialEquipped = loadEquippedItemsFromCache();
+
+    // Sync with player equipment IDs from game state
+    // This handles cases where equipment was changed outside this hook
+    if (player && player.equipment) {
+      Object.keys(initialEquipped).forEach((slotKey) => {
+        const slot = slotKey as EquipmentSlot;
+        const itemIdFromState = player.equipment[slot];
+
+        // If game state has no item ID for this slot, clear it
+        if (!itemIdFromState) {
+          initialEquipped[slot] = null;
+        }
+        // If cached item doesn't match game state ID, try to find correct item
+        else if (!initialEquipped[slot] || initialEquipped[slot]?.id !== itemIdFromState) {
+          // Try to find item in inventory first
+          const inventorySlot = mainInventory?.items.find(
+            invSlot => invSlot.item?.id === itemIdFromState
+          );
+
+          if (inventorySlot?.item) {
+            initialEquipped[slot] = inventorySlot.item;
+          }
+          // If not in inventory but we have it in cache, keep cached version
+          // (this is the normal case for equipped items)
+        }
+      });
+    }
+
+    console.log('🎮 [useEquipment] Initialized equipment state:', initialEquipped);
 
     return {
       equipped: initialEquipped,
@@ -63,6 +125,66 @@ export const useEquipment = () => {
       lastEquipTime: new Date()
     };
   });
+
+  // Sync equipment state from game context when player changes or component mounts
+  useEffect(() => {
+    const player = gameState.state.player;
+    if (!player || !player.equipment) return;
+
+    const mainInventory = inventoryState.containers.main;
+    if (!mainInventory) return;
+
+    // Load from cache as base
+    const syncedEquipment = loadEquippedItemsFromCache();
+
+    // Sync with player equipment IDs
+    Object.keys(syncedEquipment).forEach((slotKey) => {
+      const slot = slotKey as EquipmentSlot;
+      const itemId = player.equipment[slot];
+
+      if (!itemId) {
+        // Game state says slot is empty
+        syncedEquipment[slot] = null;
+      } else {
+        // Game state has an item ID
+        const currentlyEquipped = equipmentState.equipped[slot];
+
+        // If we already have the correct item locally, keep it
+        if (currentlyEquipped?.id === itemId) {
+          syncedEquipment[slot] = currentlyEquipped;
+        }
+        // Otherwise try to find in cache (loaded above)
+        else if (syncedEquipment[slot]?.id === itemId) {
+          // Cache has the correct item, use it
+        }
+        // Last resort: look in inventory (for items being equipped from outside this hook)
+        else {
+          const inventorySlot = mainInventory.items.find(
+            invSlot => invSlot.item?.id === itemId
+          );
+          if (inventorySlot?.item) {
+            syncedEquipment[slot] = inventorySlot.item;
+          }
+        }
+      }
+    });
+
+    // Only update if equipment actually changed to prevent infinite loops
+    const hasChanges = Object.keys(syncedEquipment).some((slotKey) => {
+      const slot = slotKey as EquipmentSlot;
+      return syncedEquipment[slot]?.id !== equipmentState.equipped[slot]?.id;
+    });
+
+    if (hasChanges) {
+      console.log('🔄 [useEquipment] Syncing equipment state with game state');
+      setEquipmentState(prev => ({
+        ...prev,
+        equipped: syncedEquipment
+      }));
+      // Save to cache after sync
+      saveEquippedItemsToCache(syncedEquipment);
+    }
+  }, [gameState.state.player?.id, gameState.state.player?.equipment, inventoryState.containers.main, equipmentState.equipped, loadEquippedItemsFromCache, saveEquippedItemsToCache]);
 
   // Calculate base stats from level and class
   const getBaseStats = useCallback((): PlayerStats => {
@@ -520,14 +642,19 @@ export const useEquipment = () => {
       }
 
       // Step 2: Update equipment state (atomic swap)
+      const newEquipped = {
+        ...equipmentState.equipped,
+        [targetSlot]: item
+      };
+
       setEquipmentState(prev => ({
         ...prev,
-        equipped: {
-          ...prev.equipped,
-          [targetSlot]: item
-        },
+        equipped: newEquipped,
         lastEquipTime: new Date()
       }));
+
+      // Save to cache for persistence across remounts
+      saveEquippedItemsToCache(newEquipped);
 
       // Step 3: If there was an old item, add it back to inventory
       if (currentItem) {
@@ -552,7 +679,7 @@ export const useEquipment = () => {
       if (gameState.state.player) {
         gameState.dispatch({
           type: 'EQUIP_ITEM',
-          payload: { playerId: gameState.state.player.id, itemId: item.id }
+          payload: { slot: targetSlot, itemId: item.id }
         });
       }
 
@@ -671,14 +798,19 @@ export const useEquipment = () => {
       }
 
       // Update equipment state
+      const newEquipped = {
+        ...equipmentState.equipped,
+        [slot]: null
+      };
+
       setEquipmentState(prev => ({
         ...prev,
-        equipped: {
-          ...prev.equipped,
-          [slot]: null
-        },
+        equipped: newEquipped,
         lastEquipTime: new Date()
       }));
+
+      // Save to cache for persistence across remounts
+      saveEquippedItemsToCache(newEquipped);
 
       // Calculate stat changes (loss of stats)
       const statChanges: Partial<PlayerStats> = {};

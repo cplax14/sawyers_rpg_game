@@ -81,7 +81,7 @@ Generated from: `docs/ai_dev_tasks/prd-equipment-system.md`
   - [x] 5.9 Create validation result cache to improve performance for repeated checks - COMPLETE: Implemented LRU (Least Recently Used) cache for `checkEquipmentCompatibility()` with 100-entry limit. Cache key based on item ID, slot, player level, class, stats, and current equipment. Added `clearCompatibilityCache()` for cache invalidation and `getCompatibilityCacheStats()` for monitoring (hits, misses, size, hit rate). Created comprehensive test suite with 17 tests covering cache hits/misses, performance improvements, LRU eviction, cache invalidation, statistics tracking, and result correctness. All 139 equipment utility tests pass.
 
 - [ ] 6.0 Create Equipment UI Components and Interactions
-  - [ ] 6.1 Update `EquipmentScreen.tsx` to wire up `handleSlotClick` to open selection modal correctly
+  - [x] 6.1 Update `EquipmentScreen.tsx` to wire up `handleSlotClick` to open selection modal correctly - COMPLETE: Updated `EquipmentSelectionModal` to use new validation API (`.canEquip` instead of `.compatible`, `.reasons` instead of `.unmetRequirements`), fixed `formatStatModifiers` to use plain number values, updated `EquipmentRestrictions` component to use new `EquipmentCompatibility` type with `.canEquip`, `.reasons`, `.warnings`, `.suggestions`. Modal now correctly opens with validation working.
   - [ ] 6.2 Fix `handleItemSelected` to properly validate and trigger equip confirmation
   - [ ] 6.3 Update `handleConfirmEquip` to call `equipItem` from useEquipment hook
   - [ ] 6.4 Update `handleConfirmUnequip` to call `unequipItem` from useEquipment hook
