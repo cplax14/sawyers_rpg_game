@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Card } from '../atoms/Card';
 import { EnhancedItem, StatModifier } from '../../types/inventory';
@@ -330,8 +330,8 @@ export const StatComparison: React.FC<StatComparisonProps> = ({
     }
 
     allStats.forEach(stat => {
-      const currentBonus = currentItem?.statModifiers?.[stat]?.value || 0;
-      const newBonus = newItem.statModifiers?.[stat]?.value || 0;
+      const currentBonus = currentItem?.statModifiers?.[stat] || 0;
+      const newBonus = newItem.statModifiers?.[stat] || 0;
       const change = newBonus - currentBonus;
 
       const baseValue = baseStats[stat] || 10;

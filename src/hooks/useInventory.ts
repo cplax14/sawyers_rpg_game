@@ -42,13 +42,20 @@ const DEFAULT_INVENTORY_CONFIG = {
 };
 
 // Convert ReactItem to EnhancedItem
+// Note: This helper is used during initialization. The equipped flag is added dynamically
+// by the inventory hook based on current equipment state.
 const convertToEnhancedItem = (reactItem: ReactItem): EnhancedItem => {
+  // Check if item already has equipmentSlot (for test mocks and pre-converted items)
+  const hasExplicitSlot = 'equipmentSlot' in reactItem && reactItem.equipmentSlot !== undefined;
+
   return {
     ...reactItem,
     category: reactItem.type === 'consumable' ? 'consumables' :
               reactItem.type === 'material' ? 'materials' :
               reactItem.type === 'quest' ? 'quest' : 'equipment',
-    equipmentSlot: reactItem.type === 'weapon' ? 'weapon' :
+    // Preserve explicit equipmentSlot if provided, otherwise infer from type
+    equipmentSlot: hasExplicitSlot ? (reactItem as any).equipmentSlot :
+                   reactItem.type === 'weapon' ? 'weapon' :
                    reactItem.type === 'armor' ? 'armor' :
                    reactItem.type === 'accessory' ? 'accessory' : undefined,
     equipmentSubtype: reactItem.subtype as any,
@@ -70,6 +77,29 @@ const convertToEnhancedItem = (reactItem: ReactItem): EnhancedItem => {
 export const useInventory = () => {
   const gameState = useGameState();
   const { saveGame } = useSaveSystem();
+
+  // Helper function to check if an item is currently equipped
+  const isItemEquipped = useCallback((itemId: string): boolean => {
+    const equipment = gameState.state.player?.equipment;
+    if (!equipment) return false;
+
+    // Check all equipment slots (10-slot system)
+    const equippedItemIds = [
+      equipment.weapon,
+      equipment.armor,
+      equipment.accessory,
+      equipment.helmet,
+      equipment.necklace,
+      equipment.shield,
+      equipment.gloves,
+      equipment.boots,
+      equipment.ring1,
+      equipment.ring2,
+      equipment.charm
+    ];
+
+    return equippedItemIds.includes(itemId);
+  }, [gameState.state.player?.equipment]);
 
   // Enhanced inventory state
   const [inventoryState, setInventoryState] = useState<InventoryState>(() => {
@@ -96,7 +126,7 @@ export const useInventory = () => {
         equipmentSlots: [],
         usableOnly: false,
         tradableOnly: false,
-        showEquipped: true,
+        showEquipped: false, // By default, hide equipped items from inventory view
         searchText: ''
       },
       sortBy: 'name',
@@ -128,12 +158,43 @@ export const useInventory = () => {
         equipmentSlots: [],
         usableOnly: false,
         tradableOnly: false,
-        showEquipped: true,
+        showEquipped: false, // By default, hide equipped items from inventory view
         searchText: ''
       },
       savedFilters: {}
     };
   });
+
+  // Sync inventory state when game context inventory changes
+  // This is critical for tests and multi-hook scenarios where context is updated externally
+  useEffect(() => {
+    const contextInventory = gameState.state.inventory;
+
+    // Update main container items to match context
+    setInventoryState(prev => {
+      const mainContainer: InventoryContainer = {
+        ...prev.containers.main,
+        items: contextInventory.map((item, index) => ({
+          slotId: `main_${index}`,
+          item: convertToEnhancedItem(item),
+          quantity: item.quantity,
+          locked: false,
+          metadata: {
+            isFavorite: false,
+            isNew: false,
+            lastModified: new Date()
+          }
+        }))
+      };
+
+      return {
+        ...prev,
+        containers: { ...prev.containers, main: mainContainer },
+        usedCapacity: contextInventory.length,
+        totalWeight: contextInventory.reduce((sum, item) => sum + (item.quantity || 1), 0)
+      };
+    });
+  }, [gameState.state.inventory]);
 
   // Event listeners
   const [eventListeners, setEventListeners] = useState<Set<InventoryEventCallback>>(new Set());
@@ -206,11 +267,19 @@ export const useInventory = () => {
     containerId: string = 'main'
   ): Promise<InventoryOperation> => {
     const operationId = generateOperationId();
+
+    /**
+     * TASK 4.5: Clear equipped flag when adding items to inventory
+     * Items being unequipped should not retain their equipped status in inventory.
+     * Create a clean copy of the item without the equipped flag.
+     */
+    const cleanItem = item.equipped ? { ...item, equipped: false } : item;
+
     const operation: InventoryOperation = {
       id: operationId,
       type: 'add',
       timestamp: new Date(),
-      item,
+      item: cleanItem,
       quantity,
       result: 'failed',
       error: undefined
@@ -222,17 +291,23 @@ export const useInventory = () => {
         throw new InventoryException(InventoryError.INVALID_OPERATION, `Container ${containerId} not found`);
       }
 
-      // Check capacity
-      if (container.items.filter(slot => slot.item !== null).length >= container.capacity) {
+      // Check capacity (TASK 4.6: exclude equipped items from capacity check)
+      const nonEquippedItemCount = container.items.filter(slot =>
+        slot.item !== null && !isItemEquipped(slot.item.id)
+      ).length;
+
+      if (nonEquippedItemCount >= container.capacity) {
         throw new InventoryException(InventoryError.INVENTORY_FULL, 'Inventory is full');
       }
 
       // Check if item can stack with existing items
+      // TASK 4.8: Exclude equipped items from stacking - they must remain separate
       let targetSlot: InventorySlot | null = null;
-      if (item.stackable) {
+      if (cleanItem.stackable) {
         targetSlot = container.items.find(slot =>
-          slot.item?.id === item.id &&
-          slot.quantity < slot.item.maxStack
+          slot.item?.id === cleanItem.id &&
+          slot.quantity < slot.item.maxStack &&
+          !isItemEquipped(slot.item.id) // Don't stack with equipped items
         ) || null;
       }
 
@@ -257,9 +332,9 @@ export const useInventory = () => {
         }
       }
 
-      // Update slot
+      // Update slot with clean item (equipped flag removed)
       if (targetSlot.item === null) {
-        targetSlot.item = item;
+        targetSlot.item = cleanItem;
         targetSlot.quantity = quantity;
       } else {
         targetSlot.quantity += quantity;
@@ -277,25 +352,25 @@ export const useInventory = () => {
           ...prev.containers,
           [containerId]: container
         },
-        usedCapacity: prev.usedCapacity + (targetSlot?.item === item ? 0 : 1),
+        usedCapacity: prev.usedCapacity + (targetSlot?.item === cleanItem ? 0 : 1),
         totalWeight: prev.totalWeight + quantity,
         recentOperations: [operation, ...prev.recentOperations.slice(0, 49)]
       }));
 
-      // Update game state for backward compatibility
+      // Update game state for backward compatibility (use clean item)
       gameState.addItems([{
-        ...item,
+        ...cleanItem,
         quantity
       } as ReactItem]);
 
       operation.result = 'success';
       operation.targetSlot = targetSlot.slotId;
 
-      // Emit event
+      // Emit event (use clean item)
       emitEvent({
         type: 'item_added',
         timestamp: new Date(),
-        item,
+        item: cleanItem,
         quantity,
         container: containerId,
         slot: targetSlot.slotId,
@@ -335,6 +410,14 @@ export const useInventory = () => {
       const targetSlot = container.items.find(slot => slot.item?.id === itemId);
       if (!targetSlot || !targetSlot.item) {
         throw new InventoryException(InventoryError.ITEM_NOT_FOUND, `Item ${itemId} not found`);
+      }
+
+      // TASK 4.4: Prevent removal of equipped items
+      if (isItemEquipped(itemId)) {
+        throw new InventoryException(
+          InventoryError.INVALID_OPERATION,
+          "You can't remove an equipped item! Unequip it first."
+        );
       }
 
       if (targetSlot.quantity < quantity) {
@@ -386,7 +469,105 @@ export const useInventory = () => {
       operation.error = error instanceof InventoryException ? error.message : String(error);
       return operation;
     }
-  }, [inventoryState, generateOperationId, gameState, emitEvent]);
+  }, [inventoryState, generateOperationId, gameState, emitEvent, isItemEquipped]);
+
+  // Drop item from inventory (permanently destroy)
+  const dropItem = useCallback(async (
+    itemId: string,
+    quantity: number = 1,
+    containerId: string = 'main'
+  ): Promise<InventoryOperation> => {
+    const operationId = generateOperationId();
+    const operation: InventoryOperation = {
+      id: operationId,
+      type: 'drop',
+      timestamp: new Date(),
+      item: {} as EnhancedItem,
+      quantity,
+      result: 'failed'
+    };
+
+    try {
+      const container = inventoryState.containers[containerId];
+      if (!container) {
+        throw new InventoryException(InventoryError.INVALID_OPERATION, `Container ${containerId} not found`);
+      }
+
+      const targetSlot = container.items.find(slot => slot.item?.id === itemId);
+      if (!targetSlot || !targetSlot.item) {
+        throw new InventoryException(InventoryError.ITEM_NOT_FOUND, `Item ${itemId} not found`);
+      }
+
+      // Check if item can be dropped
+      if (!targetSlot.item.canDrop) {
+        throw new InventoryException(
+          InventoryError.INVALID_OPERATION,
+          'This item cannot be dropped (quest item or special item)'
+        );
+      }
+
+      // Prevent dropping equipped items
+      if (isItemEquipped(itemId)) {
+        throw new InventoryException(
+          InventoryError.INVALID_OPERATION,
+          "You can't drop an equipped item! Unequip it first."
+        );
+      }
+
+      if (targetSlot.quantity < quantity) {
+        throw new InventoryException(InventoryError.INVALID_QUANTITY, 'Insufficient quantity to drop');
+      }
+
+      operation.item = targetSlot.item;
+      operation.sourceSlot = targetSlot.slotId;
+
+      // Update quantity or remove item
+      const remainingQuantity = targetSlot.quantity - quantity;
+      if (remainingQuantity === 0) {
+        targetSlot.item = null;
+        targetSlot.quantity = 0;
+      } else {
+        targetSlot.quantity = remainingQuantity;
+      }
+
+      // Update inventory state
+      setInventoryState(prev => ({
+        ...prev,
+        containers: {
+          ...prev.containers,
+          [containerId]: container
+        },
+        usedCapacity: remainingQuantity === 0 ? prev.usedCapacity - 1 : prev.usedCapacity,
+        totalWeight: prev.totalWeight - quantity,
+        recentOperations: [operation, ...prev.recentOperations.slice(0, 49)]
+      }));
+
+      // Update game state for backward compatibility
+      gameState.removeItem(itemId, quantity);
+
+      operation.result = 'success';
+
+      // Emit event
+      emitEvent({
+        type: 'item_dropped',
+        timestamp: new Date(),
+        item: operation.item,
+        quantity,
+        container: containerId,
+        slot: targetSlot.slotId,
+        metadata: { operationId, droppedPermanently: true }
+      });
+
+      console.log(`✅ Dropped ${quantity}x ${operation.item.name} from inventory`);
+
+      return operation;
+
+    } catch (error) {
+      operation.error = error instanceof InventoryException ? error.message : String(error);
+      console.error('❌ Failed to drop item:', operation.error);
+      return operation;
+    }
+  }, [inventoryState, generateOperationId, gameState, emitEvent, isItemEquipped]);
 
   // Use item with comprehensive effect application
   const useItem = useCallback(async (itemId: string, quantity: number = 1): Promise<UseItemResult> => {
@@ -404,6 +585,16 @@ export const useInventory = () => {
       }
 
       const item = targetSlot.item;
+
+      // TASK 8.2: Check if item is equipped (can't consume equipped items)
+      if (isItemEquipped(itemId)) {
+        return {
+          success: false,
+          consumed: false,
+          effects: [],
+          message: "You can't use an equipped item! Unequip it first."
+        };
+      }
 
       // Check if item can be used
       if (!item.usable && item.itemType !== 'consumable') {
@@ -645,8 +836,12 @@ export const useInventory = () => {
     }
 
     // Check if item can be stacked with existing items
+    // TASK 4.8: Exclude equipped items from stacking - isItemEquipped check
     const existingSlot = container.items.find(slot =>
-      slot.item && canStackItems(item, slot.item) && slot.item.quantity! + quantity <= (slot.item.maxStack || 99)
+      slot.item &&
+      canStackItems(item, slot.item) &&
+      slot.item.quantity! + quantity <= (slot.item.maxStack || 99) &&
+      !isItemEquipped(slot.item.id) // Don't stack with equipped items
     );
 
     if (existingSlot && existingSlot.item) {
@@ -698,7 +893,26 @@ export const useInventory = () => {
       // Add as new item using existing addItem logic
       return await addItem(item, quantity, containerId);
     }
-  }, [inventoryState, setInventoryState, generateOperationId, emitEvent, addItem]);
+  }, [inventoryState, setInventoryState, generateOperationId, emitEvent, addItem, isItemEquipped]);
+
+  // Helper function to mark items with equipped flag
+  const markEquippedItems = useCallback((slots: InventorySlot[]): InventorySlot[] => {
+    return slots.map(slot => {
+      if (!slot.item) return slot;
+
+      // Check if this item is currently equipped
+      const equipped = isItemEquipped(slot.item.id);
+
+      // Return slot with updated item that has equipped flag
+      return {
+        ...slot,
+        item: {
+          ...slot.item,
+          equipped
+        }
+      };
+    });
+  }, [isItemEquipped]);
 
   // Get filtered and sorted items
   const getFilteredItems = useCallback((
@@ -708,8 +922,18 @@ export const useInventory = () => {
     const container = inventoryState.containers[containerId];
     if (!container) return [];
 
-    const activeFilter = filter || container.filters;
+    const activeFilter: InventoryFilter = filter ? { ...container.filters, ...filter } : container.filters;
     let items = container.items.filter(slot => slot.item !== null);
+
+    // Mark items with equipped flag BEFORE filtering
+    items = markEquippedItems(items);
+
+    // Filter out equipped items by default (unless showEquipped is explicitly true)
+    // Default behavior: exclude equipped items (showEquipped defaults to false if undefined)
+    const shouldShowEquipped = activeFilter.showEquipped === true;
+    if (!shouldShowEquipped) {
+      items = items.filter(slot => !slot.item?.equipped);
+    }
 
     // Apply filters
     if (activeFilter.categories.length > 0) {
@@ -758,17 +982,19 @@ export const useInventory = () => {
     });
 
     return items;
-  }, [inventoryState]);
+  }, [inventoryState, markEquippedItems]);
 
   // Get items by category with convenience function
   const getItemsByCategory = useCallback((category: string, containerId: string = 'main'): EnhancedItem[] => {
     const container = inventoryState.containers[containerId];
     if (!container) return [];
 
-    return container.items
-      .filter(slot => slot.item && slot.item.category === category)
-      .map(slot => slot.item!);
-  }, [inventoryState]);
+    // Get items and mark them with equipped flag
+    const slots = container.items.filter(slot => slot.item && slot.item.category === category);
+    const markedSlots = markEquippedItems(slots);
+
+    return markedSlots.map(slot => slot.item!);
+  }, [inventoryState, markEquippedItems]);
 
   // Search items with convenience function
   const searchItems = useCallback((query: string, items?: EnhancedItem[]): EnhancedItem[] => {
@@ -784,15 +1010,22 @@ export const useInventory = () => {
     );
   }, [getFilteredItems]);
 
-  // Get total item count
+  // Get total item count (excluding equipped items)
+  // TASK 4.6: Only count items in the bag, not equipped items
   const getTotalItemCount = useCallback((containerId: string = 'main'): number => {
     const container = inventoryState.containers[containerId];
     if (!container) return 0;
 
-    return container.items.reduce((total, slot) =>
-      total + (slot.item ? (slot.item.quantity || 1) : 0), 0
-    );
-  }, [inventoryState]);
+    // Only count items that are NOT equipped
+    return container.items.reduce((total, slot) => {
+      if (!slot.item) return total;
+
+      // Skip items that are currently equipped
+      if (isItemEquipped(slot.item.id)) return total;
+
+      return total + (slot.item.quantity || 1);
+    }, 0);
+  }, [inventoryState, isItemEquipped]);
 
   // Update container filter
   const updateFilter = useCallback((
@@ -901,6 +1134,7 @@ export const useInventory = () => {
     addItem,
     removeItem,
     useItem,
+    dropItem,
 
     // Stacking operations
     consolidateInventoryStacks,
@@ -911,6 +1145,7 @@ export const useInventory = () => {
     getItemsByCategory,
     searchItems,
     getTotalItemCount,
+    isItemEquipped, // Equipment integration
 
     // Filter and sort
     updateFilter,

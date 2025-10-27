@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePlayer } from '../../hooks/useGameState';
 import { useExperience } from '../../hooks/useExperience';
+import { ExperienceCalculator } from '../../utils/experienceUtils';
 
 interface ExperienceBarProps {
   showTooltip?: boolean;
@@ -42,15 +43,18 @@ export const ExperienceBar: React.FC<ExperienceBarProps> = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const { player } = usePlayer();
-  const { breakdown, calculateLevelFromExperience, getExperienceForLevel } = useExperience();
+  const { breakdown } = useExperience();
 
   if (!player) return null;
 
+  // ALWAYS calculate level from XP (source of truth)
   const currentXP = player.experience || 0;
-  const currentLevel = calculateLevelFromExperience(currentXP);
+  const currentLevel = ExperienceCalculator.calculateLevel(currentXP);
   const nextLevel = currentLevel + 1;
-  const requiredForNext = getExperienceForLevel(nextLevel);
-  const requiredForCurrent = getExperienceForLevel(currentLevel);
+
+  // Calculate XP needed for next level
+  const requiredForNext = ExperienceCalculator.calculateRequiredXP(nextLevel);
+  const requiredForCurrent = ExperienceCalculator.calculateRequiredXP(currentLevel);
   const progressXP = currentXP - requiredForCurrent;
   const neededXP = requiredForNext - requiredForCurrent;
   const progressPercentage = Math.min((progressXP / neededXP) * 100, 100);
@@ -75,7 +79,7 @@ export const ExperienceBar: React.FC<ExperienceBarProps> = ({
           <div className="level-info">
             <span className="current-level">Level {currentLevel}</span>
             <span className="xp-info">
-              {formatNumber(progressXP)} / {formatNumber(neededXP)} XP
+              {formatNumber(progressXP)} / {formatNumber(neededXP)} XP to Level {nextLevel}
             </span>
           </div>
           <div className="next-level">

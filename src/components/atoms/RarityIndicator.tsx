@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-export type ItemRarity = 'common' | 'rare' | 'epic' | 'legendary' | 'artifact' | 'unique';
+export type ItemRarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary' | 'artifact' | 'unique';
 
 export interface RarityConfig {
   name: string;
@@ -26,6 +26,17 @@ export const RARITY_CONFIGS: Record<ItemRarity, RarityConfig> = {
     textColor: '#f0fdf4',
     icon: '●',
     dropRate: 0.60
+  },
+  uncommon: {
+    name: 'Uncommon',
+    color: '#10b981',
+    gradientStart: '#10b981',
+    gradientEnd: '#059669',
+    borderColor: '#10b981',
+    glowColor: 'rgba(16, 185, 129, 0.4)',
+    textColor: '#ecfdf5',
+    icon: '◆',
+    dropRate: 0.30
   },
   rare: {
     name: 'Rare',
@@ -108,6 +119,10 @@ export const RarityIndicator: React.FC<RarityIndicatorProps> = ({
   onClick
 }) => {
   const config = RARITY_CONFIGS[rarity];
+  if (!config) {
+    console.warn(`⚠️ Unknown rarity "${rarity}", falling back to "common". Valid rarities:`, Object.keys(RARITY_CONFIGS));
+    return <RarityIndicator {...{ rarity: 'common', variant, size, showIcon, showText, animated, className, style, onClick }} />;
+  }
 
   // Size configurations
   const sizeConfig: Record<'small' | 'medium' | 'large', {
@@ -255,13 +270,45 @@ export const RarityIndicator: React.FC<RarityIndicatorProps> = ({
     whileTap: onClick ? { scale: 0.95 } : {}
   } : {};
 
+  if (animated) {
+    return (
+      <Component
+        className={`rarity-indicator rarity-${rarity} ${className}`}
+        style={componentStyle}
+        onClick={onClick}
+        title={`${config.name} (${(config.dropRate * 100).toFixed(1)}% drop rate)`}
+        {...animationProps}
+      >
+        {showIcon && (
+          <span
+            className="rarity-icon"
+            style={{ fontSize: currentSize.iconSize }}
+          >
+            {config.icon}
+          </span>
+        )}
+
+        {showText && (
+          <span className="rarity-text">
+            {config.name}
+          </span>
+        )}
+
+        {!showIcon && !showText && variant === 'dot' && (
+          <span style={{ fontSize: currentSize.iconSize }}>
+            {config.icon}
+          </span>
+        )}
+      </Component>
+    );
+  }
+
   return (
-    <Component
+    <span
       className={`rarity-indicator rarity-${rarity} ${className}`}
       style={componentStyle}
       onClick={onClick}
       title={`${config.name} (${(config.dropRate * 100).toFixed(1)}% drop rate)`}
-      {...animationProps}
     >
       {showIcon && (
         <span
@@ -283,7 +330,7 @@ export const RarityIndicator: React.FC<RarityIndicatorProps> = ({
           {config.icon}
         </span>
       )}
-    </Component>
+    </span>
   );
 };
 
@@ -306,7 +353,7 @@ export const isHighRarity = (rarity: ItemRarity): boolean => {
 };
 
 export const sortByRarity = (items: { rarity: ItemRarity }[]): { rarity: ItemRarity }[] => {
-  const rarityOrder: ItemRarity[] = ['unique', 'artifact', 'legendary', 'epic', 'rare', 'common'];
+  const rarityOrder: ItemRarity[] = ['unique', 'artifact', 'legendary', 'epic', 'rare', 'uncommon', 'common'];
   return items.sort((a, b) => {
     return rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity);
   });
@@ -334,7 +381,7 @@ export const RarityText: React.FC<Pick<RarityIndicatorProps, 'rarity' | 'size'>>
   <RarityIndicator {...props} variant="text" showIcon={false} showText={true} />
 );
 
-export const RarityBorder: React.FC<Pick<RarityIndicatorProps, 'rarity' | 'size' | 'children'> & { children: React.ReactNode }> = ({
+export const RarityBorder: React.FC<Pick<RarityIndicatorProps, 'rarity' | 'size'> & { children: React.ReactNode }> = ({
   children,
   ...props
 }) => (

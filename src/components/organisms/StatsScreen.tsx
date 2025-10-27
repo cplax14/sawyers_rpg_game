@@ -6,7 +6,7 @@ import { ExperienceBar } from '../molecules/ExperienceBar';
 import { useReactGame } from '../../contexts/ReactGameContext';
 // import { useExperience } from '../../hooks/useExperience';
 // import { usePlayer } from '../../hooks/useGameState';
-// import { useEquipment } from '../../hooks/useEquipment';
+import { useEquipment } from '../../hooks/useEquipment';
 import { useResponsive } from '../../hooks';
 import { ExperienceSource } from '../../types/experience';
 import { ExperienceCalculator, createExperienceCalculations, formatExperienceNumber } from '../../utils/experienceUtils';
@@ -172,7 +172,8 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({
 
   // Use player data from ReactGameContext
   const player = state.player;
-  const playerLevel = player?.level || 1;
+  // Calculate level from experience instead of using stored level
+  const playerLevel = player?.experience ? ExperienceCalculator.calculateLevel(player.experience) : 1;
 
   // Debug: Check if values are NaN and log once
   React.useEffect(() => {
@@ -213,10 +214,8 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({
   const isLoading = false;
   const error = null;
 
-  // Mock equipment data
-  const equipmentStats = { attack: 0, defense: 0, magicAttack: 0, magicDefense: 0, speed: 0, accuracy: 0 };
-  const finalStats = player?.baseStats || { attack: 10, defense: 10, magicAttack: 10, magicDefense: 10, speed: 10, accuracy: 85 };
-  const equipped = {};
+  // Use actual equipment hook for real stats
+  const { finalStats, equipped, equipmentStats } = useEquipment();
 
   // Local state
   const [viewMode, setViewMode] = useState<StatsViewMode>('overview');
@@ -700,7 +699,10 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   {Object.entries(derivedStats.statBreakdowns)
-                    .filter(([stat]) => ['attack', 'defense', 'magicAttack', 'magicDefense', 'speed', 'accuracy'].includes(stat))
+                    .filter(([stat, statCalc]) =>
+                      ['attack', 'defense', 'magicAttack', 'magicDefense', 'speed', 'accuracy'].includes(stat) &&
+                      statCalc && typeof statCalc === 'object' && 'finalValue' in statCalc
+                    )
                     .map(([statName, statCalc]) => (
                       <div key={statName} style={{
                         background: 'rgba(255, 255, 255, 0.03)',

@@ -14,8 +14,10 @@ const ItemData = {
             description: "A sturdy blade forged from iron. Reliable in battle.",
             type: "weapon",
             weaponType: "sword",
+            equipmentSlot: "weapon",
+            equipmentSubtype: "sword",
             rarity: "common",
-            stats: { attack: 15, accuracy: 85 },
+            statModifiers: { attack: 15, accuracy: 5 },
             requirements: { classes: ["knight", "paladin"] },
             value: 250,
             icon: "⚔️"
@@ -25,8 +27,10 @@ const ItemData = {
             description: "A well-crafted steel blade with superior balance.",
             type: "weapon",
             weaponType: "sword",
+            equipmentSlot: "weapon",
+            equipmentSubtype: "sword",
             rarity: "uncommon",
-            stats: { attack: 25, accuracy: 90, critical: 5 },
+            statModifiers: { attack: 25, accuracy: 8 },
             requirements: { classes: ["knight", "paladin"], level: 5 },
             value: 500,
             icon: "🗡️"
@@ -36,21 +40,25 @@ const ItemData = {
             description: "A holy weapon blessed by divine powers.",
             type: "weapon",
             weaponType: "mace",
+            equipmentSlot: "weapon",
+            equipmentSubtype: "mace",
             rarity: "uncommon",
-            stats: { attack: 20, magicAttack: 10, accuracy: 80 },
+            statModifiers: { attack: 20, magicAttack: 10, accuracy: 5 },
             requirements: { classes: ["paladin"] },
             value: 400,
             icon: "🔨"
         },
-        
+
         // Wizard Weapons
         oak_staff: {
             name: "Oak Staff",
             description: "A simple wooden staff that enhances magical abilities.",
             type: "weapon",
             weaponType: "staff",
+            equipmentSlot: "weapon",
+            equipmentSubtype: "staff",
             rarity: "common",
-            stats: { magicAttack: 20, mp: 10, accuracy: 75 },
+            statModifiers: { magicAttack: 20, accuracy: 5 },
             requirements: { classes: ["wizard"] },
             value: 200,
             icon: "🪄"
@@ -60,21 +68,25 @@ const ItemData = {
             description: "A staff topped with a magical crystal that amplifies spells.",
             type: "weapon",
             weaponType: "staff",
+            equipmentSlot: "weapon",
+            equipmentSubtype: "staff",
             rarity: "rare",
-            stats: { magicAttack: 35, mp: 20, accuracy: 85, critical: 10 },
+            statModifiers: { magicAttack: 35, accuracy: 10 },
             requirements: { classes: ["wizard"], level: 8 },
             value: 800,
             icon: "✨"
         },
-        
+
         // Rogue Weapons
         steel_dagger: {
             name: "Steel Dagger",
             description: "A sharp, lightweight blade perfect for quick strikes.",
             type: "weapon",
             weaponType: "dagger",
+            equipmentSlot: "weapon",
+            equipmentSubtype: "dagger",
             rarity: "common",
-            stats: { attack: 12, speed: 10, critical: 15 },
+            statModifiers: { attack: 12, speed: 10 },
             requirements: { classes: ["rogue"] },
             value: 180,
             icon: "🗡️"
@@ -84,22 +96,26 @@ const ItemData = {
             description: "A dagger coated with deadly poison.",
             type: "weapon",
             weaponType: "dagger",
+            equipmentSlot: "weapon",
+            equipmentSubtype: "dagger",
             rarity: "uncommon",
-            stats: { attack: 18, speed: 12, critical: 20 },
+            statModifiers: { attack: 18, speed: 12 },
             effects: ["poison_chance"],
             requirements: { classes: ["rogue"], level: 6 },
             value: 450,
             icon: "🗡️"
         },
-        
+
         // Ranger Weapons
         hunting_bow: {
             name: "Hunting Bow",
             description: "A reliable bow for hunting and combat.",
             type: "weapon",
             weaponType: "bow",
+            equipmentSlot: "weapon",
+            equipmentSubtype: "bow",
             rarity: "common",
-            stats: { attack: 18, accuracy: 95, speed: 5 },
+            statModifiers: { attack: 18, accuracy: 12, speed: 5 },
             requirements: { classes: ["ranger"] },
             value: 300,
             icon: "🏹"
@@ -109,21 +125,25 @@ const ItemData = {
             description: "A masterwork bow crafted by elven artisans.",
             type: "weapon",
             weaponType: "bow",
+            equipmentSlot: "weapon",
+            equipmentSubtype: "bow",
             rarity: "rare",
-            stats: { attack: 30, accuracy: 98, speed: 8, critical: 12 },
+            statModifiers: { attack: 30, accuracy: 15, speed: 8 },
             requirements: { classes: ["ranger"], level: 10 },
             value: 900,
             icon: "🏹"
         },
-        
+
         // Warrior Weapons
         battle_axe: {
             name: "Battle Axe",
             description: "A heavy axe designed for devastating attacks.",
             type: "weapon",
             weaponType: "axe",
+            equipmentSlot: "weapon",
+            equipmentSubtype: "axe",
             rarity: "common",
-            stats: { attack: 22, critical: 10, accuracy: 75 },
+            statModifiers: { attack: 22, accuracy: 5 },
             requirements: { classes: ["warrior"] },
             value: 320,
             icon: "🪓"
@@ -133,8 +153,10 @@ const ItemData = {
             description: "A massive two-handed axe that cleaves through enemies.",
             type: "weapon",
             weaponType: "axe",
+            equipmentSlot: "weapon",
+            equipmentSubtype: "axe",
             rarity: "uncommon",
-            stats: { attack: 35, critical: 15, accuracy: 70 },
+            statModifiers: { attack: 35, accuracy: 5 },
             requirements: { classes: ["warrior"], level: 7 },
             value: 650,
             icon: "🪓"
@@ -151,8 +173,10 @@ const ItemData = {
             description: "Basic protection made from treated leather.",
             type: "armor",
             armorType: "light",
+            equipmentSlot: "armor",
+            equipmentSubtype: "chestplate",
             rarity: "common",
-            stats: { defense: 8, speed: -2 },
+            statModifiers: { defense: 8, maxHp: 10 },
             requirements: {},
             value: 150,
             icon: "🦺"
@@ -162,8 +186,10 @@ const ItemData = {
             description: "A lightweight vest that doesn't restrict movement.",
             type: "armor",
             armorType: "light",
+            equipmentSlot: "armor",
+            equipmentSubtype: "chestplate",
             rarity: "common",
-            stats: { defense: 6, speed: 2 },
+            statModifiers: { defense: 6, speed: 5, maxHp: 8 },
             requirements: { classes: ["rogue"] },
             value: 120,
             icon: "🦺"
@@ -173,8 +199,10 @@ const ItemData = {
             description: "Simple robes that enhance magical focus.",
             type: "armor",
             armorType: "robe",
+            equipmentSlot: "armor",
+            equipmentSubtype: "chestplate",
             rarity: "common",
-            stats: { defense: 4, magicDefense: 12, mp: 15 },
+            statModifiers: { defense: 4, magicDefense: 12, maxMp: 15 },
             requirements: { classes: ["wizard"] },
             value: 100,
             icon: "👘"
@@ -184,21 +212,25 @@ const ItemData = {
             description: "A cloak that provides camouflage and protection.",
             type: "armor",
             armorType: "light",
+            equipmentSlot: "armor",
+            equipmentSubtype: "chestplate",
             rarity: "common",
-            stats: { defense: 7, speed: 3, accuracy: 5 },
+            statModifiers: { defense: 7, speed: 5, accuracy: 8, maxHp: 10 },
             requirements: { classes: ["ranger"] },
             value: 180,
             icon: "🧥"
         },
-        
+
         // Medium Armor
         chain_mail: {
             name: "Chain Mail",
             description: "Interlocked metal rings provide solid protection.",
             type: "armor",
             armorType: "medium",
+            equipmentSlot: "armor",
+            equipmentSubtype: "chestplate",
             rarity: "common",
-            stats: { defense: 15, magicDefense: 8, speed: -5 },
+            statModifiers: { defense: 15, magicDefense: 8, maxHp: 20 },
             requirements: { classes: ["knight", "paladin"] },
             value: 400,
             icon: "🛡️"
@@ -208,34 +240,40 @@ const ItemData = {
             description: "Overlapping metal scales offer flexible defense.",
             type: "armor",
             armorType: "medium",
+            equipmentSlot: "armor",
+            equipmentSubtype: "chestplate",
             rarity: "common",
-            stats: { defense: 18, speed: -3 },
+            statModifiers: { defense: 18, maxHp: 25 },
             requirements: { classes: ["warrior"] },
             value: 350,
             icon: "🛡️"
         },
-        
+
         // Heavy Armor
         plate_armor: {
             name: "Plate Armor",
             description: "Full body protection made from steel plates.",
             type: "armor",
             armorType: "heavy",
+            equipmentSlot: "armor",
+            equipmentSubtype: "chestplate",
             rarity: "uncommon",
-            stats: { defense: 25, magicDefense: 12, speed: -10 },
+            statModifiers: { defense: 25, magicDefense: 12, maxHp: 40 },
             requirements: { classes: ["knight", "paladin"], level: 8 },
             value: 800,
             icon: "🛡️"
         },
-        
+
         // Magical Robes
         mage_robes: {
             name: "Mage Robes",
             description: "Enchanted robes that amplify magical power.",
             type: "armor",
             armorType: "robe",
+            equipmentSlot: "armor",
+            equipmentSubtype: "chestplate",
             rarity: "uncommon",
-            stats: { defense: 8, magicDefense: 20, magicAttack: 10, mp: 25 },
+            statModifiers: { defense: 8, magicDefense: 20, magicAttack: 10, maxMp: 25 },
             requirements: { classes: ["wizard"], level: 5 },
             value: 600,
             icon: "👘"
@@ -250,8 +288,10 @@ const ItemData = {
             name: "Health Ring",
             description: "A ring that increases the wearer's vitality.",
             type: "accessory",
+            equipmentSlot: "ring",
+            equipmentSubtype: "ring",
             rarity: "common",
-            stats: { hp: 20 },
+            statModifiers: { maxHp: 20 },
             value: 200,
             icon: "💍"
         },
@@ -259,8 +299,10 @@ const ItemData = {
             name: "Mana Crystal",
             description: "A crystal pendant that stores magical energy.",
             type: "accessory",
+            equipmentSlot: "necklace",
+            equipmentSubtype: "necklace",
             rarity: "common",
-            stats: { mp: 30, magicAttack: 5 },
+            statModifiers: { maxMp: 30, magicAttack: 5 },
             value: 250,
             icon: "💎"
         },
@@ -268,8 +310,10 @@ const ItemData = {
             name: "Stealth Cloak",
             description: "A cloak that helps the wearer avoid detection.",
             type: "accessory",
+            equipmentSlot: "charm",
+            equipmentSubtype: "charm",
             rarity: "uncommon",
-            stats: { speed: 15, critical: 10 },
+            statModifiers: { speed: 15 },
             effects: ["stealth_bonus"],
             value: 400,
             icon: "🧥"
@@ -278,8 +322,10 @@ const ItemData = {
             name: "Holy Symbol",
             description: "A blessed amulet that protects against dark magic.",
             type: "accessory",
+            equipmentSlot: "necklace",
+            equipmentSubtype: "necklace",
             rarity: "uncommon",
-            stats: { magicDefense: 15, hp: 10 },
+            statModifiers: { magicDefense: 15, maxHp: 10 },
             effects: ["undead_resistance"],
             value: 350,
             icon: "✨"
@@ -288,8 +334,10 @@ const ItemData = {
             name: "Nature Charm",
             description: "A charm that connects the wearer to natural forces.",
             type: "accessory",
+            equipmentSlot: "charm",
+            equipmentSubtype: "charm",
             rarity: "uncommon",
-            stats: { hp: 15, mp: 15, accuracy: 10 },
+            statModifiers: { maxHp: 15, maxMp: 15, accuracy: 10 },
             effects: ["nature_affinity"],
             value: 300,
             icon: "🍀"
@@ -298,8 +346,10 @@ const ItemData = {
             name: "Strength Band",
             description: "A bracer that enhances physical power.",
             type: "accessory",
+            equipmentSlot: "charm",
+            equipmentSubtype: "charm",
             rarity: "common",
-            stats: { attack: 10, defense: 5 },
+            statModifiers: { attack: 10, defense: 5 },
             value: 180,
             icon: "💪"
         }

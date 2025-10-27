@@ -1,11 +1,13 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback, ReactNode } from 'react';
 import { AutoSaveManager } from '../utils/autoSave';
-import { InventoryState } from '../types/inventory';
+import { InventoryState, EquipmentSlot } from '../types/inventory';
 import { CreatureCollection, EnhancedCreature } from '../types/creatures';
 import { ExperienceState } from '../types/experience';
 import { removeExhaustion, calculateBreedingCost, generateOffspring, validateBreeding, applyExhaustion } from '../utils/breedingEngine';
 import { BreedingRecipe } from '../types/breeding';
 import { checkRecipeDiscoveryAfterCapture } from '../utils/recipeDiscovery';
+import { ExperienceCalculator } from '../utils/experienceUtils';
+import { cleanInvalidEquipment, migrateEquipmentSlots, EQUIPMENT_VERSION } from '../utils/equipmentValidation';
 
 // Global type declaration for auto-save manager
 declare global {
@@ -44,9 +46,20 @@ export interface PlayerStats {
 }
 
 export interface Equipment {
+  // Main equipment slots
   weapon: string | null; // Item ID
-  armor: string | null;  // Item ID
-  accessory: string | null; // Item ID
+  armor: string | null;  // Item ID (legacy - now maps to chestplate)
+  accessory: string | null; // Item ID (legacy - general accessory slot)
+
+  // Extended equipment slots (10-slot system)
+  helmet: string | null; // Item ID
+  necklace: string | null; // Item ID
+  shield: string | null; // Item ID
+  gloves: string | null; // Item ID
+  boots: string | null; // Item ID
+  ring1: string | null; // Item ID
+  ring2: string | null; // Item ID
+  charm: string | null; // Item ID
 }
 
 export interface ReactArea {
@@ -125,6 +138,18 @@ export interface ItemDrop {
   maxQuantity: number;
 }
 
+/**
+ * Game metadata for tracking system versions and save information
+ */
+export interface GameMetadata {
+  /** Equipment system version for migration tracking */
+  equipmentVersion?: string;
+  /** Timestamp when the game was last saved */
+  savedAt?: string;
+  /** Overall game version (for future use) */
+  gameVersion?: string;
+}
+
 // Main game state for React
 export interface ReactGameState {
   // Core game data
@@ -161,6 +186,9 @@ export interface ReactGameState {
     gold: number;
     items: ReactItem[];
     capturedMonsterId?: string; // Track which monster was just captured
+    didLevelUp?: boolean; // Track if player leveled up from this combat
+    previousLevel?: number; // Level before combat
+    newLevel?: number; // Level after combat
   } | null;
 
   // Game session data
@@ -178,6 +206,9 @@ export interface ReactGameState {
   breedingAttempts: number;
   discoveredRecipes: string[];
   breedingMaterials: Record<string, number>;
+
+  // System metadata for tracking versions and migrations
+  metadata?: GameMetadata;
 }
 
 export interface GameSettings {
@@ -241,7 +272,8 @@ export type ReactGameAction =
   | { type: 'ADD_ITEM'; payload: { item: ReactItem; quantity: number } }
   | { type: 'REMOVE_ITEM'; payload: { itemId: string; quantity: number } }
   | { type: 'USE_ITEM'; payload: { itemId: string } }
-  | { type: 'EQUIP_ITEM'; payload: { playerId: string; itemId: string } }
+  | { type: 'EQUIP_ITEM'; payload: { slot: EquipmentSlot; itemId: string } }
+  | { type: 'UNEQUIP_ITEM'; payload: { slot: EquipmentSlot } }
   | { type: 'ADD_TO_INVENTORY'; payload: ReactItem[] }
   | { type: 'REMOVE_FROM_INVENTORY'; payload: { itemId: string; quantity?: number } }
   | { type: 'UPDATE_ITEM_QUANTITY'; payload: { itemId: string; quantity: number } }
@@ -276,6 +308,41 @@ export type ReactGameAction =
   | { type: 'REMOVE_BREEDING_MATERIAL'; payload: { materialId: string; quantity: number } }
   | { type: 'APPLY_EXHAUSTION'; payload: { creatureId: string } }
   | { type: 'REMOVE_EXHAUSTION'; payload: { creatureId: string; levelsToRemove: number; costGold?: number } };
+
+/**
+ * Helper function to calculate player stats including equipment bonuses
+ * This ensures stats are always up-to-date when equipment changes
+ */
+function calculatePlayerStatsWithEquipment(
+  player: ReactPlayer,
+  inventory: ReactItem[]
+): PlayerStats {
+  // Start with base stats
+  const stats = { ...player.baseStats };
+
+  // Add bonuses from each equipped item
+  Object.values(player.equipment).forEach(itemId => {
+    if (!itemId) return;
+
+    // Find item in inventory
+    const item = inventory.find(invItem => invItem.id === itemId);
+    if (!item) return;
+
+    // Support both legacy 'stats' and new 'statModifiers' fields
+    const itemStats = item.stats || (item as any).statModifiers;
+    if (!itemStats) return;
+
+    // Add stat bonuses from equipment
+    stats.attack += itemStats.attack || 0;
+    stats.defense += itemStats.defense || 0;
+    stats.magicAttack += itemStats.magicAttack || 0;
+    stats.magicDefense += itemStats.magicDefense || 0;
+    stats.speed += itemStats.speed || 0;
+    stats.accuracy += itemStats.accuracy || 0;
+  });
+
+  return stats;
+}
 
 // Default settings
 const defaultSettings: GameSettings = {
@@ -449,8 +516,8 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
 
       const startingSpells = characterClassData?.startingSpells || [];
 
-      // This will be enhanced with actual class data
-      const baseStats = {
+      // Initialize base stats based on character class data
+      const baseStats: PlayerStats = characterClassData?.baseStats || {
         attack: 10,
         defense: 10,
         magicAttack: 10,
@@ -458,6 +525,7 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         speed: 10,
         accuracy: 85,
       };
+
       const newPlayer: ReactPlayer = {
         id: `player_${Date.now()}`,
         name,
@@ -468,14 +536,24 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         mp: 50,
         maxMp: 50,
         experience: 0,
-        experienceToNext: 100,
+        experienceToNext: 100, // Matches BASE_XP_PER_LEVEL from experienceUtils.ts
         gold: 100,
         baseStats,
         stats: { ...baseStats },
         equipment: {
+          // Legacy slots
           weapon: null,
           armor: null,
           accessory: null,
+          // Extended slots (10-slot system)
+          helmet: null,
+          necklace: null,
+          shield: null,
+          gloves: null,
+          boots: null,
+          ring1: null,
+          ring2: null,
+          charm: null,
         },
         spells: startingSpells,
       };
@@ -681,6 +759,11 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
       }
       const { experience, gold, items } = action.payload;
 
+      // Track level-up information
+      let didLevelUp = false;
+      let previousLevel = state.player?.level || 1;
+      let levelAfterCombat = previousLevel;
+
       // Add experience and gold to player
       let updatedPlayerFromCombat = state.player;
       if (updatedPlayerFromCombat) {
@@ -690,30 +773,39 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
           gold: updatedPlayerFromCombat.gold + gold
         };
 
-        // Check for level up
-        while (updatedPlayerFromCombat.experience >= updatedPlayerFromCombat.experienceToNext && updatedPlayerFromCombat.level < 100) {
+        // Check for level up using proper level calculation
+        const calculatedLevel = ExperienceCalculator.calculateLevel(updatedPlayerFromCombat.experience);
+        if (calculatedLevel > updatedPlayerFromCombat.level && calculatedLevel <= 100) {
+          // Player leveled up!
+          didLevelUp = true;
+          levelAfterCombat = calculatedLevel;
+          const levelDifference = calculatedLevel - updatedPlayerFromCombat.level;
+          console.log(`🎉 LEVEL UP! ${updatedPlayerFromCombat.level} → ${calculatedLevel} (gained ${levelDifference} levels)`);
+
           updatedPlayerFromCombat = {
             ...updatedPlayerFromCombat,
-            level: updatedPlayerFromCombat.level + 1,
-            experienceToNext: (updatedPlayerFromCombat.level + 1) * 100,
-            maxHp: updatedPlayerFromCombat.maxHp + 10,
-            maxMp: updatedPlayerFromCombat.maxMp + 5,
-            hp: updatedPlayerFromCombat.maxHp + 10,
-            mp: updatedPlayerFromCombat.maxMp + 5
+            level: calculatedLevel,
+            experienceToNext: ExperienceCalculator.getXPForNextLevel(updatedPlayerFromCombat.experience),
+            maxHp: updatedPlayerFromCombat.maxHp + (10 * levelDifference),
+            maxMp: updatedPlayerFromCombat.maxMp + (5 * levelDifference),
+            hp: updatedPlayerFromCombat.maxHp + (10 * levelDifference),
+            mp: updatedPlayerFromCombat.maxMp + (5 * levelDifference)
           };
         }
       }
 
       // Add items to inventory
       const updatedInventoryFromCombat = [...state.inventory];
-      items.forEach(newItem => {
-        const existingItemIndex = updatedInventoryFromCombat.findIndex(item => item.id === newItem.id);
-        if (existingItemIndex !== -1) {
-          updatedInventoryFromCombat[existingItemIndex].quantity += newItem.quantity;
-        } else {
-          updatedInventoryFromCombat.push(newItem);
-        }
-      });
+      if (items && Array.isArray(items)) {
+        items.forEach(newItem => {
+          const existingItemIndex = updatedInventoryFromCombat.findIndex(item => item.id === newItem.id);
+          if (existingItemIndex !== -1) {
+            updatedInventoryFromCombat[existingItemIndex].quantity += newItem.quantity;
+          } else {
+            updatedInventoryFromCombat.push(newItem);
+          }
+        });
+      }
 
       return {
         ...state,
@@ -721,7 +813,14 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         inventory: updatedInventoryFromCombat,
         currentEncounter: null,
         showVictoryModal: true,
-        lastCombatRewards: { experience, gold, items },
+        lastCombatRewards: {
+          experience,
+          gold,
+          items,
+          didLevelUp,
+          previousLevel,
+          newLevel: levelAfterCombat
+        },
         // Keep current screen as 'combat' to show victory modal, let VictoryModal handle navigation
         currentScreen: state.currentScreen
       };
@@ -741,10 +840,11 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
 
     case 'LEVEL_UP_PLAYER':
       if (!state.player) return state;
+      const newLevel = state.player.level + 1;
       const levelUpPlayer = {
         ...state.player,
-        level: state.player.level + 1,
-        experienceToNext: (state.player.level + 1) * 100, // Simple formula
+        level: newLevel,
+        experienceToNext: ExperienceCalculator.getXPForNextLevel(state.player.experience),
         maxHp: state.player.maxHp + 10,
         maxMp: state.player.maxMp + 5,
         hp: state.player.maxHp + 10, // Heal to full on level up
@@ -770,19 +870,35 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         incomingExpType: typeof action.payload.experience
       });
       const newExp = state.player.experience + action.payload.experience;
+
+      // Validate XP before updating
+      if (isNaN(newExp) || newExp < 0) {
+        console.error('❌ Invalid XP calculation!', {
+          currentXP: state.player.experience,
+          addedXP: action.payload.experience,
+          result: newExp
+        });
+        return state; // Don't update with invalid data
+      }
+
       console.log('🔍 ADD_EXPERIENCE Result:', { newExp, isNaN: isNaN(newExp) });
       let updatedPlayer = { ...state.player, experience: newExp };
 
-      // Check for level up
-      while (updatedPlayer.experience >= updatedPlayer.experienceToNext && updatedPlayer.level < 100) {
+      // Check for level up using proper level calculation
+      const calculatedLevel = ExperienceCalculator.calculateLevel(updatedPlayer.experience);
+      if (calculatedLevel > updatedPlayer.level && calculatedLevel <= 100) {
+        // Player leveled up!
+        const levelDifference = calculatedLevel - updatedPlayer.level;
+        console.log(`🎉 LEVEL UP! ${updatedPlayer.level} → ${calculatedLevel} (gained ${levelDifference} levels)`);
+
         updatedPlayer = {
           ...updatedPlayer,
-          level: updatedPlayer.level + 1,
-          experienceToNext: (updatedPlayer.level + 1) * 100,
-          maxHp: updatedPlayer.maxHp + 10,
-          maxMp: updatedPlayer.maxMp + 5,
-          hp: updatedPlayer.maxHp + 10,
-          mp: updatedPlayer.maxMp + 5
+          level: calculatedLevel,
+          experienceToNext: ExperienceCalculator.getXPForNextLevel(updatedPlayer.experience),
+          maxHp: updatedPlayer.maxHp + (10 * levelDifference),
+          maxMp: updatedPlayer.maxMp + (5 * levelDifference),
+          hp: updatedPlayer.maxHp + (10 * levelDifference),
+          mp: updatedPlayer.maxMp + (5 * levelDifference)
         };
         // Trigger auto-save for level up
         setTimeout(() => {
@@ -815,13 +931,84 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         },
       };
 
-    case 'UPDATE_PLAYER_STATS':
-      if (!state.player) return state;
+    case 'EQUIP_ITEM':
+      // Equipment state update
+      // Note: Stat recalculation is handled by useEquipment hook via UPDATE_PLAYER_STATS
+      if (!state.player) {
+        console.warn('⚠️ [EQUIP_ITEM] Cannot equip item: No player found');
+        return state;
+      }
+
+      const { slot, itemId: equipItemId } = action.payload;
+
+      // Basic validation: slot must be a valid equipment slot
+      const validSlots = ['weapon', 'armor', 'accessory', 'helmet', 'necklace', 'shield', 'gloves', 'boots', 'ring1', 'ring2', 'charm'];
+      if (!validSlots.includes(slot)) {
+        console.warn(`⚠️ [EQUIP_ITEM] Invalid equipment slot: ${slot}`);
+        return state;
+      }
+
+      // Basic validation: itemId must be a non-empty string
+      if (!equipItemId || typeof equipItemId !== 'string' || equipItemId.trim() === '') {
+        console.warn(`⚠️ [EQUIP_ITEM] Invalid itemId: ${equipItemId}`);
+        return state;
+      }
+
+      // Update equipment (stats will be recalculated by useEquipment hook)
       return {
         ...state,
         player: {
           ...state.player,
-          stats: { ...state.player.stats, ...action.payload.stats }
+          equipment: {
+            ...state.player.equipment,
+            [slot]: equipItemId
+          }
+        }
+      };
+
+    case 'UNEQUIP_ITEM':
+      // Unequip item from slot
+      // Note: Stat recalculation is handled by useEquipment hook via UPDATE_PLAYER_STATS
+      if (!state.player) {
+        console.warn('⚠️ [UNEQUIP_ITEM] Cannot unequip item: No player found');
+        return state;
+      }
+
+      const { slot: unequipSlot } = action.payload;
+
+      // Basic validation: slot must be a valid equipment slot
+      const validUnequipSlots = ['weapon', 'armor', 'accessory', 'helmet', 'necklace', 'shield', 'gloves', 'boots', 'ring1', 'ring2', 'charm'];
+      if (!validUnequipSlots.includes(unequipSlot)) {
+        console.warn(`⚠️ [UNEQUIP_ITEM] Invalid equipment slot: ${unequipSlot}`);
+        return state;
+      }
+
+      // Update equipment (stats will be recalculated by useEquipment hook)
+      return {
+        ...state,
+        player: {
+          ...state.player,
+          equipment: {
+            ...state.player.equipment,
+            [unequipSlot]: null
+          }
+        }
+      };
+
+    case 'UPDATE_PLAYER_STATS':
+      if (!state.player) return state;
+
+      // Extract stats from payload (sent from useEquipment.ts)
+      // Payload structure: { playerId: string, stats: Partial<PlayerStats> }
+      const statsToUpdate = action.payload.stats;
+
+      // Merge equipment bonuses into player.stats
+      // This ensures combat calculations use equipment-modified stats
+      return {
+        ...state,
+        player: {
+          ...state.player,
+          stats: { ...state.player.stats, ...statsToUpdate }
         },
       };
 
@@ -1248,7 +1435,13 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
           // Breeding system data
           breedingAttempts: state.breedingAttempts,
           discoveredRecipes: state.discoveredRecipes,
-          breedingMaterials: state.breedingMaterials
+          breedingMaterials: state.breedingMaterials,
+          // System metadata with version tracking
+          metadata: {
+            ...state.metadata,
+            equipmentVersion: EQUIPMENT_VERSION,
+            savedAt: new Date().toISOString()
+          }
         };
 
         // Save to localStorage
@@ -1288,6 +1481,21 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
 
         const parsedData = JSON.parse(savedData);
         console.log(`✅ Game loaded from slot ${action.payload.slotIndex + 1}`);
+
+        // Migrate and validate equipment if present
+        if (parsedData.player?.equipment) {
+          // Get saved equipment version (defaults to '0.0' if not present)
+          const savedVersion = parsedData.metadata?.equipmentVersion || '0.0';
+
+          // First migrate from saved version to current version
+          parsedData.player.equipment = migrateEquipmentSlots(
+            parsedData.player.equipment,
+            savedVersion
+          );
+
+          // Then validate and clean invalid items
+          parsedData.player.equipment = cleanInvalidEquipment(parsedData.player.equipment);
+        }
 
         // Validate and migrate creature collection if present
         let loadedCreatures = parsedData.creatures;
@@ -1396,6 +1604,11 @@ interface ReactGameContextType {
   addExperience: (playerId: string, experience: number) => void;
   addGold: (playerId: string, gold: number) => void;
   updatePlayerStats: (playerId: string, stats: Partial<PlayerStats>) => void;
+
+  // Equipment action creators
+  equipItem: (slot: EquipmentSlot, itemId: string) => void;
+  unequipItem: (slot: EquipmentSlot) => void;
+
   navigateToArea: (areaId: string) => void;
   unlockArea: (areaId: string) => void;
   addItems: (items: ReactItem[]) => void;
@@ -1564,6 +1777,15 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
     dispatch({ type: 'UPDATE_PLAYER', payload: updates });
   };
 
+  // Equipment action creators
+  const equipItem = (slot: EquipmentSlot, itemId: string) => {
+    dispatch({ type: 'EQUIP_ITEM', payload: { slot, itemId } });
+  };
+
+  const unequipItem = (slot: EquipmentSlot) => {
+    dispatch({ type: 'UNEQUIP_ITEM', payload: { slot } });
+  };
+
   const navigateToArea = (areaId: string) => {
     if (canAccessArea(areaId)) {
       dispatch({ type: 'SET_CURRENT_AREA', payload: areaId });
@@ -1668,26 +1890,60 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
 
     // Equipment drops based on enemy type and level (15% chance) - using actual ItemData items
     if (Math.random() < 0.15) {
-      const equipmentDrops = [
-        // Weapons
-        { id: 'iron_sword', name: 'Iron Sword', type: 'weapon', rarity: 'common', quantity: 1, icon: '⚔️' },
-        { id: 'steel_dagger', name: 'Steel Dagger', type: 'weapon', rarity: 'common', quantity: 1, icon: '🗡️' },
-        { id: 'oak_staff', name: 'Oak Staff', type: 'weapon', rarity: 'common', quantity: 1, icon: '🪄' },
-        // Armor
-        { id: 'leather_vest', name: 'Leather Vest', type: 'armor', rarity: 'common', quantity: 1, icon: '🦺' },
-        { id: 'chain_mail', name: 'Chain Mail', type: 'armor', rarity: 'common', quantity: 1, icon: '🛡️' },
-        { id: 'cloth_robe', name: 'Cloth Robe', type: 'armor', rarity: 'common', quantity: 1, icon: '👘' },
-        // Accessories
-        { id: 'health_ring', name: 'Health Ring', type: 'accessory', rarity: 'common', quantity: 1, icon: '💍' },
-        { id: 'mana_crystal', name: 'Mana Crystal', type: 'accessory', rarity: 'common', quantity: 1, icon: '💎' },
+      // Helper function to load full item data from ItemData
+      const getFullItemData = (itemId: string): ReactItem | null => {
+        if (typeof window === 'undefined' || !(window as any).ItemData) {
+          return null;
+        }
+
+        const ItemData = (window as any).ItemData;
+        const item = ItemData.getItem(itemId);
+
+        if (!item) {
+          return null;
+        }
+
+        // Transform to EnhancedItem format with all required fields
+        return {
+          id: itemId,
+          name: item.name,
+          description: item.description || '',
+          type: item.type,
+          category: item.type === 'weapon' || item.type === 'armor' || item.type === 'accessory' ? 'equipment' : 'consumables',
+          rarity: item.rarity as ItemRarity,
+          icon: item.icon,
+          value: item.value || 0,
+          equipmentSlot: item.equipmentSlot,
+          equipmentSubtype: item.equipmentSubtype,
+          statModifiers: item.statModifiers,
+          stackable: item.type === 'consumable' || item.type === 'material',
+          maxStack: item.type === 'consumable' || item.type === 'material' ? 99 : 1,
+          weight: item.weight || 1,
+          sellValue: item.sellValue || Math.floor((item.value || 0) * 0.5),
+          canTrade: item.canTrade !== false,
+          canDrop: item.canDrop !== false,
+          canDestroy: item.canDestroy !== false,
+          usable: item.type === 'consumable',
+          consumeOnUse: item.type === 'consumable',
+          quantity: 1
+        } as ReactItem;
+      };
+
+      const equipmentIds = [
+        'iron_sword', 'steel_dagger', 'oak_staff',
+        'leather_vest', 'chain_mail', 'cloth_robe',
+        'health_ring', 'mana_crystal'
       ];
 
-      // Filter equipment appropriate for enemy level
-      const appropriateEquipment = equipmentDrops.filter(item => {
-        if (enemyLevel >= 5 && item.rarity === 'uncommon') return true;
-        if (enemyLevel <= 8 && item.rarity === 'common') return true;
-        return false;
-      });
+      // Filter equipment appropriate for enemy level and load full data
+      const appropriateEquipment = equipmentIds
+        .map(id => getFullItemData(id))
+        .filter((item): item is ReactItem => {
+          if (!item) return false;
+          if (enemyLevel >= 5 && item.rarity === 'uncommon') return true;
+          if (enemyLevel <= 8 && item.rarity === 'common') return true;
+          return false;
+        });
 
       if (appropriateEquipment.length > 0) {
         const randomEquipment = appropriateEquipment[Math.floor(Math.random() * appropriateEquipment.length)];
@@ -1921,6 +2177,8 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
     addExperience,
     addGold,
     updatePlayerStats,
+    equipItem,
+    unequipItem,
     navigateToArea,
     unlockArea,
     addItems,

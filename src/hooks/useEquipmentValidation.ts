@@ -7,13 +7,13 @@
 
 import { useCallback, useMemo } from 'react';
 import { useGameState } from '../contexts/ReactGameContext';
-import { EnhancedItem, EquipmentSlot } from '../types/inventory';
+import { EnhancedItem, EquipmentSlot, EquipmentCompatibility } from '../types/inventory';
 import { PlayerStats } from '../types/game';
-import { checkEquipmentCompatibility, CompatibilityCheckResult } from '../utils/equipmentUtils';
+import { checkEquipmentCompatibility } from '../utils/equipmentUtils';
 
 interface EquipmentValidationResult {
   canEquip: boolean;
-  compatibility: CompatibilityCheckResult;
+  compatibility: EquipmentCompatibility;
   hasWarnings: boolean;
   hasBlockers: boolean;
   validationMessage: string;
@@ -72,18 +72,18 @@ export function useEquipmentValidation(): UseEquipmentValidationReturn {
       playerInfo.stats
     );
 
-    const hasBlockers = !compatibility.compatible;
+    const hasBlockers = !compatibility.canEquip;
     const hasWarnings = compatibility.warnings.length > 0;
-    const canEquip = compatibility.compatible;
+    const canEquip = compatibility.canEquip;
 
     // Generate validation message
     let validationMessage = '';
     let validationLevel: 'success' | 'warning' | 'error' = 'success';
 
-    if (hasBlockers) {
-      validationMessage = `Cannot equip: ${compatibility.unmetRequirements[0]}`;
-      if (compatibility.unmetRequirements.length > 1) {
-        validationMessage += ` (and ${compatibility.unmetRequirements.length - 1} more)`;
+    if (hasBlockers && compatibility.reasons.length > 0) {
+      validationMessage = `Cannot equip: ${compatibility.reasons[0]}`;
+      if (compatibility.reasons.length > 1) {
+        validationMessage += ` (and ${compatibility.reasons.length - 1} more)`;
       }
       validationLevel = 'error';
     } else if (hasWarnings) {

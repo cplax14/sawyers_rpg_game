@@ -27,9 +27,19 @@ export const mockBaseStats: PlayerStats = {
 };
 
 export const mockEquipment: Equipment = {
+  // Legacy slots
   weapon: null,
   armor: null,
   accessory: null,
+  // Extended slots (10-slot system)
+  helmet: null,
+  necklace: null,
+  shield: null,
+  gloves: null,
+  boots: null,
+  ring1: null,
+  ring2: null,
+  charm: null,
 };
 
 // Mock Player

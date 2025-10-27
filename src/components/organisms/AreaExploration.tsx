@@ -4,6 +4,7 @@ import { Button } from '../atoms/Button';
 import { LoadingSpinner } from '../atoms/LoadingSpinner';
 import { useAreas, usePlayer, useWorld, useUI, useCombat, useIsMobile } from '../../hooks';
 import { ReactArea } from '../../types/game';
+import { ExperienceCalculator } from '../../utils/experienceUtils';
 
 interface AreaExplorationProps {
   className?: string;
@@ -19,11 +20,14 @@ export const AreaExploration: React.FC<AreaExplorationProps> = ({
   className
 }) => {
   const { getAreaById } = useAreas();
-  const { player, playerLevel } = usePlayer();
+  const { player } = usePlayer();
   const { currentAreaId, changeArea } = useWorld();
   const { navigateToScreen } = useUI();
   const { startCombat } = useCombat();
   const isMobile = useIsMobile();
+
+  // Calculate player level from XP (source of truth)
+  const playerLevel = player?.experience ? ExperienceCalculator.calculateLevel(player.experience) : 1;
 
   const [isExploring, setIsExploring] = useState(false);
   const [explorationResults, setExplorationResults] = useState<ExplorationResult[]>([]);

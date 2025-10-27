@@ -11,13 +11,16 @@ import { Item, Equipment, PlayerStats, ItemEffect } from './game';
 // ITEM ENHANCEMENTS
 // =============================================================================
 
-export type ItemRarity = 'common' | 'rare' | 'epic' | 'legendary';
+export type ItemRarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary' | 'artifact' | 'unique';
 
 export const RARITY_COLORS = {
   common: '#22c55e',     // green
+  uncommon: '#10b981',   // emerald green
   rare: '#3b82f6',       // blue
   epic: '#a855f7',       // purple
-  legendary: '#f97316'   // orange
+  legendary: '#f97316',  // orange
+  artifact: '#dc2626',   // red
+  unique: '#fbbf24'      // gold/amber
 } as const;
 
 // =============================================================================
@@ -65,6 +68,29 @@ export const RARITY_SYSTEM: Record<ItemRarity, RarityDefinition> = {
     icon: '●',
     effects: []
   },
+  uncommon: {
+    name: 'uncommon',
+    displayName: 'Uncommon',
+    color: '#10b981',
+    backgroundColor: '#d1fae5',
+    borderColor: '#059669',
+    textColor: '#064e3b',
+    glowColor: '#10b98180',
+    dropRate: 50,
+    valueMultiplier: 1.5,
+    statBonusRange: [5, 15],
+    description: 'Better than average equipment with minor enhancements',
+    tier: 2,
+    icon: '◆',
+    effects: [
+      {
+        type: 'stat_bonus',
+        description: 'Minor stat bonuses',
+        value: 10,
+        conditions: []
+      }
+    ]
+  },
   rare: {
     name: 'rare',
     displayName: 'Rare',
@@ -76,8 +102,8 @@ export const RARITY_SYSTEM: Record<ItemRarity, RarityDefinition> = {
     dropRate: 25,
     valueMultiplier: 2.5,
     statBonusRange: [10, 25],
-    description: 'Uncommon equipment with enhanced properties',
-    tier: 2,
+    description: 'Rare equipment with enhanced properties',
+    tier: 3,
     icon: '◆',
     effects: [
       {
@@ -100,7 +126,7 @@ export const RARITY_SYSTEM: Record<ItemRarity, RarityDefinition> = {
     valueMultiplier: 6.0,
     statBonusRange: [25, 50],
     description: 'Powerful equipment with unique abilities',
-    tier: 3,
+    tier: 4,
     icon: '★',
     effects: [
       {
@@ -129,7 +155,7 @@ export const RARITY_SYSTEM: Record<ItemRarity, RarityDefinition> = {
     valueMultiplier: 15.0,
     statBonusRange: [50, 100],
     description: 'Extraordinary equipment of immense power',
-    tier: 4,
+    tier: 5,
     icon: '✦',
     effects: [
       {
@@ -148,6 +174,82 @@ export const RARITY_SYSTEM: Record<ItemRarity, RarityDefinition> = {
         type: 'set_bonus_chance',
         description: 'Higher chance for set bonuses',
         value: 50,
+        conditions: []
+      }
+    ]
+  },
+  artifact: {
+    name: 'artifact',
+    displayName: 'Artifact',
+    color: '#dc2626',
+    backgroundColor: '#fee2e2',
+    borderColor: '#b91c1c',
+    textColor: '#7f1d1d',
+    glowColor: '#dc262680',
+    dropRate: 0.3,
+    valueMultiplier: 25.0,
+    statBonusRange: [75, 150],
+    description: 'Ancient artifacts of legendary power',
+    tier: 6,
+    icon: '⬟',
+    effects: [
+      {
+        type: 'stat_bonus',
+        description: 'Exceptional stat bonuses',
+        value: 100,
+        conditions: []
+      },
+      {
+        type: 'special_ability',
+        description: 'Multiple special abilities',
+        value: 100,
+        conditions: []
+      },
+      {
+        type: 'set_bonus_chance',
+        description: 'Guaranteed set bonuses',
+        value: 100,
+        conditions: []
+      }
+    ]
+  },
+  unique: {
+    name: 'unique',
+    displayName: 'Unique',
+    color: '#fbbf24',
+    backgroundColor: '#fef3c7',
+    borderColor: '#f59e0b',
+    textColor: '#78350f',
+    glowColor: '#fbbf2480',
+    dropRate: 0.1,
+    valueMultiplier: 50.0,
+    statBonusRange: [100, 200],
+    description: 'One-of-a-kind equipment of unparalleled power',
+    tier: 7,
+    icon: '◈',
+    effects: [
+      {
+        type: 'stat_bonus',
+        description: 'Unmatched stat bonuses',
+        value: 150,
+        conditions: []
+      },
+      {
+        type: 'special_ability',
+        description: 'Unique special abilities',
+        value: 100,
+        conditions: []
+      },
+      {
+        type: 'set_bonus_chance',
+        description: 'Guaranteed set bonuses',
+        value: 100,
+        conditions: []
+      },
+      {
+        type: 'upgrade_bonus',
+        description: 'Enhanced upgrade potential',
+        value: 200,
         conditions: []
       }
     ]
@@ -418,24 +520,40 @@ export interface RaritySettings {
 
 export type ItemCategory = 'consumables' | 'equipment' | 'materials' | 'quest' | 'misc';
 
-export type EquipmentSlot = 'weapon' | 'armor' | 'accessory';
+export type EquipmentSlot =
+  | 'helmet'
+  | 'necklace'
+  | 'armor'
+  | 'weapon'
+  | 'shield'
+  | 'gloves'
+  | 'boots'
+  | 'ring1'
+  | 'ring2'
+  | 'charm';
 
 export type EquipmentSubtype =
-  | 'sword' | 'bow' | 'staff' | 'dagger'  // weapons
-  | 'helmet' | 'chestplate' | 'boots' | 'gloves'  // armor pieces
+  | 'sword' | 'bow' | 'staff' | 'dagger' | 'axe' | 'mace'  // weapons
+  | 'helmet' | 'chestplate' | 'boots' | 'gloves' | 'shield'  // armor pieces
   | 'ring' | 'necklace' | 'charm';  // accessories
 
 export interface EnhancedItem extends Item {
   // Enhanced categorization
   category: ItemCategory;
+
+  // Equipment-specific fields (only present for equipment items)
   equipmentSlot?: EquipmentSlot;
   equipmentSubtype?: EquipmentSubtype;
+  twoHanded?: boolean; // True if weapon requires both weapon + shield slots
 
   // Requirements and restrictions
-  levelRequirement?: number;
-  classRequirement?: string[];
+  levelRequirement?: number; // Direct level requirement (legacy support)
+  classRequirement?: string[]; // Direct class requirement (legacy support)
+  requirements?: EquipmentRequirement; // Comprehensive requirements object
 
   // Enhanced stats and effects
+  // Note: Base Item has 'stats', EnhancedItem uses 'statModifiers' for clarity
+  // Both refer to stat bonuses provided by the item (Partial<PlayerStats>)
   statModifiers?: Partial<PlayerStats>;
   activeEffects?: ItemEffect[];
   passiveEffects?: ItemEffect[];
@@ -444,6 +562,7 @@ export interface EnhancedItem extends Item {
   stackable: boolean;
   maxStack: number;
   weight: number;
+  equipped?: boolean; // Dynamically computed flag indicating if item is currently equipped
 
   // Visual and metadata
   sprite?: string;
@@ -475,6 +594,7 @@ export interface EnhancedItem extends Item {
 export interface EquipmentSet extends Equipment {
   // Extend base Equipment with additional slots
   helmet?: EnhancedItem | null;
+  shield?: EnhancedItem | null;
   chestplate?: EnhancedItem | null;
   boots?: EnhancedItem | null;
   gloves?: EnhancedItem | null;
@@ -505,29 +625,8 @@ export interface EquipmentComparison {
 // DETAILED EQUIPMENT SLOT DEFINITIONS
 // =============================================================================
 
-export const EQUIPMENT_SLOTS: Record<EquipmentSlot, EquipmentSlotInfo> = {
-  weapon: {
-    slot: 'weapon',
-    displayName: 'Main Hand',
-    icon: '⚔️',
-    acceptedSubtypes: ['sword', 'bow', 'staff', 'dagger'],
-    required: false
-  },
-  armor: {
-    slot: 'armor',
-    displayName: 'Chest Armor',
-    icon: '🛡️',
-    acceptedSubtypes: ['chestplate'],
-    required: false
-  },
-  accessory: {
-    slot: 'accessory',
-    displayName: 'Accessory',
-    icon: '💍',
-    acceptedSubtypes: ['ring', 'necklace', 'charm'],
-    required: false
-  }
-} as const;
+// Legacy EQUIPMENT_SLOTS removed - use EXTENDED_EQUIPMENT_SLOTS instead
+// The old 3-slot system (weapon, armor, accessory) has been replaced with the 10-slot system
 
 export const EXTENDED_EQUIPMENT_SLOTS = {
   helmet: {
@@ -538,8 +637,8 @@ export const EXTENDED_EQUIPMENT_SLOTS = {
     required: false,
     position: { x: 1, y: 0 } // Grid position for UI
   },
-  chestplate: {
-    slot: 'chestplate' as const,
+  armor: {
+    slot: 'armor' as const,
     displayName: 'Chest Armor',
     icon: '🛡️',
     acceptedSubtypes: ['chestplate'],
@@ -569,6 +668,14 @@ export const EXTENDED_EQUIPMENT_SLOTS = {
     acceptedSubtypes: ['sword', 'bow', 'staff', 'dagger'],
     required: false,
     position: { x: 0, y: 0 }
+  },
+  shield: {
+    slot: 'shield' as const,
+    displayName: 'Off Hand',
+    icon: '🛡️',
+    acceptedSubtypes: ['shield'],
+    required: false,
+    position: { x: 1, y: 3 }
   },
   ring1: {
     slot: 'ring1' as const,
@@ -660,13 +767,20 @@ export interface StatModifier {
 // EQUIPMENT COMPATIBILITY RULES
 // =============================================================================
 
-export interface EquipmentCompatibility {
-  canEquip: boolean;
-  reasons: CompatibilityReason[];
-  warnings: CompatibilityWarning[];
-  suggestions: string[];
+export interface EquipmentRequirement {
+  level?: number;
+  classes?: string[];
+  stats?: Partial<PlayerStats>;
 }
 
+export interface EquipmentCompatibility {
+  canEquip: boolean;
+  reasons: string[]; // Blocking errors preventing equipping (level, class, stat, slot requirements)
+  warnings: string[]; // Non-blocking warnings (two-handed conflicts, suboptimal usage)
+  suggestions: string[]; // Helpful hints for the player
+}
+
+// Detailed compatibility types (for advanced usage if needed)
 export interface CompatibilityReason {
   type: 'level_requirement' | 'class_requirement' | 'stat_requirement' | 'slot_conflict' | 'set_requirement';
   satisfied: boolean;
@@ -676,7 +790,7 @@ export interface CompatibilityReason {
 }
 
 export interface CompatibilityWarning {
-  type: 'stat_decrease' | 'set_bonus_lost' | 'durability_low' | 'weight_limit';
+  type: 'stat_decrease' | 'set_bonus_lost' | 'durability_low' | 'weight_limit' | 'two_handed_conflict';
   severity: 'low' | 'medium' | 'high';
   description: string;
   affectedStats?: string[];
@@ -878,7 +992,7 @@ export interface InventoryFilter {
   equipmentSlots: EquipmentSlot[];
   usableOnly: boolean;
   tradableOnly: boolean;
-  showEquipped: boolean;
+  showEquipped?: boolean; // Whether to include equipped items in results (default: false)
   minLevel?: number;
   maxLevel?: number;
   searchText: string;

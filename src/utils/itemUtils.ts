@@ -194,10 +194,17 @@ export const sortItems = (
 
 /**
  * Check if two items can be stacked together
+ * TASK 4.8: Equipped items should never stack with other items
  */
 export const canStackItems = (item1: EnhancedItem, item2: EnhancedItem): boolean => {
   // Must be stackable
   if (!item1.stackable || !item2.stackable) {
+    return false;
+  }
+
+  // TASK 4.8: Equipped items cannot be stacked
+  // Each equipped item must remain separate from inventory items
+  if (item1.equipped || item2.equipped) {
     return false;
   }
 

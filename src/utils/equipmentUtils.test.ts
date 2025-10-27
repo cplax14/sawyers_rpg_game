@@ -14,13 +14,19 @@ import {
   getSlotPriority,
   formatStatValue,
   calculateDurabilityImpact,
-  getRarityMultiplier
+  getRarityMultiplier,
+  clearCompatibilityCache
 } from './equipmentUtils';
 
 import { EnhancedItem, EquipmentSet, EquipmentSlot } from '../types/inventory';
 import { PlayerStats } from '../types/game';
 
 describe('equipmentUtils', () => {
+  // Clear cache before each test to ensure isolation
+  beforeEach(() => {
+    clearCompatibilityCache();
+  });
+
   // Mock data for testing
   const mockPlayerStats: PlayerStats = {
     attack: 10,
@@ -202,8 +208,8 @@ describe('equipmentUtils', () => {
         { ...mockPlayerStats, attack: 15 }
       );
 
-      expect(result.compatible).toBe(true);
-      expect(result.unmetRequirements).toHaveLength(0);
+      expect(result.canEquip).toBe(true);
+      expect(result.reasons).toHaveLength(0);
     });
 
     it('should fail for wrong equipment slot', () => {
@@ -215,8 +221,8 @@ describe('equipmentUtils', () => {
         mockPlayerStats
       );
 
-      expect(result.compatible).toBe(false);
-      expect(result.unmetRequirements[0]).toContain('weapon');
+      expect(result.canEquip).toBe(false);
+      expect(result.reasons[0]).toContain('weapon');
     });
 
     it('should fail for insufficient level', () => {
@@ -228,8 +234,8 @@ describe('equipmentUtils', () => {
         mockPlayerStats
       );
 
-      expect(result.compatible).toBe(false);
-      expect(result.unmetRequirements[0]).toContain('level 5');
+      expect(result.canEquip).toBe(false);
+      expect(result.reasons[0]).toContain('level 5');
     });
 
     it('should fail for wrong class', () => {
@@ -241,8 +247,10 @@ describe('equipmentUtils', () => {
         mockPlayerStats
       );
 
-      expect(result.compatible).toBe(false);
-      expect(result.unmetRequirements[0]).toContain('mage class');
+      expect(result.canEquip).toBe(false);
+      // New kid-friendly message format
+      expect(result.reasons[0]).toContain('Only Warriors and Paladins');
+      expect(result.reasons[0]).toContain('can use this');
     });
 
     it('should fail for insufficient stats', () => {
@@ -254,8 +262,10 @@ describe('equipmentUtils', () => {
         { ...mockPlayerStats, attack: 5 } // Too low attack
       );
 
-      expect(result.compatible).toBe(false);
-      expect(result.unmetRequirements[0]).toContain('attack: 8');
+      expect(result.canEquip).toBe(false);
+      // New kid-friendly message format
+      expect(result.reasons[0]).toContain('You need 8 Attack');
+      expect(result.reasons[0]).toContain('You have 5');
     });
 
     it('should generate warnings for suboptimal usage', () => {
@@ -276,7 +286,7 @@ describe('equipmentUtils', () => {
       expect(result.warnings[0]).toContain('too powerful');
     });
 
-    it('should generate recommendations', () => {
+    it('should generate suggestions', () => {
       const result = checkEquipmentCompatibility(
         mockSword,
         'weapon',
@@ -285,7 +295,63 @@ describe('equipmentUtils', () => {
         { ...mockPlayerStats, attack: 15 }
       );
 
-      expect(result.recommendations?.length).toBeGreaterThan(0);
+      expect(result.suggestions.length).toBeGreaterThan(0);
+    });
+
+    it('should provide helpful suggestions when level requirement not met', () => {
+      const result = checkEquipmentCompatibility(
+        mockSword,
+        'weapon',
+        4, // One level away
+        'warrior',
+        { ...mockPlayerStats, attack: 15 }
+      );
+
+      expect(result.canEquip).toBe(false);
+      expect(result.suggestions.length).toBeGreaterThan(0);
+      expect(result.suggestions[0]).toContain('one more level');
+    });
+
+    it('should provide stat improvement suggestions when stat requirement not met', () => {
+      const result = checkEquipmentCompatibility(
+        mockSword,
+        'weapon',
+        10,
+        'warrior',
+        { ...mockPlayerStats, attack: 5 } // Need 8 attack
+      );
+
+      expect(result.canEquip).toBe(false);
+      expect(result.suggestions.length).toBeGreaterThan(0);
+      expect(result.suggestions.some(s => s.includes('Attack') && s.includes('3'))).toBe(true);
+    });
+
+    it('should separate warnings from blocking reasons', () => {
+      const legendaryItem: EnhancedItem = {
+        ...mockSword,
+        rarity: 'legendary',
+        requirements: {
+          level: 15,
+          classes: ['warrior', 'paladin'],
+          stats: { attack: 8 }
+        }
+      };
+
+      const result = checkEquipmentCompatibility(
+        legendaryItem,
+        'weapon',
+        5, // Low level - blocking
+        'warrior',
+        { ...mockPlayerStats, attack: 15 }
+      );
+
+      // Should have blocking reason (level)
+      expect(result.canEquip).toBe(false);
+      expect(result.reasons.length).toBeGreaterThan(0);
+
+      // Should also have non-blocking warning (legendary at low level)
+      expect(result.warnings.length).toBeGreaterThan(0);
+      expect(result.warnings[0]).toContain('too powerful');
     });
   });
 
@@ -612,8 +678,8 @@ describe('equipmentUtils', () => {
         { ...mockPlayerStats, attack: 1 }
       );
 
-      expect(result.compatible).toBe(true);
-      expect(result.unmetRequirements).toHaveLength(0);
+      expect(result.canEquip).toBe(true);
+      expect(result.reasons).toHaveLength(0);
     });
   });
 });

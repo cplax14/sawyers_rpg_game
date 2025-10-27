@@ -302,6 +302,34 @@ describe('itemUtils', () => {
 
       expect(result).toBe(false);
     });
+
+    // TASK 4.8: Test that equipped items cannot stack with inventory items
+    it('should not allow stacking equipped items with non-equipped items', () => {
+      const item1 = { ...mockItems[1], equipped: false }; // Potion in inventory
+      const item2 = { ...mockItems[1], equipped: true };  // Potion equipped (hypothetical)
+
+      const result = canStackItems(item1, item2);
+
+      expect(result).toBe(false);
+    });
+
+    it('should not allow stacking two equipped items', () => {
+      const item1 = { ...mockItems[1], equipped: true };
+      const item2 = { ...mockItems[1], equipped: true };
+
+      const result = canStackItems(item1, item2);
+
+      expect(result).toBe(false);
+    });
+
+    it('should allow stacking two non-equipped items', () => {
+      const item1 = { ...mockItems[1], equipped: false };
+      const item2 = { ...mockItems[1], equipped: false };
+
+      const result = canStackItems(item1, item2);
+
+      expect(result).toBe(true);
+    });
   });
 
   describe('stackItems', () => {

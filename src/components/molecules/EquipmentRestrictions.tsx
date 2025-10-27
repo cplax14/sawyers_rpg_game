@@ -1,9 +1,9 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CompatibilityCheckResult } from '../../utils/equipmentUtils';
+import { EquipmentCompatibility } from '../../types/inventory';
 
 interface EquipmentRestrictionsProps {
-  compatibilityResult: CompatibilityCheckResult;
+  compatibilityResult: EquipmentCompatibility;
   compact?: boolean;
   showRecommendations?: boolean;
   className?: string;
@@ -105,11 +105,11 @@ export const EquipmentRestrictions: React.FC<EquipmentRestrictionsProps> = ({
   showRecommendations = true,
   className = ''
 }) => {
-  const { compatible, unmetRequirements, warnings, recommendations } = compatibilityResult;
+  const { canEquip, reasons, warnings, suggestions } = compatibilityResult;
 
   // Determine overall status
   const hasWarnings = warnings.length > 0;
-  const isIncompatible = !compatible;
+  const isIncompatible = !canEquip;
 
   // Get appropriate styling
   const getContainerStyle = () => {
@@ -180,14 +180,14 @@ export const EquipmentRestrictions: React.FC<EquipmentRestrictionsProps> = ({
         </motion.span>
       </div>
 
-      {/* Unmet Requirements */}
+      {/* Unmet Requirements (Reasons) */}
       <AnimatePresence>
-        {unmetRequirements.length > 0 && (
+        {reasons.length > 0 && (
           <motion.div
             style={{
               ...restrictionStyles.section,
               ...(compact ? restrictionStyles.compactSection : {}),
-              ...(warnings.length === 0 && (!showRecommendations || recommendations.length === 0) ?
+              ...(warnings.length === 0 && (!showRecommendations || suggestions.length === 0) ?
                   restrictionStyles.lastSection : {})
             }}
             initial={{ opacity: 0, height: 0 }}
@@ -202,7 +202,7 @@ export const EquipmentRestrictions: React.FC<EquipmentRestrictionsProps> = ({
               ...restrictionStyles.list,
               ...(compact ? restrictionStyles.compactList : {})
             }}>
-              {unmetRequirements.map((requirement, index) => (
+              {reasons.map((reason, index) => (
                 <motion.li
                   key={index}
                   style={{
@@ -213,7 +213,7 @@ export const EquipmentRestrictions: React.FC<EquipmentRestrictionsProps> = ({
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.2 + index * 0.05 }}
                 >
-                  {requirement}
+                  {reason}
                 </motion.li>
               ))}
             </ul>
@@ -228,7 +228,7 @@ export const EquipmentRestrictions: React.FC<EquipmentRestrictionsProps> = ({
             style={{
               ...restrictionStyles.section,
               ...(compact ? restrictionStyles.compactSection : {}),
-              ...(!showRecommendations || recommendations.length === 0 ?
+              ...(!showRecommendations || suggestions.length === 0 ?
                   restrictionStyles.lastSection : {})
             }}
             initial={{ opacity: 0, height: 0 }}
@@ -262,9 +262,9 @@ export const EquipmentRestrictions: React.FC<EquipmentRestrictionsProps> = ({
         )}
       </AnimatePresence>
 
-      {/* Recommendations */}
+      {/* Suggestions (formerly Recommendations) */}
       <AnimatePresence>
-        {showRecommendations && recommendations.length > 0 && (
+        {showRecommendations && suggestions.length > 0 && (
           <motion.div
             style={{
               ...restrictionStyles.section,
@@ -277,13 +277,13 @@ export const EquipmentRestrictions: React.FC<EquipmentRestrictionsProps> = ({
             transition={{ duration: 0.3, delay: 0.2 }}
           >
             <div style={{ fontWeight: 'bold', marginBottom: '0.25rem' }}>
-              Recommendations:
+              Helpful Tips:
             </div>
             <ul style={{
               ...restrictionStyles.list,
               ...(compact ? restrictionStyles.compactList : {})
             }}>
-              {recommendations.map((recommendation, index) => (
+              {suggestions.map((suggestion, index) => (
                 <motion.li
                   key={index}
                   style={{
@@ -294,7 +294,7 @@ export const EquipmentRestrictions: React.FC<EquipmentRestrictionsProps> = ({
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.4 + index * 0.05 }}
                 >
-                  {recommendation}
+                  {suggestion}
                 </motion.li>
               ))}
             </ul>
