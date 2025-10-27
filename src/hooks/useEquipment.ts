@@ -812,6 +812,14 @@ export const useEquipment = () => {
       // Save to cache for persistence across remounts
       saveEquippedItemsToCache(newEquipped);
 
+      // Update game state for backward compatibility
+      if (gameState.state.player) {
+        gameState.dispatch({
+          type: 'UNEQUIP_ITEM',
+          payload: { slot }
+        });
+      }
+
       // Calculate stat changes (loss of stats)
       const statChanges: Partial<PlayerStats> = {};
       if (currentItem.statModifiers) {

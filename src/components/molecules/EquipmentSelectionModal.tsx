@@ -20,6 +20,7 @@ interface EquipmentSelectionModalProps {
   playerLevel: number;
   playerClass: string;
   isLoading?: boolean;
+  errorMessage?: string | null;
 }
 
 // Temporary styles since PostCSS is disabled
@@ -69,18 +70,17 @@ const modalStyles = {
     padding: '0.75rem',
     marginBottom: '0.5rem',
     borderRadius: '8px',
-    border: '1px solid rgba(212, 175, 55, 0.3)',
     background: 'rgba(255, 255, 255, 0.02)',
     cursor: 'pointer',
-    transition: 'all 0.2s ease'
+    transition: 'all 0.2s ease',
+    position: 'relative' as const
   },
   itemCardSelected: {
-    borderColor: '#d4af37',
     background: 'rgba(212, 175, 55, 0.1)'
   },
   itemCardIncompatible: {
     opacity: 0.5,
-    borderColor: 'rgba(239, 68, 68, 0.5)',
+    filter: 'grayscale(0.5)',
     cursor: 'not-allowed'
   },
   itemHeader: {
@@ -107,10 +107,14 @@ const modalStyles = {
     lineHeight: '1.3'
   },
   incompatibleText: {
-    fontSize: '0.7rem',
+    fontSize: '0.75rem',
     color: '#ef4444',
     fontStyle: 'italic',
-    marginTop: '0.25rem'
+    marginTop: '0.5rem',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.3rem',
+    fontWeight: '500'
   },
   upgradeIndicator: {
     fontSize: '0.7rem',
@@ -125,6 +129,19 @@ const modalStyles = {
     justifyContent: 'center',
     marginTop: '1rem',
     padding: '1rem 0.5rem 0'
+  },
+  errorMessage: {
+    background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.1))',
+    border: '2px solid rgba(239, 68, 68, 0.5)',
+    borderRadius: '8px',
+    padding: '0.75rem 1rem',
+    marginTop: '0.75rem',
+    color: '#fca5a5',
+    fontSize: '0.9rem',
+    fontWeight: '500',
+    textAlign: 'center' as const,
+    lineHeight: '1.5',
+    boxShadow: '0 2px 8px rgba(239, 68, 68, 0.2)'
   }
 };
 
@@ -149,7 +166,8 @@ export const EquipmentSelectionModal: React.FC<EquipmentSelectionModalProps> = (
   baseStats,
   playerLevel,
   playerClass,
-  isLoading = false
+  isLoading = false,
+  errorMessage = null
 }) => {
   const [selectedItem, setSelectedItem] = useState<EnhancedItem | null>(null);
 
@@ -189,6 +207,43 @@ export const EquipmentSelectionModal: React.FC<EquipmentSelectionModalProps> = (
   // Get rarity color
   const getRarityColor = (rarity: string) => {
     return rarityColors[rarity as keyof typeof rarityColors] || rarityColors.common;
+  };
+
+  // Get border color based on item state (Task 6.7)
+  const getBorderStyle = (item: EnhancedItem, isCompatible: boolean) => {
+    if (!isCompatible) {
+      return {
+        border: '2px solid #6b7280', // Gray for locked
+        borderColor: '#6b7280'
+      };
+    }
+
+    const comparison = compareEquipment(currentItem, item, baseStats);
+    const totalChange = comparison.totalStatChange;
+
+    // Green for upgrade
+    if (comparison.isUpgrade || totalChange > 0) {
+      return {
+        border: '2px solid #10b981',
+        borderColor: '#10b981',
+        boxShadow: '0 0 8px rgba(16, 185, 129, 0.3)'
+      };
+    }
+
+    // Red for downgrade
+    if (totalChange < 0) {
+      return {
+        border: '2px solid #ef4444',
+        borderColor: '#ef4444',
+        boxShadow: '0 0 8px rgba(239, 68, 68, 0.3)'
+      };
+    }
+
+    // Default gold for neutral
+    return {
+      border: '2px solid #d4af37',
+      borderColor: '#d4af37'
+    };
   };
 
   // Get upgrade indicator with enhanced visuals
@@ -302,12 +357,14 @@ export const EquipmentSelectionModal: React.FC<EquipmentSelectionModalProps> = (
                   const compatibility = checkEquipmentCompatibility(
                     item, slot, playerLevel, playerClass, baseStats
                   );
+                  const borderStyle = getBorderStyle(item, isCompatible);
 
                   return (
                     <motion.div
                       key={item.id}
                       style={{
                         ...modalStyles.itemCard,
+                        ...borderStyle,
                         ...(isSelected ? modalStyles.itemCardSelected : {}),
                         ...(!isCompatible ? modalStyles.itemCardIncompatible : {})
                       }}
@@ -315,7 +372,10 @@ export const EquipmentSelectionModal: React.FC<EquipmentSelectionModalProps> = (
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.05 }}
-                      whileHover={isCompatible ? { scale: 1.02 } : undefined}
+                      whileHover={isCompatible ? {
+                        scale: 1.02,
+                        boxShadow: borderStyle.boxShadow ? `0 0 12px ${borderStyle.borderColor}40` : undefined
+                      } : undefined}
                       whileTap={isCompatible ? { scale: 0.98 } : undefined}
                     >
                       <div style={modalStyles.itemHeader}>
@@ -384,10 +444,16 @@ export const EquipmentSelectionModal: React.FC<EquipmentSelectionModalProps> = (
                         {formatStatModifiers(item)}
                       </div>
 
-                      {!isCompatible && (
-                        <div style={modalStyles.incompatibleText}>
-                          {compatibility.reasons.join(', ')}
-                        </div>
+                      {!isCompatible && compatibility.reasons.length > 0 && (
+                        <motion.div
+                          style={modalStyles.incompatibleText}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.1 + index * 0.05 }}
+                        >
+                          <span style={{ fontSize: '0.85rem' }}>🔒</span>
+                          <span>{compatibility.reasons[0]}</span>
+                        </motion.div>
                       )}
                     </motion.div>
                   );
@@ -435,6 +501,19 @@ export const EquipmentSelectionModal: React.FC<EquipmentSelectionModalProps> = (
             )}
           </div>
         </div>
+
+        {/* Error Message Display */}
+        {errorMessage && (
+          <motion.div
+            style={modalStyles.errorMessage}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+          >
+            {errorMessage}
+          </motion.div>
+        )}
 
         {/* Actions */}
         <div style={modalStyles.actions}>

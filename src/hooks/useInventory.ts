@@ -550,6 +550,16 @@ export const useInventory = () => {
 
       const item = targetSlot.item;
 
+      // TASK 8.2: Check if item is equipped (can't consume equipped items)
+      if (isItemEquipped(itemId)) {
+        return {
+          success: false,
+          consumed: false,
+          effects: [],
+          message: "You can't use an equipped item! Unequip it first."
+        };
+      }
+
       // Check if item can be used
       if (!item.usable && item.itemType !== 'consumable') {
         return {

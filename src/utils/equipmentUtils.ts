@@ -1062,6 +1062,42 @@ export function getRestrictionMessage(
 }
 
 /**
+ * Get the emoji icon for an equipment slot
+ * @param slot - The equipment slot
+ * @returns Emoji icon representing the slot
+ *
+ * @example
+ * getEquipmentSlotIcon('weapon') => '⚔️'
+ * getEquipmentSlotIcon('helmet') => '⛑️'
+ * getEquipmentSlotIcon('ring1') => '💍'
+ */
+export function getEquipmentSlotIcon(slot: EquipmentSlot): string {
+  switch (slot) {
+    case 'helmet':
+      return '⛑️';
+    case 'necklace':
+      return '📿';
+    case 'armor':
+      return '🛡️';
+    case 'weapon':
+      return '⚔️';
+    case 'shield':
+      return '🛡️';
+    case 'gloves':
+      return '🧤';
+    case 'boots':
+      return '👢';
+    case 'ring1':
+    case 'ring2':
+      return '💍';
+    case 'charm':
+      return '🔮';
+    default:
+      return '⚡'; // Fallback generic icon
+  }
+}
+
+/**
  * Equipment utilities export
  */
 export const equipmentUtils = {
@@ -1081,6 +1117,7 @@ export const equipmentUtils = {
   formatSlotNameForDisplay,
   getArticle,
   getRestrictionMessage,
+  getEquipmentSlotIcon,
   clearCompatibilityCache,
   getCompatibilityCacheStats
 };

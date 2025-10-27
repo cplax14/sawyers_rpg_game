@@ -7,6 +7,7 @@ import { removeExhaustion, calculateBreedingCost, generateOffspring, validateBre
 import { BreedingRecipe } from '../types/breeding';
 import { checkRecipeDiscoveryAfterCapture } from '../utils/recipeDiscovery';
 import { ExperienceCalculator } from '../utils/experienceUtils';
+import { cleanInvalidEquipment, migrateEquipmentSlots, EQUIPMENT_VERSION } from '../utils/equipmentValidation';
 
 // Global type declaration for auto-save manager
 declare global {
@@ -137,6 +138,18 @@ export interface ItemDrop {
   maxQuantity: number;
 }
 
+/**
+ * Game metadata for tracking system versions and save information
+ */
+export interface GameMetadata {
+  /** Equipment system version for migration tracking */
+  equipmentVersion?: string;
+  /** Timestamp when the game was last saved */
+  savedAt?: string;
+  /** Overall game version (for future use) */
+  gameVersion?: string;
+}
+
 // Main game state for React
 export interface ReactGameState {
   // Core game data
@@ -193,6 +206,9 @@ export interface ReactGameState {
   breedingAttempts: number;
   discoveredRecipes: string[];
   breedingMaterials: Record<string, number>;
+
+  // System metadata for tracking versions and migrations
+  metadata?: GameMetadata;
 }
 
 export interface GameSettings {
@@ -1375,7 +1391,13 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
           // Breeding system data
           breedingAttempts: state.breedingAttempts,
           discoveredRecipes: state.discoveredRecipes,
-          breedingMaterials: state.breedingMaterials
+          breedingMaterials: state.breedingMaterials,
+          // System metadata with version tracking
+          metadata: {
+            ...state.metadata,
+            equipmentVersion: EQUIPMENT_VERSION,
+            savedAt: new Date().toISOString()
+          }
         };
 
         // Save to localStorage
@@ -1415,6 +1437,21 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
 
         const parsedData = JSON.parse(savedData);
         console.log(`✅ Game loaded from slot ${action.payload.slotIndex + 1}`);
+
+        // Migrate and validate equipment if present
+        if (parsedData.player?.equipment) {
+          // Get saved equipment version (defaults to '0.0' if not present)
+          const savedVersion = parsedData.metadata?.equipmentVersion || '0.0';
+
+          // First migrate from saved version to current version
+          parsedData.player.equipment = migrateEquipmentSlots(
+            parsedData.player.equipment,
+            savedVersion
+          );
+
+          // Then validate and clean invalid items
+          parsedData.player.equipment = cleanInvalidEquipment(parsedData.player.equipment);
+        }
 
         // Validate and migrate creature collection if present
         let loadedCreatures = parsedData.creatures;
