@@ -443,6 +443,41 @@ export const useEquipment = () => {
       }
     }
 
+    // Check two-handed weapon conflicts (FR-7)
+    // If equipping a two-handed weapon, warn if a shield is equipped
+    if ((item as any).twoHanded && slot === 'weapon') {
+      const equippedShield = equipmentState.equipped.shield;
+      if (equippedShield) {
+        warnings.push({
+          type: 'two_handed_conflict',
+          severity: 'high' as const,
+          description: 'Equipping this two-handed weapon will unequip your shield',
+          affectedSlots: ['shield']
+        });
+      }
+    }
+
+    // If equipping a shield, warn if a two-handed weapon is equipped
+    if (slot === 'shield') {
+      const equippedWeapon = equipmentState.equipped.weapon;
+      if (equippedWeapon && (equippedWeapon as any).twoHanded) {
+        warnings.push({
+          type: 'two_handed_conflict',
+          severity: 'high' as const,
+          description: 'Cannot equip shield while using a two-handed weapon',
+          affectedSlots: ['weapon']
+        });
+        // This should prevent equipping
+        reasons.push({
+          type: 'two_handed_conflict',
+          satisfied: false,
+          current: 'two-handed weapon equipped',
+          required: 'one-handed weapon or no weapon',
+          description: 'Cannot equip shield while using a two-handed weapon'
+        });
+      }
+    }
+
     const canEquip = reasons.every(reason => reason.satisfied !== false);
 
     // Add suggestions

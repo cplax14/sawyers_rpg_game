@@ -45,12 +45,17 @@ const DEFAULT_INVENTORY_CONFIG = {
 // Note: This helper is used during initialization. The equipped flag is added dynamically
 // by the inventory hook based on current equipment state.
 const convertToEnhancedItem = (reactItem: ReactItem): EnhancedItem => {
+  // Check if item already has equipmentSlot (for test mocks and pre-converted items)
+  const hasExplicitSlot = 'equipmentSlot' in reactItem && reactItem.equipmentSlot !== undefined;
+
   return {
     ...reactItem,
     category: reactItem.type === 'consumable' ? 'consumables' :
               reactItem.type === 'material' ? 'materials' :
               reactItem.type === 'quest' ? 'quest' : 'equipment',
-    equipmentSlot: reactItem.type === 'weapon' ? 'weapon' :
+    // Preserve explicit equipmentSlot if provided, otherwise infer from type
+    equipmentSlot: hasExplicitSlot ? (reactItem as any).equipmentSlot :
+                   reactItem.type === 'weapon' ? 'weapon' :
                    reactItem.type === 'armor' ? 'armor' :
                    reactItem.type === 'accessory' ? 'accessory' : undefined,
     equipmentSubtype: reactItem.subtype as any,
@@ -159,6 +164,37 @@ export const useInventory = () => {
       savedFilters: {}
     };
   });
+
+  // Sync inventory state when game context inventory changes
+  // This is critical for tests and multi-hook scenarios where context is updated externally
+  useEffect(() => {
+    const contextInventory = gameState.state.inventory;
+
+    // Update main container items to match context
+    setInventoryState(prev => {
+      const mainContainer: InventoryContainer = {
+        ...prev.containers.main,
+        items: contextInventory.map((item, index) => ({
+          slotId: `main_${index}`,
+          item: convertToEnhancedItem(item),
+          quantity: item.quantity,
+          locked: false,
+          metadata: {
+            isFavorite: false,
+            isNew: false,
+            lastModified: new Date()
+          }
+        }))
+      };
+
+      return {
+        ...prev,
+        containers: { ...prev.containers, main: mainContainer },
+        usedCapacity: contextInventory.length,
+        totalWeight: contextInventory.reduce((sum, item) => sum + (item.quantity || 1), 0)
+      };
+    });
+  }, [gameState.state.inventory]);
 
   // Event listeners
   const [eventListeners, setEventListeners] = useState<Set<InventoryEventCallback>>(new Set());

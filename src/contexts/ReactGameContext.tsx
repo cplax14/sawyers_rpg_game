@@ -326,15 +326,19 @@ function calculatePlayerStatsWithEquipment(
 
     // Find item in inventory
     const item = inventory.find(invItem => invItem.id === itemId);
-    if (!item || !item.stats) return;
+    if (!item) return;
+
+    // Support both legacy 'stats' and new 'statModifiers' fields
+    const itemStats = item.stats || (item as any).statModifiers;
+    if (!itemStats) return;
 
     // Add stat bonuses from equipment
-    stats.attack += item.stats.attack || 0;
-    stats.defense += item.stats.defense || 0;
-    stats.magicAttack += item.stats.magicAttack || 0;
-    stats.magicDefense += item.stats.magicDefense || 0;
-    stats.speed += item.stats.speed || 0;
-    stats.accuracy += item.stats.accuracy || 0;
+    stats.attack += itemStats.attack || 0;
+    stats.defense += itemStats.defense || 0;
+    stats.magicAttack += itemStats.magicAttack || 0;
+    stats.magicDefense += itemStats.magicDefense || 0;
+    stats.speed += itemStats.speed || 0;
+    stats.accuracy += itemStats.accuracy || 0;
   });
 
   return stats;
@@ -928,7 +932,8 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
       };
 
     case 'EQUIP_ITEM':
-      // Equipment state update with automatic stat recalculation
+      // Equipment state update
+      // Note: Stat recalculation is handled by useEquipment hook via UPDATE_PLAYER_STATS
       if (!state.player) {
         console.warn('⚠️ [EQUIP_ITEM] Cannot equip item: No player found');
         return state;
@@ -949,31 +954,21 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         return state;
       }
 
-      // Update equipment
-      const updatedPlayerWithEquipment = {
-        ...state.player,
-        equipment: {
-          ...state.player.equipment,
-          [slot]: equipItemId
-        }
-      };
-
-      // Recalculate stats with new equipment
-      const recalculatedStats = calculatePlayerStatsWithEquipment(
-        updatedPlayerWithEquipment,
-        state.inventory
-      );
-
+      // Update equipment (stats will be recalculated by useEquipment hook)
       return {
         ...state,
         player: {
-          ...updatedPlayerWithEquipment,
-          stats: recalculatedStats
+          ...state.player,
+          equipment: {
+            ...state.player.equipment,
+            [slot]: equipItemId
+          }
         }
       };
 
     case 'UNEQUIP_ITEM':
-      // Unequip item from slot with automatic stat recalculation
+      // Unequip item from slot
+      // Note: Stat recalculation is handled by useEquipment hook via UPDATE_PLAYER_STATS
       if (!state.player) {
         console.warn('⚠️ [UNEQUIP_ITEM] Cannot unequip item: No player found');
         return state;
@@ -988,26 +983,15 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         return state;
       }
 
-      // Update equipment
-      const updatedPlayerAfterUnequip = {
-        ...state.player,
-        equipment: {
-          ...state.player.equipment,
-          [unequipSlot]: null
-        }
-      };
-
-      // Recalculate stats without the unequipped item
-      const recalculatedStatsAfterUnequip = calculatePlayerStatsWithEquipment(
-        updatedPlayerAfterUnequip,
-        state.inventory
-      );
-
+      // Update equipment (stats will be recalculated by useEquipment hook)
       return {
         ...state,
         player: {
-          ...updatedPlayerAfterUnequip,
-          stats: recalculatedStatsAfterUnequip
+          ...state.player,
+          equipment: {
+            ...state.player.equipment,
+            [unequipSlot]: null
+          }
         }
       };
 
