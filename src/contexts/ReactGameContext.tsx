@@ -309,6 +309,37 @@ export type ReactGameAction =
   | { type: 'APPLY_EXHAUSTION'; payload: { creatureId: string } }
   | { type: 'REMOVE_EXHAUSTION'; payload: { creatureId: string; levelsToRemove: number; costGold?: number } };
 
+/**
+ * Helper function to calculate player stats including equipment bonuses
+ * This ensures stats are always up-to-date when equipment changes
+ */
+function calculatePlayerStatsWithEquipment(
+  player: ReactPlayer,
+  inventory: ReactItem[]
+): PlayerStats {
+  // Start with base stats
+  const stats = { ...player.baseStats };
+
+  // Add bonuses from each equipped item
+  Object.values(player.equipment).forEach(itemId => {
+    if (!itemId) return;
+
+    // Find item in inventory
+    const item = inventory.find(invItem => invItem.id === itemId);
+    if (!item || !item.stats) return;
+
+    // Add stat bonuses from equipment
+    stats.attack += item.stats.attack || 0;
+    stats.defense += item.stats.defense || 0;
+    stats.magicAttack += item.stats.magicAttack || 0;
+    stats.magicDefense += item.stats.magicDefense || 0;
+    stats.speed += item.stats.speed || 0;
+    stats.accuracy += item.stats.accuracy || 0;
+  });
+
+  return stats;
+}
+
 // Default settings
 const defaultSettings: GameSettings = {
   masterVolume: 0.8,
@@ -897,8 +928,7 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
       };
 
     case 'EQUIP_ITEM':
-      // Equipment state update - business logic handled in useEquipment hook
-      // Reducer provides basic safety checks for defensive programming
+      // Equipment state update with automatic stat recalculation
       if (!state.player) {
         console.warn('⚠️ [EQUIP_ITEM] Cannot equip item: No player found');
         return state;
@@ -919,20 +949,31 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         return state;
       }
 
+      // Update equipment
+      const updatedPlayerWithEquipment = {
+        ...state.player,
+        equipment: {
+          ...state.player.equipment,
+          [slot]: equipItemId
+        }
+      };
+
+      // Recalculate stats with new equipment
+      const recalculatedStats = calculatePlayerStatsWithEquipment(
+        updatedPlayerWithEquipment,
+        state.inventory
+      );
+
       return {
         ...state,
         player: {
-          ...state.player,
-          equipment: {
-            ...state.player.equipment,
-            [slot]: equipItemId
-          }
+          ...updatedPlayerWithEquipment,
+          stats: recalculatedStats
         }
       };
 
     case 'UNEQUIP_ITEM':
-      // Unequip item from slot - business logic handled in useEquipment hook
-      // Reducer provides basic safety checks for defensive programming
+      // Unequip item from slot with automatic stat recalculation
       if (!state.player) {
         console.warn('⚠️ [UNEQUIP_ITEM] Cannot unequip item: No player found');
         return state;
@@ -947,24 +988,43 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         return state;
       }
 
+      // Update equipment
+      const updatedPlayerAfterUnequip = {
+        ...state.player,
+        equipment: {
+          ...state.player.equipment,
+          [unequipSlot]: null
+        }
+      };
+
+      // Recalculate stats without the unequipped item
+      const recalculatedStatsAfterUnequip = calculatePlayerStatsWithEquipment(
+        updatedPlayerAfterUnequip,
+        state.inventory
+      );
+
       return {
         ...state,
         player: {
-          ...state.player,
-          equipment: {
-            ...state.player.equipment,
-            [unequipSlot]: null
-          }
+          ...updatedPlayerAfterUnequip,
+          stats: recalculatedStatsAfterUnequip
         }
       };
 
     case 'UPDATE_PLAYER_STATS':
       if (!state.player) return state;
+
+      // Extract stats from payload (sent from useEquipment.ts)
+      // Payload structure: { playerId: string, stats: Partial<PlayerStats> }
+      const statsToUpdate = action.payload.stats;
+
+      // Merge equipment bonuses into player.stats
+      // This ensures combat calculations use equipment-modified stats
       return {
         ...state,
         player: {
           ...state.player,
-          stats: { ...state.player.stats, ...action.payload.stats }
+          stats: { ...state.player.stats, ...statsToUpdate }
         },
       };
 
