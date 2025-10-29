@@ -40,10 +40,7 @@ export const RecipeDiscoveryManager: React.FC = () => {
   }
 
   return (
-    <RecipeDiscoveryNotification
-      recipes={currentDiscovery}
-      onDismiss={dismissCurrentDiscovery}
-    />
+    <RecipeDiscoveryNotification recipes={currentDiscovery} onDismiss={dismissCurrentDiscovery} />
   );
 };
 

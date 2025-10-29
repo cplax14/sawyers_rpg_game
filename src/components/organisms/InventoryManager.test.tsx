@@ -14,8 +14,8 @@ jest.mock('../../contexts/InventoryNavigationContext', () => ({
   useInventoryNavigation: () => ({
     navigationState: { currentTab: 'equipment' },
     navigateToTab: jest.fn(),
-    consumePendingAction: jest.fn()
-  })
+    consumePendingAction: jest.fn(),
+  }),
 }));
 
 // Mock all the hooks and components used by InventoryManager
@@ -29,41 +29,41 @@ jest.mock('../../hooks/useInventoryAnimations');
 
 // Mock child components
 jest.mock('./EquipmentScreen', () => ({
-  EquipmentScreen: () => <div data-testid="equipment-screen">Equipment Screen</div>
+  EquipmentScreen: () => <div data-testid='equipment-screen'>Equipment Screen</div>,
 }));
 jest.mock('./InventoryScreen', () => ({
-  InventoryScreen: () => <div data-testid="inventory-screen">Inventory Screen</div>
+  InventoryScreen: () => <div data-testid='inventory-screen'>Inventory Screen</div>,
 }));
 jest.mock('./CreatureScreen', () => ({
-  CreatureScreen: () => <div data-testid="creature-screen">Creature Screen</div>
+  CreatureScreen: () => <div data-testid='creature-screen'>Creature Screen</div>,
 }));
 jest.mock('./StatsScreen', () => ({
-  StatsScreen: () => <div data-testid="stats-screen">Stats Screen</div>
+  StatsScreen: () => <div data-testid='stats-screen'>Stats Screen</div>,
 }));
 jest.mock('../molecules/NavigationBar', () => ({
   NavigationBar: ({ onClose }: { onClose: () => void }) => (
-    <div data-testid="navigation-bar">
+    <div data-testid='navigation-bar'>
       <button onClick={onClose}>Close</button>
     </div>
-  )
+  ),
 }));
 jest.mock('../molecules/KeyboardShortcutsHelp', () => ({
   __esModule: true,
   default: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) =>
     isOpen ? (
-      <div data-testid="keyboard-help">
+      <div data-testid='keyboard-help'>
         <button onClick={onClose}>Close Help</button>
       </div>
-    ) : null
+    ) : null,
 }));
 jest.mock('../molecules/CombatRestrictionBanner', () => ({
-  CombatRestrictionBanner: () => <div data-testid="combat-banner">Combat Restrictions</div>
+  CombatRestrictionBanner: () => <div data-testid='combat-banner'>Combat Restrictions</div>,
 }));
 jest.mock('../molecules/GamePauseIndicator', () => ({
-  InventoryPauseIndicator: () => <div data-testid="pause-indicator">Game Paused</div>
+  InventoryPauseIndicator: () => <div data-testid='pause-indicator'>Game Paused</div>,
 }));
 jest.mock('../molecules/InventoryFeedback', () => ({
-  InventoryFeedback: () => <div data-testid="inventory-feedback">Feedback</div>
+  InventoryFeedback: () => <div data-testid='inventory-feedback'>Feedback</div>,
 }));
 
 // Import mocked modules
@@ -77,11 +77,19 @@ import { useInventoryAnimations } from '../../hooks/useInventoryAnimations';
 
 const mockUseInventory = useInventory as jest.MockedFunction<typeof useInventory>;
 const mockUsePlayer = usePlayer as jest.MockedFunction<typeof usePlayer>;
-const mockUseResponsiveInventory = useResponsiveInventory as jest.MockedFunction<typeof useResponsiveInventory>;
-const mockUseInventoryKeyboardShortcuts = useInventoryKeyboardShortcuts as jest.MockedFunction<typeof useInventoryKeyboardShortcuts>;
-const mockUseCombatInventoryRestrictions = useCombatInventoryRestrictions as jest.MockedFunction<typeof useCombatInventoryRestrictions>;
+const mockUseResponsiveInventory = useResponsiveInventory as jest.MockedFunction<
+  typeof useResponsiveInventory
+>;
+const mockUseInventoryKeyboardShortcuts = useInventoryKeyboardShortcuts as jest.MockedFunction<
+  typeof useInventoryKeyboardShortcuts
+>;
+const mockUseCombatInventoryRestrictions = useCombatInventoryRestrictions as jest.MockedFunction<
+  typeof useCombatInventoryRestrictions
+>;
 const mockUseInventoryPause = useInventoryPause as jest.MockedFunction<typeof useInventoryPause>;
-const mockUseInventoryAnimations = useInventoryAnimations as jest.MockedFunction<typeof useInventoryAnimations>;
+const mockUseInventoryAnimations = useInventoryAnimations as jest.MockedFunction<
+  typeof useInventoryAnimations
+>;
 
 describe('InventoryManager Component', () => {
   const mockOnClose = jest.fn();
@@ -90,16 +98,16 @@ describe('InventoryManager Component', () => {
     inventory: {
       inventoryState: {
         containers: {
-          main: { slots: [], items: [] }
-        }
-      }
+          main: { slots: [], items: [] },
+        },
+      },
     },
     player: {
       player: {
         id: 'player-1',
         name: 'Test Player',
-        level: 5
-      }
+        level: 5,
+      },
     },
     responsive: {
       isMobile: false,
@@ -107,12 +115,12 @@ describe('InventoryManager Component', () => {
       isDesktop: true,
       layoutConfig: {
         gridColumns: { mobile: 4, tablet: 6, desktop: 8 },
-        maxWidth: { mobile: '100%', tablet: '768px', desktop: '1024px' }
+        maxWidth: { mobile: '100%', tablet: '768px', desktop: '1024px' },
       },
       getInventoryModalSize: () => ({ width: 800, height: 600 }),
       getTabStyle: () => ({}),
       getResponsiveSpacing: () => 16,
-      getResponsiveFontSize: () => 14
+      getResponsiveFontSize: () => 14,
     },
     combatRestrictions: {
       isInCombat: false,
@@ -120,19 +128,19 @@ describe('InventoryManager Component', () => {
       restrictedActions: [],
       canAccessTab: jest.fn().mockReturnValue(true),
       canPerformAction: jest.fn().mockReturnValue(true),
-      getRestrictedMessage: jest.fn().mockReturnValue('')
+      getRestrictedMessage: jest.fn().mockReturnValue(''),
     },
     gamePause: {
       pauseForInventory: jest.fn(),
       resumeFromInventory: jest.fn(),
       shouldPauseForInventory: jest.fn().mockReturnValue(false),
-      isInventoryPaused: false
+      isInventoryPaused: false,
     },
     animations: {
       animations: {
         containerVariants: {},
         tabVariants: {},
-        contentVariants: {}
+        contentVariants: {},
       },
       feedbackQueue: [],
       removeFeedback: jest.fn(),
@@ -141,8 +149,8 @@ describe('InventoryManager Component', () => {
       triggerUseItem: jest.fn(),
       triggerDeleteItem: jest.fn(),
       triggerSaveLoadout: jest.fn(),
-      triggerAutoSort: jest.fn()
-    }
+      triggerAutoSort: jest.fn(),
+    },
   };
 
   beforeEach(() => {
@@ -156,7 +164,7 @@ describe('InventoryManager Component', () => {
       shortcuts: [],
       getShortcutsByCategory: jest.fn().mockReturnValue({}),
       getShortcutDescription: jest.fn().mockReturnValue(''),
-      isShortcutAvailable: jest.fn().mockReturnValue(true)
+      isShortcutAvailable: jest.fn().mockReturnValue(true),
     });
     mockUseCombatInventoryRestrictions.mockReturnValue(defaultMocks.combatRestrictions as any);
     mockUseInventoryPause.mockReturnValue(defaultMocks.gamePause as any);
@@ -167,7 +175,7 @@ describe('InventoryManager Component', () => {
     const defaultProps = {
       isOpen: true,
       onClose: mockOnClose,
-      ...props
+      ...props,
     };
 
     return render(<InventoryManager {...defaultProps} />);
@@ -238,7 +246,7 @@ describe('InventoryManager Component', () => {
       mockUseResponsiveInventory.mockReturnValue({
         ...defaultMocks.responsive,
         isMobile: true,
-        isDesktop: false
+        isDesktop: false,
       } as any);
 
       renderInventoryManager();
@@ -250,7 +258,7 @@ describe('InventoryManager Component', () => {
       mockUseResponsiveInventory.mockReturnValue({
         ...defaultMocks.responsive,
         isTablet: true,
-        isDesktop: false
+        isDesktop: false,
       } as any);
 
       renderInventoryManager();
@@ -265,7 +273,7 @@ describe('InventoryManager Component', () => {
       mockUseResponsiveInventory.mockReturnValue({
         ...defaultMocks.responsive,
         getResponsiveSpacing: mockGetResponsiveSpacing,
-        getResponsiveFontSize: mockGetResponsiveFontSize
+        getResponsiveFontSize: mockGetResponsiveFontSize,
       } as any);
 
       renderInventoryManager();
@@ -279,7 +287,7 @@ describe('InventoryManager Component', () => {
     it('should show combat restriction banner when in combat', () => {
       mockUseCombatInventoryRestrictions.mockReturnValue({
         ...defaultMocks.combatRestrictions,
-        isInCombat: true
+        isInCombat: true,
       } as any);
 
       renderInventoryManager();
@@ -292,7 +300,7 @@ describe('InventoryManager Component', () => {
         ...defaultMocks.combatRestrictions,
         isInCombat: true,
         allowedTabs: ['items', 'stats'],
-        canAccessTab: jest.fn().mockImplementation((tab) => ['items', 'stats'].includes(tab))
+        canAccessTab: jest.fn().mockImplementation(tab => ['items', 'stats'].includes(tab)),
       } as any);
 
       renderInventoryManager({ initialTab: 'equipment' });
@@ -302,13 +310,15 @@ describe('InventoryManager Component', () => {
     });
 
     it('should show restricted message for forbidden actions', () => {
-      const mockGetRestrictedMessage = jest.fn().mockReturnValue('Cannot equip items during combat');
+      const mockGetRestrictedMessage = jest
+        .fn()
+        .mockReturnValue('Cannot equip items during combat');
 
       mockUseCombatInventoryRestrictions.mockReturnValue({
         ...defaultMocks.combatRestrictions,
         isInCombat: true,
         canPerformAction: jest.fn().mockReturnValue(false),
-        getRestrictedMessage: mockGetRestrictedMessage
+        getRestrictedMessage: mockGetRestrictedMessage,
       } as any);
 
       renderInventoryManager();
@@ -324,7 +334,7 @@ describe('InventoryManager Component', () => {
       mockUseInventoryPause.mockReturnValue({
         ...defaultMocks.gamePause,
         shouldPauseForInventory: jest.fn().mockReturnValue(true),
-        pauseForInventory: mockPauseForInventory
+        pauseForInventory: mockPauseForInventory,
       } as any);
 
       renderInventoryManager();
@@ -335,7 +345,7 @@ describe('InventoryManager Component', () => {
     it('should show pause indicator when game is paused', () => {
       mockUseInventoryPause.mockReturnValue({
         ...defaultMocks.gamePause,
-        isInventoryPaused: true
+        isInventoryPaused: true,
       } as any);
 
       renderInventoryManager();
@@ -348,7 +358,7 @@ describe('InventoryManager Component', () => {
 
       mockUseInventoryPause.mockReturnValue({
         ...defaultMocks.gamePause,
-        resumeFromInventory: mockResumeFromInventory
+        resumeFromInventory: mockResumeFromInventory,
       } as any);
 
       const { rerender } = renderInventoryManager();
@@ -389,13 +399,11 @@ describe('InventoryManager Component', () => {
     });
 
     it('should handle animation feedback queue', () => {
-      const mockFeedbackQueue = [
-        { id: '1', type: 'success', message: 'Item equipped!' }
-      ];
+      const mockFeedbackQueue = [{ id: '1', type: 'success', message: 'Item equipped!' }];
 
       mockUseInventoryAnimations.mockReturnValue({
         ...defaultMocks.animations,
-        feedbackQueue: mockFeedbackQueue
+        feedbackQueue: mockFeedbackQueue,
       } as any);
 
       renderInventoryManager();
@@ -410,7 +418,7 @@ describe('InventoryManager Component', () => {
       mockUseInventoryAnimations.mockReturnValue({
         ...defaultMocks.animations,
         triggerEquipSuccess: mockTriggerEquipSuccess,
-        triggerUseItem: mockTriggerUseItem
+        triggerUseItem: mockTriggerUseItem,
       } as any);
 
       renderInventoryManager();
@@ -464,7 +472,7 @@ describe('InventoryManager Component', () => {
         getInventoryModalSize: () => null,
         getTabStyle: () => null,
         getResponsiveSpacing: () => 0,
-        getResponsiveFontSize: () => 0
+        getResponsiveFontSize: () => 0,
       } as any);
 
       renderInventoryManager();

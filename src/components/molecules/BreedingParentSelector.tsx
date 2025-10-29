@@ -152,9 +152,8 @@ export const BreedingParentSelector: React.FC<BreedingParentSelectorProps> = ({
     // Apply search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(c =>
-        c.name.toLowerCase().includes(query) ||
-        c.species.toLowerCase().includes(query)
+      filtered = filtered.filter(
+        c => c.name.toLowerCase().includes(query) || c.species.toLowerCase().includes(query)
       );
     }
 
@@ -182,19 +181,25 @@ export const BreedingParentSelector: React.FC<BreedingParentSelectorProps> = ({
     setShowModal(true);
   }, []);
 
-  const handleCreatureSelect = useCallback((creature: EnhancedCreature) => {
-    onSelect(creature);
-    setShowModal(false);
-    setSearchQuery('');
-    setFilterRarity(null);
-    setFilterBredOnly(false);
-  }, [onSelect]);
+  const handleCreatureSelect = useCallback(
+    (creature: EnhancedCreature) => {
+      onSelect(creature);
+      setShowModal(false);
+      setSearchQuery('');
+      setFilterRarity(null);
+      setFilterBredOnly(false);
+    },
+    [onSelect]
+  );
 
-  const handleClearSelection = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    // Create a dummy creature to clear (will be handled by parent)
-    onSelect(null as any);
-  }, [onSelect]);
+  const handleClearSelection = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      // Create a dummy creature to clear (will be handled by parent)
+      onSelect(null as any);
+    },
+    [onSelect]
+  );
 
   return (
     <div style={selectorStyles.container}>
@@ -217,15 +222,10 @@ export const BreedingParentSelector: React.FC<BreedingParentSelectorProps> = ({
               creature={selectedCreature}
               showActions={false}
               showDetails={true}
-              size="md"
+              size='md'
             />
             <div style={selectorStyles.changeButton}>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={handleSlotClick}
-                fullWidth
-              >
+              <Button variant='secondary' size='sm' onClick={handleSlotClick} fullWidth>
                 Change Parent
               </Button>
             </div>
@@ -243,16 +243,16 @@ export const BreedingParentSelector: React.FC<BreedingParentSelectorProps> = ({
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         title={`Select ${label}`}
-        size="xl"
+        size='xl'
       >
         <div style={selectorStyles.modalContent}>
           {/* Search */}
           <div style={selectorStyles.searchContainer}>
             <input
-              type="text"
-              placeholder="Search creatures..."
+              type='text'
+              placeholder='Search creatures...'
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
               style={selectorStyles.searchInput}
             />
             <span style={selectorStyles.searchIcon}>🔍</span>
@@ -319,7 +319,7 @@ export const BreedingParentSelector: React.FC<BreedingParentSelectorProps> = ({
                         creature={creature}
                         showActions={false}
                         showDetails={false}
-                        size="sm"
+                        size='sm'
                       />
                     </div>
                   </motion.div>

@@ -42,12 +42,12 @@ export const validateParticleCount = (
     if (count > MAX_PARTICLES) {
       console.error(
         `🚨 [${location}] Particle count (${count}) EXCEEDS maximum (${MAX_PARTICLES}). ` +
-        `This will cause performance issues! Reduce particle count immediately.`
+          `This will cause performance issues! Reduce particle count immediately.`
       );
     } else if (count > RECOMMENDED_MAX_PARTICLES) {
       console.warn(
         `⚠️ [${location}] Particle count (${count}) exceeds recommended max (${RECOMMENDED_MAX_PARTICLES}). ` +
-        `Consider reducing for better performance.`
+          `Consider reducing for better performance.`
       );
     }
   }
@@ -63,12 +63,12 @@ export const validateParticleCount = (
  * Applied to visual effects when isCritical is true
  */
 export const CRITICAL_HIT_MULTIPLIERS = {
-  particleCount: 1.5,      // 50% more particles
-  scale: 1.4,              // 40% larger visual effects
-  glowOpacity: 1.5,        // 50% brighter glows
-  screenFlash: 2.0,        // 2x stronger screen flash
-  impactDuration: 1.3,     // 30% longer impact phase
-  shakeIntensity: 4        // 4px screen shake
+  particleCount: 1.5, // 50% more particles
+  scale: 1.4, // 40% larger visual effects
+  glowOpacity: 1.5, // 50% brighter glows
+  screenFlash: 2.0, // 2x stronger screen flash
+  impactDuration: 1.3, // 30% longer impact phase
+  shakeIntensity: 4, // 4px screen shake
 } as const;
 
 export interface AnimationTimings {
@@ -146,9 +146,9 @@ export interface DebuffAnimationConfig {
 }
 
 // Animation duration constants by attack weight
-export const FAST_ATTACK_DURATION = 600;      // 400-600ms total (dagger, light spells)
-export const MEDIUM_ATTACK_DURATION = 900;    // 600-1000ms total (sword, standard spells)
-export const HEAVY_ATTACK_DURATION = 1400;    // 1000-1500ms total (axe, powerful spells)
+export const FAST_ATTACK_DURATION = 600; // 400-600ms total (dagger, light spells)
+export const MEDIUM_ATTACK_DURATION = 900; // 600-1000ms total (sword, standard spells)
+export const HEAVY_ATTACK_DURATION = 1400; // 1000-1500ms total (axe, powerful spells)
 
 // Magic Bolt specific timings
 export const MAGIC_BOLT_TIMINGS: AnimationTimings = {
@@ -156,63 +156,63 @@ export const MAGIC_BOLT_TIMINGS: AnimationTimings = {
   cast: 200,
   travel: 600,
   impact: 200,
-  total: 1400
+  total: 1400,
 };
 
 // Animation spring configurations
 export const SPRING_CONFIG = {
   smooth: {
-    type: "spring" as const,
+    type: 'spring' as const,
     stiffness: 100,
-    damping: 15
+    damping: 15,
   },
   bouncy: {
-    type: "spring" as const,
+    type: 'spring' as const,
     stiffness: 300,
-    damping: 20
+    damping: 20,
   },
   stiff: {
-    type: "spring" as const,
+    type: 'spring' as const,
     stiffness: 400,
-    damping: 25
-  }
+    damping: 25,
+  },
 };
 
 // Element color palette constants (per PRD specifications)
 export const FIRE_COLORS = {
-  primary: '#ff6b35',    // Orange
-  secondary: '#ff4444',  // Red
-  accent: '#ffaa00'      // Yellow-orange
+  primary: '#ff6b35', // Orange
+  secondary: '#ff4444', // Red
+  accent: '#ffaa00', // Yellow-orange
 };
 
 export const ICE_COLORS = {
-  primary: '#4da6ff',    // Blue
-  secondary: '#b3e0ff',  // Light blue
-  accent: '#ffffff'      // White
+  primary: '#4da6ff', // Blue
+  secondary: '#b3e0ff', // Light blue
+  accent: '#ffffff', // White
 };
 
 export const LIGHTNING_COLORS = {
-  primary: '#ffeb3b',    // Yellow
-  secondary: '#fff176',  // Light yellow
-  accent: '#ffffff'      // White
+  primary: '#ffeb3b', // Yellow
+  secondary: '#fff176', // Light yellow
+  accent: '#ffffff', // White
 };
 
 export const HOLY_COLORS = {
-  primary: '#ffd700',    // Gold
-  secondary: '#ffffcc',  // Light gold
-  accent: '#ffffff'      // White
+  primary: '#ffd700', // Gold
+  secondary: '#ffffcc', // Light gold
+  accent: '#ffffff', // White
 };
 
 export const ARCANE_COLORS = {
-  primary: '#9c27b0',    // Purple
-  secondary: '#ba68c8',  // Light purple
-  accent: '#4a148c'      // Dark purple
+  primary: '#9c27b0', // Purple
+  secondary: '#ba68c8', // Light purple
+  accent: '#4a148c', // Dark purple
 };
 
 export const POISON_COLORS = {
-  primary: '#8bc34a',    // Green
-  secondary: '#33691e',  // Dark green
-  accent: '#7b1fa2'      // Purple tint
+  primary: '#8bc34a', // Green
+  secondary: '#33691e', // Dark green
+  accent: '#7b1fa2', // Purple tint
 };
 
 // Legacy color schemes (kept for backward compatibility with existing Magic Bolt)
@@ -220,21 +220,21 @@ export const ELEMENT_COLORS = {
   arcane: {
     primary: '#8b5cf6',
     glow: '#a78bfa',
-    particles: '#c4b5fd'
+    particles: '#c4b5fd',
   },
   fire: {
     primary: '#f59e0b',
     glow: '#fbbf24',
-    particles: '#fcd34d'
+    particles: '#fcd34d',
   },
   ice: {
     primary: '#3b82f6',
     glow: '#60a5fa',
-    particles: '#93c5fd'
+    particles: '#93c5fd',
   },
   lightning: {
     primary: '#eab308',
     glow: '#facc15',
-    particles: '#fde047'
-  }
+    particles: '#fde047',
+  },
 };

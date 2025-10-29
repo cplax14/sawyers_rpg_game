@@ -70,7 +70,7 @@ export const ACTIVITY_BASE_XP: Record<ExperienceActivity, number> = {
   crafting: 20,
   trading: 10,
   discovery: 35,
-  achievement: 100
+  achievement: 100,
 };
 
 const ACTIVITY_VARIANCE: Record<ExperienceActivity, { min: number; max: number }> = {
@@ -81,7 +81,7 @@ const ACTIVITY_VARIANCE: Record<ExperienceActivity, { min: number; max: number }
   crafting: { min: 0.8, max: 1.4 },
   trading: { min: 0.6, max: 1.2 },
   discovery: { min: 1.2, max: 2.5 },
-  achievement: { min: 1.0, max: 3.0 }
+  achievement: { min: 1.0, max: 3.0 },
 };
 
 export class ExperienceCalculator {
@@ -103,7 +103,7 @@ export class ExperienceCalculator {
     const requirements: LevelRequirements = {
       level,
       requiredXP: totalXP,
-      cumulativeXP: totalXP
+      cumulativeXP: totalXP,
     };
 
     this.levelRequirementsCache.set(level, requirements);
@@ -180,7 +180,7 @@ export class ExperienceTracker {
       sessionStart: Date.now(),
       totalGainedThisSession: 0,
       activitiesThisSession: new Set(),
-      ...initialHistory
+      ...initialHistory,
     };
     this.multipliers = [];
     this.listeners = [];
@@ -201,7 +201,7 @@ export class ExperienceTracker {
       activity,
       timestamp: Date.now(),
       details,
-      multiplier: multiplier !== 1.0 ? multiplier : undefined
+      multiplier: multiplier !== 1.0 ? multiplier : undefined,
     };
 
     this.history.gains.push(gain);
@@ -219,7 +219,7 @@ export class ExperienceTracker {
       toLevel,
       timestamp: Date.now(),
       totalXP,
-      source
+      source,
     };
 
     this.history.levelEvents.push(event);
@@ -249,7 +249,7 @@ export class ExperienceTracker {
       crafting: 0,
       trading: 0,
       discovery: 0,
-      achievement: 0
+      achievement: 0,
     };
 
     const filteredGains = this.history.gains.filter(gain => {
@@ -266,9 +266,7 @@ export class ExperienceTracker {
   }
 
   getRecentGains(count: number = 10): ExperienceGain[] {
-    return this.history.gains
-      .slice(-count)
-      .reverse();
+    return this.history.gains.slice(-count).reverse();
   }
 
   getSessionStats(): {
@@ -283,7 +281,7 @@ export class ExperienceTracker {
     const averagePerHour = hoursPlayed > 0 ? this.history.totalGainedThisSession / hoursPlayed : 0;
 
     const sessionBreakdown = this.getExperienceBreakdown({
-      start: this.history.sessionStart
+      start: this.history.sessionStart,
     });
 
     const topActivity = Object.entries(sessionBreakdown)
@@ -295,22 +293,23 @@ export class ExperienceTracker {
       averagePerHour: Math.floor(averagePerHour),
       activitiesCount: this.history.activitiesThisSession.size,
       sessionDuration,
-      topActivity
+      topActivity,
     };
   }
 
   getLevelingHistory(limit: number = 20): LevelingEvent[] {
-    return this.history.levelEvents
-      .slice(-limit)
-      .reverse();
+    return this.history.levelEvents.slice(-limit).reverse();
   }
 
-  getActivityEfficiency(): Record<ExperienceActivity, {
-    totalXP: number;
-    gainCount: number;
-    averageXP: number;
-    lastGain: number;
-  }> {
+  getActivityEfficiency(): Record<
+    ExperienceActivity,
+    {
+      totalXP: number;
+      gainCount: number;
+      averageXP: number;
+      lastGain: number;
+    }
+  > {
     const efficiency: Record<string, any> = {};
 
     for (const activity of Object.keys(ACTIVITY_BASE_XP) as ExperienceActivity[]) {
@@ -318,22 +317,26 @@ export class ExperienceTracker {
       const totalXP = activityGains.reduce((sum, g) => sum + g.amount, 0);
       const gainCount = activityGains.length;
       const averageXP = gainCount > 0 ? totalXP / gainCount : 0;
-      const lastGain = activityGains.length > 0 ? activityGains[activityGains.length - 1].timestamp : 0;
+      const lastGain =
+        activityGains.length > 0 ? activityGains[activityGains.length - 1].timestamp : 0;
 
       efficiency[activity] = {
         totalXP,
         gainCount,
         averageXP: Math.floor(averageXP),
-        lastGain
+        lastGain,
       };
     }
 
-    return efficiency as Record<ExperienceActivity, {
-      totalXP: number;
-      gainCount: number;
-      averageXP: number;
-      lastGain: number;
-    }>;
+    return efficiency as Record<
+      ExperienceActivity,
+      {
+        totalXP: number;
+        gainCount: number;
+        averageXP: number;
+        lastGain: number;
+      }
+    >;
   }
 
   onExperienceGain(listener: (gain: ExperienceGain) => void): () => void {
@@ -364,8 +367,12 @@ export const createExperienceCalculations = (currentXP: number) => ({
   nextLevel: ExperienceCalculator.calculateLevel(currentXP) + 1,
   xpForNext: ExperienceCalculator.getXPForNextLevel(currentXP),
   progressPercent: ExperienceCalculator.getProgressToNextLevel(currentXP),
-  requiredForNext: ExperienceCalculator.calculateRequiredXP(ExperienceCalculator.calculateLevel(currentXP) + 1),
-  requiredForCurrent: ExperienceCalculator.calculateRequiredXP(ExperienceCalculator.calculateLevel(currentXP))
+  requiredForNext: ExperienceCalculator.calculateRequiredXP(
+    ExperienceCalculator.calculateLevel(currentXP) + 1
+  ),
+  requiredForCurrent: ExperienceCalculator.calculateRequiredXP(
+    ExperienceCalculator.calculateLevel(currentXP)
+  ),
 });
 
 export const formatExperienceNumber = (xp: number): string => {
@@ -386,7 +393,11 @@ export const calculateCombatXP = (
   const difficultyBonus = Math.max(0.5, 1 + levelDifference * 0.1);
   const overkillBonus = overkill ? 1.5 : 1.0;
 
-  return ExperienceCalculator.calculateBaseXP('combat', enemyLevel, playerLevel) * difficultyBonus * overkillBonus;
+  return (
+    ExperienceCalculator.calculateBaseXP('combat', enemyLevel, playerLevel) *
+    difficultyBonus *
+    overkillBonus
+  );
 };
 
 export const calculateQuestXP = (
@@ -397,10 +408,12 @@ export const calculateQuestXP = (
   const completionMultiplier = {
     partial: 0.5,
     complete: 1.0,
-    perfect: 1.5
+    perfect: 1.5,
   }[completion];
 
-  return ExperienceCalculator.calculateBaseXP('quest', questLevel, playerLevel) * completionMultiplier;
+  return (
+    ExperienceCalculator.calculateBaseXP('quest', questLevel, playerLevel) * completionMultiplier
+  );
 };
 
 export const calculateCreatureXP = (
@@ -411,10 +424,13 @@ export const calculateCreatureXP = (
   const actionMultiplier = {
     capture: 1.0,
     breed: 0.8,
-    release: 0.3
+    release: 0.3,
   }[action];
 
-  return ExperienceCalculator.calculateBaseXP('creature', creatureRarity * 2, playerLevel) * actionMultiplier;
+  return (
+    ExperienceCalculator.calculateBaseXP('creature', creatureRarity * 2, playerLevel) *
+    actionMultiplier
+  );
 };
 
 export default {
@@ -426,5 +442,5 @@ export default {
   calculateQuestXP,
   calculateCreatureXP,
   ACTIVITY_BASE_XP,
-  MAX_LEVEL
+  MAX_LEVEL,
 };

@@ -31,7 +31,7 @@ describe('Modal', () => {
   });
 
   it('renders title when provided', () => {
-    render(<Modal {...defaultProps} title="Test Modal" />);
+    render(<Modal {...defaultProps} title='Test Modal' />);
 
     const title = screen.getByText('Test Modal');
     expect(title).toBeInTheDocument();
@@ -125,27 +125,27 @@ describe('Modal', () => {
   });
 
   it('handles different size variants', () => {
-    const { rerender } = render(<Modal {...defaultProps} size="sm" />);
+    const { rerender } = render(<Modal {...defaultProps} size='sm' />);
     expect(screen.getByRole('dialog')).toHaveClass('sm');
 
-    rerender(<Modal {...defaultProps} size="md" />);
+    rerender(<Modal {...defaultProps} size='md' />);
     expect(screen.getByRole('dialog')).toHaveClass('md');
 
-    rerender(<Modal {...defaultProps} size="lg" />);
+    rerender(<Modal {...defaultProps} size='lg' />);
     expect(screen.getByRole('dialog')).toHaveClass('lg');
 
-    rerender(<Modal {...defaultProps} size="xl" />);
+    rerender(<Modal {...defaultProps} size='xl' />);
     expect(screen.getByRole('dialog')).toHaveClass('xl');
   });
 
   it('applies custom className', () => {
-    render(<Modal {...defaultProps} className="custom-modal" />);
+    render(<Modal {...defaultProps} className='custom-modal' />);
 
     expect(screen.getByRole('dialog')).toHaveClass('custom-modal');
   });
 
   it('applies custom overlay className', () => {
-    render(<Modal {...defaultProps} overlayClassName="custom-overlay" />);
+    render(<Modal {...defaultProps} overlayClassName='custom-overlay' />);
 
     const overlay = screen.getByRole('dialog').parentElement;
     expect(overlay).toHaveClass('custom-overlay');
@@ -172,7 +172,7 @@ describe('Modal', () => {
   });
 
   it('sets proper ARIA attributes', () => {
-    render(<Modal {...defaultProps} title="Test Modal" />);
+    render(<Modal {...defaultProps} title='Test Modal' />);
 
     const modal = screen.getByRole('dialog');
     expect(modal).toHaveAttribute('aria-modal', 'true');
@@ -193,10 +193,10 @@ describe('Modal', () => {
     const user = userEvent.setup();
 
     render(
-      <Modal {...defaultProps} title="Test Modal">
+      <Modal {...defaultProps} title='Test Modal'>
         <button>First button</button>
         <button>Second button</button>
-        <input placeholder="Test input" />
+        <input placeholder='Test input' />
       </Modal>
     );
 
@@ -232,7 +232,7 @@ describe('Modal', () => {
     const user = userEvent.setup();
 
     render(
-      <Modal {...defaultProps} title="Test Modal">
+      <Modal {...defaultProps} title='Test Modal'>
         <button>First button</button>
         <button>Second button</button>
       </Modal>

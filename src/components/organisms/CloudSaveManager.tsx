@@ -33,7 +33,7 @@ interface SyncOperation {
 export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
   isModal = false,
   onClose,
-  className = ''
+  className = '',
 }) => {
   const { isAuthenticated, user } = useAuth();
   const { saveSlots, refreshSlots } = useSaveSystem();
@@ -49,13 +49,15 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
     resolveConflict,
     deleteCloudSave,
     triggerFullSync,
-    triggerQuickSync
+    triggerQuickSync,
   } = useCloudSave();
   const { isMobile, isTablet } = useResponsive();
   const { animationConfig } = useReducedMotion();
 
   // Local state
-  const [activeTab, setActiveTab] = useState<'overview' | 'slots' | 'sync' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'slots' | 'sync' | 'settings'>(
+    'overview'
+  );
   const [selectedSlots, setSelectedSlots] = useState<Set<number>>(new Set());
   const [syncOperations, setSyncOperations] = useState<Map<number, SyncOperation>>(new Map());
   const [conflictResolution, setConflictResolution] = useState<ConflictResolution>('keep-newest');
@@ -78,31 +80,41 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
   }, [refreshSlots, isAuthenticated, isInitialized]);
 
   // Computed values
-  const cloudSaveSlots = useMemo(() =>
-    saveSlots.filter(slot => !slot.isEmpty && slot.isCloudAvailable),
+  const cloudSaveSlots = useMemo(
+    () => saveSlots.filter(slot => !slot.isEmpty && slot.isCloudAvailable),
     [saveSlots]
   );
 
-  const localOnlySlots = useMemo(() =>
-    saveSlots.filter(slot => !slot.isEmpty && slot.isLocalAvailable && !slot.isCloudAvailable),
+  const localOnlySlots = useMemo(
+    () =>
+      saveSlots.filter(slot => !slot.isEmpty && slot.isLocalAvailable && !slot.isCloudAvailable),
     [saveSlots]
   );
 
-  const conflictSlots = useMemo(() =>
-    saveSlots.filter(slot => slot.syncStatus === SaveSyncStatus.CONFLICT),
+  const conflictSlots = useMemo(
+    () => saveSlots.filter(slot => slot.syncStatus === SaveSyncStatus.CONFLICT),
     [saveSlots]
   );
 
-  const outOfSyncSlots = useMemo(() =>
-    saveSlots.filter(slot =>
-      [SaveSyncStatus.LOCAL_NEWER, SaveSyncStatus.CLOUD_NEWER, SaveSyncStatus.SYNC_FAILED].includes(slot.syncStatus)
-    ),
+  const outOfSyncSlots = useMemo(
+    () =>
+      saveSlots.filter(slot =>
+        [
+          SaveSyncStatus.LOCAL_NEWER,
+          SaveSyncStatus.CLOUD_NEWER,
+          SaveSyncStatus.SYNC_FAILED,
+        ].includes(slot.syncStatus)
+      ),
     [saveSlots]
   );
 
   // Event handlers
   const handleSlotSelection = useCallback((slotNumber: number, selected: boolean) => {
-    console.log('🎯 handleSlotSelection called:', { slotNumber, selected, currentSelectedSlots: Array.from(selectedSlots) });
+    console.log('🎯 handleSlotSelection called:', {
+      slotNumber,
+      selected,
+      currentSelectedSlots: Array.from(selectedSlots),
+    });
     setSelectedSlots(prev => {
       const newSet = new Set(prev);
       if (selected) {
@@ -125,71 +137,118 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
     setSelectedSlots(new Set());
   }, []);
 
-  const trackSyncOperation = useCallback((slotNumber: number, operation: Omit<SyncOperation, 'slotNumber'>) => {
-    setSyncOperations(prev => new Map(prev.set(slotNumber, { ...operation, slotNumber })));
-  }, []);
+  const trackSyncOperation = useCallback(
+    (slotNumber: number, operation: Omit<SyncOperation, 'slotNumber'>) => {
+      setSyncOperations(prev => new Map(prev.set(slotNumber, { ...operation, slotNumber })));
+    },
+    []
+  );
 
-  const handleCloudSync = useCallback(async (slotNumber: number) => {
-    trackSyncOperation(slotNumber, { type: 'backup', status: 'in_progress', progress: 0 });
+  const handleCloudSync = useCallback(
+    async (slotNumber: number) => {
+      trackSyncOperation(slotNumber, { type: 'backup', status: 'in_progress', progress: 0 });
 
-    try {
-      // backupToCloud only accepts (slotNumber, saveName?) - no options object
-      await backupToCloud(slotNumber);
+      try {
+        // backupToCloud only accepts (slotNumber, saveName?) - no options object
+        await backupToCloud(slotNumber);
 
-      trackSyncOperation(slotNumber, { type: 'backup', status: 'completed', progress: 100 });
-      setTimeout(() => setSyncOperations(prev => {
-        const newMap = new Map(prev);
-        newMap.delete(slotNumber);
-        return newMap;
-      }), 3000);
+        trackSyncOperation(slotNumber, { type: 'backup', status: 'completed', progress: 100 });
+        setTimeout(
+          () =>
+            setSyncOperations(prev => {
+              const newMap = new Map(prev);
+              newMap.delete(slotNumber);
+              return newMap;
+            }),
+          3000
+        );
 
-      await refreshSlots();
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Backup failed';
-      trackSyncOperation(slotNumber, { type: 'backup', status: 'failed', progress: 0, error: errorMessage });
-    }
-  }, [backupToCloud, refreshSlots, trackSyncOperation]);
+        await refreshSlots();
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Backup failed';
+        trackSyncOperation(slotNumber, {
+          type: 'backup',
+          status: 'failed',
+          progress: 0,
+          error: errorMessage,
+        });
+      }
+    },
+    [backupToCloud, refreshSlots, trackSyncOperation]
+  );
 
-  const handleCloudRestore = useCallback(async (slotNumber: number) => {
-    trackSyncOperation(slotNumber, { type: 'restore', status: 'in_progress', progress: 0 });
+  const handleCloudRestore = useCallback(
+    async (slotNumber: number) => {
+      trackSyncOperation(slotNumber, { type: 'restore', status: 'in_progress', progress: 0 });
 
-    try {
-      // restoreFromCloud only accepts (slotNumber) - no options object
-      await restoreFromCloud(slotNumber);
+      try {
+        // restoreFromCloud only accepts (slotNumber) - no options object
+        await restoreFromCloud(slotNumber);
 
-      trackSyncOperation(slotNumber, { type: 'restore', status: 'completed', progress: 100 });
-      setTimeout(() => setSyncOperations(prev => {
-        const newMap = new Map(prev);
-        newMap.delete(slotNumber);
-        return newMap;
-      }), 3000);
+        trackSyncOperation(slotNumber, { type: 'restore', status: 'completed', progress: 100 });
+        setTimeout(
+          () =>
+            setSyncOperations(prev => {
+              const newMap = new Map(prev);
+              newMap.delete(slotNumber);
+              return newMap;
+            }),
+          3000
+        );
 
-      await refreshSlots();
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Restore failed';
-      trackSyncOperation(slotNumber, { type: 'restore', status: 'failed', progress: 0, error: errorMessage });
-    }
-  }, [restoreFromCloud, refreshSlots, trackSyncOperation]);
+        await refreshSlots();
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Restore failed';
+        trackSyncOperation(slotNumber, {
+          type: 'restore',
+          status: 'failed',
+          progress: 0,
+          error: errorMessage,
+        });
+      }
+    },
+    [restoreFromCloud, refreshSlots, trackSyncOperation]
+  );
 
-  const handleConflictResolve = useCallback(async (slotNumber: number) => {
-    trackSyncOperation(slotNumber, { type: 'conflict_resolve', status: 'in_progress', progress: 0 });
+  const handleConflictResolve = useCallback(
+    async (slotNumber: number) => {
+      trackSyncOperation(slotNumber, {
+        type: 'conflict_resolve',
+        status: 'in_progress',
+        progress: 0,
+      });
 
-    try {
-      await resolveConflict(slotNumber, conflictResolution);
-      trackSyncOperation(slotNumber, { type: 'conflict_resolve', status: 'completed', progress: 100 });
+      try {
+        await resolveConflict(slotNumber, conflictResolution);
+        trackSyncOperation(slotNumber, {
+          type: 'conflict_resolve',
+          status: 'completed',
+          progress: 100,
+        });
 
-      setTimeout(() => setSyncOperations(prev => {
-        const newMap = new Map(prev);
-        newMap.delete(slotNumber);
-        return newMap;
-      }), 3000);
+        setTimeout(
+          () =>
+            setSyncOperations(prev => {
+              const newMap = new Map(prev);
+              newMap.delete(slotNumber);
+              return newMap;
+            }),
+          3000
+        );
 
-      await refreshSlots();
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Conflict resolution failed';
-      trackSyncOperation(slotNumber, { type: 'conflict_resolve', status: 'failed', progress: 0, error: errorMessage });
-    }
-  }, [resolveConflict, conflictResolution, refreshSlots, trackSyncOperation]);
+        await refreshSlots();
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Conflict resolution failed';
+        trackSyncOperation(slotNumber, {
+          type: 'conflict_resolve',
+          status: 'failed',
+          progress: 0,
+          error: errorMessage,
+        });
+      }
+    },
+    [resolveConflict, conflictResolution, refreshSlots, trackSyncOperation]
+  );
 
   const handleBatchSync = useCallback(async () => {
     if (selectedSlots.size === 0) return;
@@ -221,61 +280,88 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
     }
   }, [triggerQuickSync, refreshSlots]);
 
-  const handleDeleteCloudSave = useCallback(async (slotNumber: number, deleteLocalToo: boolean = true) => {
-    // Show confirmation dialog
-    const confirmMessage = deleteLocalToo
-      ? `Delete save slot ${slotNumber + 1} from both cloud and local storage?`
-      : `Delete save slot ${slotNumber + 1} from cloud storage only?`;
+  const handleDeleteCloudSave = useCallback(
+    async (slotNumber: number, deleteLocalToo: boolean = true) => {
+      // Show confirmation dialog
+      const confirmMessage = deleteLocalToo
+        ? `Delete save slot ${slotNumber + 1} from both cloud and local storage?`
+        : `Delete save slot ${slotNumber + 1} from cloud storage only?`;
 
-    if (!window.confirm(confirmMessage)) {
-      return;
-    }
-
-    trackSyncOperation(slotNumber, { type: 'backup', status: 'in_progress', progress: 0 });
-
-    try {
-      const result = await deleteCloudSave(slotNumber, deleteLocalToo);
-
-      if (result.success) {
-        trackSyncOperation(slotNumber, { type: 'backup', status: 'completed', progress: 100 });
-
-        setTimeout(() => setSyncOperations(prev => {
-          const newMap = new Map(prev);
-          newMap.delete(slotNumber);
-          return newMap;
-        }), 2000);
-
-        await refreshSlots();
-      } else {
-        throw new Error(result.error?.message || 'Delete failed');
+      if (!window.confirm(confirmMessage)) {
+        return;
       }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Cloud save deletion failed';
-      trackSyncOperation(slotNumber, { type: 'backup', status: 'failed', progress: 0, error: errorMessage });
-    }
-  }, [deleteCloudSave, refreshSlots, trackSyncOperation]);
+
+      trackSyncOperation(slotNumber, { type: 'backup', status: 'in_progress', progress: 0 });
+
+      try {
+        const result = await deleteCloudSave(slotNumber, deleteLocalToo);
+
+        if (result.success) {
+          trackSyncOperation(slotNumber, { type: 'backup', status: 'completed', progress: 100 });
+
+          setTimeout(
+            () =>
+              setSyncOperations(prev => {
+                const newMap = new Map(prev);
+                newMap.delete(slotNumber);
+                return newMap;
+              }),
+            2000
+          );
+
+          await refreshSlots();
+        } else {
+          throw new Error(result.error?.message || 'Delete failed');
+        }
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Cloud save deletion failed';
+        trackSyncOperation(slotNumber, {
+          type: 'backup',
+          status: 'failed',
+          progress: 0,
+          error: errorMessage,
+        });
+      }
+    },
+    [deleteCloudSave, refreshSlots, trackSyncOperation]
+  );
 
   // Authentication check
   if (!isAuthenticated) {
     return (
       <div className={`cloud-save-manager ${className}`}>
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '48px 24px',
-          textAlign: 'center',
-          minHeight: '400px'
-        }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '48px 24px',
+            textAlign: 'center',
+            minHeight: '400px',
+          }}
+        >
           <div style={{ fontSize: '3rem', marginBottom: '16px' }}>☁️</div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#ffffff', marginBottom: '8px' }}>
+          <h2
+            style={{
+              fontSize: '1.5rem',
+              fontWeight: 'bold',
+              color: '#ffffff',
+              marginBottom: '8px',
+            }}
+          >
             Sign In Required
           </h2>
           <p style={{ color: '#cccccc', marginBottom: '24px', maxWidth: '400px' }}>
-            Sign in to your account to access cloud save management features and synchronize your game progress across devices.
+            Sign in to your account to access cloud save management features and synchronize your
+            game progress across devices.
           </p>
-          <Button variant="primary" onClick={() => {/* Open auth modal */}}>
+          <Button
+            variant='primary'
+            onClick={() => {
+              /* Open auth modal */
+            }}
+          >
             Sign In
           </Button>
         </div>
@@ -291,7 +377,7 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
     width: '100%',
     maxHeight: isModal ? '80vh' : 'auto',
     overflow: 'auto',
-    position: 'relative'
+    position: 'relative',
   };
 
   const tabStyle = (isActive: boolean): React.CSSProperties => ({
@@ -303,7 +389,7 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
     cursor: 'pointer',
     transition: 'all 0.2s ease',
     fontSize: isMobile ? '0.85rem' : '0.9rem',
-    fontWeight: isActive ? '600' : '400'
+    fontWeight: isActive ? '600' : '400',
   });
 
   return (
@@ -315,14 +401,16 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
       transition={animationConfig}
     >
       {/* Header */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '24px',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-        paddingBottom: '16px'
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '24px',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+          paddingBottom: '16px',
+        }}
+      >
         <div>
           <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#ffffff', margin: 0 }}>
             Cloud Save Manager
@@ -332,30 +420,34 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
           </p>
         </div>
         {isModal && onClose && (
-          <Button variant="ghost" onClick={onClose} style={{ padding: '8px' }}>
+          <Button variant='ghost' onClick={onClose} style={{ padding: '8px' }}>
             <span style={{ fontSize: '1.2rem' }}>✕</span>
           </Button>
         )}
       </div>
 
       {/* Status Bar */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '16px',
-        marginBottom: '24px',
-        padding: '12px 16px',
-        background: 'rgba(0, 0, 0, 0.3)',
-        borderRadius: '8px',
-        fontSize: '0.85rem'
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '16px',
+          marginBottom: '24px',
+          padding: '12px 16px',
+          background: 'rgba(0, 0, 0, 0.3)',
+          borderRadius: '8px',
+          fontSize: '0.85rem',
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{
-            width: '8px',
-            height: '8px',
-            borderRadius: '50%',
-            background: isOnline ? '#4caf50' : '#f44336'
-          }} />
+          <div
+            style={{
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              background: isOnline ? '#4caf50' : '#f44336',
+            }}
+          />
           <span style={{ color: isOnline ? '#4caf50' : '#f44336' }}>
             {isOnline ? 'Online' : 'Offline'}
           </span>
@@ -369,7 +461,8 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
 
         {quota && (
           <div style={{ color: '#cccccc' }}>
-            Storage: {Math.round(quota.usedBytes / 1024 / 1024)}MB / {Math.round(quota.totalBytes / 1024 / 1024)}MB
+            Storage: {Math.round(quota.usedBytes / 1024 / 1024)}MB /{' '}
+            {Math.round(quota.totalBytes / 1024 / 1024)}MB
           </div>
         )}
 
@@ -377,7 +470,7 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#2196f3' }}>
             <motion.div
               animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
             >
               🔄
             </motion.div>
@@ -387,14 +480,16 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
       </div>
 
       {/* Tabs */}
-      <div style={{
-        display: 'flex',
-        gap: '8px',
-        marginBottom: '24px',
-        flexWrap: isMobile ? 'wrap' : 'nowrap',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-        paddingBottom: '16px'
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          gap: '8px',
+          marginBottom: '24px',
+          flexWrap: isMobile ? 'wrap' : 'nowrap',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+          paddingBottom: '16px',
+        }}
+      >
         {(['overview', 'slots', 'sync', 'settings'] as const).map(tab => (
           <motion.button
             key={tab}
@@ -412,10 +507,10 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
       </div>
 
       {/* Tab Content */}
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode='wait'>
         {activeTab === 'overview' && (
           <motion.div
-            key="overview"
+            key='overview'
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
@@ -423,14 +518,22 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
             style={{ minHeight: '300px' }}
           >
             {/* Overview content will be implemented here */}
-            <div style={{ display: 'grid', gap: '16px', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+            <div
+              style={{
+                display: 'grid',
+                gap: '16px',
+                gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(250px, 1fr))',
+              }}
+            >
               {/* Summary Cards */}
-              <div style={{
-                padding: '16px',
-                background: 'rgba(76, 175, 80, 0.1)',
-                border: '1px solid rgba(76, 175, 80, 0.3)',
-                borderRadius: '8px'
-              }}>
+              <div
+                style={{
+                  padding: '16px',
+                  background: 'rgba(76, 175, 80, 0.1)',
+                  border: '1px solid rgba(76, 175, 80, 0.3)',
+                  borderRadius: '8px',
+                }}
+              >
                 <h3 style={{ color: '#4caf50', margin: '0 0 8px 0' }}>Cloud Saves</h3>
                 <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#ffffff' }}>
                   {cloudSaveSlots.length}
@@ -440,12 +543,14 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
                 </p>
               </div>
 
-              <div style={{
-                padding: '16px',
-                background: 'rgba(33, 150, 243, 0.1)',
-                border: '1px solid rgba(33, 150, 243, 0.3)',
-                borderRadius: '8px'
-              }}>
+              <div
+                style={{
+                  padding: '16px',
+                  background: 'rgba(33, 150, 243, 0.1)',
+                  border: '1px solid rgba(33, 150, 243, 0.3)',
+                  borderRadius: '8px',
+                }}
+              >
                 <h3 style={{ color: '#2196f3', margin: '0 0 8px 0' }}>Local Only</h3>
                 <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#ffffff' }}>
                   {localOnlySlots.length}
@@ -455,12 +560,14 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
                 </p>
               </div>
 
-              <div style={{
-                padding: '16px',
-                background: 'rgba(255, 87, 34, 0.1)',
-                border: '1px solid rgba(255, 87, 34, 0.3)',
-                borderRadius: '8px'
-              }}>
+              <div
+                style={{
+                  padding: '16px',
+                  background: 'rgba(255, 87, 34, 0.1)',
+                  border: '1px solid rgba(255, 87, 34, 0.3)',
+                  borderRadius: '8px',
+                }}
+              >
                 <h3 style={{ color: '#ff5722', margin: '0 0 8px 0' }}>Conflicts</h3>
                 <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#ffffff' }}>
                   {conflictSlots.length}
@@ -470,12 +577,14 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
                 </p>
               </div>
 
-              <div style={{
-                padding: '16px',
-                background: 'rgba(255, 152, 0, 0.1)',
-                border: '1px solid rgba(255, 152, 0, 0.3)',
-                borderRadius: '8px'
-              }}>
+              <div
+                style={{
+                  padding: '16px',
+                  background: 'rgba(255, 152, 0, 0.1)',
+                  border: '1px solid rgba(255, 152, 0, 0.3)',
+                  borderRadius: '8px',
+                }}
+              >
                 <h3 style={{ color: '#ff9800', margin: '0 0 8px 0' }}>Out of Sync</h3>
                 <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#ffffff' }}>
                   {outOfSyncSlots.length}
@@ -491,7 +600,7 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
               <h3 style={{ color: '#ffffff', marginBottom: '16px' }}>Quick Actions</h3>
               <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                 <Button
-                  variant="primary"
+                  variant='primary'
                   onClick={handleFullSync}
                   disabled={syncInProgress || !isOnline}
                   style={{ minWidth: '140px' }}
@@ -499,7 +608,7 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
                   🔄 Full Sync
                 </Button>
                 <Button
-                  variant="secondary"
+                  variant='secondary'
                   onClick={handleQuickSync}
                   disabled={syncInProgress || !isOnline}
                   style={{ minWidth: '140px' }}
@@ -508,7 +617,7 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
                 </Button>
                 {localOnlySlots.length > 0 && (
                   <Button
-                    variant="accent"
+                    variant='accent'
                     onClick={() => {
                       setSelectedSlots(new Set(localOnlySlots.map(slot => slot.slotNumber)));
                       setActiveTab('slots');
@@ -520,7 +629,7 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
                 )}
                 {conflictSlots.length > 0 && (
                   <Button
-                    variant="warning"
+                    variant='warning'
                     onClick={() => setActiveTab('sync')}
                     style={{ minWidth: '140px' }}
                   >
@@ -534,7 +643,7 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
 
         {activeTab === 'sync' && (
           <motion.div
-            key="sync"
+            key='sync'
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
@@ -542,50 +651,60 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
               {/* Conflict Resolution Settings */}
-              <div style={{
-                padding: '16px',
-                background: 'rgba(0, 0, 0, 0.3)',
-                borderRadius: '8px'
-              }}>
+              <div
+                style={{
+                  padding: '16px',
+                  background: 'rgba(0, 0, 0, 0.3)',
+                  borderRadius: '8px',
+                }}
+              >
                 <h3 style={{ color: '#ffffff', marginBottom: '16px' }}>Conflict Resolution</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <label
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                  >
                     <input
-                      type="radio"
-                      name="conflictResolution"
-                      value="keep-local"
+                      type='radio'
+                      name='conflictResolution'
+                      value='keep-local'
                       checked={conflictResolution === 'keep-local'}
-                      onChange={(e) => setConflictResolution(e.target.value as ConflictResolution)}
+                      onChange={e => setConflictResolution(e.target.value as ConflictResolution)}
                     />
                     <span style={{ color: '#cccccc' }}>Keep Local Version</span>
                   </label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <label
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                  >
                     <input
-                      type="radio"
-                      name="conflictResolution"
-                      value="keep-cloud"
+                      type='radio'
+                      name='conflictResolution'
+                      value='keep-cloud'
                       checked={conflictResolution === 'keep-cloud'}
-                      onChange={(e) => setConflictResolution(e.target.value as ConflictResolution)}
+                      onChange={e => setConflictResolution(e.target.value as ConflictResolution)}
                     />
                     <span style={{ color: '#cccccc' }}>Keep Cloud Version</span>
                   </label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <label
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                  >
                     <input
-                      type="radio"
-                      name="conflictResolution"
-                      value="keep-newest"
+                      type='radio'
+                      name='conflictResolution'
+                      value='keep-newest'
                       checked={conflictResolution === 'keep-newest'}
-                      onChange={(e) => setConflictResolution(e.target.value as ConflictResolution)}
+                      onChange={e => setConflictResolution(e.target.value as ConflictResolution)}
                     />
                     <span style={{ color: '#cccccc' }}>Keep Newest Version (Recommended)</span>
                   </label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <label
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                  >
                     <input
-                      type="radio"
-                      name="conflictResolution"
-                      value="manual"
+                      type='radio'
+                      name='conflictResolution'
+                      value='manual'
                       checked={conflictResolution === 'manual'}
-                      onChange={(e) => setConflictResolution(e.target.value as ConflictResolution)}
+                      onChange={e => setConflictResolution(e.target.value as ConflictResolution)}
                     />
                     <span style={{ color: '#cccccc' }}>Manual Review Required</span>
                   </label>
@@ -609,7 +728,7 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
                           borderRadius: '8px',
                           display: 'flex',
                           justifyContent: 'space-between',
-                          alignItems: 'center'
+                          alignItems: 'center',
                         }}
                       >
                         <div>
@@ -624,8 +743,8 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
                           </div>
                         </div>
                         <Button
-                          variant="warning"
-                          size="small"
+                          variant='warning'
+                          size='small'
                           onClick={() => handleConflictResolve(slot.slotNumber)}
                           disabled={syncInProgress || !isOnline}
                         >
@@ -636,7 +755,7 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
                   </div>
                   <div style={{ marginTop: '16px', display: 'flex', gap: '12px' }}>
                     <Button
-                      variant="warning"
+                      variant='warning'
                       onClick={() => {
                         conflictSlots.forEach(slot => handleConflictResolve(slot.slotNumber));
                       }}
@@ -665,7 +784,7 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
                           borderRadius: '8px',
                           display: 'flex',
                           justifyContent: 'space-between',
-                          alignItems: 'center'
+                          alignItems: 'center',
                         }}
                       >
                         <div>
@@ -676,16 +795,19 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
                             {slot.playerSummary?.name} - Level {slot.playerSummary?.level}
                           </div>
                           <div style={{ color: '#ff9800', fontSize: '0.75rem', marginTop: '4px' }}>
-                            {slot.syncStatus === SaveSyncStatus.LOCAL_NEWER && 'Local version is newer'}
-                            {slot.syncStatus === SaveSyncStatus.CLOUD_NEWER && 'Cloud version is newer'}
-                            {slot.syncStatus === SaveSyncStatus.SYNC_FAILED && 'Sync failed - retry needed'}
+                            {slot.syncStatus === SaveSyncStatus.LOCAL_NEWER &&
+                              'Local version is newer'}
+                            {slot.syncStatus === SaveSyncStatus.CLOUD_NEWER &&
+                              'Cloud version is newer'}
+                            {slot.syncStatus === SaveSyncStatus.SYNC_FAILED &&
+                              'Sync failed - retry needed'}
                           </div>
                         </div>
                         <div style={{ display: 'flex', gap: '8px' }}>
                           {slot.syncStatus === SaveSyncStatus.LOCAL_NEWER && (
                             <Button
-                              variant="primary"
-                              size="small"
+                              variant='primary'
+                              size='small'
                               onClick={() => handleCloudSync(slot.slotNumber)}
                               disabled={syncInProgress || !isOnline}
                             >
@@ -694,8 +816,8 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
                           )}
                           {slot.syncStatus === SaveSyncStatus.CLOUD_NEWER && (
                             <Button
-                              variant="secondary"
-                              size="small"
+                              variant='secondary'
+                              size='small'
                               onClick={() => handleCloudRestore(slot.slotNumber)}
                               disabled={syncInProgress || !isOnline}
                             >
@@ -704,8 +826,8 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
                           )}
                           {slot.syncStatus === SaveSyncStatus.SYNC_FAILED && (
                             <Button
-                              variant="accent"
-                              size="small"
+                              variant='accent'
+                              size='small'
                               onClick={() => handleCloudSync(slot.slotNumber)}
                               disabled={syncInProgress || !isOnline}
                             >
@@ -720,22 +842,24 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
               )}
 
               {/* Sync All Actions */}
-              <div style={{
-                padding: '16px',
-                background: 'rgba(0, 0, 0, 0.3)',
-                borderRadius: '8px'
-              }}>
+              <div
+                style={{
+                  padding: '16px',
+                  background: 'rgba(0, 0, 0, 0.3)',
+                  borderRadius: '8px',
+                }}
+              >
                 <h3 style={{ color: '#ffffff', marginBottom: '16px' }}>Bulk Operations</h3>
                 <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                   <Button
-                    variant="primary"
+                    variant='primary'
                     onClick={handleFullSync}
                     disabled={syncInProgress || !isOnline}
                   >
                     🔄 Full Sync (All Saves)
                   </Button>
                   <Button
-                    variant="secondary"
+                    variant='secondary'
                     onClick={handleQuickSync}
                     disabled={syncInProgress || !isOnline}
                   >
@@ -743,7 +867,7 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
                   </Button>
                   {localOnlySlots.length > 0 && (
                     <Button
-                      variant="accent"
+                      variant='accent'
                       onClick={() => {
                         localOnlySlots.forEach(slot => handleCloudSync(slot.slotNumber));
                       }}
@@ -760,7 +884,7 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
 
         {activeTab === 'settings' && (
           <motion.div
-            key="settings"
+            key='settings'
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
@@ -768,18 +892,27 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
               {/* Auto-sync Settings */}
-              <div style={{
-                padding: '16px',
-                background: 'rgba(0, 0, 0, 0.3)',
-                borderRadius: '8px'
-              }}>
+              <div
+                style={{
+                  padding: '16px',
+                  background: 'rgba(0, 0, 0, 0.3)',
+                  borderRadius: '8px',
+                }}
+              >
                 <h3 style={{ color: '#ffffff', marginBottom: '16px' }}>Auto-Sync Settings</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
+                  <label
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      cursor: 'pointer',
+                    }}
+                  >
                     <input
-                      type="checkbox"
+                      type='checkbox'
                       checked={autoSyncEnabled}
-                      onChange={(e) => setAutoSyncEnabled(e.target.checked)}
+                      onChange={e => setAutoSyncEnabled(e.target.checked)}
                     />
                     <div>
                       <div style={{ color: '#ffffff', fontWeight: '500' }}>Enable Auto-Sync</div>
@@ -790,21 +923,56 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
                   </label>
 
                   {autoSyncEnabled && (
-                    <div style={{ marginLeft: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                        <input type="checkbox" defaultChecked />
+                    <div
+                      style={{
+                        marginLeft: '24px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '12px',
+                      }}
+                    >
+                      <label
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <input type='checkbox' defaultChecked />
                         <span style={{ color: '#cccccc' }}>Sync on game save</span>
                       </label>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                        <input type="checkbox" defaultChecked />
+                      <label
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <input type='checkbox' defaultChecked />
                         <span style={{ color: '#cccccc' }}>Sync on app startup</span>
                       </label>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                        <input type="checkbox" defaultChecked />
+                      <label
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <input type='checkbox' defaultChecked />
                         <span style={{ color: '#cccccc' }}>Sync on app close</span>
                       </label>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                        <input type="checkbox" />
+                      <label
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <input type='checkbox' />
                         <span style={{ color: '#cccccc' }}>Periodic sync (every 30 minutes)</span>
                       </label>
                     </div>
@@ -813,16 +981,25 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
               </div>
 
               {/* Advanced Options */}
-              <div style={{
-                padding: '16px',
-                background: 'rgba(0, 0, 0, 0.3)',
-                borderRadius: '8px'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <div
+                style={{
+                  padding: '16px',
+                  background: 'rgba(0, 0, 0, 0.3)',
+                  borderRadius: '8px',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '16px',
+                  }}
+                >
                   <h3 style={{ color: '#ffffff', margin: 0 }}>Advanced Options</h3>
                   <Button
-                    variant="ghost"
-                    size="small"
+                    variant='ghost'
+                    size='small'
                     onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
                   >
                     {showAdvancedOptions ? '▼' : '▶'} {showAdvancedOptions ? 'Hide' : 'Show'}
@@ -831,35 +1008,71 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
 
                 {showAdvancedOptions && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                      <input type="checkbox" defaultChecked />
+                    <label
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <input type='checkbox' defaultChecked />
                       <div>
                         <div style={{ color: '#ffffff' }}>Compress cloud saves</div>
-                        <div style={{ color: '#cccccc', fontSize: '0.8rem' }}>Reduces storage usage and transfer time</div>
+                        <div style={{ color: '#cccccc', fontSize: '0.8rem' }}>
+                          Reduces storage usage and transfer time
+                        </div>
                       </div>
                     </label>
 
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                      <input type="checkbox" defaultChecked />
+                    <label
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <input type='checkbox' defaultChecked />
                       <div>
                         <div style={{ color: '#ffffff' }}>Enable sync notifications</div>
-                        <div style={{ color: '#cccccc', fontSize: '0.8rem' }}>Show notifications for sync events</div>
+                        <div style={{ color: '#cccccc', fontSize: '0.8rem' }}>
+                          Show notifications for sync events
+                        </div>
                       </div>
                     </label>
 
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                      <input type="checkbox" />
+                    <label
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <input type='checkbox' />
                       <div>
                         <div style={{ color: '#ffffff' }}>Sync in background</div>
-                        <div style={{ color: '#cccccc', fontSize: '0.8rem' }}>Continue syncing when game is minimized</div>
+                        <div style={{ color: '#cccccc', fontSize: '0.8rem' }}>
+                          Continue syncing when game is minimized
+                        </div>
                       </div>
                     </label>
 
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                      <input type="checkbox" />
+                    <label
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <input type='checkbox' />
                       <div>
                         <div style={{ color: '#ffffff' }}>Upload screenshots</div>
-                        <div style={{ color: '#cccccc', fontSize: '0.8rem' }}>Include save thumbnails in cloud backup</div>
+                        <div style={{ color: '#cccccc', fontSize: '0.8rem' }}>
+                          Include save thumbnails in cloud backup
+                        </div>
                       </div>
                     </label>
 
@@ -868,10 +1081,10 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
                         Max concurrent syncs:
                       </label>
                       <input
-                        type="range"
-                        min="1"
-                        max="5"
-                        defaultValue="3"
+                        type='range'
+                        min='1'
+                        max='5'
+                        defaultValue='3'
                         style={{ width: '100%' }}
                       />
                       <div style={{ color: '#cccccc', fontSize: '0.8rem', textAlign: 'center' }}>
@@ -883,35 +1096,52 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
               </div>
 
               {/* Storage Info */}
-              <div style={{
-                padding: '16px',
-                background: 'rgba(0, 0, 0, 0.3)',
-                borderRadius: '8px'
-              }}>
+              <div
+                style={{
+                  padding: '16px',
+                  background: 'rgba(0, 0, 0, 0.3)',
+                  borderRadius: '8px',
+                }}
+              >
                 <h3 style={{ color: '#ffffff', marginBottom: '16px' }}>Storage Information</h3>
                 {quota && (
                   <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        marginBottom: '8px',
+                      }}
+                    >
                       <span style={{ color: '#cccccc' }}>Used Storage:</span>
                       <span style={{ color: '#ffffff' }}>
-                        {Math.round(quota.usedBytes / 1024 / 1024)}MB / {Math.round(quota.totalBytes / 1024 / 1024)}MB
+                        {Math.round(quota.usedBytes / 1024 / 1024)}MB /{' '}
+                        {Math.round(quota.totalBytes / 1024 / 1024)}MB
                       </span>
                     </div>
-                    <div style={{
-                      width: '100%',
-                      height: '8px',
-                      background: 'rgba(255, 255, 255, 0.2)',
-                      borderRadius: '4px',
-                      overflow: 'hidden',
-                      marginBottom: '16px'
-                    }}>
-                      <div style={{
-                        width: `${(quota.usedBytes / quota.totalBytes) * 100}%`,
-                        height: '100%',
-                        background: quota.usedBytes / quota.totalBytes > 0.8 ? '#f44336' :
-                                  quota.usedBytes / quota.totalBytes > 0.6 ? '#ff9800' : '#4caf50',
-                        transition: 'width 0.3s ease'
-                      }} />
+                    <div
+                      style={{
+                        width: '100%',
+                        height: '8px',
+                        background: 'rgba(255, 255, 255, 0.2)',
+                        borderRadius: '4px',
+                        overflow: 'hidden',
+                        marginBottom: '16px',
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: `${(quota.usedBytes / quota.totalBytes) * 100}%`,
+                          height: '100%',
+                          background:
+                            quota.usedBytes / quota.totalBytes > 0.8
+                              ? '#f44336'
+                              : quota.usedBytes / quota.totalBytes > 0.6
+                                ? '#ff9800'
+                                : '#4caf50',
+                          transition: 'width 0.3s ease',
+                        }}
+                      />
                     </div>
                     <div style={{ color: '#cccccc', fontSize: '0.8rem' }}>
                       {Math.round(quota.remainingBytes / 1024 / 1024)}MB remaining
@@ -921,11 +1151,13 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
               </div>
 
               {/* Account Info */}
-              <div style={{
-                padding: '16px',
-                background: 'rgba(0, 0, 0, 0.3)',
-                borderRadius: '8px'
-              }}>
+              <div
+                style={{
+                  padding: '16px',
+                  background: 'rgba(0, 0, 0, 0.3)',
+                  borderRadius: '8px',
+                }}
+              >
                 <h3 style={{ color: '#ffffff', marginBottom: '16px' }}>Account Information</h3>
                 {user && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -936,7 +1168,8 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <span style={{ color: '#cccccc' }}>Account Created:</span>
                       <span style={{ color: '#ffffff' }}>
-                        {user.metadata.creationTime && new Date(user.metadata.creationTime).toLocaleDateString()}
+                        {user.metadata.creationTime &&
+                          new Date(user.metadata.creationTime).toLocaleDateString()}
                       </span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -950,18 +1183,24 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
               </div>
 
               {/* Danger Zone */}
-              <div style={{
-                padding: '16px',
-                background: 'rgba(244, 67, 54, 0.1)',
-                border: '1px solid rgba(244, 67, 54, 0.3)',
-                borderRadius: '8px'
-              }}>
+              <div
+                style={{
+                  padding: '16px',
+                  background: 'rgba(244, 67, 54, 0.1)',
+                  border: '1px solid rgba(244, 67, 54, 0.3)',
+                  borderRadius: '8px',
+                }}
+              >
                 <h3 style={{ color: '#f44336', marginBottom: '16px' }}>⚠️ Danger Zone</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   <Button
-                    variant="ghost"
+                    variant='ghost'
                     onClick={() => {
-                      if (confirm('Are you sure you want to clear all cloud saves? This action cannot be undone.')) {
+                      if (
+                        confirm(
+                          'Are you sure you want to clear all cloud saves? This action cannot be undone.'
+                        )
+                      ) {
                         // Clear all cloud saves
                       }
                     }}
@@ -970,9 +1209,13 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
                     🗑️ Clear All Cloud Saves
                   </Button>
                   <Button
-                    variant="ghost"
+                    variant='ghost'
                     onClick={() => {
-                      if (confirm('Are you sure you want to reset sync settings? This will return all settings to defaults.')) {
+                      if (
+                        confirm(
+                          'Are you sure you want to reset sync settings? This will return all settings to defaults.'
+                        )
+                      ) {
                         setAutoSyncEnabled(true);
                         setConflictResolution('keep-newest');
                         setShowAdvancedOptions(false);
@@ -990,7 +1233,7 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
 
         {activeTab === 'slots' && (
           <motion.div
-            key="slots"
+            key='slots'
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
@@ -998,27 +1241,41 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
           >
             {/* Empty state message when no saves exist */}
             {saveSlots.every(slot => slot.isEmpty) && (
-              <div style={{
-                padding: '32px 24px',
-                background: 'rgba(33, 150, 243, 0.1)',
-                border: '1px solid rgba(33, 150, 243, 0.3)',
-                borderRadius: '8px',
-                textAlign: 'center',
-                marginBottom: '24px'
-              }}>
+              <div
+                style={{
+                  padding: '32px 24px',
+                  background: 'rgba(33, 150, 243, 0.1)',
+                  border: '1px solid rgba(33, 150, 243, 0.3)',
+                  borderRadius: '8px',
+                  textAlign: 'center',
+                  marginBottom: '24px',
+                }}
+              >
                 <div style={{ fontSize: '3rem', marginBottom: '16px' }}>💾</div>
                 <h3 style={{ color: '#2196f3', marginBottom: '12px', fontSize: '1.2rem' }}>
                   No Saved Games Found
                 </h3>
-                <p style={{ color: '#cccccc', marginBottom: '16px', maxWidth: '500px', margin: '0 auto 16px' }}>
-                  The Cloud Save Manager syncs your existing saved games to cloud storage.
-                  To create a save, start a new game and save your progress from the main menu.
+                <p
+                  style={{
+                    color: '#cccccc',
+                    marginBottom: '16px',
+                    maxWidth: '500px',
+                    margin: '0 auto 16px',
+                  }}
+                >
+                  The Cloud Save Manager syncs your existing saved games to cloud storage. To create
+                  a save, start a new game and save your progress from the main menu.
                 </p>
-                <div style={{ marginTop: '20px', display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                  <Button
-                    variant="secondary"
-                    onClick={() => setActiveTab('overview')}
-                  >
+                <div
+                  style={{
+                    marginTop: '20px',
+                    display: 'flex',
+                    gap: '12px',
+                    justifyContent: 'center',
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <Button variant='secondary' onClick={() => setActiveTab('overview')}>
                     View Overview
                   </Button>
                 </div>
@@ -1029,125 +1286,145 @@ export const CloudSaveManager: React.FC<CloudSaveManagerProps> = ({
             {!saveSlots.every(slot => slot.isEmpty) && (
               <>
                 {/* Slot selection controls */}
-                <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '16px',
-              padding: '12px 16px',
-              background: 'rgba(0, 0, 0, 0.3)',
-              borderRadius: '8px'
-            }}>
-              <div style={{ fontSize: '0.9rem', color: '#cccccc' }}>
-                {selectedSlots.size} slot{selectedSlots.size !== 1 ? 's' : ''} selected
-              </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <Button variant="ghost" size="small" onClick={handleSelectAll}>
-                  Select All
-                </Button>
-                <Button variant="ghost" size="small" onClick={handleDeselectAll}>
-                  Clear
-                </Button>
-                {selectedSlots.size > 0 && (
-                  <Button
-                    variant="primary"
-                    size="small"
-                    onClick={handleBatchSync}
-                    disabled={syncInProgress || !isOnline}
-                  >
-                    Sync Selected
-                  </Button>
-                )}
-              </div>
-            </div>
-
-            {/* Save slots grid */}
-            <div style={{
-              display: 'grid',
-              gap: '16px',
-              gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(300px, 1fr))'
-            }}>
-              {saveSlots.map(slot => {
-                const operation = syncOperations.get(slot.slotNumber);
-                const isSelected = selectedSlots.has(slot.slotNumber);
-                const isOperating = operation?.status === 'in_progress';
-
-                return (
-                  <motion.div
-                    key={slot.slotNumber}
-                    style={{
-                      position: 'relative',
-                      border: `2px solid ${isSelected ? '#d4af37' : 'transparent'}`,
-                      borderRadius: '8px',
-                      overflow: 'hidden'
-                    }}
-                    whileHover={{ scale: 1.02 }}
-                  >
-                    <SaveSlotCard
-                      slotInfo={slot}
-                      isSelected={isSelected}
-                      isLoading={isOperating}
-                      onLoad={() => handleSlotSelection(slot.slotNumber, !isSelected)}
-                      onCloudSync={() => handleCloudSync(slot.slotNumber)}
-                      onCloudRestore={() => handleCloudRestore(slot.slotNumber)}
-                      onConflictResolve={() => handleConflictResolve(slot.slotNumber)}
-                      onDelete={() => handleDeleteCloudSave(slot.slotNumber)}
-                    />
-
-                    {/* Operation Progress */}
-                    {operation && (
-                      <div style={{
-                        position: 'absolute',
-                        bottom: '0',
-                        left: '0',
-                        right: '0',
-                        background: 'rgba(0, 0, 0, 0.8)',
-                        padding: '8px',
-                        fontSize: '0.75rem'
-                      }}>
-                        <div style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          marginBottom: '4px'
-                        }}>
-                          <span style={{ color: '#ffffff' }}>
-                            {operation.type.replace('_', ' ')}
-                          </span>
-                          <span style={{
-                            color: operation.status === 'failed' ? '#f44336' :
-                                  operation.status === 'completed' ? '#4caf50' : '#2196f3'
-                          }}>
-                            {operation.status}
-                          </span>
-                        </div>
-                        {operation.status === 'in_progress' && (
-                          <div style={{
-                            width: '100%',
-                            height: '4px',
-                            background: 'rgba(255, 255, 255, 0.2)',
-                            borderRadius: '2px',
-                            overflow: 'hidden'
-                          }}>
-                            <div style={{
-                              width: `${operation.progress}%`,
-                              height: '100%',
-                              background: '#2196f3',
-                              transition: 'width 0.2s ease'
-                            }} />
-                          </div>
-                        )}
-                        {operation.error && (
-                          <div style={{ color: '#f44336', fontSize: '0.7rem', marginTop: '4px' }}>
-                            {operation.error}
-                          </div>
-                        )}
-                      </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '16px',
+                    padding: '12px 16px',
+                    background: 'rgba(0, 0, 0, 0.3)',
+                    borderRadius: '8px',
+                  }}
+                >
+                  <div style={{ fontSize: '0.9rem', color: '#cccccc' }}>
+                    {selectedSlots.size} slot{selectedSlots.size !== 1 ? 's' : ''} selected
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <Button variant='ghost' size='small' onClick={handleSelectAll}>
+                      Select All
+                    </Button>
+                    <Button variant='ghost' size='small' onClick={handleDeselectAll}>
+                      Clear
+                    </Button>
+                    {selectedSlots.size > 0 && (
+                      <Button
+                        variant='primary'
+                        size='small'
+                        onClick={handleBatchSync}
+                        disabled={syncInProgress || !isOnline}
+                      >
+                        Sync Selected
+                      </Button>
                     )}
-                  </motion.div>
-                );
-              })}
-            </div>
+                  </div>
+                </div>
+
+                {/* Save slots grid */}
+                <div
+                  style={{
+                    display: 'grid',
+                    gap: '16px',
+                    gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(300px, 1fr))',
+                  }}
+                >
+                  {saveSlots.map(slot => {
+                    const operation = syncOperations.get(slot.slotNumber);
+                    const isSelected = selectedSlots.has(slot.slotNumber);
+                    const isOperating = operation?.status === 'in_progress';
+
+                    return (
+                      <motion.div
+                        key={slot.slotNumber}
+                        style={{
+                          position: 'relative',
+                          border: `2px solid ${isSelected ? '#d4af37' : 'transparent'}`,
+                          borderRadius: '8px',
+                          overflow: 'hidden',
+                        }}
+                        whileHover={{ scale: 1.02 }}
+                      >
+                        <SaveSlotCard
+                          slotInfo={slot}
+                          isSelected={isSelected}
+                          isLoading={isOperating}
+                          onLoad={() => handleSlotSelection(slot.slotNumber, !isSelected)}
+                          onCloudSync={() => handleCloudSync(slot.slotNumber)}
+                          onCloudRestore={() => handleCloudRestore(slot.slotNumber)}
+                          onConflictResolve={() => handleConflictResolve(slot.slotNumber)}
+                          onDelete={() => handleDeleteCloudSave(slot.slotNumber)}
+                        />
+
+                        {/* Operation Progress */}
+                        {operation && (
+                          <div
+                            style={{
+                              position: 'absolute',
+                              bottom: '0',
+                              left: '0',
+                              right: '0',
+                              background: 'rgba(0, 0, 0, 0.8)',
+                              padding: '8px',
+                              fontSize: '0.75rem',
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                marginBottom: '4px',
+                              }}
+                            >
+                              <span style={{ color: '#ffffff' }}>
+                                {operation.type.replace('_', ' ')}
+                              </span>
+                              <span
+                                style={{
+                                  color:
+                                    operation.status === 'failed'
+                                      ? '#f44336'
+                                      : operation.status === 'completed'
+                                        ? '#4caf50'
+                                        : '#2196f3',
+                                }}
+                              >
+                                {operation.status}
+                              </span>
+                            </div>
+                            {operation.status === 'in_progress' && (
+                              <div
+                                style={{
+                                  width: '100%',
+                                  height: '4px',
+                                  background: 'rgba(255, 255, 255, 0.2)',
+                                  borderRadius: '2px',
+                                  overflow: 'hidden',
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    width: `${operation.progress}%`,
+                                    height: '100%',
+                                    background: '#2196f3',
+                                    transition: 'width 0.2s ease',
+                                  }}
+                                />
+                              </div>
+                            )}
+                            {operation.error && (
+                              <div
+                                style={{ color: '#f44336', fontSize: '0.7rem', marginTop: '4px' }}
+                              >
+                                {operation.error}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </motion.div>
+                    );
+                  })}
+                </div>
               </>
             )}
           </motion.div>

@@ -16,13 +16,12 @@ interface SaveRecoveryManagerProps {
 
 export const SaveRecoveryManager: React.FC<SaveRecoveryManagerProps> = ({
   enabled = true,
-  showDelay = 2000 // 2 seconds
+  showDelay = 2000, // 2 seconds
 }) => {
-  const {
-    recoveryInfo,
-    hasRecoveryData,
-    checkForRecovery
-  } = useSaveRecovery({ autoCheck: true, checkInterval: 60000 }); // Check every minute
+  const { recoveryInfo, hasRecoveryData, checkForRecovery } = useSaveRecovery({
+    autoCheck: true,
+    checkInterval: 60000,
+  }); // Check every minute
 
   const [showRecoveryDialog, setShowRecoveryDialog] = useState(false);
   const [hasShownDialog, setHasShownDialog] = useState(false);

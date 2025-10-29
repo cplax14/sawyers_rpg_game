@@ -18,10 +18,7 @@
 
 import React from 'react';
 import { renderHook, act } from '@testing-library/react';
-import {
-  ReactGameProvider,
-  useReactGame,
-} from '../ReactGameContext';
+import { ReactGameProvider, useReactGame } from '../ReactGameContext';
 
 // =============================================================================
 // TEST SETUP
@@ -324,7 +321,7 @@ describe('ReactGameContext - Combined XP and Gold Rewards', () => {
 
     const testItems = [
       { id: 'potion', name: 'Health Potion', quantity: 2, type: 'consumable' as const },
-      { id: 'sword', name: 'Iron Sword', quantity: 1, type: 'weapon' as const }
+      { id: 'sword', name: 'Iron Sword', quantity: 1, type: 'weapon' as const },
     ];
 
     // Act

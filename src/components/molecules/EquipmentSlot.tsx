@@ -25,7 +25,7 @@ interface EquipmentSlotProps {
 const slotStyles = {
   container: {
     position: 'relative' as const,
-    display: 'inline-block'
+    display: 'inline-block',
   },
   slot: {
     position: 'relative' as const,
@@ -40,40 +40,40 @@ const slotStyles = {
     fontSize: '0.8rem',
     fontWeight: 'bold',
     textAlign: 'center' as const,
-    overflow: 'hidden'
+    overflow: 'hidden',
   },
   slotSm: {
     width: '40px',
     height: '40px',
-    fontSize: '0.6rem'
+    fontSize: '0.6rem',
   },
   slotMd: {
     width: '60px',
     height: '60px',
-    fontSize: '0.8rem'
+    fontSize: '0.8rem',
   },
   slotLg: {
     width: '80px',
     height: '80px',
-    fontSize: '1rem'
+    fontSize: '1rem',
   },
   slotFilled: {
     border: '2px solid #d4af37',
-    background: 'rgba(212, 175, 55, 0.2)'
+    background: 'rgba(212, 175, 55, 0.2)',
   },
   slotHover: {
     transform: 'scale(1.05)',
     borderColor: '#d4af37',
-    background: 'rgba(212, 175, 55, 0.3)'
+    background: 'rgba(212, 175, 55, 0.3)',
   },
   slotDragOver: {
     borderColor: '#10b981',
     background: 'rgba(16, 185, 129, 0.3)',
-    transform: 'scale(1.1)'
+    transform: 'scale(1.1)',
   },
   slotDisabled: {
     opacity: 0.5,
-    cursor: 'not-allowed'
+    cursor: 'not-allowed',
   },
   itemIcon: {
     width: '80%',
@@ -85,7 +85,7 @@ const slotStyles = {
     justifyContent: 'center',
     fontSize: '0.7rem',
     fontWeight: 'bold',
-    position: 'relative' as const
+    position: 'relative' as const,
   },
   rarityIndicator: {
     position: 'absolute' as const,
@@ -94,7 +94,7 @@ const slotStyles = {
     width: '12px',
     height: '12px',
     borderRadius: '50%',
-    border: '1px solid rgba(255, 255, 255, 0.3)'
+    border: '1px solid rgba(255, 255, 255, 0.3)',
   },
   unequipButton: {
     position: 'absolute' as const,
@@ -104,7 +104,7 @@ const slotStyles = {
     height: '16px',
     borderRadius: '50%',
     fontSize: '0.6rem',
-    zIndex: 10
+    zIndex: 10,
   },
   slotLabel: {
     fontSize: '0.6rem',
@@ -112,14 +112,14 @@ const slotStyles = {
     textAlign: 'center' as const,
     whiteSpace: 'nowrap' as const,
     overflow: 'hidden',
-    textOverflow: 'ellipsis'
+    textOverflow: 'ellipsis',
   },
   dragPreview: {
     position: 'absolute' as const,
     pointerEvents: 'none' as const,
     zIndex: 1000,
-    opacity: 0.8
-  }
+    opacity: 0.8,
+  },
 };
 
 // Rarity colors
@@ -129,7 +129,7 @@ const rarityColors = {
   rare: '#8b5cf6',
   epic: '#f59e0b',
   legendary: '#ef4444',
-  mythical: '#ec4899'
+  mythical: '#ec4899',
 };
 
 export const EquipmentSlot: React.FC<EquipmentSlotProps> = ({
@@ -145,7 +145,7 @@ export const EquipmentSlot: React.FC<EquipmentSlotProps> = ({
   className = '',
   size = 'md',
   interactive = true,
-  showComparison = false
+  showComparison = false,
 }) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -154,83 +154,104 @@ export const EquipmentSlot: React.FC<EquipmentSlotProps> = ({
   const slotRef = useRef<HTMLDivElement>(null);
 
   // Handle slot click
-  const handleSlotClick = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (disabled || !interactive) return;
+  const handleSlotClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (disabled || !interactive) return;
 
-    onSlotClick?.(slot);
-  }, [slot, onSlotClick, disabled, interactive]);
+      onSlotClick?.(slot);
+    },
+    [slot, onSlotClick, disabled, interactive]
+  );
 
   // Handle item unequip
-  const handleUnequip = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (disabled) return;
+  const handleUnequip = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (disabled) return;
 
-    onUnequip?.(slot);
-  }, [slot, onUnequip, disabled]);
+      onUnequip?.(slot);
+    },
+    [slot, onUnequip, disabled]
+  );
 
   // Drag and drop handlers
-  const handleDragStart = useCallback((e: React.DragEvent) => {
-    if (!equippedItem || disabled) {
-      e.preventDefault();
-      return;
-    }
+  const handleDragStart = useCallback(
+    (e: React.DragEvent) => {
+      if (!equippedItem || disabled) {
+        e.preventDefault();
+        return;
+      }
 
-    setIsDragging(true);
-    e.dataTransfer.setData('application/json', JSON.stringify({
-      type: 'equipment',
-      item: equippedItem,
-      sourceSlot: slot
-    }));
-    e.dataTransfer.effectAllowed = 'move';
-  }, [equippedItem, slot, disabled]);
+      setIsDragging(true);
+      e.dataTransfer.setData(
+        'application/json',
+        JSON.stringify({
+          type: 'equipment',
+          item: equippedItem,
+          sourceSlot: slot,
+        })
+      );
+      e.dataTransfer.effectAllowed = 'move';
+    },
+    [equippedItem, slot, disabled]
+  );
 
   const handleDragEnd = useCallback(() => {
     setIsDragging(false);
     setDragPosition({ x: 0, y: 0 });
   }, []);
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    if (disabled) return;
+  const handleDragOver = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      if (disabled) return;
 
-    e.dataTransfer.dropEffect = 'move';
-    setIsDragOver(true);
-  }, [disabled]);
+      e.dataTransfer.dropEffect = 'move';
+      setIsDragOver(true);
+    },
+    [disabled]
+  );
 
   const handleDragLeave = useCallback(() => {
     setIsDragOver(false);
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragOver(false);
 
-    if (disabled) return;
+      if (disabled) return;
 
-    try {
-      const data = JSON.parse(e.dataTransfer.getData('application/json'));
+      try {
+        const data = JSON.parse(e.dataTransfer.getData('application/json'));
 
-      if (data.type === 'equipment' && data.item) {
-        // Check if this is a valid drop
-        if (data.item.equipmentSlot === slot) {
-          onEquip?.(data.item, slot);
+        if (data.type === 'equipment' && data.item) {
+          // Check if this is a valid drop
+          if (data.item.equipmentSlot === slot) {
+            onEquip?.(data.item, slot);
+          }
         }
+      } catch (error) {
+        console.warn('Invalid drop data:', error);
       }
-    } catch (error) {
-      console.warn('Invalid drop data:', error);
-    }
-  }, [slot, onEquip, disabled]);
+    },
+    [slot, onEquip, disabled]
+  );
 
   // Mouse drag tracking for visual feedback
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!isDragging) return;
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (!isDragging) return;
 
-    setDragPosition({
-      x: e.clientX,
-      y: e.clientY
-    });
-  }, [isDragging]);
+      setDragPosition({
+        x: e.clientX,
+        y: e.clientY,
+      });
+    },
+    [isDragging]
+  );
 
   React.useEffect(() => {
     if (isDragging) {
@@ -259,9 +280,12 @@ export const EquipmentSlot: React.FC<EquipmentSlotProps> = ({
   // Get slot size styles
   const sizeStyle = React.useMemo(() => {
     switch (size) {
-      case 'sm': return slotStyles.slotSm;
-      case 'lg': return slotStyles.slotLg;
-      default: return slotStyles.slotMd;
+      case 'sm':
+        return slotStyles.slotSm;
+      case 'lg':
+        return slotStyles.slotLg;
+      default:
+        return slotStyles.slotMd;
     }
   }, [size]);
 
@@ -286,7 +310,7 @@ export const EquipmentSlot: React.FC<EquipmentSlotProps> = ({
           ...(isHovered && !disabled ? slotStyles.slotHover : {}),
           ...(isDragOver ? slotStyles.slotDragOver : {}),
           ...(disabled ? slotStyles.slotDisabled : {}),
-          ...(equippedItem && rarityColor ? { borderColor: rarityColor } : {})
+          ...(equippedItem && rarityColor ? { borderColor: rarityColor } : {}),
         }}
         onClick={handleSlotClick}
         onDragOver={handleDragOver}
@@ -299,9 +323,9 @@ export const EquipmentSlot: React.FC<EquipmentSlotProps> = ({
         whileTap={!disabled ? { scale: 0.95 } : undefined}
         animate={{
           scale: isDragOver ? 1.1 : 1,
-          rotate: isDragOver ? 5 : 0
+          rotate: isDragOver ? 5 : 0,
         }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
       >
         {equippedItem ? (
           <>
@@ -313,7 +337,7 @@ export const EquipmentSlot: React.FC<EquipmentSlotProps> = ({
               <div
                 style={{
                   ...slotStyles.rarityIndicator,
-                  background: rarityColor
+                  background: rarityColor,
                 }}
               />
             </div>
@@ -321,8 +345,8 @@ export const EquipmentSlot: React.FC<EquipmentSlotProps> = ({
             {/* Unequip Button */}
             {interactive && !disabled && (
               <Button
-                variant="danger"
-                size="xs"
+                variant='danger'
+                size='xs'
                 onClick={handleUnequip}
                 style={slotStyles.unequipButton}
                 aria-label={`Unequip ${equippedItem.name}`}
@@ -333,9 +357,7 @@ export const EquipmentSlot: React.FC<EquipmentSlotProps> = ({
           </>
         ) : (
           /* Empty Slot */
-          <div style={slotStyles.slotLabel}>
-            {slotName}
-          </div>
+          <div style={slotStyles.slotLabel}>{slotName}</div>
         )}
       </motion.div>
 
@@ -347,21 +369,21 @@ export const EquipmentSlot: React.FC<EquipmentSlotProps> = ({
               ...slotStyles.dragPreview,
               ...sizeStyle,
               left: dragPosition.x - (sizeStyle.width as number) / 2,
-              top: dragPosition.y - (sizeStyle.height as number) / 2
+              top: dragPosition.y - (sizeStyle.height as number) / 2,
             }}
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 0.8, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
           >
-            <div style={{
-              ...slotStyles.slot,
-              ...sizeStyle,
-              ...slotStyles.slotFilled,
-              borderColor: rarityColor
-            }}>
-              <div style={slotStyles.itemIcon}>
-                {equippedItem.name.slice(0, 3).toUpperCase()}
-              </div>
+            <div
+              style={{
+                ...slotStyles.slot,
+                ...sizeStyle,
+                ...slotStyles.slotFilled,
+                borderColor: rarityColor,
+              }}
+            >
+              <div style={slotStyles.itemIcon}>{equippedItem.name.slice(0, 3).toUpperCase()}</div>
             </div>
           </motion.div>
         )}
@@ -372,7 +394,7 @@ export const EquipmentSlot: React.FC<EquipmentSlotProps> = ({
   // Wrap with tooltip if enabled
   if (showTooltip && tooltipContent) {
     return (
-      <Tooltip content={tooltipContent} placement="top">
+      <Tooltip content={tooltipContent} placement='top'>
         {slotElement}
       </Tooltip>
     );

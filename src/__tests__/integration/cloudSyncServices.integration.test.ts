@@ -17,14 +17,14 @@ jest.mock('firebase/auth');
 jest.mock('../../config/firebase');
 jest.mock('../../utils/retryManager', () => ({
   retry: {
-    critical: jest.fn((fn) => fn()),
-    network: jest.fn((fn) => fn()),
-    background: jest.fn((fn) => fn()),
-    quick: jest.fn((fn) => fn())
+    critical: jest.fn(fn => fn()),
+    network: jest.fn(fn => fn()),
+    background: jest.fn(fn => fn()),
+    quick: jest.fn(fn => fn()),
   },
   RETRY_CONFIGS: {
-    CLOUD_STORAGE: { maxAttempts: 3 }
-  }
+    CLOUD_STORAGE: { maxAttempts: 3 },
+  },
 }));
 
 describe('Cloud Sync Services Integration', () => {
@@ -49,7 +49,7 @@ describe('Cloud Sync Services Integration', () => {
     mockUser = {
       uid: 'test-user-123',
       email: 'test@example.com',
-      displayName: 'Test User'
+      displayName: 'Test User',
     };
 
     // Mock game state
@@ -58,26 +58,26 @@ describe('Cloud Sync Services Integration', () => {
         name: 'TestPlayer',
         level: 10,
         experience: 2500,
-        currentArea: 'dungeon_1'
+        currentArea: 'dungeon_1',
       },
       inventory: {
         items: [
           { id: 'sword_legendary', quantity: 1 },
           { id: 'armor_plate', quantity: 1 },
-          { id: 'potion_healing', quantity: 5 }
-        ]
+          { id: 'potion_healing', quantity: 5 },
+        ],
       },
       gameFlags: {
         tutorial_completed: true,
         chapter_1_completed: true,
-        boss_dragon_defeated: true
+        boss_dragon_defeated: true,
       },
       story: {
         currentChapter: 3,
-        completedQuests: ['save_village', 'defeat_bandits', 'find_artifact']
+        completedQuests: ['save_village', 'defeat_bandits', 'find_artifact'],
       },
       version: '1.2.0',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     } as ReactGameState;
   });
 
@@ -90,8 +90,8 @@ describe('Cloud Sync Services Integration', () => {
         metadata: {
           operationId: 'signin_123',
           timestamp: Date.now(),
-          executionTime: 500
-        }
+          executionTime: 500,
+        },
       });
 
       // Mock successful cloud save
@@ -105,8 +105,8 @@ describe('Cloud Sync Services Integration', () => {
           dataSize: 2048,
           compressedSize: 1024,
           createdAt: new Date(),
-          updatedAt: new Date()
-        }
+          updatedAt: new Date(),
+        },
       });
 
       // Test the integrated flow
@@ -144,8 +144,8 @@ describe('Cloud Sync Services Integration', () => {
           severity: 'medium' as any,
           retryable: false,
           userMessage: 'Authentication failed. Please check your credentials.',
-          timestamp: new Date()
-        }
+          timestamp: new Date(),
+        },
       });
 
       // Test authentication failure
@@ -170,13 +170,14 @@ describe('Cloud Sync Services Integration', () => {
     it('should recover from network errors using error recovery service', async () => {
       // Mock network error followed by success
       let callCount = 0;
-      const mockSaveToCloud = jest.spyOn(cloudStorage, 'saveToCloud').mockImplementation(
-        async () => {
+      const mockSaveToCloud = jest
+        .spyOn(cloudStorage, 'saveToCloud')
+        .mockImplementation(async () => {
           callCount++;
           if (callCount === 1) {
             throw {
               code: 'unavailable',
-              message: 'Service temporarily unavailable'
+              message: 'Service temporarily unavailable',
             };
           }
           return {
@@ -189,11 +190,10 @@ describe('Cloud Sync Services Integration', () => {
               dataSize: 2048,
               compressedSize: 1024,
               createdAt: new Date(),
-              updatedAt: new Date()
-            }
+              updatedAt: new Date(),
+            },
           };
-        }
-      );
+        });
 
       // Test error recovery
       const result = await errorRecovery.executeWithRecovery(
@@ -216,8 +216,8 @@ describe('Cloud Sync Services Integration', () => {
           severity: 'high' as any,
           retryable: false,
           userMessage: 'Please sign in to continue using cloud features.',
-          timestamp: new Date()
-        }
+          timestamp: new Date(),
+        },
       });
 
       // Attempt authentication multiple times
@@ -245,8 +245,8 @@ describe('Cloud Sync Services Integration', () => {
           dataSize: 2048,
           compressedSize: 1024,
           createdAt: new Date(),
-          updatedAt: new Date()
-        }
+          updatedAt: new Date(),
+        },
       });
 
       // Mock successful load that returns the same data
@@ -266,9 +266,9 @@ describe('Cloud Sync Services Integration', () => {
             compressedSize: 1024,
             playtime: 3600,
             playerLevel: 10,
-            currentArea: 'dungeon_1'
-          }
-        }
+            currentArea: 'dungeon_1',
+          },
+        },
       });
 
       // Test save then load
@@ -284,12 +284,7 @@ describe('Cloud Sync Services Integration', () => {
       expect(loadResult.success).toBe(true);
       expect(loadResult.data?.gameState).toEqual(mockGameState);
 
-      expect(mockSaveToCloud).toHaveBeenCalledWith(
-        mockUser,
-        1,
-        'Consistency Test',
-        mockGameState
-      );
+      expect(mockSaveToCloud).toHaveBeenCalledWith(mockUser, 1, 'Consistency Test', mockGameState);
       expect(mockLoadFromCloud).toHaveBeenCalledWith(mockUser, 1);
     });
 
@@ -297,13 +292,13 @@ describe('Cloud Sync Services Integration', () => {
       const localGameState = {
         ...mockGameState,
         player: { ...mockGameState.player, level: 15 },
-        timestamp: new Date(Date.now() - 1000).toISOString() // Older
+        timestamp: new Date(Date.now() - 1000).toISOString(), // Older
       };
 
       const cloudGameState = {
         ...mockGameState,
         player: { ...mockGameState.player, level: 12 },
-        timestamp: new Date().toISOString() // Newer
+        timestamp: new Date().toISOString(), // Newer
       };
 
       // Mock cloud load returning newer save
@@ -323,9 +318,9 @@ describe('Cloud Sync Services Integration', () => {
             compressedSize: 1024,
             playtime: 3600,
             playerLevel: 12,
-            currentArea: 'dungeon_1'
-          }
-        }
+            currentArea: 'dungeon_1',
+          },
+        },
       });
 
       // Mock sync operation that resolves conflict
@@ -336,8 +331,8 @@ describe('Cloud Sync Services Integration', () => {
         metadata: {
           localVersion: new Date(Date.now() - 1000),
           cloudVersion: new Date(),
-          resolution: 'cloud_newer'
-        }
+          resolution: 'cloud_newer',
+        },
       });
 
       // Test conflict resolution
@@ -347,7 +342,7 @@ describe('Cloud Sync Services Integration', () => {
       const syncResult = await cloudStorage.syncSlot(mockUser, 1, {
         gameState: localGameState,
         saveName: 'Local Save',
-        timestamp: new Date(Date.now() - 1000)
+        timestamp: new Date(Date.now() - 1000),
       });
 
       expect(syncResult.success).toBe(true);
@@ -362,7 +357,7 @@ describe('Cloud Sync Services Integration', () => {
       const multipleGameStates = [
         { ...mockGameState, player: { ...mockGameState.player, name: 'Player1', level: 5 } },
         { ...mockGameState, player: { ...mockGameState.player, name: 'Player2', level: 10 } },
-        { ...mockGameState, player: { ...mockGameState.player, name: 'Player3', level: 15 } }
+        { ...mockGameState, player: { ...mockGameState.player, name: 'Player3', level: 15 } },
       ];
 
       // Mock batch save with mixed results
@@ -380,8 +375,8 @@ describe('Cloud Sync Services Integration', () => {
               dataSize: 1024,
               compressedSize: 512,
               createdAt: new Date(),
-              updatedAt: new Date()
-            }
+              updatedAt: new Date(),
+            },
           },
           {
             slotNumber: 2,
@@ -392,8 +387,8 @@ describe('Cloud Sync Services Integration', () => {
               severity: 'critical' as any,
               retryable: false,
               userMessage: 'Storage quota exceeded. Please delete some saves.',
-              timestamp: new Date()
-            }
+              timestamp: new Date(),
+            },
           },
           {
             slotNumber: 3,
@@ -406,16 +401,16 @@ describe('Cloud Sync Services Integration', () => {
               dataSize: 1024,
               compressedSize: 512,
               createdAt: new Date(),
-              updatedAt: new Date()
-            }
-          }
-        ]
+              updatedAt: new Date(),
+            },
+          },
+        ],
       });
 
       const batchSaves = multipleGameStates.map((state, index) => ({
         slotNumber: index + 1,
         saveName: `Batch Save ${index + 1}`,
-        gameState: state
+        gameState: state,
       }));
 
       const result = await cloudStorage.batchSaveToCloud(mockUser, batchSaves);
@@ -445,8 +440,8 @@ describe('Cloud Sync Services Integration', () => {
           severity: 'high' as any,
           retryable: true,
           userMessage: 'Network error. Please check your connection.',
-          timestamp: new Date()
-        }
+          timestamp: new Date(),
+        },
       });
 
       // Attempt cloud save
@@ -483,8 +478,8 @@ describe('Cloud Sync Services Integration', () => {
           dataSize: 2048,
           compressedSize: 1024,
           createdAt: new Date(),
-          updatedAt: new Date()
-        }
+          updatedAt: new Date(),
+        },
       });
 
       // Attempt restoration
@@ -505,8 +500,9 @@ describe('Cloud Sync Services Integration', () => {
       const promises: Promise<any>[] = [];
 
       // Mock successful saves with slight delays to simulate real conditions
-      const mockSaveToCloud = jest.spyOn(cloudStorage, 'saveToCloud').mockImplementation(
-        async (user, slot, name, state) => {
+      const mockSaveToCloud = jest
+        .spyOn(cloudStorage, 'saveToCloud')
+        .mockImplementation(async (user, slot, name, state) => {
           await new Promise(resolve => setTimeout(resolve, Math.random() * 100));
           return {
             success: true,
@@ -518,11 +514,10 @@ describe('Cloud Sync Services Integration', () => {
               dataSize: 2048,
               compressedSize: 1024,
               createdAt: new Date(),
-              updatedAt: new Date()
-            }
+              updatedAt: new Date(),
+            },
           };
-        }
-      );
+        });
 
       // Launch concurrent save operations
       for (let i = 0; i < concurrentOperations; i++) {

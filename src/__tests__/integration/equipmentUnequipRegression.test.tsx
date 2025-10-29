@@ -33,10 +33,7 @@
 import React from 'react';
 import { renderHook, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import {
-  ReactGameProvider,
-  useReactGame,
-} from '../../contexts/ReactGameContext';
+import { ReactGameProvider, useReactGame } from '../../contexts/ReactGameContext';
 
 // =============================================================================
 // TEST SETUP
@@ -62,9 +59,9 @@ const createMockLeatherVest = (uniqueId: string = 'leather_vest') => ({
     magicAttack: 0,
     magicDefense: 5,
     speed: -2,
-    accuracy: 0
+    accuracy: 0,
   },
-  icon: '🛡️'
+  icon: '🛡️',
 });
 
 const createMockIronSword = (uniqueId: string = 'iron_sword') => ({
@@ -82,9 +79,9 @@ const createMockIronSword = (uniqueId: string = 'iron_sword') => ({
     magicAttack: 0,
     magicDefense: 0,
     speed: 0,
-    accuracy: 2
+    accuracy: 2,
   },
-  icon: '⚔️'
+  icon: '⚔️',
 });
 
 const createMockLeatherHelmet = (uniqueId: string = 'leather_helmet') => ({
@@ -102,9 +99,9 @@ const createMockLeatherHelmet = (uniqueId: string = 'leather_helmet') => ({
     magicAttack: 0,
     magicDefense: 3,
     speed: 0,
-    accuracy: 0
+    accuracy: 0,
   },
-  icon: '⛑️'
+  icon: '⛑️',
 });
 
 // =============================================================================

@@ -37,6 +37,9 @@ const MonsterData = {
             lootTable: {
                 level: 1,
                 goldRange: [3, 8],
+
+                goldDropMin: 15,
+                goldDropMax: 21,
                 drops: [
                     {
                         itemType: "slime_gel",
@@ -86,6 +89,9 @@ const MonsterData = {
             lootTable: {
                 level: 2,
                 goldRange: [5, 12],
+
+                goldDropMin: 16,
+                goldDropMax: 22,
                 drops: [
                     {
                         itemType: "goblin_tooth",
@@ -141,6 +147,9 @@ const MonsterData = {
             lootTable: {
                 level: 4,
                 goldRange: [8, 18],
+
+                goldDropMin: 18,
+                goldDropMax: 24,
                 drops: [
                     {
                         itemType: "wolf_fang",
@@ -198,6 +207,9 @@ const MonsterData = {
             lootTable: {
                 level: 8,
                 goldRange: [15, 35],
+
+                goldDropMin: 29,
+                goldDropMax: 39,
                 drops: [
                     {
                         itemType: "orc_tusk",
@@ -309,6 +321,9 @@ const MonsterData = {
             lootTable: {
                 level: 6,
                 goldRange: [12, 25],
+
+                goldDropMin: 59,
+                goldDropMax: 77,
                 drops: [
                     {
                         itemType: "dire_wolf_fang",
@@ -364,6 +379,9 @@ const MonsterData = {
             lootTable: {
                 level: 25,
                 goldRange: [60, 120],
+
+                goldDropMin: 55,
+                goldDropMax: 71,
                 drops: [
                     {
                         itemType: "alpha_fang",
@@ -431,6 +449,9 @@ const MonsterData = {
             lootTable: {
                 level: 4,
                 goldRange: [8, 16],
+
+                goldDropMin: 18,
+                goldDropMax: 24,
                 drops: [
                     {
                         itemType: "horse_hair",
@@ -486,6 +507,9 @@ const MonsterData = {
             lootTable: {
                 level: 3,
                 goldRange: [6, 14],
+
+                goldDropMin: 17,
+                goldDropMax: 23,
                 drops: [
                     {
                         itemType: "hawk_feather",
@@ -541,6 +565,9 @@ const MonsterData = {
             lootTable: {
                 level: 5,
                 goldRange: [10, 20],
+
+                goldDropMin: 19,
+                goldDropMax: 25,
                 drops: [
                     {
                         itemType: "goat_horn",
@@ -596,6 +623,9 @@ const MonsterData = {
             lootTable: {
                 level: 12,
                 goldRange: [20, 40],
+
+                goldDropMin: 34,
+                goldDropMax: 44,
                 drops: [
                     {
                         itemType: "stone_scale",
@@ -658,6 +688,9 @@ const MonsterData = {
             lootTable: {
                 level: 4,
                 goldRange: [7, 15],
+
+                goldDropMin: 18,
+                goldDropMax: 24,
                 drops: [
                     {
                         itemType: "bat_wing",
@@ -714,6 +747,9 @@ const MonsterData = {
             lootTable: {
                 level: 13,
                 goldRange: [22, 45],
+
+                goldDropMin: 35,
+                goldDropMax: 45,
                 drops: [
                     {
                         itemType: "crystal_silk",
@@ -776,6 +812,9 @@ const MonsterData = {
             lootTable: {
                 level: 14,
                 goldRange: [25, 50],
+
+                goldDropMin: 35,
+                goldDropMax: 45,
                 drops: [
                     {
                         itemType: "liquid_gem",
@@ -837,6 +876,9 @@ const MonsterData = {
             lootTable: {
                 level: 28,
                 goldRange: [70, 140],
+
+                goldDropMin: 57,
+                goldDropMax: 75,
                 drops: [
                     {
                         itemType: "troll_hide",
@@ -906,6 +948,9 @@ const MonsterData = {
             lootTable: {
                 level: 15,
                 goldRange: [28, 55],
+
+                goldDropMin: 35,
+                goldDropMax: 47,
                 drops: [
                     {
                         itemType: "flame_wing",
@@ -968,6 +1013,9 @@ const MonsterData = {
             lootTable: {
                 level: 16,
                 goldRange: [30, 60],
+
+                goldDropMin: 36,
+                goldDropMax: 48,
                 drops: [
                     {
                         itemType: "molten_scale",
@@ -1030,6 +1078,9 @@ const MonsterData = {
             lootTable: {
                 level: 32,
                 goldRange: [80, 160],
+
+                goldDropMin: 60,
+                goldDropMax: 78,
                 drops: [
                     {
                         itemType: "molten_core",
@@ -1098,6 +1149,9 @@ const MonsterData = {
             lootTable: {
                 level: 30,
                 goldRange: [100, 200],
+
+                goldDropMin: 59,
+                goldDropMax: 77,
                 drops: [
                     {
                         itemType: "wyvern_scale",
@@ -1166,6 +1220,9 @@ const MonsterData = {
             lootTable: {
                 level: 35,
                 goldRange: [150, 300],
+
+                goldDropMin: 63,
+                goldDropMax: 81,
                 drops: [
                     {
                         itemType: "drake_scale",
@@ -1235,6 +1292,9 @@ const MonsterData = {
             lootTable: {
                 level: 50,
                 goldRange: [500, 1500],
+
+                goldDropMin: 175,
+                goldDropMax: 225,
                 drops: [
                     {
                         itemType: "dragon_scale",
@@ -1304,6 +1364,9 @@ const MonsterData = {
             lootTable: {
                 level: 20,
                 goldRange: [40, 80],
+
+                goldDropMin: 39,
+                goldDropMax: 51,
                 drops: [
                     {
                         itemType: "nature_essence",

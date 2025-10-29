@@ -52,11 +52,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     const hasError = Boolean(error);
     const inputId = props.id || `input-${Math.random().toString(36).substr(2, 9)}`;
 
-    const containerClasses = [
-      styles.container,
-      fullWidth && styles.fullWidth,
-      className,
-    ]
+    const containerClasses = [styles.container, fullWidth && styles.fullWidth, className]
       .filter(Boolean)
       .join(' ');
 
@@ -73,8 +69,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       .filter(Boolean)
       .join(' ');
 
-    const inputType = variant === 'password' && showPassword ? 'text' :
-                      variant === 'password' ? 'password' : type;
+    const inputType =
+      variant === 'password' && showPassword ? 'text' : variant === 'password' ? 'password' : type;
 
     const handleTogglePassword = () => {
       if (variant === 'password') {
@@ -87,13 +83,17 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label htmlFor={inputId} className={styles.label}>
             {label}
-            {required && <span className={styles.required} aria-label="required">*</span>}
+            {required && (
+              <span className={styles.required} aria-label='required'>
+                *
+              </span>
+            )}
           </label>
         )}
 
         <div className={styles.inputWrapper}>
           {iconBefore && (
-            <span className={styles.iconBefore} aria-hidden="true">
+            <span className={styles.iconBefore} aria-hidden='true'>
               {iconBefore}
             </span>
           )}
@@ -108,8 +108,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             onBlur={() => setFocused(false)}
             aria-invalid={hasError}
             aria-describedby={
-              hasError ? `${inputId}-error` :
-              helperText ? `${inputId}-helper` : undefined
+              hasError ? `${inputId}-error` : helperText ? `${inputId}-helper` : undefined
             }
             whileFocus={{ scale: 1.01 }}
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
@@ -118,7 +117,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
 
           {variant === 'password' && (
             <button
-              type="button"
+              type='button'
               className={styles.passwordToggle}
               onClick={handleTogglePassword}
               aria-label={showPassword ? 'Hide password' : 'Show password'}
@@ -129,14 +128,14 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           )}
 
           {iconAfter && variant !== 'password' && (
-            <span className={styles.iconAfter} aria-hidden="true">
+            <span className={styles.iconAfter} aria-hidden='true'>
               {iconAfter}
             </span>
           )}
         </div>
 
         {hasError && (
-          <div id={`${inputId}-error`} className={styles.errorMessage} role="alert">
+          <div id={`${inputId}-error`} className={styles.errorMessage} role='alert'>
             {error}
           </div>
         )}

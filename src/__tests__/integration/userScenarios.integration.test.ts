@@ -33,30 +33,30 @@ describe('User Scenarios Integration Tests', () => {
         level: 1,
         experience: 0,
         currentArea: 'starting_village',
-        stats: { health: 100, mana: 50, strength: 10, agility: 8 }
+        stats: { health: 100, mana: 50, strength: 10, agility: 8 },
       },
       inventory: {
         items: [
           { id: 'starter_sword', quantity: 1 },
-          { id: 'bread', quantity: 3 }
-        ]
+          { id: 'bread', quantity: 3 },
+        ],
       },
       gameFlags: {
         tutorial_completed: false,
-        first_save: true
+        first_save: true,
       },
       story: {
         currentChapter: 1,
-        completedQuests: []
+        completedQuests: [],
       },
       version: '1.0.0',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     } as ReactGameState;
 
     mockUser = {
       uid: 'user-123',
       email: 'player@example.com',
-      displayName: 'Hero Player'
+      displayName: 'Hero Player',
     };
   });
 
@@ -71,8 +71,8 @@ describe('User Scenarios Integration Tests', () => {
         register: jest.fn().mockResolvedValue({
           success: true,
           user: mockUser,
-          requiresEmailVerification: true
-        })
+          requiresEmailVerification: true,
+        }),
       };
 
       mockUseAuth.mockReturnValue(mockAuth as any);
@@ -85,19 +85,19 @@ describe('User Scenarios Integration Tests', () => {
         isInitialized: true,
         saveSlots: [],
         isLoading: false,
-        error: null
+        error: null,
       };
 
       const mockCloudSave = {
         backupToCloud: jest.fn().mockResolvedValue({
           success: true,
-          metadata: { slotNumber: 1, saveName: 'First Adventure' }
+          metadata: { slotNumber: 1, saveName: 'First Adventure' },
         }),
         restoreFromCloud: jest.fn(),
         syncSlot: jest.fn(),
         isOnline: true,
         syncInProgress: false,
-        isInitialized: false // Not initialized until authenticated
+        isInitialized: false, // Not initialized until authenticated
       };
 
       // Step 1: Player starts game (not authenticated)
@@ -137,7 +137,7 @@ describe('User Scenarios Integration Tests', () => {
         const enhancedGameState = {
           ...mockGameState,
           player: { ...mockGameState.player, level: 2, experience: 100 },
-          gameFlags: { ...mockGameState.gameFlags, tutorial_completed: true }
+          gameFlags: { ...mockGameState.gameFlags, tutorial_completed: true },
         };
 
         const saveResult = await smartSaveResult.current.smartSave(
@@ -166,7 +166,7 @@ describe('User Scenarios Integration Tests', () => {
         user: mockUser,
         signIn: jest.fn(),
         signOut: jest.fn(),
-        register: jest.fn()
+        register: jest.fn(),
       };
 
       mockUseAuth.mockReturnValue(mockAuth as any);
@@ -178,19 +178,19 @@ describe('User Scenarios Integration Tests', () => {
           data: {
             gameState: {
               ...mockGameState,
-              player: { ...mockGameState.player, level: 25, currentArea: 'dragon_lair' }
+              player: { ...mockGameState.player, level: 25, currentArea: 'dragon_lair' },
             },
             metadata: {
               slotNumber: 1,
               saveName: 'Epic Journey',
-              updatedAt: new Date()
-            }
-          }
+              updatedAt: new Date(),
+            },
+          },
         }),
         syncSlot: jest.fn(),
         isOnline: true,
         syncInProgress: false,
-        isInitialized: true
+        isInitialized: true,
       };
 
       const { result } = renderHook(() => useSmartSave());
@@ -199,14 +199,10 @@ describe('User Scenarios Integration Tests', () => {
       await act(async () => {
         const advancedGameState = {
           ...mockGameState,
-          player: { ...mockGameState.player, level: 25, currentArea: 'dragon_lair' }
+          player: { ...mockGameState.player, level: 25, currentArea: 'dragon_lair' },
         };
 
-        const saveResult = await result.current.smartSave(
-          1,
-          'Epic Journey',
-          advancedGameState
-        );
+        const saveResult = await result.current.smartSave(1, 'Epic Journey', advancedGameState);
 
         expect(saveResult.success).toBe(true);
         expect(saveResult.savedTo).toBe('both');
@@ -215,7 +211,7 @@ describe('User Scenarios Integration Tests', () => {
       // Device 2: Load from cloud
       await act(async () => {
         const loadResult = await result.current.smartLoad(1, {
-          preferCloud: true
+          preferCloud: true,
         });
 
         expect(loadResult.success).toBe(true);
@@ -233,7 +229,7 @@ describe('User Scenarios Integration Tests', () => {
         user: mockUser,
         signIn: jest.fn(),
         signOut: jest.fn(),
-        register: jest.fn()
+        register: jest.fn(),
       };
 
       mockUseAuth.mockReturnValue(mockAuth as any);
@@ -245,18 +241,14 @@ describe('User Scenarios Integration Tests', () => {
         syncSlot: jest.fn(),
         isOnline: true,
         syncInProgress: false,
-        isInitialized: true
+        isInitialized: true,
       };
 
       const { result, rerender } = renderHook(() => useSmartSave());
 
       // Save while online - goes to cloud
       await act(async () => {
-        const saveResult = await result.current.smartSave(
-          1,
-          'Online Save',
-          mockGameState
-        );
+        const saveResult = await result.current.smartSave(1, 'Online Save', mockGameState);
 
         expect(saveResult.success).toBe(true);
         expect(saveResult.savedTo).toBe('both');
@@ -266,7 +258,7 @@ describe('User Scenarios Integration Tests', () => {
       mockCloudSave.isOnline = false;
       mockCloudSave.backupToCloud.mockResolvedValue({
         success: false,
-        error: { code: 'network/unavailable' }
+        error: { code: 'network/unavailable' },
       });
 
       // Trigger service mode change
@@ -280,14 +272,10 @@ describe('User Scenarios Integration Tests', () => {
       await act(async () => {
         const offlineGameState = {
           ...mockGameState,
-          player: { ...mockGameState.player, level: 3 }
+          player: { ...mockGameState.player, level: 3 },
         };
 
-        const saveResult = await result.current.smartSave(
-          2,
-          'Offline Save',
-          offlineGameState
-        );
+        const saveResult = await result.current.smartSave(2, 'Offline Save', offlineGameState);
 
         expect(saveResult.success).toBe(true);
         expect(saveResult.savedTo).toBe('local');
@@ -319,7 +307,7 @@ describe('User Scenarios Integration Tests', () => {
         user: mockUser,
         signIn: jest.fn(),
         signOut: jest.fn(),
-        register: jest.fn()
+        register: jest.fn(),
       };
 
       mockUseAuth.mockReturnValue(mockAuth as any);
@@ -331,7 +319,7 @@ describe('User Scenarios Integration Tests', () => {
         resumeAutoSave: jest.fn(),
         isAutoSaveEnabled: true,
         isAutoSavePaused: false,
-        lastAutoSave: null
+        lastAutoSave: null,
       };
 
       const { result: smartSaveResult } = renderHook(() => useSmartSave());
@@ -340,7 +328,7 @@ describe('User Scenarios Integration Tests', () => {
       await act(async () => {
         const levelUpGameState = {
           ...mockGameState,
-          player: { ...mockGameState.player, level: 2, experience: 1000 }
+          player: { ...mockGameState.player, level: 2, experience: 1000 },
         };
 
         // This would normally be triggered by game events
@@ -373,29 +361,30 @@ describe('User Scenarios Integration Tests', () => {
         user: mockUser,
         signIn: jest.fn(),
         signOut: jest.fn(),
-        register: jest.fn()
+        register: jest.fn(),
       };
 
       mockUseAuth.mockReturnValue(mockAuth as any);
 
       const mockCloudSave = {
         backupToCloud: jest.fn(),
-        restoreFromCloud: jest.fn()
+        restoreFromCloud: jest
+          .fn()
           .mockResolvedValueOnce({
             success: false,
-            error: { code: 'data/corrupted', message: 'Save data corrupted' }
+            error: { code: 'data/corrupted', message: 'Save data corrupted' },
           })
           .mockResolvedValueOnce({
             success: true,
             data: {
               gameState: mockGameState,
-              metadata: { slotNumber: 2, saveName: 'Backup Save' }
-            }
+              metadata: { slotNumber: 2, saveName: 'Backup Save' },
+            },
           }),
         syncSlot: jest.fn(),
         isOnline: true,
         syncInProgress: false,
-        isInitialized: true
+        isInitialized: true,
       };
 
       const { result } = renderHook(() => useSmartSave());
@@ -422,7 +411,7 @@ describe('User Scenarios Integration Tests', () => {
         user: mockUser,
         signIn: jest.fn(),
         signOut: jest.fn(),
-        register: jest.fn()
+        register: jest.fn(),
       };
 
       mockUseAuth.mockReturnValue(mockAuth as any);
@@ -432,25 +421,21 @@ describe('User Scenarios Integration Tests', () => {
           success: false,
           error: {
             code: 'storage/quota-exceeded',
-            message: 'Storage quota exceeded'
-          }
+            message: 'Storage quota exceeded',
+          },
         }),
         restoreFromCloud: jest.fn(),
         syncSlot: jest.fn(),
         isOnline: true,
         syncInProgress: false,
-        isInitialized: true
+        isInitialized: true,
       };
 
       const { result } = renderHook(() => useSmartSave());
 
       // Attempt save when quota exceeded
       await act(async () => {
-        const saveResult = await result.current.smartSave(
-          1,
-          'Quota Test',
-          mockGameState
-        );
+        const saveResult = await result.current.smartSave(1, 'Quota Test', mockGameState);
 
         // Should fallback to local save
         expect(saveResult.success).toBe(true);
@@ -472,7 +457,7 @@ describe('User Scenarios Integration Tests', () => {
         user: player1,
         signIn: jest.fn(),
         signOut: jest.fn(),
-        register: jest.fn()
+        register: jest.fn(),
       };
 
       mockUseAuth.mockReturnValue(mockAuth as any);
@@ -483,14 +468,10 @@ describe('User Scenarios Integration Tests', () => {
       await act(async () => {
         const p1GameState = {
           ...mockGameState,
-          player: { ...mockGameState.player, name: 'Player1' }
+          player: { ...mockGameState.player, name: 'Player1' },
         };
 
-        const saveResult = await result.current.smartSave(
-          1,
-          'Player 1 Save',
-          p1GameState
-        );
+        const saveResult = await result.current.smartSave(1, 'Player 1 Save', p1GameState);
 
         expect(saveResult.success).toBe(true);
       });
@@ -502,14 +483,10 @@ describe('User Scenarios Integration Tests', () => {
       await act(async () => {
         const p2GameState = {
           ...mockGameState,
-          player: { ...mockGameState.player, name: 'Player2', level: 5 }
+          player: { ...mockGameState.player, name: 'Player2', level: 5 },
         };
 
-        const saveResult = await result.current.smartSave(
-          2,
-          'Player 2 Save',
-          p2GameState
-        );
+        const saveResult = await result.current.smartSave(2, 'Player 2 Save', p2GameState);
 
         expect(saveResult.success).toBe(true);
       });
@@ -526,7 +503,7 @@ describe('User Scenarios Integration Tests', () => {
         user: mockUser,
         signIn: jest.fn(),
         signOut: jest.fn(),
-        register: jest.fn()
+        register: jest.fn(),
       };
 
       mockUseAuth.mockReturnValue(mockAuth as any);
@@ -537,7 +514,7 @@ describe('User Scenarios Integration Tests', () => {
         syncSlot: jest.fn(),
         isOnline: true,
         syncInProgress: false,
-        isInitialized: true
+        isInitialized: true,
       };
 
       const { result } = renderHook(() => useSmartSave());
@@ -548,7 +525,7 @@ describe('User Scenarios Integration Tests', () => {
         const savePromise = act(async () => {
           const gameState = {
             ...mockGameState,
-            player: { ...mockGameState.player, experience: i * 100 }
+            player: { ...mockGameState.player, experience: i * 100 },
           };
 
           return result.current.smartSave(1, `Rapid Save ${i}`, gameState);

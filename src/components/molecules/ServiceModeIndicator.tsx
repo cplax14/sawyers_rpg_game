@@ -20,18 +20,13 @@ export const ServiceModeIndicator: React.FC<ServiceModeIndicatorProps> = ({
   position = 'top-right',
   showWhenHealthy = false,
   compact = false,
-  onModeClick
+  onModeClick,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
 
-  const {
-    mode,
-    config,
-    getStatusMessage,
-    getPendingSyncStatus,
-    attemptRestoration
-  } = useServiceMode();
+  const { mode, config, getStatusMessage, getPendingSyncStatus, attemptRestoration } =
+    useServiceMode();
 
   const getModeColor = (serviceMode: ServiceMode): string => {
     switch (serviceMode) {
@@ -81,7 +76,7 @@ export const ServiceModeIndicator: React.FC<ServiceModeIndicatorProps> = ({
   const getPositionStyles = (): React.CSSProperties => {
     const base: React.CSSProperties = {
       position: 'fixed',
-      zIndex: 1000
+      zIndex: 1000,
     };
 
     switch (position) {
@@ -141,7 +136,7 @@ export const ServiceModeIndicator: React.FC<ServiceModeIndicatorProps> = ({
                 justifyContent: 'center',
                 cursor: 'pointer',
                 fontSize: '1.2rem',
-                backgroundColor: 'rgba(0, 0, 0, 0.8)'
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
               }}
               title={getStatusMessage()}
             >
@@ -156,7 +151,7 @@ export const ServiceModeIndicator: React.FC<ServiceModeIndicatorProps> = ({
                 borderRadius: '8px',
                 padding: '0.75rem',
                 minWidth: '200px',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)'
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
               }}
             >
               {/* Header */}
@@ -166,24 +161,22 @@ export const ServiceModeIndicator: React.FC<ServiceModeIndicatorProps> = ({
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   marginBottom: isExpanded ? '0.75rem' : '0',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
                 }}
                 onClick={() => setIsExpanded(!isExpanded)}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <span style={{ fontSize: '1.2rem' }}>{getModeIcon(mode)}</span>
-                  <span style={{
-                    color: '#f3f4f6',
-                    fontSize: '0.875rem',
-                    fontWeight: 'semibold'
-                  }}>
+                  <span
+                    style={{
+                      color: '#f3f4f6',
+                      fontSize: '0.875rem',
+                      fontWeight: 'semibold',
+                    }}
+                  >
                     {getModeLabel(mode)}
                   </span>
-                  <HelpTooltip
-                    content={getStatusMessage()}
-                    icon="ℹ️"
-                    position="bottom"
-                  />
+                  <HelpTooltip content={getStatusMessage()} icon='ℹ️' position='bottom' />
                 </div>
 
                 <button
@@ -193,9 +186,9 @@ export const ServiceModeIndicator: React.FC<ServiceModeIndicatorProps> = ({
                     color: '#9ca3af',
                     cursor: 'pointer',
                     fontSize: '0.75rem',
-                    padding: '0.25rem'
+                    padding: '0.25rem',
                   }}
-                  onClick={(e) => {
+                  onClick={e => {
                     e.stopPropagation();
                     setIsExpanded(!isExpanded);
                   }}
@@ -206,16 +199,20 @@ export const ServiceModeIndicator: React.FC<ServiceModeIndicatorProps> = ({
 
               {/* Pending Sync Badge */}
               {pendingSync.count > 0 && (
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.25rem',
-                  marginBottom: isExpanded ? '0.5rem' : '0',
-                  fontSize: '0.75rem',
-                  color: '#fbbf24'
-                }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.25rem',
+                    marginBottom: isExpanded ? '0.5rem' : '0',
+                    fontSize: '0.75rem',
+                    color: '#fbbf24',
+                  }}
+                >
                   <span>⏳</span>
-                  <span>{pendingSync.count} pending sync{pendingSync.count > 1 ? 's' : ''}</span>
+                  <span>
+                    {pendingSync.count} pending sync{pendingSync.count > 1 ? 's' : ''}
+                  </span>
                 </div>
               )}
 
@@ -229,49 +226,61 @@ export const ServiceModeIndicator: React.FC<ServiceModeIndicatorProps> = ({
                     transition={{ duration: 0.2 }}
                     style={{ overflow: 'hidden' }}
                   >
-                    <div style={{
-                      borderTop: '1px solid #374151',
-                      paddingTop: '0.75rem'
-                    }}>
+                    <div
+                      style={{
+                        borderTop: '1px solid #374151',
+                        paddingTop: '0.75rem',
+                      }}
+                    >
                       {/* Status Message */}
-                      <p style={{
-                        margin: '0 0 0.75rem 0',
-                        color: '#d1d5db',
-                        fontSize: '0.8rem',
-                        lineHeight: '1.4'
-                      }}>
+                      <p
+                        style={{
+                          margin: '0 0 0.75rem 0',
+                          color: '#d1d5db',
+                          fontSize: '0.8rem',
+                          lineHeight: '1.4',
+                        }}
+                      >
                         {getStatusMessage()}
                       </p>
 
                       {/* Last Updated */}
-                      <div style={{
-                        fontSize: '0.75rem',
-                        color: '#9ca3af',
-                        marginBottom: '0.75rem'
-                      }}>
+                      <div
+                        style={{
+                          fontSize: '0.75rem',
+                          color: '#9ca3af',
+                          marginBottom: '0.75rem',
+                        }}
+                      >
                         Updated: {config.timestamp.toLocaleTimeString()}
                       </div>
 
                       {/* Pending Sync Details */}
                       {pendingSync.count > 0 && (
-                        <div style={{
-                          backgroundColor: '#7c2d12',
-                          border: '1px solid #ea580c',
-                          borderRadius: '4px',
-                          padding: '0.5rem',
-                          marginBottom: '0.75rem'
-                        }}>
-                          <div style={{
-                            fontSize: '0.75rem',
-                            color: '#fed7aa',
-                            marginBottom: '0.25rem'
-                          }}>
+                        <div
+                          style={{
+                            backgroundColor: '#7c2d12',
+                            border: '1px solid #ea580c',
+                            borderRadius: '4px',
+                            padding: '0.5rem',
+                            marginBottom: '0.75rem',
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: '0.75rem',
+                              color: '#fed7aa',
+                              marginBottom: '0.25rem',
+                            }}
+                          >
                             Pending Syncs: {pendingSync.count}
                           </div>
-                          <div style={{
-                            fontSize: '0.7rem',
-                            color: '#fdba74'
-                          }}>
+                          <div
+                            style={{
+                              fontSize: '0.7rem',
+                              color: '#fdba74',
+                            }}
+                          >
                             Operations: {pendingSync.operations.join(', ')}
                           </div>
                         </div>
@@ -281,13 +290,13 @@ export const ServiceModeIndicator: React.FC<ServiceModeIndicatorProps> = ({
                       <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                         {mode !== ServiceMode.CLOUD_ENABLED && (
                           <Button
-                            variant="primary"
-                            size="sm"
+                            variant='primary'
+                            size='sm'
                             onClick={handleRestoreAttempt}
                             disabled={isRestoring || mode === ServiceMode.OFFLINE}
                             style={{
                               fontSize: '0.75rem',
-                              padding: '0.375rem 0.75rem'
+                              padding: '0.375rem 0.75rem',
                             }}
                           >
                             {isRestoring ? 'Restoring...' : 'Retry Cloud'}
@@ -296,12 +305,12 @@ export const ServiceModeIndicator: React.FC<ServiceModeIndicatorProps> = ({
 
                         {onModeClick && (
                           <Button
-                            variant="outline"
-                            size="sm"
+                            variant='outline'
+                            size='sm'
                             onClick={onModeClick}
                             style={{
                               fontSize: '0.75rem',
-                              padding: '0.375rem 0.75rem'
+                              padding: '0.375rem 0.75rem',
                             }}
                           >
                             Details

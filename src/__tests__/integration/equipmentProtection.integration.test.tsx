@@ -32,10 +32,7 @@
 import React from 'react';
 import { renderHook, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import {
-  ReactGameProvider,
-  useReactGame,
-} from '../../contexts/ReactGameContext';
+import { ReactGameProvider, useReactGame } from '../../contexts/ReactGameContext';
 
 // =============================================================================
 // TEST SETUP
@@ -61,9 +58,9 @@ const createMockIronSword = () => ({
     magicAttack: 0,
     magicDefense: 0,
     speed: 0,
-    accuracy: 2
+    accuracy: 2,
   },
-  icon: '⚔️'
+  icon: '⚔️',
 });
 
 const createMockBronzeSword = () => ({
@@ -81,9 +78,9 @@ const createMockBronzeSword = () => ({
     magicAttack: 0,
     magicDefense: 0,
     speed: 0,
-    accuracy: 1
+    accuracy: 1,
   },
-  icon: '⚔️'
+  icon: '⚔️',
 });
 
 const createMockLeatherVest = () => ({
@@ -101,9 +98,9 @@ const createMockLeatherVest = () => ({
     magicAttack: 0,
     magicDefense: 5,
     speed: -2,
-    accuracy: 0
+    accuracy: 0,
   },
-  icon: '🛡️'
+  icon: '🛡️',
 });
 
 const createMockMagicRing = () => ({
@@ -121,9 +118,9 @@ const createMockMagicRing = () => ({
     magicAttack: 10,
     magicDefense: 5,
     speed: 0,
-    accuracy: 0
+    accuracy: 0,
   },
-  icon: '💍'
+  icon: '💍',
 });
 
 // =============================================================================
@@ -188,14 +185,14 @@ async function sellItem(
     equipment.boots,
     equipment.ring1,
     equipment.ring2,
-    equipment.charm
+    equipment.charm,
   ];
 
   if (equippedItemIds.includes(itemId)) {
     // CRITICAL: Prevent selling equipped items
     return {
       success: false,
-      error: "You can't sell equipped items! Unequip it first."
+      error: "You can't sell equipped items! Unequip it first.",
     };
   }
 
@@ -217,13 +214,13 @@ async function sellItem(
 
   // Step 5: Add gold to player
   gameContext.updatePlayer({
-    gold: gameContext.state.player.gold + goldGained
+    gold: gameContext.state.player.gold + goldGained,
   });
 
   return {
     success: true,
     goldGained,
-    message: `Sold ${quantity}x ${item.name} for ${goldGained} gold!`
+    message: `Sold ${quantity}x ${item.name} for ${goldGained} gold!`,
   };
 }
 
@@ -264,7 +261,7 @@ describe.skip('Equipment Protection - Selling Items', () => {
       // Assert: Sale should fail
       expect(sellResult.success).toBe(false);
       expect(sellResult.error).toContain("can't sell equipped items");
-      expect(sellResult.error).toContain("Unequip it first");
+      expect(sellResult.error).toContain('Unequip it first');
     });
 
     it('should keep item equipped after failed sale attempt', async () => {
@@ -290,9 +287,7 @@ describe.skip('Equipment Protection - Selling Items', () => {
       expect(result.current.state.player?.equipment.weapon).toBe(ironSword.id);
 
       // Assert: Item still in inventory
-      const itemInInventory = result.current.state.inventory.find(
-        item => item.id === ironSword.id
-      );
+      const itemInInventory = result.current.state.inventory.find(item => item.id === ironSword.id);
       expect(itemInInventory).toBeDefined();
     });
 
@@ -428,9 +423,7 @@ describe.skip('Equipment Protection - Selling Items', () => {
       expect(bronzeInInventory).toBeUndefined();
 
       // Assert: Iron sword still in inventory and equipped
-      const ironInInventory = result.current.state.inventory.find(
-        item => item.id === ironSword.id
-      );
+      const ironInInventory = result.current.state.inventory.find(item => item.id === ironSword.id);
       expect(ironInInventory).toBeDefined();
       expect(result.current.state.player?.equipment.weapon).toBe(ironSword.id);
     });
@@ -456,9 +449,7 @@ describe.skip('Equipment Protection - Selling Items', () => {
       const sellResult = await sellItem(result.current, bronzeSword.id);
 
       // Assert: Gold increased
-      expect(result.current.state.player?.gold).toBe(
-        initialGold + bronzeSword.value
-      );
+      expect(result.current.state.player?.gold).toBe(initialGold + bronzeSword.value);
     });
   });
 
@@ -520,9 +511,7 @@ describe.skip('Equipment Protection - Selling Items', () => {
       await sellItem(result.current, ironSword.id);
 
       // Assert: Item removed from inventory
-      const itemInInventory = result.current.state.inventory.find(
-        item => item.id === ironSword.id
-      );
+      const itemInInventory = result.current.state.inventory.find(item => item.id === ironSword.id);
       expect(itemInInventory).toBeUndefined();
     });
   });
@@ -664,14 +653,12 @@ describe('Equipment Protection - Consuming Items', () => {
       magicAttack: 0,
       magicDefense: 8,
       speed: 0,
-      accuracy: 0
+      accuracy: 0,
     },
-    effects: [
-      { type: 'heal', value: 50 }
-    ],
+    effects: [{ type: 'heal', value: 50 }],
     // This makes it consumable when used
     itemType: 'consumable' as const,
-    icon: '🍀'
+    icon: '🍀',
   });
 
   // Helper to create a regular consumable
@@ -684,11 +671,9 @@ describe('Equipment Protection - Consuming Items', () => {
     rarity: 'common' as const,
     value: 25,
     quantity: 1,
-    effects: [
-      { type: 'heal', value: 50 }
-    ],
+    effects: [{ type: 'heal', value: 50 }],
     itemType: 'consumable' as const,
-    icon: '🧪'
+    icon: '🧪',
   });
 
   // Helper to create weapon with use effect (magic staff)
@@ -707,13 +692,11 @@ describe('Equipment Protection - Consuming Items', () => {
       magicAttack: 20,
       magicDefense: 5,
       speed: 0,
-      accuracy: 5
+      accuracy: 5,
     },
-    effects: [
-      { type: 'mana', value: 20 }
-    ],
+    effects: [{ type: 'mana', value: 20 }],
     itemType: 'consumable' as const, // Can be used
-    icon: '🪄'
+    icon: '🪄',
   });
 
   // Helper to create armor with use effect
@@ -732,13 +715,11 @@ describe('Equipment Protection - Consuming Items', () => {
       magicAttack: 5,
       magicDefense: 20,
       speed: -5,
-      accuracy: 0
+      accuracy: 0,
     },
-    effects: [
-      { type: 'mana', value: 30 }
-    ],
+    effects: [{ type: 'mana', value: 30 }],
     itemType: 'consumable' as const, // Can be used
-    icon: '👘'
+    icon: '👘',
   });
 
   describe('Scenario 1: Cannot consume equipped accessory with use effect', () => {
@@ -1181,7 +1162,7 @@ describe('Equipment Protection - Consuming Items', () => {
       const healingCharm = {
         ...createMockHealingCharm(),
         quantity: 5,
-        stackable: true
+        stackable: true,
       };
 
       act(() => {
@@ -1189,16 +1170,14 @@ describe('Equipment Protection - Consuming Items', () => {
         result.current.equipItem('charm', healingCharm.id);
       });
 
-      const initialQuantity = result.current.state.inventory.find(
-        item => item.id === healingCharm.id
-      )?.quantity || 0;
+      const initialQuantity =
+        result.current.state.inventory.find(item => item.id === healingCharm.id)?.quantity || 0;
 
       // Act: Attempt to consume equipped charm (would be blocked)
 
       // Assert: Quantity unchanged
-      const finalQuantity = result.current.state.inventory.find(
-        item => item.id === healingCharm.id
-      )?.quantity || 0;
+      const finalQuantity =
+        result.current.state.inventory.find(item => item.id === healingCharm.id)?.quantity || 0;
 
       expect(finalQuantity).toBe(initialQuantity);
       expect(finalQuantity).toBe(5);

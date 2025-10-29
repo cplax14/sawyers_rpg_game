@@ -20,6 +20,7 @@ const ItemData = {
             statModifiers: { attack: 15, accuracy: 5 },
             requirements: { classes: ["knight", "paladin"] },
             value: 250,
+            sellPrice: 125,
             icon: "⚔️"
         },
         steel_sword: {
@@ -33,6 +34,7 @@ const ItemData = {
             statModifiers: { attack: 25, accuracy: 8 },
             requirements: { classes: ["knight", "paladin"], level: 5 },
             value: 500,
+            sellPrice: 250,
             icon: "🗡️"
         },
         blessed_mace: {
@@ -46,6 +48,7 @@ const ItemData = {
             statModifiers: { attack: 20, magicAttack: 10, accuracy: 5 },
             requirements: { classes: ["paladin"] },
             value: 400,
+            sellPrice: 200,
             icon: "🔨"
         },
 
@@ -61,6 +64,7 @@ const ItemData = {
             statModifiers: { magicAttack: 20, accuracy: 5 },
             requirements: { classes: ["wizard"] },
             value: 200,
+            sellPrice: 100,
             icon: "🪄"
         },
         crystal_staff: {
@@ -74,6 +78,7 @@ const ItemData = {
             statModifiers: { magicAttack: 35, accuracy: 10 },
             requirements: { classes: ["wizard"], level: 8 },
             value: 800,
+            sellPrice: 400,
             icon: "✨"
         },
 
@@ -89,6 +94,7 @@ const ItemData = {
             statModifiers: { attack: 12, speed: 10 },
             requirements: { classes: ["rogue"] },
             value: 180,
+            sellPrice: 90,
             icon: "🗡️"
         },
         poisoned_blade: {
@@ -103,6 +109,7 @@ const ItemData = {
             effects: ["poison_chance"],
             requirements: { classes: ["rogue"], level: 6 },
             value: 450,
+            sellPrice: 225,
             icon: "🗡️"
         },
 
@@ -118,6 +125,7 @@ const ItemData = {
             statModifiers: { attack: 18, accuracy: 12, speed: 5 },
             requirements: { classes: ["ranger"] },
             value: 300,
+            sellPrice: 150,
             icon: "🏹"
         },
         elvish_bow: {
@@ -131,6 +139,7 @@ const ItemData = {
             statModifiers: { attack: 30, accuracy: 15, speed: 8 },
             requirements: { classes: ["ranger"], level: 10 },
             value: 900,
+            sellPrice: 450,
             icon: "🏹"
         },
 
@@ -146,6 +155,7 @@ const ItemData = {
             statModifiers: { attack: 22, accuracy: 5 },
             requirements: { classes: ["warrior"] },
             value: 320,
+            sellPrice: 160,
             icon: "🪓"
         },
         great_axe: {
@@ -159,6 +169,7 @@ const ItemData = {
             statModifiers: { attack: 35, accuracy: 5 },
             requirements: { classes: ["warrior"], level: 7 },
             value: 650,
+            sellPrice: 325,
             icon: "🪓"
         }
     },
@@ -179,6 +190,7 @@ const ItemData = {
             statModifiers: { defense: 8, maxHp: 10 },
             requirements: {},
             value: 150,
+            sellPrice: 75,
             icon: "🦺"
         },
         leather_vest: {
@@ -192,6 +204,7 @@ const ItemData = {
             statModifiers: { defense: 6, speed: 5, maxHp: 8 },
             requirements: { classes: ["rogue"] },
             value: 120,
+            sellPrice: 60,
             icon: "🦺"
         },
         cloth_robe: {
@@ -205,6 +218,7 @@ const ItemData = {
             statModifiers: { defense: 4, magicDefense: 12, maxMp: 15 },
             requirements: { classes: ["wizard"] },
             value: 100,
+            sellPrice: 50,
             icon: "👘"
         },
         ranger_cloak: {
@@ -218,6 +232,7 @@ const ItemData = {
             statModifiers: { defense: 7, speed: 5, accuracy: 8, maxHp: 10 },
             requirements: { classes: ["ranger"] },
             value: 180,
+            sellPrice: 90,
             icon: "🧥"
         },
 
@@ -233,6 +248,7 @@ const ItemData = {
             statModifiers: { defense: 15, magicDefense: 8, maxHp: 20 },
             requirements: { classes: ["knight", "paladin"] },
             value: 400,
+            sellPrice: 200,
             icon: "🛡️"
         },
         scale_mail: {
@@ -246,6 +262,7 @@ const ItemData = {
             statModifiers: { defense: 18, maxHp: 25 },
             requirements: { classes: ["warrior"] },
             value: 350,
+            sellPrice: 175,
             icon: "🛡️"
         },
 
@@ -261,6 +278,7 @@ const ItemData = {
             statModifiers: { defense: 25, magicDefense: 12, maxHp: 40 },
             requirements: { classes: ["knight", "paladin"], level: 8 },
             value: 800,
+            sellPrice: 400,
             icon: "🛡️"
         },
 
@@ -276,6 +294,7 @@ const ItemData = {
             statModifiers: { defense: 8, magicDefense: 20, magicAttack: 10, maxMp: 25 },
             requirements: { classes: ["wizard"], level: 5 },
             value: 600,
+            sellPrice: 300,
             icon: "👘"
         }
     },
@@ -293,6 +312,7 @@ const ItemData = {
             rarity: "common",
             statModifiers: { maxHp: 20 },
             value: 200,
+            sellPrice: 100,
             icon: "💍"
         },
         mana_crystal: {
@@ -304,6 +324,7 @@ const ItemData = {
             rarity: "common",
             statModifiers: { maxMp: 30, magicAttack: 5 },
             value: 250,
+            sellPrice: 125,
             icon: "💎"
         },
         stealth_cloak: {
@@ -316,6 +337,7 @@ const ItemData = {
             statModifiers: { speed: 15 },
             effects: ["stealth_bonus"],
             value: 400,
+            sellPrice: 200,
             icon: "🧥"
         },
         holy_symbol: {
@@ -328,6 +350,7 @@ const ItemData = {
             statModifiers: { magicDefense: 15, maxHp: 10 },
             effects: ["undead_resistance"],
             value: 350,
+            sellPrice: 175,
             icon: "✨"
         },
         nature_charm: {
@@ -340,6 +363,7 @@ const ItemData = {
             statModifiers: { maxHp: 15, maxMp: 15, accuracy: 10 },
             effects: ["nature_affinity"],
             value: 300,
+            sellPrice: 150,
             icon: "🍀"
         },
         strength_band: {
@@ -351,6 +375,7 @@ const ItemData = {
             rarity: "common",
             statModifiers: { attack: 10, defense: 5 },
             value: 180,
+            sellPrice: 90,
             icon: "💪"
         }
     },
@@ -367,6 +392,7 @@ const ItemData = {
             rarity: "common",
             effect: { type: "heal", amount: 50 },
             value: 25,
+            sellPrice: 12,
             icon: "🧪"
         },
         mana_potion: {
@@ -377,6 +403,7 @@ const ItemData = {
             rarity: "common",
             effect: { type: "restore_mp", amount: 30 },
             value: 20,
+            sellPrice: 10,
             icon: "💙"
         },
         stamina_potion: {
@@ -387,6 +414,7 @@ const ItemData = {
             rarity: "common",
             effect: { type: "restore_stamina", amount: 40 },
             value: 18,
+            sellPrice: 9,
             icon: "💪"
         },
         hi_potion: {
@@ -397,6 +425,7 @@ const ItemData = {
             rarity: "uncommon",
             effect: { type: "heal", amount: 150 },
             value: 75,
+            sellPrice: 37,
             icon: "🧪"
         },
         elixir: {
@@ -407,6 +436,7 @@ const ItemData = {
             rarity: "rare",
             effect: { type: "full_restore" },
             value: 200,
+            sellPrice: 100,
             icon: "✨"
         },
         antidote: {
@@ -417,6 +447,7 @@ const ItemData = {
             rarity: "common",
             effect: { type: "cure", status: "poison" },
             value: 15,
+            sellPrice: 7,
             icon: "🟢"
         },
         phoenix_down: {
@@ -427,6 +458,7 @@ const ItemData = {
             rarity: "rare",
             effect: { type: "revive", amount: 0.25 },
             value: 500,
+            sellPrice: 250,
             icon: "🪶"
         },
 
@@ -443,6 +475,7 @@ const ItemData = {
             usageType: "spell_learning",
             requirements: { minIntelligence: 12 },
             value: 150,
+            sellPrice: 75,
             icon: "📜🔥"
         },
         ice_shard_scroll: {
@@ -455,6 +488,7 @@ const ItemData = {
             usageType: "spell_learning",
             requirements: { classes: ["wizard", "paladin"] },
             value: 140,
+            sellPrice: 70,
             icon: "📜❄️"
         },
         heal_scroll: {
@@ -467,6 +501,7 @@ const ItemData = {
             usageType: "spell_learning",
             requirements: { classes: ["wizard", "paladin"] },
             value: 100,
+            sellPrice: 50,
             icon: "📜✨"
         },
         lightning_bolt_scroll: {
@@ -479,6 +514,7 @@ const ItemData = {
             usageType: "spell_learning",
             requirements: { level: 8, classes: ["wizard"] },
             value: 300,
+            sellPrice: 150,
             icon: "📜⚡"
         },
         ancient_magic_scroll: {
@@ -491,6 +527,7 @@ const ItemData = {
             usageType: "spell_learning",
             requirements: { level: 15, story: "ancient_knowledge" },
             value: 800,
+            sellPrice: 400,
             icon: "📜🌟"
         },
 
@@ -505,6 +542,7 @@ const ItemData = {
             rarity: "uncommon",
             effect: { type: "temp_buff", stat: "attack", multiplier: 1.25, duration: 5 },
             value: 80,
+            sellPrice: 40,
             icon: "💪"
         },
         defense_elixir: {
@@ -515,6 +553,7 @@ const ItemData = {
             rarity: "uncommon",
             effect: { type: "temp_buff", stat: "defense", multiplier: 1.3, duration: 3 },
             value: 85,
+            sellPrice: 42,
             icon: "🛡️"
         },
         speed_tonic: {
@@ -525,6 +564,7 @@ const ItemData = {
             rarity: "rare",
             effect: { type: "temp_buff", stats: ["speed", "accuracy"], multiplier: 1.2, duration: 4 },
             value: 120,
+            sellPrice: 60,
             icon: "💨"
         },
         magic_amplifier: {
@@ -535,6 +575,7 @@ const ItemData = {
             rarity: "rare",
             effect: { type: "temp_buff", stats: ["magicAttack", "magicDefense"], multiplier: 1.35, duration: 6 },
             value: 150,
+            sellPrice: 75,
             icon: "🔮"
         },
         experience_booster: {
@@ -545,6 +586,7 @@ const ItemData = {
             rarity: "uncommon",
             effect: { type: "temp_buff", bonus: "experience", multiplier: 2.0, duration: 1 },
             value: 200,
+            sellPrice: 100,
             icon: "⭐"
         },
         lucky_charm: {
@@ -555,6 +597,7 @@ const ItemData = {
             rarity: "rare",
             effect: { type: "temp_buff", bonus: ["critical", "loot_drop"], multiplier: 1.5, duration: 3 },
             value: 180,
+            sellPrice: 90,
             icon: "🍀"
         },
 
@@ -570,6 +613,7 @@ const ItemData = {
             effect: { type: "utility", function: "light_source" },
             duration: 10, // 10 area explorations
             value: 15,
+            sellPrice: 7,
             icon: "🔦"
         },
         rope: {
@@ -580,6 +624,7 @@ const ItemData = {
             rarity: "common",
             effect: { type: "utility", function: "escape_aid" },
             value: 30,
+            sellPrice: 15,
             icon: "🪢"
         },
         monster_bait: {
@@ -590,6 +635,7 @@ const ItemData = {
             rarity: "uncommon",
             effect: { type: "temp_effect", effect: "encounter_boost", multiplier: 1.5, duration: 5 },
             value: 60,
+            sellPrice: 30,
             icon: "🥩"
         },
         monster_repel: {
@@ -600,6 +646,7 @@ const ItemData = {
             rarity: "uncommon",
             effect: { type: "temp_effect", effect: "encounter_reduce", multiplier: 0.3, duration: 8 },
             value: 45,
+            sellPrice: 22,
             icon: "🚫"
         },
         teleport_crystal: {
@@ -610,6 +657,7 @@ const ItemData = {
             rarity: "rare",
             effect: { type: "utility", function: "teleport_town" },
             value: 250,
+            sellPrice: 125,
             icon: "💎"
         },
 
@@ -624,6 +672,7 @@ const ItemData = {
             rarity: "uncommon",
             effect: { type: "remove_exhaustion", amount: 1 },
             value: 150,
+            sellPrice: 75,
             icon: "🧪✨"
         },
         full_restore: {
@@ -634,6 +683,7 @@ const ItemData = {
             rarity: "rare",
             effect: { type: "remove_exhaustion", amount: -1 }, // -1 means remove all
             value: 400,
+            sellPrice: 200,
             icon: "💫"
         }
     },
@@ -649,6 +699,7 @@ const ItemData = {
             rarity: "common",
             captureRate: 1.0,
             value: 50,
+            sellPrice: 25,
             icon: "⚪"
         },
         great_ball: {
@@ -658,6 +709,7 @@ const ItemData = {
             rarity: "uncommon",
             captureRate: 1.5,
             value: 100,
+            sellPrice: 50,
             icon: "🔵"
         },
         ultra_ball: {
@@ -667,6 +719,7 @@ const ItemData = {
             rarity: "rare",
             captureRate: 2.0,
             value: 200,
+            sellPrice: 100,
             icon: "🟡"
         },
         net_ball: {
@@ -677,6 +730,7 @@ const ItemData = {
             captureRate: 1.2,
             specialBonus: { types: ["water", "flying"], multiplier: 2.5 },
             value: 120,
+            sellPrice: 60,
             icon: "🕸️"
         },
         dusk_ball: {
@@ -687,6 +741,7 @@ const ItemData = {
             captureRate: 1.0,
             specialBonus: { conditions: ["dark", "night"], multiplier: 3.0 },
             value: 150,
+            sellPrice: 75,
             icon: "🌑"
         }
     },
@@ -702,6 +757,7 @@ const ItemData = {
             category: "maintenance",
             rarity: "common",
             value: 30,
+            sellPrice: 15,
             icon: "🔧"
         },
         magic_ink: {
@@ -711,6 +767,7 @@ const ItemData = {
             category: "crafting",
             rarity: "uncommon",
             value: 40,
+            sellPrice: 20,
             icon: "🖋️"
         },
         monster_bait: {
@@ -720,6 +777,7 @@ const ItemData = {
             category: "utility",
             rarity: "common",
             value: 20,
+            sellPrice: 10,
             icon: "🥩"
         },
 
@@ -734,6 +792,7 @@ const ItemData = {
             rarity: "common",
             craftingUse: ["alchemy", "equipment_repair"],
             value: 8,
+            sellPrice: 4,
             icon: "🫧"
         },
         goblin_tooth: {
@@ -744,6 +803,7 @@ const ItemData = {
             rarity: "common",
             craftingUse: ["weapon_crafting", "ammunition"],
             value: 12,
+            sellPrice: 6,
             icon: "🦷"
         },
         wolf_fang: {
@@ -754,6 +814,7 @@ const ItemData = {
             rarity: "uncommon",
             craftingUse: ["weapon_enhancement", "jewelry"],
             value: 25,
+            sellPrice: 12,
             icon: "🔪"
         },
         wolf_pelt: {
@@ -764,6 +825,7 @@ const ItemData = {
             rarity: "uncommon",
             craftingUse: ["armor_crafting", "clothing"],
             value: 30,
+            sellPrice: 15,
             icon: "🧥"
         },
         leather_scraps: {
@@ -774,6 +836,7 @@ const ItemData = {
             rarity: "common",
             craftingUse: ["armor_crafting", "repair"],
             value: 8,
+            sellPrice: 4,
             icon: "🟤"
         },
         orc_tusk: {
@@ -784,6 +847,7 @@ const ItemData = {
             rarity: "rare",
             craftingUse: ["weapon_crafting", "decoration"],
             value: 60,
+            sellPrice: 30,
             icon: "🦏"
         },
         dragon_scale: {
@@ -794,6 +858,7 @@ const ItemData = {
             rarity: "legendary",
             craftingUse: ["legendary_armor", "magical_items"],
             value: 500,
+            sellPrice: 250,
             icon: "🐲"
         },
         dragon_heart: {
@@ -804,6 +869,7 @@ const ItemData = {
             rarity: "legendary",
             craftingUse: ["artifact_creation", "spell_enhancement"],
             value: 2000,
+            sellPrice: 1000,
             icon: "❤️"
         },
 
@@ -818,6 +884,7 @@ const ItemData = {
             rarity: "common",
             craftingUse: ["alchemy", "healing_items"],
             value: 5,
+            sellPrice: 2,
             icon: "🌿"
         },
         mana_flower: {
@@ -828,6 +895,7 @@ const ItemData = {
             rarity: "common",
             craftingUse: ["alchemy", "mana_items"],
             value: 8,
+            sellPrice: 4,
             icon: "🌸"
         },
         oak_branch: {
@@ -838,6 +906,7 @@ const ItemData = {
             rarity: "common",
             craftingUse: ["weapon_crafting", "tool_making"],
             value: 6,
+            sellPrice: 3,
             icon: "🌳"
         },
         pine_sap: {
@@ -848,6 +917,7 @@ const ItemData = {
             rarity: "common",
             craftingUse: ["equipment_repair", "coating"],
             value: 4,
+            sellPrice: 2,
             icon: "🍯"
         },
         forest_crystal: {
@@ -858,6 +928,7 @@ const ItemData = {
             rarity: "rare",
             craftingUse: ["magical_items", "enhancement"],
             value: 120,
+            sellPrice: 60,
             icon: "💚"
         },
 
@@ -872,6 +943,7 @@ const ItemData = {
             rarity: "common",
             craftingUse: ["weapon_crafting", "armor_crafting"],
             value: 15,
+            sellPrice: 7,
             icon: "⛏️"
         },
         quartz_crystal: {
@@ -882,6 +954,7 @@ const ItemData = {
             rarity: "uncommon",
             craftingUse: ["magical_items", "jewelry"],
             value: 40,
+            sellPrice: 20,
             icon: "💎"
         },
         amethyst_shard: {
@@ -892,6 +965,7 @@ const ItemData = {
             rarity: "rare",
             craftingUse: ["spell_enhancement", "magical_weapons"],
             value: 80,
+            sellPrice: 40,
             icon: "💜"
         },
         mithril_ore: {
@@ -902,6 +976,7 @@ const ItemData = {
             rarity: "epic",
             craftingUse: ["legendary_equipment", "artifact_creation"],
             value: 300,
+            sellPrice: 150,
             icon: "✨"
         },
         adamantine_crystal: {
@@ -912,6 +987,7 @@ const ItemData = {
             rarity: "legendary",
             craftingUse: ["legendary_weapons", "cutting_tools"],
             value: 1000,
+            sellPrice: 500,
             icon: "💠"
         },
 
@@ -926,6 +1002,7 @@ const ItemData = {
             rarity: "uncommon",
             craftingUse: ["spell_scrolls", "mana_items"],
             value: 50,
+            sellPrice: 25,
             icon: "🔵"
         },
         crystal_essence: {
@@ -936,6 +1013,7 @@ const ItemData = {
             rarity: "rare",
             craftingUse: ["magical_enhancement", "power_cores"],
             value: 100,
+            sellPrice: 50,
             icon: "💫"
         },
         dragon_essence: {
@@ -946,6 +1024,7 @@ const ItemData = {
             rarity: "epic",
             craftingUse: ["legendary_spells", "dragon_items"],
             value: 400,
+            sellPrice: 200,
             icon: "🐉"
         },
         time_relic: {
@@ -956,6 +1035,7 @@ const ItemData = {
             rarity: "legendary",
             craftingUse: ["time_magic", "temporal_artifacts"],
             value: 1500,
+            sellPrice: 750,
             icon: "⏳"
         },
 
@@ -966,6 +1046,7 @@ const ItemData = {
             category: "evolution",
             rarity: "rare",
             value: 500,
+            sellPrice: 250,
             icon: "💎"
         }
     },
@@ -981,6 +1062,7 @@ const ItemData = {
             spell: "fireball",
             rarity: "uncommon",
             value: 150,
+            sellPrice: 75,
             icon: "📜"
         },
         scroll_ice_shard: {
@@ -990,6 +1072,7 @@ const ItemData = {
             spell: "ice_shard",
             rarity: "uncommon",
             value: 150,
+            sellPrice: 75,
             icon: "📜"
         },
         scroll_heal: {
@@ -999,6 +1082,7 @@ const ItemData = {
             spell: "heal",
             rarity: "common",
             value: 100,
+            sellPrice: 50,
             icon: "📜"
         }
     },

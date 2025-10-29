@@ -12,11 +12,25 @@ import { useLazyCreatureLoading } from '../../hooks/useLazyLoading';
 import { useGameState } from '../../hooks';
 import { useResponsive } from '../../hooks';
 import { useOptimizedCreatureRendering } from '../../hooks/useOptimizedRendering';
-import { useSmartCreatureFiltering, useSmartAggregations } from '../../hooks/useDataComputationCache';
+import {
+  useSmartCreatureFiltering,
+  useSmartAggregations,
+} from '../../hooks/useDataComputationCache';
 import { useCreatureCache } from '../../hooks/useSmartCache';
 import { performanceMonitor } from '../../utils/performanceMonitor';
-import { EnhancedCreature, CreatureType, CreatureElement, CreatureRarity } from '../../types/creatures';
-import { checkBreedingCompatibility, breedCreatures, generateNPCTraders, canMakeTrade, executeNPCTrade } from '../../utils/creatureUtils';
+import {
+  EnhancedCreature,
+  CreatureType,
+  CreatureElement,
+  CreatureRarity,
+} from '../../types/creatures';
+import {
+  checkBreedingCompatibility,
+  breedCreatures,
+  generateNPCTraders,
+  canMakeTrade,
+  executeNPCTrade,
+} from '../../utils/creatureUtils';
 
 interface CreatureScreenProps {
   className?: string;
@@ -39,7 +53,7 @@ const CREATURE_TYPES: Array<{ id: CreatureType | 'all'; name: string; icon: stri
   { id: 'demon', name: 'Demon', icon: '😈' },
   { id: 'angel', name: 'Angel', icon: '😇' },
   { id: 'plant', name: 'Plant', icon: '🌿' },
-  { id: 'insect', name: 'Insect', icon: '🐛' }
+  { id: 'insect', name: 'Insect', icon: '🐛' },
 ];
 
 // Sort options
@@ -49,7 +63,7 @@ const SORT_OPTIONS: Array<{ id: string; name: string; icon: string }> = [
   { id: 'rarity', name: 'Rarity', icon: '⭐' },
   { id: 'type', name: 'Type', icon: '📂' },
   { id: 'capturedAt', name: 'Capture Date', icon: '📅' },
-  { id: 'discoveredAt', name: 'Discovery Date', icon: '🔍' }
+  { id: 'discoveredAt', name: 'Discovery Date', icon: '🔍' },
 ];
 
 // Temporary styles since PostCSS is disabled
@@ -62,29 +76,29 @@ const creatureStyles = {
     color: '#f4f4f4',
     padding: '1rem',
     boxSizing: 'border-box' as const,
-    overflow: 'hidden'
+    overflow: 'hidden',
   },
   header: {
     textAlign: 'center' as const,
-    marginBottom: '1.5rem'
+    marginBottom: '1.5rem',
   },
   title: {
     fontSize: '2rem',
     fontWeight: 'bold',
     margin: '0 0 0.5rem 0',
-    color: '#d4af37'
+    color: '#d4af37',
   },
   subtitle: {
     fontSize: '1rem',
     color: '#94a3b8',
-    margin: '0'
+    margin: '0',
   },
   navigation: {
     display: 'flex',
     gap: '1rem',
     marginBottom: '1.5rem',
     justifyContent: 'center',
-    flexWrap: 'wrap' as const
+    flexWrap: 'wrap' as const,
   },
   navButton: {
     padding: '0.75rem 1.5rem',
@@ -100,23 +114,23 @@ const creatureStyles = {
     transition: 'all 0.3s ease',
     display: 'flex',
     alignItems: 'center',
-    gap: '0.5rem'
+    gap: '0.5rem',
   },
   navButtonActive: {
     background: 'rgba(212, 175, 55, 0.2)',
     borderColor: '#d4af37',
-    color: '#d4af37'
+    color: '#d4af37',
   },
   controls: {
     display: 'flex',
     gap: '1rem',
     marginBottom: '1.5rem',
     flexWrap: 'wrap' as const,
-    alignItems: 'center'
+    alignItems: 'center',
   },
   searchContainer: {
     flex: '1 1 300px',
-    position: 'relative' as const
+    position: 'relative' as const,
   },
   searchInput: {
     width: '100%',
@@ -129,7 +143,7 @@ const creatureStyles = {
     color: '#f4f4f4',
     fontSize: '0.9rem',
     outline: 'none',
-    transition: 'all 0.3s ease'
+    transition: 'all 0.3s ease',
   },
   searchIcon: {
     position: 'absolute' as const,
@@ -137,7 +151,7 @@ const creatureStyles = {
     top: '50%',
     transform: 'translateY(-50%)',
     color: '#94a3b8',
-    fontSize: '1.2rem'
+    fontSize: '1.2rem',
   },
   clearSearch: {
     position: 'absolute' as const,
@@ -149,12 +163,12 @@ const creatureStyles = {
     color: '#94a3b8',
     cursor: 'pointer',
     fontSize: '1rem',
-    padding: '0.25rem'
+    padding: '0.25rem',
   },
   filterTabs: {
     display: 'flex',
     gap: '0.5rem',
-    flexWrap: 'wrap' as const
+    flexWrap: 'wrap' as const,
   },
   filterTab: {
     padding: '0.5rem 1rem',
@@ -170,21 +184,21 @@ const creatureStyles = {
     transition: 'all 0.3s ease',
     display: 'flex',
     alignItems: 'center',
-    gap: '0.5rem'
+    gap: '0.5rem',
   },
   filterTabActive: {
     background: 'rgba(212, 175, 55, 0.2)',
     borderColor: '#d4af37',
-    color: '#d4af37'
+    color: '#d4af37',
   },
   sortContainer: {
     display: 'flex',
     alignItems: 'center',
-    gap: '0.5rem'
+    gap: '0.5rem',
   },
   sortLabel: {
     fontSize: '0.8rem',
-    color: '#94a3b8'
+    color: '#94a3b8',
   },
   sortSelect: {
     padding: '0.5rem',
@@ -195,13 +209,13 @@ const creatureStyles = {
     background: 'rgba(255, 255, 255, 0.05)',
     color: '#f4f4f4',
     fontSize: '0.8rem',
-    outline: 'none'
+    outline: 'none',
   },
   content: {
     flex: 1,
     overflow: 'hidden',
     display: 'flex',
-    flexDirection: 'column' as const
+    flexDirection: 'column' as const,
   },
   statsBar: {
     display: 'flex',
@@ -212,25 +226,25 @@ const creatureStyles = {
     borderRadius: '8px',
     marginBottom: '1rem',
     fontSize: '0.8rem',
-    color: '#94a3b8'
+    color: '#94a3b8',
   },
   progressBar: {
     display: 'flex',
     alignItems: 'center',
-    gap: '0.5rem'
+    gap: '0.5rem',
   },
   progressBarContainer: {
     width: '200px',
     height: '8px',
     background: 'rgba(255, 255, 255, 0.1)',
     borderRadius: '4px',
-    overflow: 'hidden'
+    overflow: 'hidden',
   },
   progressBarFill: {
     height: '100%',
     background: 'linear-gradient(90deg, #10b981, #d4af37)',
     borderRadius: '4px',
-    transition: 'width 0.3s ease'
+    transition: 'width 0.3s ease',
   },
   creatureGrid: {
     flex: 1,
@@ -239,41 +253,38 @@ const creatureStyles = {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
     gap: '1rem',
-    alignContent: 'start'
+    alignContent: 'start',
   },
   mobileCreatureGrid: {
     gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-    gap: '0.75rem'
+    gap: '0.75rem',
   },
   emptyState: {
     textAlign: 'center' as const,
     color: '#94a3b8',
     fontSize: '1rem',
     padding: '3rem 1rem',
-    fontStyle: 'italic'
+    fontStyle: 'italic',
   },
   loadingContainer: {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    height: '200px'
+    height: '200px',
   },
   errorContainer: {
     textAlign: 'center' as const,
-    padding: '2rem'
+    padding: '2rem',
   },
   closeButton: {
     position: 'absolute' as const,
     top: '1rem',
     right: '1rem',
-    zIndex: 10
-  }
+    zIndex: 10,
+  },
 };
 
-export const CreatureScreen: React.FC<CreatureScreenProps> = ({
-  className,
-  onClose
-}) => {
+export const CreatureScreen: React.FC<CreatureScreenProps> = ({ className, onClose }) => {
   const { gameState } = useGameState();
   const { isMobile, isTablet } = useResponsive();
 
@@ -291,7 +302,7 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
     addToTeam,
     removeFromTeam,
     releaseCreature,
-    renameCreature
+    renameCreature,
   } = useCreatures() || {};
 
   // Local state
@@ -338,11 +349,12 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
     // Apply search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      data = data.filter(creature =>
-        creature.name.toLowerCase().includes(query) ||
-        creature.description?.toLowerCase().includes(query) ||
-        creature.creatureType.toLowerCase().includes(query) ||
-        creature.element.toLowerCase().includes(query)
+      data = data.filter(
+        creature =>
+          creature.name.toLowerCase().includes(query) ||
+          creature.description?.toLowerCase().includes(query) ||
+          creature.creatureType.toLowerCase().includes(query) ||
+          creature.element.toLowerCase().includes(query)
       );
     }
 
@@ -405,183 +417,226 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
     minItemWidth: CREATURE_MIN_WIDTH,
     itemHeight: CREATURE_CARD_HEIGHT,
     gap: isMobile ? 12 : 16,
-    threshold: 50 // Enable virtualization for 50+ creatures
+    threshold: 50, // Enable virtualization for 50+ creatures
   });
 
   // Handle creature selection for breeding
-  const handleCreatureSelect = useCallback((creature: EnhancedCreature) => {
-    if (viewMode !== 'breeding') return;
+  const handleCreatureSelect = useCallback(
+    (creature: EnhancedCreature) => {
+      if (viewMode !== 'breeding') return;
 
-    if (!selectedParent1) {
-      setSelectedParent1(creature);
-    } else if (!selectedParent2 && creature.id !== selectedParent1.id) {
-      setSelectedParent2(creature);
-    } else {
-      // Reset selection if same creature or both are already selected
-      setSelectedParent1(creature);
-      setSelectedParent2(null);
-    }
-  }, [viewMode, selectedParent1]);
+      if (!selectedParent1) {
+        setSelectedParent1(creature);
+      } else if (!selectedParent2 && creature.id !== selectedParent1.id) {
+        setSelectedParent2(creature);
+      } else {
+        // Reset selection if same creature or both are already selected
+        setSelectedParent1(creature);
+        setSelectedParent2(null);
+      }
+    },
+    [viewMode, selectedParent1]
+  );
 
   // Handle creature selection for trading
-  const handleTradeCreatureSelect = useCallback((creature: EnhancedCreature) => {
-    if (viewMode !== 'trading') return;
-    setSelectedTradeCreature(creature);
-  }, [viewMode]);
+  const handleTradeCreatureSelect = useCallback(
+    (creature: EnhancedCreature) => {
+      if (viewMode !== 'trading') return;
+      setSelectedTradeCreature(creature);
+    },
+    [viewMode]
+  );
 
   // Creature rendering function for virtualized grid
-  const renderCreature = useCallback((creature: EnhancedCreature, index: number) => (
-    <CreatureCard
-      creature={creature}
-      viewMode={viewMode}
-      size={isMobile ? 'sm' : 'md'}
-      showActions={viewMode !== 'breeding' && viewMode !== 'trading'}
-      showDetails={true}
-      onClick={viewMode === 'breeding' ? () => handleCreatureSelect(creature) :
-              viewMode === 'trading' ? () => handleTradeCreatureSelect(creature) : undefined}
-      className={viewMode === 'breeding' ?
-        (selectedParent1?.id === creature.id || selectedParent2?.id === creature.id ?
-          'breeding-selected' : 'breeding-selectable') :
-        viewMode === 'trading' ?
-          (selectedTradeCreature?.id === creature.id ? 'trading-selected' : 'trading-selectable') : ''}
-      onRelease={async (creature) => {
-        console.log('Releasing creature:', creature.name);
-        if (releaseCreature) {
-          const result = await releaseCreature(creature.creatureId || creature.id);
-          if (result.success) {
-            console.log('✅ Successfully released:', creature.name);
-          } else {
-            console.error('❌ Failed to release:', result.message);
-          }
+  const renderCreature = useCallback(
+    (creature: EnhancedCreature, index: number) => (
+      <CreatureCard
+        creature={creature}
+        viewMode={viewMode}
+        size={isMobile ? 'sm' : 'md'}
+        showActions={viewMode !== 'breeding' && viewMode !== 'trading'}
+        showDetails={true}
+        onClick={
+          viewMode === 'breeding'
+            ? () => handleCreatureSelect(creature)
+            : viewMode === 'trading'
+              ? () => handleTradeCreatureSelect(creature)
+              : undefined
         }
-      }}
-      onAddToTeam={async (creature) => {
-        console.log('Adding to team:', creature.name);
-        if (addToTeam) {
-          const result = await addToTeam(creature.creatureId || creature.id);
-          if (result.success) {
-            console.log('✅ Successfully added to team:', creature.name);
-          } else {
-            console.error('❌ Failed to add to team:', result.message);
-          }
+        className={
+          viewMode === 'breeding'
+            ? selectedParent1?.id === creature.id || selectedParent2?.id === creature.id
+              ? 'breeding-selected'
+              : 'breeding-selectable'
+            : viewMode === 'trading'
+              ? selectedTradeCreature?.id === creature.id
+                ? 'trading-selected'
+                : 'trading-selectable'
+              : ''
         }
-      }}
-      onRemoveFromTeam={async (creature) => {
-        console.log('Removing from team:', creature.name);
-        if (removeFromTeam) {
-          const result = await removeFromTeam(creature.creatureId || creature.id);
-          if (result.success) {
-            console.log('✅ Successfully removed from team:', creature.name);
-          } else {
-            console.error('❌ Failed to remove from team:', result.message);
+        onRelease={async creature => {
+          console.log('Releasing creature:', creature.name);
+          if (releaseCreature) {
+            const result = await releaseCreature(creature.creatureId || creature.id);
+            if (result.success) {
+              console.log('✅ Successfully released:', creature.name);
+            } else {
+              console.error('❌ Failed to release:', result.message);
+            }
           }
-        }
-      }}
-      onRename={async (creature) => {
-        const newName = prompt(`Enter new name for ${creature.name}:`);
-        if (newName && newName.trim() && renameCreature) {
-          const result = await renameCreature(creature.creatureId || creature.id, newName.trim());
-          if (result.success) {
-            console.log('✅ Successfully renamed to:', newName);
-          } else {
-            console.error('❌ Failed to rename:', result.message);
+        }}
+        onAddToTeam={async creature => {
+          console.log('Adding to team:', creature.name);
+          if (addToTeam) {
+            const result = await addToTeam(creature.creatureId || creature.id);
+            if (result.success) {
+              console.log('✅ Successfully added to team:', creature.name);
+            } else {
+              console.error('❌ Failed to add to team:', result.message);
+            }
           }
-        }
-      }}
-      onInspect={(creature) => {
-        console.log('Inspecting creature:', creature.name);
-        // TODO: Open detailed inspection modal
-      }}
-    />
-  ), [viewMode, isMobile, selectedParent1?.id, selectedParent2?.id, selectedTradeCreature?.id, handleCreatureSelect, handleTradeCreatureSelect, addToTeam, removeFromTeam, releaseCreature, renameCreature]);
+        }}
+        onRemoveFromTeam={async creature => {
+          console.log('Removing from team:', creature.name);
+          if (removeFromTeam) {
+            const result = await removeFromTeam(creature.creatureId || creature.id);
+            if (result.success) {
+              console.log('✅ Successfully removed from team:', creature.name);
+            } else {
+              console.error('❌ Failed to remove from team:', result.message);
+            }
+          }
+        }}
+        onRename={async creature => {
+          const newName = prompt(`Enter new name for ${creature.name}:`);
+          if (newName && newName.trim() && renameCreature) {
+            const result = await renameCreature(creature.creatureId || creature.id, newName.trim());
+            if (result.success) {
+              console.log('✅ Successfully renamed to:', newName);
+            } else {
+              console.error('❌ Failed to rename:', result.message);
+            }
+          }
+        }}
+        onInspect={creature => {
+          console.log('Inspecting creature:', creature.name);
+          // TODO: Open detailed inspection modal
+        }}
+      />
+    ),
+    [
+      viewMode,
+      isMobile,
+      selectedParent1?.id,
+      selectedParent2?.id,
+      selectedTradeCreature?.id,
+      handleCreatureSelect,
+      handleTradeCreatureSelect,
+      addToTeam,
+      removeFromTeam,
+      releaseCreature,
+      renameCreature,
+    ]
+  );
 
   // Creature key function for virtualized grid
-  const getCreatureKey = useCallback((creature: EnhancedCreature, index: number) => creature.creatureId, []);
+  const getCreatureKey = useCallback(
+    (creature: EnhancedCreature, index: number) => creature.creatureId,
+    []
+  );
 
   // Lazy loading setup for large creature collections
-  const currentCreatureFilters = useMemo(() => ({
-    viewMode,
-    search: searchQuery,
-    type: selectedType,
-    sort: { field: sortBy, order: sortOrder }
-  }), [viewMode, searchQuery, selectedType, sortBy, sortOrder]);
+  const currentCreatureFilters = useMemo(
+    () => ({
+      viewMode,
+      search: searchQuery,
+      type: selectedType,
+      sort: { field: sortBy, order: sortOrder },
+    }),
+    [viewMode, searchQuery, selectedType, sortBy, sortOrder]
+  );
 
   // Mock lazy loading function for creatures
-  const loadCreatureData = useCallback(async (page: number, pageSize: number, viewModeFilter: string) => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 400));
+  const loadCreatureData = useCallback(
+    async (page: number, pageSize: number, viewModeFilter: string) => {
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 400));
 
-    // Get current data based on view mode
-    let data: EnhancedCreature[] = [];
-    switch (viewModeFilter) {
-      case 'bestiary':
-        data = [...(filteredBestiary || [])];
-        break;
-      case 'collection':
-        data = [...(filteredCreatures || [])];
-        break;
-      case 'team':
-        data = [...(activeTeam || [])];
-        break;
-      case 'breeding':
-        data = [...(filteredCreatures || [])];
-        break;
-      case 'trading':
-        data = [...(filteredCreatures || [])];
-        break;
-      default:
-        data = [...(filteredBestiary || [])];
-    }
-
-    // Apply search filter
-    if (currentCreatureFilters.search?.trim()) {
-      const searchTerm = currentCreatureFilters.search.toLowerCase();
-      data = data.filter(creature =>
-        creature.name?.toLowerCase().includes(searchTerm) ||
-        creature.species?.toLowerCase().includes(searchTerm) ||
-        creature.creatureType?.toLowerCase().includes(searchTerm)
-      );
-    }
-
-    // Apply type filter
-    if (currentCreatureFilters.type !== 'all') {
-      data = data.filter(creature => creature.creatureType === currentCreatureFilters.type);
-    }
-
-    // Apply sorting
-    data.sort((a, b) => {
-      let comparison = 0;
-      switch (currentCreatureFilters.sort.field) {
-        case 'name':
-          comparison = (a.name || '').localeCompare(b.name || '');
+      // Get current data based on view mode
+      let data: EnhancedCreature[] = [];
+      switch (viewModeFilter) {
+        case 'bestiary':
+          data = [...(filteredBestiary || [])];
           break;
-        case 'level':
-          comparison = (a.level || 1) - (b.level || 1);
+        case 'collection':
+          data = [...(filteredCreatures || [])];
           break;
-        case 'rarity':
-          const rarityOrder = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythical'];
-          comparison = rarityOrder.indexOf(a.rarity || 'common') - rarityOrder.indexOf(b.rarity || 'common');
+        case 'team':
+          data = [...(activeTeam || [])];
           break;
-        case 'type':
-          comparison = (a.creatureType || '').localeCompare(b.creatureType || '');
+        case 'breeding':
+          data = [...(filteredCreatures || [])];
+          break;
+        case 'trading':
+          data = [...(filteredCreatures || [])];
           break;
         default:
-          comparison = 0;
+          data = [...(filteredBestiary || [])];
       }
-      return currentCreatureFilters.sort.order === 'desc' ? -comparison : comparison;
-    });
 
-    // Paginate
-    const startIndex = page * pageSize;
-    const endIndex = startIndex + pageSize;
-    const pageItems = data.slice(startIndex, endIndex);
+      // Apply search filter
+      if (currentCreatureFilters.search?.trim()) {
+        const searchTerm = currentCreatureFilters.search.toLowerCase();
+        data = data.filter(
+          creature =>
+            creature.name?.toLowerCase().includes(searchTerm) ||
+            creature.species?.toLowerCase().includes(searchTerm) ||
+            creature.creatureType?.toLowerCase().includes(searchTerm)
+        );
+      }
 
-    return {
-      items: pageItems,
-      totalCount: data.length,
-      hasMore: endIndex < data.length
-    };
-  }, [filteredBestiary, filteredCreatures, activeTeam, currentCreatureFilters]);
+      // Apply type filter
+      if (currentCreatureFilters.type !== 'all') {
+        data = data.filter(creature => creature.creatureType === currentCreatureFilters.type);
+      }
+
+      // Apply sorting
+      data.sort((a, b) => {
+        let comparison = 0;
+        switch (currentCreatureFilters.sort.field) {
+          case 'name':
+            comparison = (a.name || '').localeCompare(b.name || '');
+            break;
+          case 'level':
+            comparison = (a.level || 1) - (b.level || 1);
+            break;
+          case 'rarity':
+            const rarityOrder = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythical'];
+            comparison =
+              rarityOrder.indexOf(a.rarity || 'common') - rarityOrder.indexOf(b.rarity || 'common');
+            break;
+          case 'type':
+            comparison = (a.creatureType || '').localeCompare(b.creatureType || '');
+            break;
+          default:
+            comparison = 0;
+        }
+        return currentCreatureFilters.sort.order === 'desc' ? -comparison : comparison;
+      });
+
+      // Paginate
+      const startIndex = page * pageSize;
+      const endIndex = startIndex + pageSize;
+      const pageItems = data.slice(startIndex, endIndex);
+
+      return {
+        items: pageItems,
+        totalCount: data.length,
+        hasMore: endIndex < data.length,
+      };
+    },
+    [filteredBestiary, filteredCreatures, activeTeam, currentCreatureFilters]
+  );
 
   // Enable lazy loading for creature collections with 50+ total creatures
   const totalCreatures = currentData?.length || 0;
@@ -657,7 +712,11 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
     if (!selectedTradeCreature || !selectedTrader || !selectedTradeOffer) return;
 
     try {
-      const tradeResult = executeNPCTrade(selectedTrader, selectedTradeOffer, selectedTradeCreature);
+      const tradeResult = executeNPCTrade(
+        selectedTrader,
+        selectedTradeOffer,
+        selectedTradeCreature
+      );
 
       if (tradeResult.success) {
         let message = `Trade successful!`;
@@ -691,7 +750,7 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
         captured: collectionStats.captured || 0,
         total: collectionStats.total || 100,
         completionPercentage: collectionStats.completionPercentage || 0,
-        teamSize: activeTeam?.length || 0
+        teamSize: activeTeam?.length || 0,
       };
     }
     return {
@@ -699,7 +758,7 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
       captured: 0,
       total: 100, // Default total
       completionPercentage: 0,
-      teamSize: activeTeam?.length || 0
+      teamSize: activeTeam?.length || 0,
     };
   }, [getCollectionStats, activeTeam?.length]);
 
@@ -710,31 +769,31 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
         return {
           icon: '📖',
           name: 'Bestiary',
-          description: 'All discovered creatures'
+          description: 'All discovered creatures',
         };
       case 'collection':
         return {
           icon: '🏠',
           name: 'Collection',
-          description: 'Your captured creatures'
+          description: 'Your captured creatures',
         };
       case 'team':
         return {
           icon: '⚔️',
           name: 'Team',
-          description: 'Active companion team'
+          description: 'Active companion team',
         };
       case 'breeding':
         return {
           icon: '💕',
           name: 'Breeding',
-          description: 'Breed your creatures'
+          description: 'Breed your creatures',
         };
       case 'trading':
         return {
           icon: '🏪',
           name: 'Trading',
-          description: 'Trade with NPCs'
+          description: 'Trade with NPCs',
         };
       default:
         return { icon: '❓', name: 'Unknown', description: '' };
@@ -745,7 +804,7 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
     return (
       <div className={className} style={creatureStyles.container}>
         <div style={creatureStyles.loadingContainer}>
-          <LoadingSpinner size="large" />
+          <LoadingSpinner size='large' />
         </div>
       </div>
     );
@@ -757,7 +816,7 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
         <div style={creatureStyles.errorContainer}>
           <h2>Creature System Error</h2>
           <p>{error}</p>
-          <Button variant="primary" onClick={() => window.location.reload()}>
+          <Button variant='primary' onClick={() => window.location.reload()}>
             Reload
           </Button>
         </div>
@@ -768,12 +827,7 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
   return (
     <div className={className} style={creatureStyles.container}>
       {onClose && (
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={onClose}
-          style={creatureStyles.closeButton}
-        >
+        <Button variant='secondary' size='sm' onClick={onClose} style={creatureStyles.closeButton}>
           ✕
         </Button>
       )}
@@ -785,10 +839,12 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <h1 style={{
-          ...creatureStyles.title,
-          fontSize: isMobile ? '1.5rem' : '2rem'
-        }}>
+        <h1
+          style={{
+            ...creatureStyles.title,
+            fontSize: isMobile ? '1.5rem' : '2rem',
+          }}
+        >
           Creature Collection
         </h1>
         <p style={creatureStyles.subtitle}>
@@ -803,27 +859,29 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1, duration: 0.5 }}
       >
-        {(['bestiary', 'collection', 'team', 'breeding', 'trading'] as ViewMode[]).map((mode, index) => {
-          const modeInfo = getViewModeInfo(mode);
-          return (
-            <motion.button
-              key={mode}
-              style={{
-                ...creatureStyles.navButton,
-                ...(viewMode === mode ? creatureStyles.navButtonActive : {})
-              }}
-              onClick={() => handleViewModeChange(mode)}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 + index * 0.05 }}
-            >
-              <span>{modeInfo.icon}</span>
-              <span>{modeInfo.name}</span>
-            </motion.button>
-          );
-        })}
+        {(['bestiary', 'collection', 'team', 'breeding', 'trading'] as ViewMode[]).map(
+          (mode, index) => {
+            const modeInfo = getViewModeInfo(mode);
+            return (
+              <motion.button
+                key={mode}
+                style={{
+                  ...creatureStyles.navButton,
+                  ...(viewMode === mode ? creatureStyles.navButtonActive : {}),
+                }}
+                onClick={() => handleViewModeChange(mode)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2 + index * 0.05 }}
+              >
+                <span>{modeInfo.icon}</span>
+                <span>{modeInfo.name}</span>
+              </motion.button>
+            );
+          }
+        )}
       </motion.div>
 
       {/* Controls */}
@@ -831,7 +889,7 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
         style={{
           ...creatureStyles.controls,
           flexDirection: isMobile ? 'column' : 'row',
-          alignItems: isMobile ? 'stretch' : 'center'
+          alignItems: isMobile ? 'stretch' : 'center',
         }}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -840,8 +898,8 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
         {/* Search */}
         <div style={creatureStyles.searchContainer}>
           <input
-            type="text"
-            placeholder="Search creatures..."
+            type='text'
+            placeholder='Search creatures...'
             value={searchQuery}
             onChange={handleSearchChange}
             style={creatureStyles.searchInput}
@@ -850,7 +908,7 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
             <button
               onClick={handleClearSearch}
               style={creatureStyles.clearSearch}
-              aria-label="Clear search"
+              aria-label='Clear search'
             >
               ✕
             </button>
@@ -893,7 +951,7 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
             key={type.id}
             style={{
               ...creatureStyles.filterTab,
-              ...(selectedType === type.id ? creatureStyles.filterTabActive : {})
+              ...(selectedType === type.id ? creatureStyles.filterTabActive : {}),
             }}
             onClick={() => handleTypeChange(type.id)}
             whileHover={{ scale: 1.05 }}
@@ -913,7 +971,7 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
             ...creatureStyles.filterTab,
             ...(filterBredOnly ? creatureStyles.filterTabActive : {}),
             borderColor: filterBredOnly ? 'rgba(139, 92, 246, 0.5)' : 'rgba(212, 175, 55, 0.3)',
-            background: filterBredOnly ? 'rgba(139, 92, 246, 0.2)' : 'rgba(255, 255, 255, 0.05)'
+            background: filterBredOnly ? 'rgba(139, 92, 246, 0.2)' : 'rgba(255, 255, 255, 0.05)',
           }}
           onClick={() => setFilterBredOnly(!filterBredOnly)}
           whileHover={{ scale: 1.05 }}
@@ -945,12 +1003,14 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
 
           {viewMode === 'bestiary' && (
             <div style={creatureStyles.progressBar}>
-              <span>Discovery: {stats.discovered}/{stats.total}</span>
+              <span>
+                Discovery: {stats.discovered}/{stats.total}
+              </span>
               <div style={creatureStyles.progressBarContainer}>
                 <div
                   style={{
                     ...creatureStyles.progressBarFill,
-                    width: `${stats.completionPercentage || 0}%`
+                    width: `${stats.completionPercentage || 0}%`,
                   }}
                 />
               </div>
@@ -958,13 +1018,9 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
             </div>
           )}
 
-          {viewMode === 'collection' && (
-            <span>Captured: {stats.captured} creatures</span>
-          )}
+          {viewMode === 'collection' && <span>Captured: {stats.captured} creatures</span>}
 
-          {viewMode === 'team' && (
-            <span>Team: {stats.teamSize}/6 companions</span>
-          )}
+          {viewMode === 'team' && <span>Team: {stats.teamSize}/6 companions</span>}
         </motion.div>
 
         {/* Creatures Grid - With Lazy Loading and Virtualization */}
@@ -980,10 +1036,10 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
             gap={isMobile ? 12 : 16}
             pageSize={30}
             preloadDistance={1}
-            skeletonType="creature"
+            skeletonType='creature'
             style={{
               borderRadius: '8px',
-              background: 'rgba(255, 255, 255, 0.02)'
+              background: 'rgba(255, 255, 255, 0.02)',
             }}
             emptyState={
               <motion.div
@@ -991,12 +1047,13 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
               >
-                {searchQuery ?
-                  `No creatures found matching "${searchQuery}"` :
-                  viewMode === 'bestiary' ? 'No creatures discovered yet' :
-                  viewMode === 'collection' ? 'No creatures captured yet' :
-                  'No creatures in your team'
-                }
+                {searchQuery
+                  ? `No creatures found matching "${searchQuery}"`
+                  : viewMode === 'bestiary'
+                    ? 'No creatures discovered yet'
+                    : viewMode === 'collection'
+                      ? 'No creatures captured yet'
+                      : 'No creatures in your team'}
               </motion.div>
             }
           />
@@ -1007,12 +1064,13 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            {searchQuery ?
-              `No creatures found matching "${searchQuery}"` :
-              viewMode === 'bestiary' ? 'No creatures discovered yet' :
-              viewMode === 'collection' ? 'No creatures captured yet' :
-              'No creatures in your team'
-            }
+            {searchQuery
+              ? `No creatures found matching "${searchQuery}"`
+              : viewMode === 'bestiary'
+                ? 'No creatures discovered yet'
+                : viewMode === 'collection'
+                  ? 'No creatures captured yet'
+                  : 'No creatures in your team'}
           </motion.div>
         ) : creatureVirtualGridSettings.shouldVirtualize ? (
           // Use virtualized grid for medium creature collections
@@ -1027,17 +1085,19 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
             overscan={creatureVirtualGridSettings.overscan}
             style={{
               borderRadius: '8px',
-              background: 'rgba(255, 255, 255, 0.02)'
+              background: 'rgba(255, 255, 255, 0.02)',
             }}
           />
         ) : (
           // Use regular grid for small creature collections
-          <div style={{
-            ...creatureStyles.creatureGrid,
-            ...(isMobile ? creatureStyles.mobileCreatureGrid : {}),
-            height: CREATURE_GRID_CONTAINER_HEIGHT,
-            maxHeight: CREATURE_GRID_CONTAINER_HEIGHT
-          }}>
+          <div
+            style={{
+              ...creatureStyles.creatureGrid,
+              ...(isMobile ? creatureStyles.mobileCreatureGrid : {}),
+              height: CREATURE_GRID_CONTAINER_HEIGHT,
+              maxHeight: CREATURE_GRID_CONTAINER_HEIGHT,
+            }}
+          >
             <AnimatePresence>
               {filteredAndSortedData.map((creature, index) => (
                 <motion.div
@@ -1047,7 +1107,7 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{
                     delay: index * 0.05,
-                    duration: 0.3
+                    duration: 0.3,
                   }}
                   layout
                 >
@@ -1070,7 +1130,7 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
               left: 0,
               width: '100%',
               height: '100%',
-              zIndex: 10
+              zIndex: 10,
             }}
           >
             <BreedingInterface onClose={() => setViewMode('collection')} />
@@ -1097,7 +1157,7 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
               flexDirection: 'column',
               gap: '1rem',
               maxWidth: '90vw',
-              minWidth: '300px'
+              minWidth: '300px',
             }}
           >
             {/* Step 1: Select Creature */}
@@ -1106,9 +1166,7 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
                 <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>
                   {selectedTradeCreature ? '✅' : '👤'}
                 </div>
-                <div style={{ fontSize: '0.9rem', color: '#4caf50' }}>
-                  Your Creature
-                </div>
+                <div style={{ fontSize: '0.9rem', color: '#4caf50' }}>Your Creature</div>
                 <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>
                   {selectedTradeCreature ? selectedTradeCreature.name : 'Select creature to trade'}
                 </div>
@@ -1121,9 +1179,7 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
                 <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>
                   {selectedTrader ? '🏪' : '❓'}
                 </div>
-                <div style={{ fontSize: '0.9rem', color: '#4caf50' }}>
-                  NPC Trader
-                </div>
+                <div style={{ fontSize: '0.9rem', color: '#4caf50' }}>NPC Trader</div>
                 <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>
                   {selectedTrader ? selectedTrader.name : 'Select a trader'}
                 </div>
@@ -1134,23 +1190,30 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
               {/* Step 3: Execute Trade */}
               <div style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🎁</div>
-                <div style={{ fontSize: '0.9rem', color: '#4caf50' }}>
-                  Reward
-                </div>
+                <div style={{ fontSize: '0.9rem', color: '#4caf50' }}>Reward</div>
                 <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>
-                  {selectedTradeOffer && selectedTradeCreature ? 'Ready to trade!' : 'Select creature & trader'}
+                  {selectedTradeOffer && selectedTradeCreature
+                    ? 'Ready to trade!'
+                    : 'Select creature & trader'}
                 </div>
               </div>
             </div>
 
             {/* Trader Selection */}
             {selectedTradeCreature && !selectedTrader && (
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '0.5rem',
+                  flexWrap: 'wrap',
+                  justifyContent: 'center',
+                }}
+              >
                 {npcTraders.map(trader => (
                   <Button
                     key={trader.id}
-                    variant="primary"
-                    size="sm"
+                    variant='primary'
+                    size='sm'
                     onClick={() => setSelectedTrader(trader)}
                     style={{ fontSize: '0.8rem' }}
                   >
@@ -1171,20 +1234,24 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
                   return (
                     <Button
                       key={offer.id}
-                      variant={validation.canTrade ? "success" : "secondary"}
-                      size="sm"
+                      variant={validation.canTrade ? 'success' : 'secondary'}
+                      size='sm'
                       disabled={!validation.canTrade}
                       onClick={() => validation.canTrade && setSelectedTradeOffer(offer)}
                       style={{
                         fontSize: '0.8rem',
                         textAlign: 'left',
                         padding: '0.5rem',
-                        opacity: validation.canTrade ? 1 : 0.5
+                        opacity: validation.canTrade ? 1 : 0.5,
                       }}
                     >
                       <div>Wants: {offer.wants.type || offer.wants.species || 'Any'}</div>
                       <div>Offers: {offer.offers.species || `${offer.offers.currency} gold`}</div>
-                      {!validation.canTrade && <div style={{ color: '#ff6b6b', fontSize: '0.7rem' }}>{validation.reason}</div>}
+                      {!validation.canTrade && (
+                        <div style={{ color: '#ff6b6b', fontSize: '0.7rem' }}>
+                          {validation.reason}
+                        </div>
+                      )}
                     </Button>
                   );
                 })}
@@ -1194,21 +1261,27 @@ export const CreatureScreen: React.FC<CreatureScreenProps> = ({
             {/* Action Buttons */}
             <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
               <Button
-                variant="primary"
-                size="md"
+                variant='primary'
+                size='md'
                 disabled={!selectedTradeCreature || !selectedTrader || !selectedTradeOffer}
                 onClick={handleExecuteTrade}
                 style={{
-                  background: selectedTradeCreature && selectedTrader && selectedTradeOffer ? '#4caf50' : '#666',
-                  borderColor: selectedTradeCreature && selectedTrader && selectedTradeOffer ? '#4caf50' : '#666'
+                  background:
+                    selectedTradeCreature && selectedTrader && selectedTradeOffer
+                      ? '#4caf50'
+                      : '#666',
+                  borderColor:
+                    selectedTradeCreature && selectedTrader && selectedTradeOffer
+                      ? '#4caf50'
+                      : '#666',
                 }}
               >
                 🤝 Execute Trade
               </Button>
 
               <Button
-                variant="secondary"
-                size="sm"
+                variant='secondary'
+                size='sm'
                 onClick={() => {
                   setSelectedTradeCreature(null);
                   setSelectedTrader(null);

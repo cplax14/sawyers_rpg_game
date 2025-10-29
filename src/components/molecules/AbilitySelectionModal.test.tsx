@@ -18,7 +18,11 @@ import { Ability } from '../../types/game';
 // MOCK DATA
 // =============================================================================
 
-const createMockAbility = (id: string, name: string, overrides: Partial<Ability> = {}): Ability => ({
+const createMockAbility = (
+  id: string,
+  name: string,
+  overrides: Partial<Ability> = {}
+): Ability => ({
   id,
   name,
   description: `${name} description`,
@@ -31,18 +35,18 @@ const createMockAbility = (id: string, name: string, overrides: Partial<Ability>
   effects: [],
   cooldown: 0,
   level: 1,
-  ...overrides
+  ...overrides,
 });
 
 const mockInheritedAbilities: Ability[] = [
   createMockAbility('fireball', 'Fireball', { element: 'fire', cost: 25 }),
   createMockAbility('ice_blast', 'Ice Blast', { element: 'ice', cost: 20 }),
-  createMockAbility('thunder', 'Thunder', { element: 'electric', cost: 30 })
+  createMockAbility('thunder', 'Thunder', { element: 'electric', cost: 30 }),
 ];
 
 const mockNaturalAbilities: Ability[] = [
   createMockAbility('slash', 'Slash', { cost: 10 }),
-  createMockAbility('guard', 'Guard', { type: 'defense', cost: 5 })
+  createMockAbility('guard', 'Guard', { type: 'defense', cost: 5 }),
 ];
 
 // =============================================================================

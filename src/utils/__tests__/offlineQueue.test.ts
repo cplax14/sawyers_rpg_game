@@ -20,12 +20,12 @@ const localStorageMock = (() => {
     },
     clear: () => {
       store = {};
-    }
+    },
   };
 })();
 
 Object.defineProperty(window, 'localStorage', {
-  value: localStorageMock
+  value: localStorageMock,
 });
 
 // Mock network status manager
@@ -33,8 +33,8 @@ jest.mock('../networkStatus', () => ({
   networkStatusManager: {
     addListener: jest.fn(() => jest.fn()), // Return unsubscribe function
     isOnline: jest.fn(() => true),
-    getStatus: jest.fn(() => ({ isOnline: true }))
-  }
+    getStatus: jest.fn(() => ({ isOnline: true })),
+  },
 }));
 
 describe('OfflineQueueManager', () => {
@@ -46,7 +46,7 @@ describe('OfflineQueueManager', () => {
     queueManager = new OfflineQueueManager({
       enablePersistence: true,
       autoProcessOnline: false, // Disable for testing
-      maxQueueSize: 10
+      maxQueueSize: 10,
     });
   });
 
@@ -56,18 +56,22 @@ describe('OfflineQueueManager', () => {
 
   describe('queue management', () => {
     test('should enqueue operations', () => {
-      const operationId = queueManager.enqueue('save', {
-        slotNumber: 1,
-        saveName: 'Test Save',
-        gameState: { player: { name: 'Test' } }
-      }, {
-        priority: 5,
-        metadata: {
-          userId: 'user123',
+      const operationId = queueManager.enqueue(
+        'save',
+        {
           slotNumber: 1,
-          description: 'Test save operation'
+          saveName: 'Test Save',
+          gameState: { player: { name: 'Test' } },
+        },
+        {
+          priority: 5,
+          metadata: {
+            userId: 'user123',
+            slotNumber: 1,
+            description: 'Test save operation',
+          },
         }
-      });
+      );
 
       expect(operationId).toBeDefined();
 
@@ -98,7 +102,7 @@ describe('OfflineQueueManager', () => {
     test('should enforce queue size limits', () => {
       const smallQueue = new OfflineQueueManager({
         maxQueueSize: 2,
-        enablePersistence: false
+        enablePersistence: false,
       });
 
       // Add operations up to limit
@@ -118,7 +122,7 @@ describe('OfflineQueueManager', () => {
     test('should handle queue size limits with no low-priority operations', () => {
       const smallQueue = new OfflineQueueManager({
         maxQueueSize: 2,
-        enablePersistence: false
+        enablePersistence: false,
       });
 
       // Add high-priority operations
@@ -148,15 +152,27 @@ describe('OfflineQueueManager', () => {
     });
 
     test('should get operations by user', () => {
-      queueManager.enqueue('save', { data: 1 }, {
-        metadata: { userId: 'user1' }
-      });
-      queueManager.enqueue('save', { data: 2 }, {
-        metadata: { userId: 'user2' }
-      });
-      queueManager.enqueue('load', { data: 3 }, {
-        metadata: { userId: 'user1' }
-      });
+      queueManager.enqueue(
+        'save',
+        { data: 1 },
+        {
+          metadata: { userId: 'user1' },
+        }
+      );
+      queueManager.enqueue(
+        'save',
+        { data: 2 },
+        {
+          metadata: { userId: 'user2' },
+        }
+      );
+      queueManager.enqueue(
+        'load',
+        { data: 3 },
+        {
+          metadata: { userId: 'user1' },
+        }
+      );
 
       const user1Ops = queueManager.getOperationsByUser('user1');
       const user2Ops = queueManager.getOperationsByUser('user2');
@@ -175,7 +191,7 @@ describe('OfflineQueueManager', () => {
         failedOperations: 0,
         completedOperations: 0,
         isProcessing: false,
-        nextProcessTime: expect.any(Date)
+        nextProcessTime: expect.any(Date),
       });
 
       queueManager.enqueue('save', { data: 1 });
@@ -187,7 +203,7 @@ describe('OfflineQueueManager', () => {
   });
 
   describe('listeners', () => {
-    test('should notify status listeners', (done) => {
+    test('should notify status listeners', done => {
       const listener = jest.fn();
       const unsubscribe = queueManager.addStatusListener(listener);
 
@@ -195,7 +211,7 @@ describe('OfflineQueueManager', () => {
       setTimeout(() => {
         expect(listener).toHaveBeenCalledWith(
           expect.objectContaining({
-            totalOperations: 0
+            totalOperations: 0,
           })
         );
 
@@ -206,7 +222,7 @@ describe('OfflineQueueManager', () => {
 
         expect(listener).toHaveBeenCalledWith(
           expect.objectContaining({
-            totalOperations: 1
+            totalOperations: 1,
           })
         );
 
@@ -232,12 +248,16 @@ describe('OfflineQueueManager', () => {
     test('should persist queue to localStorage', () => {
       const persistentQueue = new OfflineQueueManager({
         enablePersistence: true,
-        storageKey: 'test_queue'
+        storageKey: 'test_queue',
       });
 
-      persistentQueue.enqueue('save', { data: 'test' }, {
-        metadata: { userId: 'user123' }
-      });
+      persistentQueue.enqueue(
+        'save',
+        { data: 'test' },
+        {
+          metadata: { userId: 'user123' },
+        }
+      );
 
       const stored = localStorage.getItem('test_queue');
       expect(stored).toBeTruthy();
@@ -255,12 +275,16 @@ describe('OfflineQueueManager', () => {
       const firstQueue = new OfflineQueueManager({
         enablePersistence: true,
         storageKey: 'test_queue_load',
-        autoProcessOnline: false
+        autoProcessOnline: false,
       });
 
-      firstQueue.enqueue('save', { data: 'persisted' }, {
-        metadata: { userId: 'user123' }
-      });
+      firstQueue.enqueue(
+        'save',
+        { data: 'persisted' },
+        {
+          metadata: { userId: 'user123' },
+        }
+      );
 
       expect(firstQueue.getStatus().totalOperations).toBe(1);
 
@@ -276,7 +300,7 @@ describe('OfflineQueueManager', () => {
       const secondQueue = new OfflineQueueManager({
         enablePersistence: true,
         storageKey: 'test_queue_load',
-        autoProcessOnline: false
+        autoProcessOnline: false,
       });
 
       expect(secondQueue.getStatus().totalOperations).toBe(1);
@@ -293,7 +317,7 @@ describe('OfflineQueueManager', () => {
 
       const corruptedQueue = new OfflineQueueManager({
         enablePersistence: true,
-        storageKey: 'test_corrupted'
+        storageKey: 'test_corrupted',
       });
 
       // Should initialize with empty queue despite corrupted storage
@@ -352,7 +376,7 @@ describe('OfflineQueueManager', () => {
 
       queueManager.enqueue('custom', {
         executor: mockExecutor,
-        args: { customArg: 'value' }
+        args: { customArg: 'value' },
       });
 
       // Since we can't easily test the private executeOperation method,

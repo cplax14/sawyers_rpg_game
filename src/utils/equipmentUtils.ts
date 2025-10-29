@@ -10,7 +10,7 @@ import {
   EquipmentSlot,
   StatModifier,
   EquipmentRequirement,
-  EquipmentCompatibility
+  EquipmentCompatibility,
 } from '../types/inventory';
 import { PlayerStats } from '../types/game';
 
@@ -31,7 +31,7 @@ class CompatibilityCache {
   private maxSize: number;
   private stats = {
     hits: 0,
-    misses: 0
+    misses: 0,
   };
 
   constructor(maxSize: number = 100) {
@@ -71,7 +71,14 @@ class CompatibilityCache {
     currentStats: PlayerStats,
     currentEquipment?: EquipmentSet
   ): EquipmentCompatibility | null {
-    const key = this.generateKey(itemId, slot, playerLevel, playerClass, currentStats, currentEquipment);
+    const key = this.generateKey(
+      itemId,
+      slot,
+      playerLevel,
+      playerClass,
+      currentStats,
+      currentEquipment
+    );
     const entry = this.cache.get(key);
 
     if (entry) {
@@ -98,7 +105,14 @@ class CompatibilityCache {
     result: EquipmentCompatibility,
     currentEquipment?: EquipmentSet
   ): void {
-    const key = this.generateKey(itemId, slot, playerLevel, playerClass, currentStats, currentEquipment);
+    const key = this.generateKey(
+      itemId,
+      slot,
+      playerLevel,
+      playerClass,
+      currentStats,
+      currentEquipment
+    );
 
     // If cache is full, remove oldest entry (first in Map)
     if (this.cache.size >= this.maxSize) {
@@ -110,7 +124,7 @@ class CompatibilityCache {
 
     this.cache.set(key, {
       result,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
@@ -132,7 +146,7 @@ class CompatibilityCache {
       hits: this.stats.hits,
       misses: this.stats.misses,
       size: this.cache.size,
-      hitRate: total > 0 ? this.stats.hits / total : 0
+      hitRate: total > 0 ? this.stats.hits / total : 0,
     };
   }
 
@@ -159,7 +173,12 @@ export function clearCompatibilityCache(): void {
 /**
  * Get cache statistics (for monitoring/debugging)
  */
-export function getCompatibilityCacheStats(): { hits: number; misses: number; size: number; hitRate: number } {
+export function getCompatibilityCacheStats(): {
+  hits: number;
+  misses: number;
+  size: number;
+  hitRate: number;
+} {
   return compatibilityCache.getStats();
 }
 
@@ -196,7 +215,12 @@ export interface EquipmentComparisonResult {
     change: number;
     percentage: number;
   }>;
-  recommendation: 'strong_upgrade' | 'minor_upgrade' | 'no_change' | 'minor_downgrade' | 'strong_downgrade';
+  recommendation:
+    | 'strong_upgrade'
+    | 'minor_upgrade'
+    | 'no_change'
+    | 'minor_downgrade'
+    | 'strong_downgrade';
 }
 
 export interface EquipmentRecommendation {
@@ -231,7 +255,7 @@ const DEFAULT_BASE_STATS: PlayerStats = {
   magicAttack: 10,
   magicDefense: 10,
   speed: 10,
-  accuracy: 85
+  accuracy: 85,
 };
 
 /**
@@ -247,7 +271,7 @@ export function calculateEquipmentStats(
     magicAttack: 0,
     magicDefense: 0,
     speed: 0,
-    accuracy: 0
+    accuracy: 0,
   };
 
   const breakdown: StatBreakdown[] = [];
@@ -274,7 +298,7 @@ export function calculateEquipmentStats(
       slot: slot as EquipmentSlot,
       item,
       statContributions,
-      totalContribution
+      totalContribution,
     });
   });
 
@@ -285,7 +309,7 @@ export function calculateEquipmentStats(
     magicAttack: baseStats.magicAttack + equipmentBonuses.magicAttack,
     magicDefense: baseStats.magicDefense + equipmentBonuses.magicDefense,
     speed: baseStats.speed + equipmentBonuses.speed,
-    accuracy: Math.min(100, Math.max(0, baseStats.accuracy + equipmentBonuses.accuracy))
+    accuracy: Math.min(100, Math.max(0, baseStats.accuracy + equipmentBonuses.accuracy)),
   };
 
   // Calculate total stat value for optimization
@@ -296,7 +320,7 @@ export function calculateEquipmentStats(
     equipmentBonuses,
     finalStats,
     totalStatValue,
-    breakdown
+    breakdown,
   };
 }
 
@@ -326,7 +350,7 @@ export function checkEquipmentCompatibility(
       canEquip: false,
       reasons: ['No item selected'],
       warnings: [],
-      suggestions: []
+      suggestions: [],
     };
   }
 
@@ -335,7 +359,7 @@ export function checkEquipmentCompatibility(
       canEquip: false,
       reasons: ['No equipment slot specified'],
       warnings: [],
-      suggestions: []
+      suggestions: [],
     };
   }
 
@@ -365,8 +389,8 @@ export function checkEquipmentCompatibility(
 
   if (itemSlot) {
     // Check if item slot matches target slot
-    const isRingSlotCompatible = itemSlot === 'ring' &&
-      (normalizedTargetSlot === 'ring1' || normalizedTargetSlot === 'ring2');
+    const isRingSlotCompatible =
+      itemSlot === 'ring' && (normalizedTargetSlot === 'ring1' || normalizedTargetSlot === 'ring2');
 
     const isSlotMatch = itemSlot === normalizedTargetSlot;
 
@@ -374,7 +398,7 @@ export function checkEquipmentCompatibility(
       // Use centralized message function
       const message = getRestrictionMessage('slot', {
         itemSlot,
-        targetSlot: normalizedTargetSlot
+        targetSlot: normalizedTargetSlot,
       });
 
       reasons.push(message);
@@ -384,7 +408,7 @@ export function checkEquipmentCompatibility(
         canEquip: false,
         reasons,
         warnings,
-        suggestions
+        suggestions,
       };
     }
   }
@@ -396,7 +420,7 @@ export function checkEquipmentCompatibility(
     // Use centralized message function
     const message = getRestrictionMessage('level', {
       requiredLevel,
-      playerLevel
+      playerLevel,
     });
 
     reasons.push(message);
@@ -429,7 +453,7 @@ export function checkEquipmentCompatibility(
       // Use centralized message function
       const message = getRestrictionMessage('class', {
         requiredClasses,
-        itemType: item.type || 'item'
+        itemType: item.type || 'item',
       });
 
       reasons.push(message);
@@ -454,7 +478,7 @@ export function checkEquipmentCompatibility(
             statName: statKey,
             requiredStatValue: requiredValue,
             playerStatValue,
-            itemType: item.type || 'item'
+            itemType: item.type || 'item',
           });
 
           reasons.push(message);
@@ -462,7 +486,9 @@ export function checkEquipmentCompatibility(
           // Add suggestion for stat improvement
           const formattedStatName = formatStatName(statKey);
           const pointsNeeded = requiredValue - playerStatValue;
-          suggestions.push(`Try finding equipment that boosts your ${formattedStatName} by ${pointsNeeded}!`);
+          suggestions.push(
+            `Try finding equipment that boosts your ${formattedStatName} by ${pointsNeeded}!`
+          );
         }
       }
     }
@@ -497,11 +523,11 @@ export function checkEquipmentCompatibility(
 
   // Generate helpful suggestions based on item properties
   if (item.statModifiers && reasons.length === 0) {
-    const strongestStat = Object.entries(item.statModifiers)
-      .reduce((max, [stat, modifier]) =>
+    const strongestStat = Object.entries(item.statModifiers).reduce(
+      (max, [stat, modifier]) =>
         modifier.value > (max?.modifier.value || 0) ? { stat, modifier } : max,
-        null as { stat: string; modifier: StatModifier } | null
-      );
+      null as { stat: string; modifier: StatModifier } | null
+    );
 
     if (strongestStat) {
       const formattedStat = formatStatName(strongestStat.stat);
@@ -513,7 +539,7 @@ export function checkEquipmentCompatibility(
     canEquip: reasons.length === 0,
     reasons,
     warnings,
-    suggestions
+    suggestions,
   };
 
   // Store result in cache before returning
@@ -544,7 +570,7 @@ export function compareEquipment(
     magicAttack: 0,
     magicDefense: 0,
     speed: 0,
-    accuracy: 0
+    accuracy: 0,
   };
 
   // Calculate current stats
@@ -571,7 +597,7 @@ export function compareEquipment(
     .map(([stat, change]) => ({
       stat: stat as keyof PlayerStats,
       change,
-      percentage: (change / baseStats[stat as keyof PlayerStats]) * 100
+      percentage: (change / baseStats[stat as keyof PlayerStats]) * 100,
     }));
 
   // Determine recommendation
@@ -593,7 +619,7 @@ export function compareEquipment(
     totalStatChange,
     isUpgrade: totalStatChange > 0,
     significantChanges,
-    recommendation
+    recommendation,
   };
 }
 
@@ -629,7 +655,11 @@ export function generateEquipmentRecommendations(
     const bestUpgrade = items
       .filter(item => {
         const compatibility = checkEquipmentCompatibility(
-          item, equipmentSlot, playerLevel, playerClass, baseStats
+          item,
+          equipmentSlot,
+          playerLevel,
+          playerClass,
+          baseStats
         );
         return compatibility.canEquip;
       })
@@ -642,8 +672,11 @@ export function generateEquipmentRecommendations(
 
     if (bestUpgrade) {
       const priority: EquipmentRecommendation['priority'] =
-        bestUpgrade.comparison.recommendation === 'strong_upgrade' ? 'high' :
-        bestUpgrade.comparison.recommendation === 'minor_upgrade' ? 'medium' : 'low';
+        bestUpgrade.comparison.recommendation === 'strong_upgrade'
+          ? 'high'
+          : bestUpgrade.comparison.recommendation === 'minor_upgrade'
+            ? 'medium'
+            : 'low';
 
       recommendations.push({
         slot: equipmentSlot,
@@ -651,12 +684,13 @@ export function generateEquipmentRecommendations(
         recommendedItem: bestUpgrade.item,
         statImprovement: {
           total: bestUpgrade.comparison.totalStatChange,
-          breakdown: bestUpgrade.comparison.statChanges
+          breakdown: bestUpgrade.comparison.statChanges,
         },
         priority,
-        reason: bestUpgrade.comparison.recommendation === 'strong_upgrade'
-          ? `Significant stat improvement (+${bestUpgrade.comparison.totalStatChange} total stats)`
-          : `Minor stat improvement (+${bestUpgrade.comparison.totalStatChange} total stats)`
+        reason:
+          bestUpgrade.comparison.recommendation === 'strong_upgrade'
+            ? `Significant stat improvement (+${bestUpgrade.comparison.totalStatChange} total stats)`
+            : `Minor stat improvement (+${bestUpgrade.comparison.totalStatChange} total stats)`,
       });
     }
   });
@@ -702,18 +736,25 @@ export function optimizeEquipmentSet(
     const bestItem = items
       .filter(item => {
         const compatibility = checkEquipmentCompatibility(
-          item, equipmentSlot, playerLevel, playerClass, baseStats
+          item,
+          equipmentSlot,
+          playerLevel,
+          playerClass,
+          baseStats
         );
         return compatibility.canEquip;
       })
-      .reduce((best, item) => {
-        if (!best) return item;
+      .reduce(
+        (best, item) => {
+          if (!best) return item;
 
-        const currentComparison = compareEquipment(undefined, best, baseStats);
-        const newComparison = compareEquipment(undefined, item, baseStats);
+          const currentComparison = compareEquipment(undefined, best, baseStats);
+          const newComparison = compareEquipment(undefined, item, baseStats);
 
-        return newComparison.totalStatChange > currentComparison.totalStatChange ? item : best;
-      }, null as EnhancedItem | null);
+          return newComparison.totalStatChange > currentComparison.totalStatChange ? item : best;
+        },
+        null as EnhancedItem | null
+      );
 
     if (bestItem) {
       const currentItem = optimizedSet[equipmentSlot];
@@ -725,7 +766,7 @@ export function optimizeEquipmentSet(
           slot: equipmentSlot,
           from: currentItem,
           to: bestItem,
-          statGain: comparison.totalStatChange
+          statGain: comparison.totalStatChange,
         });
       }
     }
@@ -739,7 +780,7 @@ export function optimizeEquipmentSet(
     optimizedSet,
     optimizedSetValue: optimizedStats.totalStatValue,
     improvement,
-    changes
+    changes,
   };
 }
 
@@ -774,7 +815,7 @@ export function getSlotPriority(slot: EquipmentSlot): number {
     necklace: 4,
     ring1: 3,
     ring2: 2,
-    charm: 1
+    charm: 1,
   };
 
   return priorities[slot] || 0;
@@ -807,7 +848,7 @@ export function getRarityMultiplier(rarity: string): number {
     rare: 1.25,
     epic: 1.5,
     legendary: 2.0,
-    mythical: 2.5
+    mythical: 2.5,
   };
 
   return multipliers[rarity] || 1.0;
@@ -1119,5 +1160,5 @@ export const equipmentUtils = {
   getRestrictionMessage,
   getEquipmentSlotIcon,
   clearCompatibilityCache,
-  getCompatibilityCacheStats
+  getCompatibilityCacheStats,
 };

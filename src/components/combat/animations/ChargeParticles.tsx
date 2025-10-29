@@ -19,15 +19,10 @@ const DEFAULT_CONFIG: ParticleConfig = {
   count: 8,
   color: '#8b5cf6',
   size: 4,
-  spread: 40
+  spread: 40,
 };
 
-export const ChargeParticles: React.FC<ChargeParticlesProps> = ({
-  x,
-  y,
-  config,
-  isActive
-}) => {
+export const ChargeParticles: React.FC<ChargeParticlesProps> = ({ x, y, config, isActive }) => {
   const finalConfig = { ...DEFAULT_CONFIG, ...config };
 
   // Generate particles in a circle around the charge point
@@ -39,7 +34,7 @@ export const ChargeParticles: React.FC<ChargeParticlesProps> = ({
       id: i,
       angle,
       offsetX: Math.cos(angle) * distance,
-      offsetY: Math.sin(angle) * distance
+      offsetY: Math.sin(angle) * distance,
     };
   });
 
@@ -52,29 +47,29 @@ export const ChargeParticles: React.FC<ChargeParticlesProps> = ({
         left: x,
         top: y,
         pointerEvents: 'none',
-        zIndex: 100
+        zIndex: 100,
       }}
     >
-      {particles.map((particle) => (
+      {particles.map(particle => (
         <motion.div
           key={particle.id}
           initial={{
             x: particle.offsetX,
             y: particle.offsetY,
             scale: 0,
-            opacity: 0
+            opacity: 0,
           }}
           animate={{
             x: [particle.offsetX, 0, particle.offsetX],
             y: [particle.offsetY, 0, particle.offsetY],
             scale: [0, 1, 0],
-            opacity: [0, 1, 0]
+            opacity: [0, 1, 0],
           }}
           transition={{
             duration: 0.8,
             repeat: Infinity,
             delay: particle.id * 0.1,
-            ease: "easeInOut"
+            ease: 'easeInOut',
           }}
           style={{
             position: 'absolute',
@@ -84,7 +79,7 @@ export const ChargeParticles: React.FC<ChargeParticlesProps> = ({
             backgroundColor: finalConfig.color,
             boxShadow: `0 0 ${finalConfig.size * 2}px ${finalConfig.color}`,
             left: -finalConfig.size / 2,
-            top: -finalConfig.size / 2
+            top: -finalConfig.size / 2,
           }}
         />
       ))}
@@ -94,11 +89,11 @@ export const ChargeParticles: React.FC<ChargeParticlesProps> = ({
         initial={{ scale: 0, opacity: 0 }}
         animate={{
           scale: [0, 1.2, 1],
-          opacity: [0, 0.6, 0.8]
+          opacity: [0, 0.6, 0.8],
         }}
         transition={{
           duration: 0.4,
-          ease: "easeOut"
+          ease: 'easeOut',
         }}
         style={{
           position: 'absolute',
@@ -109,7 +104,7 @@ export const ChargeParticles: React.FC<ChargeParticlesProps> = ({
           opacity: 0.3,
           filter: 'blur(8px)',
           left: -15,
-          top: -15
+          top: -15,
         }}
       />
     </div>

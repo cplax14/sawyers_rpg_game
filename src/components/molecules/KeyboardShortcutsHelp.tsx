@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useInventoryKeyboardShortcuts, KeyboardShortcut } from '../../hooks/useInventoryKeyboardShortcuts';
+import {
+  useInventoryKeyboardShortcuts,
+  KeyboardShortcut,
+} from '../../hooks/useInventoryKeyboardShortcuts';
 
 interface KeyboardShortcutsHelpProps {
   isVisible: boolean;
@@ -17,7 +20,7 @@ const KeyboardShortcutsHelp: React.FC<KeyboardShortcutsHelpProps> = ({
   currentTab,
   shortcuts,
   compact = false,
-  className = ''
+  className = '',
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
@@ -26,23 +29,23 @@ const KeyboardShortcutsHelp: React.FC<KeyboardShortcutsHelpProps> = ({
     navigation: {
       name: 'Navigation',
       icon: '🧭',
-      color: '#4fc3f7'
+      color: '#4fc3f7',
     },
     actions: {
       name: 'Actions',
       icon: '⚡',
-      color: '#a855f7'
+      color: '#a855f7',
     },
     quick: {
       name: 'Quick Actions',
       icon: '⚡',
-      color: '#22c55e'
+      color: '#22c55e',
     },
     combat: {
       name: 'Combat',
       icon: '⚔️',
-      color: '#f97316'
-    }
+      color: '#f97316',
+    },
   };
 
   // Format key combination for display
@@ -80,9 +83,9 @@ const KeyboardShortcutsHelp: React.FC<KeyboardShortcutsHelpProps> = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '2rem'
+          padding: '2rem',
         }}
-        onClick={(e) => {
+        onClick={e => {
           if (e.target === e.currentTarget) {
             onClose();
           }
@@ -100,33 +103,39 @@ const KeyboardShortcutsHelp: React.FC<KeyboardShortcutsHelpProps> = ({
             maxWidth: compact ? '500px' : '800px',
             maxHeight: '80vh',
             overflow: 'hidden',
-            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)'
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
           }}
-          onClick={(e) => e.stopPropagation()}
+          onClick={e => e.stopPropagation()}
         >
           {/* Header */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '1.5rem 2rem',
-            background: 'rgba(0, 0, 0, 0.3)',
-            borderBottom: '1px solid rgba(79, 195, 247, 0.2)'
-          }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '1.5rem 2rem',
+              background: 'rgba(0, 0, 0, 0.3)',
+              borderBottom: '1px solid rgba(79, 195, 247, 0.2)',
+            }}
+          >
             <div>
-              <h2 style={{
-                margin: 0,
-                fontSize: '1.5rem',
-                color: '#4fc3f7',
-                fontWeight: 'bold'
-              }}>
+              <h2
+                style={{
+                  margin: 0,
+                  fontSize: '1.5rem',
+                  color: '#4fc3f7',
+                  fontWeight: 'bold',
+                }}
+              >
                 ⌨️ Keyboard Shortcuts
               </h2>
-              <p style={{
-                margin: '0.5rem 0 0',
-                color: 'rgba(244, 244, 244, 0.8)',
-                fontSize: '0.9rem'
-              }}>
+              <p
+                style={{
+                  margin: '0.5rem 0 0',
+                  color: 'rgba(244, 244, 244, 0.8)',
+                  fontSize: '0.9rem',
+                }}
+              >
                 Current tab: {currentTab}
               </p>
             </div>
@@ -146,7 +155,7 @@ const KeyboardShortcutsHelp: React.FC<KeyboardShortcutsHelpProps> = ({
                 justifyContent: 'center',
                 color: '#f4f4f4',
                 cursor: 'pointer',
-                fontSize: '1.2rem'
+                fontSize: '1.2rem',
               }}
             >
               ✕
@@ -154,11 +163,13 @@ const KeyboardShortcutsHelp: React.FC<KeyboardShortcutsHelpProps> = ({
           </div>
 
           {/* Content */}
-          <div style={{
-            padding: '1.5rem 2rem',
-            maxHeight: 'calc(80vh - 120px)',
-            overflowY: 'auto'
-          }}>
+          <div
+            style={{
+              padding: '1.5rem 2rem',
+              maxHeight: 'calc(80vh - 120px)',
+              overflowY: 'auto',
+            }}
+          >
             {compact ? (
               // Compact view - single column
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -168,14 +179,16 @@ const KeyboardShortcutsHelp: React.FC<KeyboardShortcutsHelpProps> = ({
 
                   return (
                     <div key={category}>
-                      <h3 style={{
-                        margin: '0 0 1rem',
-                        fontSize: '1.1rem',
-                        color: config.color,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem'
-                      }}>
+                      <h3
+                        style={{
+                          margin: '0 0 1rem',
+                          fontSize: '1.1rem',
+                          color: config.color,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                        }}
+                      >
                         <span>{config.icon}</span>
                         {config.name}
                       </h3>
@@ -191,26 +204,30 @@ const KeyboardShortcutsHelp: React.FC<KeyboardShortcutsHelpProps> = ({
                               padding: '0.75rem 1rem',
                               background: 'rgba(255, 255, 255, 0.05)',
                               borderRadius: '8px',
-                              border: '1px solid rgba(255, 255, 255, 0.1)'
+                              border: '1px solid rgba(255, 255, 255, 0.1)',
                             }}
                           >
-                            <span style={{
-                              color: '#f4f4f4',
-                              fontSize: '0.9rem'
-                            }}>
+                            <span
+                              style={{
+                                color: '#f4f4f4',
+                                fontSize: '0.9rem',
+                              }}
+                            >
                               {shortcut.description}
                             </span>
 
-                            <div style={{
-                              background: 'rgba(79, 195, 247, 0.2)',
-                              border: '1px solid rgba(79, 195, 247, 0.4)',
-                              borderRadius: '6px',
-                              padding: '0.25rem 0.75rem',
-                              color: '#4fc3f7',
-                              fontSize: '0.8rem',
-                              fontWeight: '600',
-                              fontFamily: 'monospace'
-                            }}>
+                            <div
+                              style={{
+                                background: 'rgba(79, 195, 247, 0.2)',
+                                border: '1px solid rgba(79, 195, 247, 0.4)',
+                                borderRadius: '6px',
+                                padding: '0.25rem 0.75rem',
+                                color: '#4fc3f7',
+                                fontSize: '0.8rem',
+                                fontWeight: '600',
+                                fontFamily: 'monospace',
+                              }}
+                            >
                               {formatKeyCombo(shortcut)}
                             </div>
                           </div>
@@ -224,12 +241,14 @@ const KeyboardShortcutsHelp: React.FC<KeyboardShortcutsHelpProps> = ({
               // Full view - category tabs
               <div>
                 {/* Category tabs */}
-                <div style={{
-                  display: 'flex',
-                  gap: '0.5rem',
-                  marginBottom: '1.5rem',
-                  flexWrap: 'wrap'
-                }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: '0.5rem',
+                    marginBottom: '1.5rem',
+                    flexWrap: 'wrap',
+                  }}
+                >
                   {Object.entries(shortcuts).map(([category, categoryShortcuts]) => {
                     const config = categoryConfig[category as keyof typeof categoryConfig];
                     if (!config || categoryShortcuts.length === 0) return null;
@@ -243,8 +262,12 @@ const KeyboardShortcutsHelp: React.FC<KeyboardShortcutsHelpProps> = ({
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         style={{
-                          background: isSelected ? 'rgba(79, 195, 247, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-                          border: isSelected ? '1px solid rgba(79, 195, 247, 0.5)' : '1px solid rgba(255, 255, 255, 0.1)',
+                          background: isSelected
+                            ? 'rgba(79, 195, 247, 0.2)'
+                            : 'rgba(255, 255, 255, 0.05)',
+                          border: isSelected
+                            ? '1px solid rgba(79, 195, 247, 0.5)'
+                            : '1px solid rgba(255, 255, 255, 0.1)',
                           borderRadius: '8px',
                           padding: '0.75rem 1rem',
                           color: isSelected ? '#4fc3f7' : '#f4f4f4',
@@ -253,19 +276,21 @@ const KeyboardShortcutsHelp: React.FC<KeyboardShortcutsHelpProps> = ({
                           alignItems: 'center',
                           gap: '0.5rem',
                           fontSize: '0.9rem',
-                          fontWeight: isSelected ? '600' : '400'
+                          fontWeight: isSelected ? '600' : '400',
                         }}
                       >
                         <span>{config.icon}</span>
                         {config.name}
-                        <span style={{
-                          background: 'rgba(255, 255, 255, 0.1)',
-                          borderRadius: '10px',
-                          padding: '0.2rem 0.4rem',
-                          fontSize: '0.7rem',
-                          minWidth: '18px',
-                          textAlign: 'center'
-                        }}>
+                        <span
+                          style={{
+                            background: 'rgba(255, 255, 255, 0.1)',
+                            borderRadius: '10px',
+                            padding: '0.2rem 0.4rem',
+                            fontSize: '0.7rem',
+                            minWidth: '18px',
+                            textAlign: 'center',
+                          }}
+                        >
                           {categoryShortcuts.length}
                         </span>
                       </motion.button>
@@ -274,7 +299,7 @@ const KeyboardShortcutsHelp: React.FC<KeyboardShortcutsHelpProps> = ({
                 </div>
 
                 {/* Shortcuts display */}
-                <AnimatePresence mode="wait">
+                <AnimatePresence mode='wait'>
                   {selectedCategory ? (
                     <motion.div
                       key={selectedCategory}
@@ -284,7 +309,7 @@ const KeyboardShortcutsHelp: React.FC<KeyboardShortcutsHelpProps> = ({
                       style={{
                         display: 'grid',
                         gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-                        gap: '0.75rem'
+                        gap: '0.75rem',
                       }}
                     >
                       {shortcuts[selectedCategory].map((shortcut, index) => (
@@ -297,26 +322,30 @@ const KeyboardShortcutsHelp: React.FC<KeyboardShortcutsHelpProps> = ({
                             padding: '1rem',
                             background: 'rgba(255, 255, 255, 0.05)',
                             borderRadius: '8px',
-                            border: '1px solid rgba(255, 255, 255, 0.1)'
+                            border: '1px solid rgba(255, 255, 255, 0.1)',
                           }}
                         >
-                          <span style={{
-                            color: '#f4f4f4',
-                            fontSize: '0.9rem'
-                          }}>
+                          <span
+                            style={{
+                              color: '#f4f4f4',
+                              fontSize: '0.9rem',
+                            }}
+                          >
                             {shortcut.description}
                           </span>
 
-                          <div style={{
-                            background: 'rgba(79, 195, 247, 0.2)',
-                            border: '1px solid rgba(79, 195, 247, 0.4)',
-                            borderRadius: '6px',
-                            padding: '0.5rem 1rem',
-                            color: '#4fc3f7',
-                            fontSize: '0.9rem',
-                            fontWeight: '600',
-                            fontFamily: 'monospace'
-                          }}>
+                          <div
+                            style={{
+                              background: 'rgba(79, 195, 247, 0.2)',
+                              border: '1px solid rgba(79, 195, 247, 0.4)',
+                              borderRadius: '6px',
+                              padding: '0.5rem 1rem',
+                              color: '#4fc3f7',
+                              fontSize: '0.9rem',
+                              fontWeight: '600',
+                              fontFamily: 'monospace',
+                            }}
+                          >
                             {formatKeyCombo(shortcut)}
                           </div>
                         </div>
@@ -329,7 +358,7 @@ const KeyboardShortcutsHelp: React.FC<KeyboardShortcutsHelpProps> = ({
                       style={{
                         textAlign: 'center',
                         padding: '3rem 1rem',
-                        color: 'rgba(244, 244, 244, 0.6)'
+                        color: 'rgba(244, 244, 244, 0.6)',
                       }}
                     >
                       <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⌨️</div>
@@ -344,16 +373,18 @@ const KeyboardShortcutsHelp: React.FC<KeyboardShortcutsHelpProps> = ({
           </div>
 
           {/* Footer */}
-          <div style={{
-            padding: '1rem 2rem',
-            background: 'rgba(0, 0, 0, 0.3)',
-            borderTop: '1px solid rgba(79, 195, 247, 0.2)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            fontSize: '0.8rem',
-            color: 'rgba(244, 244, 244, 0.6)'
-          }}>
+          <div
+            style={{
+              padding: '1rem 2rem',
+              background: 'rgba(0, 0, 0, 0.3)',
+              borderTop: '1px solid rgba(79, 195, 247, 0.2)',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              fontSize: '0.8rem',
+              color: 'rgba(244, 244, 244, 0.6)',
+            }}
+          >
             Press <strong>?</strong> to toggle this help, <strong>ESC</strong> to close
           </div>
         </motion.div>

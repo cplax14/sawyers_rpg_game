@@ -25,7 +25,13 @@ import * as ReactGameContext from '../../../contexts/ReactGameContext';
 // Mock Button component
 jest.mock('../../atoms/Button', () => ({
   Button: ({ children, onClick, disabled, variant, ...props }: any) => (
-    <button onClick={onClick} disabled={disabled} data-testid="button" data-variant={variant} {...props}>
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      data-testid='button'
+      data-variant={variant}
+      {...props}
+    >
       {children}
     </button>
   ),
@@ -33,7 +39,7 @@ jest.mock('../../atoms/Button', () => ({
 
 // Mock LoadingSpinner component
 jest.mock('../../atoms/LoadingSpinner', () => ({
-  LoadingSpinner: () => <div data-testid="loading-spinner">Loading...</div>,
+  LoadingSpinner: () => <div data-testid='loading-spinner'>Loading...</div>,
 }));
 
 // Mock Framer Motion to avoid animation complexity in tests
@@ -82,7 +88,7 @@ jest.mock('../../combat/animations/AnimationController', () => ({
       }
     }, [isActive, onComplete]);
 
-    return <div data-testid="animation-active">Animation Playing</div>;
+    return <div data-testid='animation-active'>Animation Playing</div>;
   },
 }));
 
@@ -173,7 +179,7 @@ describe('Combat Flow Tests - All Wizard Spells', () => {
       { id: 'meteor', name: 'Meteor', mpCost: 25, element: 'fire' },
     ];
 
-    offensiveSpells.forEach((spell) => {
+    offensiveSpells.forEach(spell => {
       describe(`${spell.name} (${spell.id}) Flow`, () => {
         beforeEach(() => {
           const initialState = createTestState(10, 100);
@@ -221,9 +227,12 @@ describe('Combat Flow Tests - All Wizard Spells', () => {
             await user.click(spellButton);
 
             // Animation should appear
-            await waitFor(() => {
-              expect(screen.queryByTestId('animation-active')).toBeInTheDocument();
-            }, { timeout: 500 });
+            await waitFor(
+              () => {
+                expect(screen.queryByTestId('animation-active')).toBeInTheDocument();
+              },
+              { timeout: 500 }
+            );
           }
         });
 
@@ -241,24 +250,33 @@ describe('Combat Flow Tests - All Wizard Spells', () => {
             await user.click(spellButton);
 
             // Animation appears
-            await waitFor(() => {
-              expect(screen.queryByTestId('animation-active')).toBeInTheDocument();
-            }, { timeout: 500 });
+            await waitFor(
+              () => {
+                expect(screen.queryByTestId('animation-active')).toBeInTheDocument();
+              },
+              { timeout: 500 }
+            );
 
             // Animation completes and disappears
-            await waitFor(() => {
-              expect(screen.queryByTestId('animation-active')).not.toBeInTheDocument();
-            }, { timeout: 1500 });
+            await waitFor(
+              () => {
+                expect(screen.queryByTestId('animation-active')).not.toBeInTheDocument();
+              },
+              { timeout: 1500 }
+            );
 
             // Battle should progress (either enemy turn or next state)
-            await waitFor(() => {
-              const enemyTurn = screen.queryByText('Enemy Turn');
-              const yourTurn = screen.queryByText('Your Turn');
-              const victory = screen.queryByText('Victory!');
+            await waitFor(
+              () => {
+                const enemyTurn = screen.queryByText('Enemy Turn');
+                const yourTurn = screen.queryByText('Your Turn');
+                const victory = screen.queryByText('Victory!');
 
-              // Should be in one of these states
-              expect(enemyTurn || yourTurn || victory).toBeTruthy();
-            }, { timeout: 1000 });
+                // Should be in one of these states
+                expect(enemyTurn || yourTurn || victory).toBeTruthy();
+              },
+              { timeout: 1000 }
+            );
           }
         });
 
@@ -276,15 +294,21 @@ describe('Combat Flow Tests - All Wizard Spells', () => {
             await user.click(spellButton);
 
             // Wait for animation to complete
-            await waitFor(() => {
-              expect(screen.queryByTestId('animation-active')).not.toBeInTheDocument();
-            }, { timeout: 2000 });
+            await waitFor(
+              () => {
+                expect(screen.queryByTestId('animation-active')).not.toBeInTheDocument();
+              },
+              { timeout: 2000 }
+            );
 
             // Battle log should show spell cast
-            await waitFor(() => {
-              const logEntry = screen.queryByText(/cast.*Magic Bolt/i);
-              expect(logEntry).toBeTruthy();
-            }, { timeout: 1000 });
+            await waitFor(
+              () => {
+                const logEntry = screen.queryByText(/cast.*Magic Bolt/i);
+                expect(logEntry).toBeTruthy();
+              },
+              { timeout: 1000 }
+            );
           }
         });
       });
@@ -303,7 +327,7 @@ describe('Combat Flow Tests - All Wizard Spells', () => {
       { id: 'haste', name: 'Haste', mpCost: 15, effect: 'speed_buff' },
     ];
 
-    supportSpells.forEach((spell) => {
+    supportSpells.forEach(spell => {
       describe(`${spell.name} (${spell.id}) Flow`, () => {
         beforeEach(() => {
           const initialState = createTestState(10, 100);
@@ -369,30 +393,42 @@ describe('Combat Flow Tests - All Wizard Spells', () => {
       await user.click(magicBoltButton);
 
       // Wait for animation
-      await waitFor(() => {
-        expect(screen.queryByTestId('animation-active')).not.toBeInTheDocument();
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(screen.queryByTestId('animation-active')).not.toBeInTheDocument();
+        },
+        { timeout: 2000 }
+      );
 
       // Enemy turn should happen OR enemy is defeated
-      await waitFor(() => {
-        const enemyTurn = screen.queryByText('Enemy Turn');
-        const victory = screen.queryByText('Victory!');
-        // One of these should be true
-        expect(enemyTurn || victory).toBeTruthy();
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          const enemyTurn = screen.queryByText('Enemy Turn');
+          const victory = screen.queryByText('Victory!');
+          // One of these should be true
+          expect(enemyTurn || victory).toBeTruthy();
+        },
+        { timeout: 2000 }
+      );
 
       // If not victory, verify turn progression
       if (!screen.queryByText('Victory!')) {
         // Return to player turn
-        await waitFor(() => {
-          expect(screen.getByText('Your Turn')).toBeInTheDocument();
-        }, { timeout: 3000 });
+        await waitFor(
+          () => {
+            expect(screen.getByText('Your Turn')).toBeInTheDocument();
+          },
+          { timeout: 3000 }
+        );
 
         // Turn should increment
-        await waitFor(() => {
-          const turnDisplay = screen.getByText(/Battle! Turn \d+/);
-          expect(turnDisplay.textContent).toMatch(/Turn [2-9]/);
-        }, { timeout: 500 });
+        await waitFor(
+          () => {
+            const turnDisplay = screen.getByText(/Battle! Turn \d+/);
+            expect(turnDisplay.textContent).toMatch(/Turn [2-9]/);
+          },
+          { timeout: 500 }
+        );
       }
     });
 
@@ -417,7 +453,8 @@ describe('Combat Flow Tests - All Wizard Spells', () => {
 
     it('combat continues even if animation component errors', async () => {
       // Mock animation to throw error
-      jest.spyOn(require('../../combat/animations/AnimationController'), 'AnimationController')
+      jest
+        .spyOn(require('../../combat/animations/AnimationController'), 'AnimationController')
         .mockImplementationOnce(() => {
           throw new Error('Test animation error');
         });
@@ -434,10 +471,13 @@ describe('Combat Flow Tests - All Wizard Spells', () => {
       await user.click(spellButton);
 
       // Battle should still progress despite animation error
-      await waitFor(() => {
-        const phase = screen.queryByText('Enemy Turn') || screen.queryByText('Your Turn');
-        expect(phase).toBeTruthy();
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          const phase = screen.queryByText('Enemy Turn') || screen.queryByText('Your Turn');
+          expect(phase).toBeTruthy();
+        },
+        { timeout: 2000 }
+      );
     });
   });
 
@@ -468,15 +508,21 @@ describe('Combat Flow Tests - All Wizard Spells', () => {
       await user.click(spellButton);
 
       // Wait for spell to process
-      await waitFor(() => {
-        expect(screen.queryByTestId('animation-active')).not.toBeInTheDocument();
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(screen.queryByTestId('animation-active')).not.toBeInTheDocument();
+        },
+        { timeout: 2000 }
+      );
 
       // MP should be reduced to 92
-      await waitFor(() => {
-        const reducedMp = screen.queryByText(/92\/100/);
-        expect(reducedMp).toBeTruthy();
-      }, { timeout: 1000 });
+      await waitFor(
+        () => {
+          const reducedMp = screen.queryByText(/92\/100/);
+          expect(reducedMp).toBeTruthy();
+        },
+        { timeout: 1000 }
+      );
     });
 
     it('filters out spells when MP is insufficient', async () => {

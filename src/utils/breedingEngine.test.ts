@@ -336,7 +336,7 @@ describe('inheritStats', () => {
   it('should return rounded integer values', () => {
     const result = inheritStats(parent1Stats, parent2Stats, 0);
 
-    Object.values(result).forEach((statValue) => {
+    Object.values(result).forEach(statValue => {
       expect(Number.isInteger(statValue)).toBe(true);
     });
   });
@@ -627,7 +627,7 @@ describe('inheritAbilities', () => {
     const result = inheritAbilities(parent1, parent2);
 
     // Count occurrences of 'fireball'
-    const fireballCount = result.filter((a) => a === 'fireball').length;
+    const fireballCount = result.filter(a => a === 'fireball').length;
     expect(fireballCount).toBeLessThanOrEqual(1);
   });
 
@@ -680,7 +680,7 @@ describe('inheritAbilities', () => {
 
     const result = inheritAbilities(parent1, parent2, recipe);
 
-    const ultimateCount = result.filter((a) => a === 'ultimate_power').length;
+    const ultimateCount = result.filter(a => a === 'ultimate_power').length;
     expect(ultimateCount).toBe(1);
 
     Math.random = originalRandom;
@@ -733,7 +733,7 @@ describe('calculateStatCaps', () => {
   it('should return rounded integer values', () => {
     const result = calculateStatCaps(2);
 
-    Object.values(result).forEach((capValue) => {
+    Object.values(result).forEach(capValue => {
       expect(Number.isInteger(capValue)).toBe(true);
     });
   });
@@ -871,9 +871,7 @@ describe('validateBreeding', () => {
     const parent1 = createMockCreature({ level: 10 });
     const parent2 = createMockCreature({ level: 10 });
     const recipe = createMockRecipe({
-      materials: [
-        { itemId: 'slime_gel', quantity: 5, name: 'Slime Gel' },
-      ],
+      materials: [{ itemId: 'slime_gel', quantity: 5, name: 'Slime Gel' }],
     });
     const cost = calculateBreedingCost(parent1, parent2, recipe);
     const playerGold = 10000;
@@ -907,9 +905,7 @@ describe('validateBreedingCost', () => {
         breedingCountMultiplier: 1,
         totalGold: 1000,
       },
-      materials: [
-        { itemId: 'slime_gel', quantity: 3, name: 'Slime Gel' },
-      ],
+      materials: [{ itemId: 'slime_gel', quantity: 3, name: 'Slime Gel' }],
     };
     const playerGold = 1500;
     const playerMaterials = { slime_gel: 5 };
@@ -1167,11 +1163,11 @@ describe('inheritPassiveTraits', () => {
   it('should return empty array for Gen 0 creatures', () => {
     const parent1 = createMockCreature({
       generation: 0,
-      passiveTraits: ['trait1', 'trait2']
+      passiveTraits: ['trait1', 'trait2'],
     });
     const parent2 = createMockCreature({
       generation: 0,
-      passiveTraits: ['trait3']
+      passiveTraits: ['trait3'],
     });
 
     const result = inheritPassiveTraits(parent1, parent2, 0);
@@ -1182,11 +1178,11 @@ describe('inheritPassiveTraits', () => {
   it('should return empty array for Gen 1 creatures', () => {
     const parent1 = createMockCreature({
       generation: 1,
-      passiveTraits: ['trait1', 'trait2']
+      passiveTraits: ['trait1', 'trait2'],
     });
     const parent2 = createMockCreature({
       generation: 1,
-      passiveTraits: ['trait3']
+      passiveTraits: ['trait3'],
     });
 
     const result = inheritPassiveTraits(parent1, parent2, 1);
@@ -1197,11 +1193,11 @@ describe('inheritPassiveTraits', () => {
   it('should return empty array for Gen 2 creatures', () => {
     const parent1 = createMockCreature({
       generation: 2,
-      passiveTraits: ['trait1', 'trait2']
+      passiveTraits: ['trait1', 'trait2'],
     });
     const parent2 = createMockCreature({
       generation: 2,
-      passiveTraits: ['trait3']
+      passiveTraits: ['trait3'],
     });
 
     const result = inheritPassiveTraits(parent1, parent2, 2);
@@ -1212,11 +1208,11 @@ describe('inheritPassiveTraits', () => {
   it('should allow passive traits for Gen 3+ creatures', () => {
     const parent1 = createMockCreature({
       generation: 3,
-      passiveTraits: ['trait1', 'trait2']
+      passiveTraits: ['trait1', 'trait2'],
     });
     const parent2 = createMockCreature({
       generation: 3,
-      passiveTraits: ['trait3']
+      passiveTraits: ['trait3'],
     });
 
     // Mock Math.random to always succeed (25% chance)
@@ -1233,10 +1229,10 @@ describe('inheritPassiveTraits', () => {
 
   it('should inherit traits from both parents with 25% chance', () => {
     const parent1 = createMockCreature({
-      passiveTraits: ['strength_boost', 'speed_boost']
+      passiveTraits: ['strength_boost', 'speed_boost'],
     });
     const parent2 = createMockCreature({
-      passiveTraits: ['defense_boost', 'magic_boost']
+      passiveTraits: ['defense_boost', 'magic_boost'],
     });
 
     // Run many iterations to test probability
@@ -1256,10 +1252,10 @@ describe('inheritPassiveTraits', () => {
 
   it('should not duplicate traits if both parents have same trait', () => {
     const parent1 = createMockCreature({
-      passiveTraits: ['strength_boost', 'speed_boost']
+      passiveTraits: ['strength_boost', 'speed_boost'],
     });
     const parent2 = createMockCreature({
-      passiveTraits: ['strength_boost', 'defense_boost']
+      passiveTraits: ['strength_boost', 'defense_boost'],
     });
 
     // Mock to always succeed
@@ -1277,10 +1273,10 @@ describe('inheritPassiveTraits', () => {
 
   it('should limit inherited traits to generation maximum', () => {
     const parent1 = createMockCreature({
-      passiveTraits: ['trait1', 'trait2', 'trait3']
+      passiveTraits: ['trait1', 'trait2', 'trait3'],
     });
     const parent2 = createMockCreature({
-      passiveTraits: ['trait4', 'trait5', 'trait6']
+      passiveTraits: ['trait4', 'trait5', 'trait6'],
     });
 
     // Force all traits to inherit
@@ -1297,10 +1293,10 @@ describe('inheritPassiveTraits', () => {
 
   it('should allow more traits for higher generations', () => {
     const parent1 = createMockCreature({
-      passiveTraits: ['trait1', 'trait2', 'trait3']
+      passiveTraits: ['trait1', 'trait2', 'trait3'],
     });
     const parent2 = createMockCreature({
-      passiveTraits: ['trait4', 'trait5']
+      passiveTraits: ['trait4', 'trait5'],
     });
 
     // Force all traits to inherit
@@ -1338,8 +1334,8 @@ describe('inheritPassiveTraits', () => {
     const parent2 = createMockCreature({ passiveTraits: [] });
     const recipe = createMockRecipe({
       guaranteedBonuses: {
-        guaranteedPassiveTraits: ['legendary_trait', 'mythical_trait']
-      }
+        guaranteedPassiveTraits: ['legendary_trait', 'mythical_trait'],
+      },
     });
 
     // Note: Current implementation doesn't support guaranteed passive traits from recipe

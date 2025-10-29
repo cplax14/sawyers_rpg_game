@@ -10,25 +10,26 @@ import { LoadingSpinner } from '../atoms/LoadingSpinner';
 const ComponentLoadingFallback: React.FC<{
   message?: string;
   size?: 'small' | 'medium' | 'large';
-}> = ({
-  message = 'Loading component...',
-  size = 'large'
-}) => (
-  <div style={{
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: '200px',
-    gap: '16px',
-    padding: '2rem'
-  }}>
+}> = ({ message = 'Loading component...', size = 'large' }) => (
+  <div
+    style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '200px',
+      gap: '16px',
+      padding: '2rem',
+    }}
+  >
     <LoadingSpinner size={size} />
-    <p style={{
-      color: 'var(--color-text-secondary, #cccccc)',
-      margin: 0,
-      fontSize: '0.9rem'
-    }}>
+    <p
+      style={{
+        color: 'var(--color-text-secondary, #cccccc)',
+        margin: 0,
+        fontSize: '0.9rem',
+      }}
+    >
       {message}
     </p>
   </div>
@@ -40,15 +41,8 @@ const withLazyLoading = <P extends {}>(
   fallbackMessage?: string,
   fallbackSize?: 'small' | 'medium' | 'large'
 ) => {
-  const WrappedComponent: React.FC<P> = (props) => (
-    <Suspense
-      fallback={
-        <ComponentLoadingFallback
-          message={fallbackMessage}
-          size={fallbackSize}
-        />
-      }
-    >
+  const WrappedComponent: React.FC<P> = props => (
+    <Suspense fallback={<ComponentLoadingFallback message={fallbackMessage} size={fallbackSize} />}>
       <LazyComponent {...props} />
     </Suspense>
   );
@@ -105,7 +99,7 @@ export const getComponentBundleInfo = () => ({
   characterSelection: 'organisms/CharacterSelection',
   worldMap: 'organisms/WorldMap',
   saveLoadManager: 'organisms/SaveLoadManager',
-  saveSlotCard: 'molecules/SaveSlotCard'
+  saveSlotCard: 'molecules/SaveSlotCard',
 });
 
 export default {
@@ -118,5 +112,5 @@ export default {
   preloadMainMenu,
   preloadCharacterSelection,
   preloadWorldMap,
-  preloadSaveLoadManager
+  preloadSaveLoadManager,
 };

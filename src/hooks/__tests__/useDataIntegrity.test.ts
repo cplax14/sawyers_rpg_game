@@ -22,9 +22,9 @@ Object.defineProperty(global, 'crypto', {
           view[i] = i;
         }
         return Promise.resolve(hash);
-      })
-    }
-  }
+      }),
+    },
+  },
 });
 
 describe('useDataIntegrity Hook', () => {
@@ -35,7 +35,7 @@ describe('useDataIntegrity Hook', () => {
     checksum: 'mock_checksum',
     errors: [],
     warnings: [],
-    corruptedFields: []
+    corruptedFields: [],
   };
 
   const mockCorruptionResult = {
@@ -44,7 +44,7 @@ describe('useDataIntegrity Hook', () => {
     errors: ['Data corruption detected'],
     warnings: ['Recovery attempted'],
     corruptedFields: ['player.level'],
-    recoveredData: {} as ReactGameState
+    recoveredData: {} as ReactGameState,
   };
 
   beforeEach(() => {
@@ -62,24 +62,22 @@ describe('useDataIntegrity Hook', () => {
           strength: 15,
           agility: 12,
           intelligence: 8,
-          defense: 10
-        }
+          defense: 10,
+        },
       },
       inventory: {
-        items: [
-          { id: 'potion', quantity: 5 }
-        ]
+        items: [{ id: 'potion', quantity: 5 }],
       },
       story: {
         currentChapter: 2,
         completedQuests: ['tutorial'],
-        activeQuests: []
+        activeQuests: [],
       },
       gameFlags: {
-        tutorial_completed: true
+        tutorial_completed: true,
       },
       version: '1.0.0',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     } as ReactGameState;
 
     // Setup default mocks
@@ -89,7 +87,7 @@ describe('useDataIntegrity Hook', () => {
     (dataIntegrityUtils.sanitizeGameStateForCloud as jest.Mock).mockReturnValue(mockGameState);
     (dataIntegrityUtils.attemptDataRecovery as jest.Mock).mockReturnValue({
       success: true,
-      recoveredData: mockGameState
+      recoveredData: mockGameState,
     });
   });
 
@@ -118,9 +116,7 @@ describe('useDataIntegrity Hook', () => {
     });
 
     it('should initialize with tracking metrics when enabled', () => {
-      const { result } = renderHook(() =>
-        useDataIntegrity({ trackMetrics: true })
-      );
+      const { result } = renderHook(() => useDataIntegrity({ trackMetrics: true }));
 
       expect(result.current.metrics.totalValidations).toBe(0);
       expect(result.current.metrics.successfulValidations).toBe(0);
@@ -148,7 +144,7 @@ describe('useDataIntegrity Hook', () => {
       const errorResult = {
         ...mockValidationResult,
         isValid: false,
-        errors: ['Invalid player data']
+        errors: ['Invalid player data'],
       };
 
       (dataIntegrityUtils.validateDataIntegrity as jest.Mock).mockResolvedValue(errorResult);
@@ -165,9 +161,7 @@ describe('useDataIntegrity Hook', () => {
     });
 
     it('should update metrics for successful validation', async () => {
-      const { result } = renderHook(() =>
-        useDataIntegrity({ trackMetrics: true })
-      );
+      const { result } = renderHook(() => useDataIntegrity({ trackMetrics: true }));
 
       await act(async () => {
         await result.current.validateGameState(mockGameState);
@@ -215,11 +209,16 @@ describe('useDataIntegrity Hook', () => {
         expect(isValid).toBe(true);
       });
 
-      expect(dataIntegrityUtils.verifyChecksum).toHaveBeenCalledWith(mockGameState, 'test_checksum');
+      expect(dataIntegrityUtils.verifyChecksum).toHaveBeenCalledWith(
+        mockGameState,
+        'test_checksum'
+      );
     });
 
     it('should handle checksum verification errors gracefully', async () => {
-      (dataIntegrityUtils.verifyChecksum as jest.Mock).mockRejectedValue(new Error('Checksum error'));
+      (dataIntegrityUtils.verifyChecksum as jest.Mock).mockRejectedValue(
+        new Error('Checksum error')
+      );
 
       const { result } = renderHook(() => useDataIntegrity());
 
@@ -249,7 +248,7 @@ describe('useDataIntegrity Hook', () => {
       const recoveredState = { ...mockGameState, player: { ...mockGameState.player, level: 1 } };
       const recoveryResult = {
         ...mockCorruptionResult,
-        recoveredData: recoveredState
+        recoveredData: recoveredState,
       };
 
       (dataIntegrityUtils.validateDataIntegrity as jest.Mock).mockResolvedValue(recoveryResult);
@@ -265,7 +264,7 @@ describe('useDataIntegrity Hook', () => {
     it('should reject corrupted data without recovery', async () => {
       const corruptionResult = {
         ...mockCorruptionResult,
-        recoveredData: undefined
+        recoveredData: undefined,
       };
 
       (dataIntegrityUtils.validateDataIntegrity as jest.Mock).mockResolvedValue(corruptionResult);
@@ -273,8 +272,9 @@ describe('useDataIntegrity Hook', () => {
       const { result } = renderHook(() => useDataIntegrity());
 
       await act(async () => {
-        await expect(result.current.prepareForCloudUpload(mockGameState))
-          .rejects.toThrow('Cannot upload corrupted data to cloud');
+        await expect(result.current.prepareForCloudUpload(mockGameState)).rejects.toThrow(
+          'Cannot upload corrupted data to cloud'
+        );
       });
     });
   });
@@ -304,7 +304,7 @@ describe('useDataIntegrity Hook', () => {
         expect.objectContaining({
           deepValidation: true,
           enableRecovery: true,
-          strictMode: false
+          strictMode: false,
         })
       );
     });
@@ -312,7 +312,9 @@ describe('useDataIntegrity Hook', () => {
     it('should warn about corruption with successful recovery', async () => {
       const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
 
-      (dataIntegrityUtils.validateDataIntegrity as jest.Mock).mockResolvedValue(mockCorruptionResult);
+      (dataIntegrityUtils.validateDataIntegrity as jest.Mock).mockResolvedValue(
+        mockCorruptionResult
+      );
 
       const { result } = renderHook(() => useDataIntegrity());
 
@@ -331,29 +333,35 @@ describe('useDataIntegrity Hook', () => {
 
   describe('Data Recovery', () => {
     it('should recover corrupted data successfully', async () => {
-      const corruptedData = { ...mockGameState, player: { ...mockGameState.player, level: 'invalid' } };
+      const corruptedData = {
+        ...mockGameState,
+        player: { ...mockGameState.player, level: 'invalid' },
+      };
       const validationResult = {
         isValid: false,
         checksum: '',
         errors: ['Invalid level'],
         warnings: [],
-        corruptedFields: ['player.level']
+        corruptedFields: ['player.level'],
       };
 
       const recoveryResult = {
         success: true,
-        recoveredData: mockGameState
+        recoveredData: mockGameState,
       };
 
       (dataIntegrityUtils.validateDataIntegrity as jest.Mock).mockResolvedValue({
         ...validationResult,
-        recoveredData: mockGameState
+        recoveredData: mockGameState,
       });
 
       const { result } = renderHook(() => useDataIntegrity());
 
       await act(async () => {
-        const recovered = await result.current.recoverCorruptedData(corruptedData, validationResult);
+        const recovered = await result.current.recoverCorruptedData(
+          corruptedData,
+          validationResult
+        );
         expect(recovered.success).toBe(true);
         expect(recovered.recoveredData).toEqual(mockGameState);
       });
@@ -368,18 +376,21 @@ describe('useDataIntegrity Hook', () => {
         checksum: '',
         errors: ['Severe corruption'],
         warnings: [],
-        corruptedFields: ['all']
+        corruptedFields: ['all'],
       };
 
       (dataIntegrityUtils.validateDataIntegrity as jest.Mock).mockResolvedValue({
         ...validationResult,
-        recoveredData: undefined
+        recoveredData: undefined,
       });
 
       const { result } = renderHook(() => useDataIntegrity());
 
       await act(async () => {
-        const recovered = await result.current.recoverCorruptedData(corruptedData, validationResult);
+        const recovered = await result.current.recoverCorruptedData(
+          corruptedData,
+          validationResult
+        );
         expect(recovered.success).toBe(false);
         expect(recovered.recoveredData).toBeUndefined();
       });
@@ -409,9 +420,7 @@ describe('useDataIntegrity Hook', () => {
     });
 
     it('should reset metrics', async () => {
-      const { result } = renderHook(() =>
-        useDataIntegrity({ trackMetrics: true })
-      );
+      const { result } = renderHook(() => useDataIntegrity({ trackMetrics: true }));
 
       // Generate some metrics
       await act(async () => {
@@ -440,21 +449,17 @@ describe('useDataIntegrity Hook', () => {
         requiredFields: ['customField'],
         fieldTypes: {},
         fieldConstraints: {},
-        deprecatedFields: []
+        deprecatedFields: [],
       };
 
-      const { result } = renderHook(() =>
-        useDataIntegrity({ schema: customSchema })
-      );
+      const { result } = renderHook(() => useDataIntegrity({ schema: customSchema }));
 
       expect(result.current).toBeDefined();
       // Schema is used internally, hard to test directly without exposing internals
     });
 
     it('should respect auto-recovery settings', async () => {
-      const { result } = renderHook(() =>
-        useDataIntegrity({ enableAutoRecovery: false })
-      );
+      const { result } = renderHook(() => useDataIntegrity({ enableAutoRecovery: false }));
 
       await act(async () => {
         await result.current.validateGameState(mockGameState);
@@ -465,15 +470,13 @@ describe('useDataIntegrity Hook', () => {
         undefined,
         expect.any(Object),
         expect.objectContaining({
-          enableRecovery: false
+          enableRecovery: false,
         })
       );
     });
 
     it('should disable metrics tracking when requested', async () => {
-      const { result } = renderHook(() =>
-        useDataIntegrity({ trackMetrics: false })
-      );
+      const { result } = renderHook(() => useDataIntegrity({ trackMetrics: false }));
 
       await act(async () => {
         await result.current.validateGameState(mockGameState);
@@ -492,8 +495,9 @@ describe('useDataIntegrity Hook', () => {
       const { result } = renderHook(() => useDataIntegrity());
 
       await act(async () => {
-        await expect(result.current.validateGameState(mockGameState))
-          .rejects.toThrow('Game state validation failed');
+        await expect(result.current.validateGameState(mockGameState)).rejects.toThrow(
+          'Game state validation failed'
+        );
       });
 
       expect(result.current.state.validationErrors).toContain('Validation function error');
@@ -506,26 +510,32 @@ describe('useDataIntegrity Hook', () => {
       const { result } = renderHook(() => useDataIntegrity());
 
       await act(async () => {
-        await expect(result.current.generateDataChecksum(mockGameState))
-          .rejects.toThrow('Failed to generate data checksum');
+        await expect(result.current.generateDataChecksum(mockGameState)).rejects.toThrow(
+          'Failed to generate data checksum'
+        );
       });
     });
 
     it('should handle data recovery errors gracefully', async () => {
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
-      (dataIntegrityUtils.validateDataIntegrity as jest.Mock).mockRejectedValue(new Error('Recovery error'));
+      (dataIntegrityUtils.validateDataIntegrity as jest.Mock).mockRejectedValue(
+        new Error('Recovery error')
+      );
 
       const { result } = renderHook(() => useDataIntegrity());
 
       await act(async () => {
-        const recovered = await result.current.recoverCorruptedData({}, {
-          isValid: false,
-          checksum: '',
-          errors: [],
-          warnings: [],
-          corruptedFields: []
-        });
+        const recovered = await result.current.recoverCorruptedData(
+          {},
+          {
+            isValid: false,
+            checksum: '',
+            errors: [],
+            warnings: [],
+            corruptedFields: [],
+          }
+        );
 
         expect(recovered.success).toBe(false);
       });

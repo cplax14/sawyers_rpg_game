@@ -13,8 +13,8 @@ export function usePerformanceMonitor() {
     setIsMonitoring(true);
 
     globalPerformanceMonitor.startMonitoring(
-      (newMetrics) => setMetrics(newMetrics),
-      (warning) => setWarnings(prev => [...prev.slice(-4), warning]) // Keep last 5 warnings
+      newMetrics => setMetrics(newMetrics),
+      warning => setWarnings(prev => [...prev.slice(-4), warning]) // Keep last 5 warnings
     );
 
     return () => {
@@ -30,7 +30,7 @@ export function usePerformanceMonitor() {
     recommendations: metrics ? globalPerformanceMonitor.getRecommendations() : [],
     createSnapshot: () => globalPerformanceMonitor.createSnapshot(),
     startMonitoring: () => globalPerformanceMonitor.startMonitoring(),
-    stopMonitoring: () => globalPerformanceMonitor.stopMonitoring()
+    stopMonitoring: () => globalPerformanceMonitor.stopMonitoring(),
   };
 }
 
@@ -49,7 +49,7 @@ export function useAnimationPerformance() {
       type,
       duration: 0,
       complexity,
-      elementCount
+      elementCount,
     });
   };
 
@@ -59,7 +59,7 @@ export function useAnimationPerformance() {
 
   return {
     startAnimation,
-    endAnimation
+    endAnimation,
   };
 }
 
@@ -73,8 +73,10 @@ export function usePerformanceAwareAnimation() {
     if (!metrics) return false;
 
     // Reduce animations if FPS is too low or frame time is too high
-    return metrics.fps < globalPerformanceMonitor.thresholds.minAcceptableFps ||
-           metrics.frameTime > globalPerformanceMonitor.thresholds.maxFrameTime * 1.5;
+    return (
+      metrics.fps < globalPerformanceMonitor.thresholds.minAcceptableFps ||
+      metrics.frameTime > globalPerformanceMonitor.thresholds.maxFrameTime * 1.5
+    );
   };
 
   const getOptimalAnimationDuration = (baseDuration: number) => {
@@ -100,6 +102,6 @@ export function usePerformanceAwareAnimation() {
     shouldReduceAnimations: shouldReduceAnimations(),
     getOptimalAnimationDuration,
     getOptimalAnimationQuality: getOptimalAnimationQuality(),
-    performanceMetrics: metrics
+    performanceMetrics: metrics,
   };
 }

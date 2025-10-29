@@ -159,7 +159,7 @@ export const RecipeDiscoveryNotification: React.FC<RecipeDiscoveryNotificationPr
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.8, opacity: 0, y: -20 }}
             transition={{ type: 'spring', duration: 0.5 }}
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
           >
             {/* Sparkle effect */}
             <div style={notificationStyles.sparkle}>
@@ -205,11 +205,11 @@ export const RecipeDiscoveryNotification: React.FC<RecipeDiscoveryNotificationPr
                 📜✨
               </motion.div>
               <h2 style={notificationStyles.title}>
-                {recipes.length === 1 ? 'Recipe Discovered!' : `${recipes.length} Recipes Discovered!`}
+                {recipes.length === 1
+                  ? 'Recipe Discovered!'
+                  : `${recipes.length} Recipes Discovered!`}
               </h2>
-              <p style={notificationStyles.subtitle}>
-                You've unlocked new breeding combinations!
-              </p>
+              <p style={notificationStyles.subtitle}>You've unlocked new breeding combinations!</p>
             </div>
 
             {/* Recipe List */}
@@ -222,12 +222,8 @@ export const RecipeDiscoveryNotification: React.FC<RecipeDiscoveryNotificationPr
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: index * 0.1 }}
                 >
-                  <div style={notificationStyles.recipeName}>
-                    {recipe.name}
-                  </div>
-                  <div style={notificationStyles.recipeDescription}>
-                    {recipe.description}
-                  </div>
+                  <div style={notificationStyles.recipeName}>{recipe.name}</div>
+                  <div style={notificationStyles.recipeDescription}>{recipe.description}</div>
                   <div style={notificationStyles.parents}>
                     <span style={notificationStyles.parentIcon}>🐾</span>
                     <span>{recipe.parentSpecies1}</span>

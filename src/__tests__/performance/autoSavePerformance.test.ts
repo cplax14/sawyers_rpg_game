@@ -34,23 +34,25 @@ describe('Auto-Save Performance Tests', () => {
           strength: 150,
           agility: 120,
           intelligence: 90,
-          defense: 130
+          defense: 130,
         },
         equipment: {
           weapon: { id: 'legendary_sword', enchantments: ['fire', 'sharpness'] },
           armor: { id: 'dragon_scale_armor', enchantments: ['protection', 'durability'] },
           accessories: [
             { id: 'ring_of_power', stats: { strength: 20 } },
-            { id: 'amulet_of_wisdom', stats: { intelligence: 15 } }
-          ]
-        }
+            { id: 'amulet_of_wisdom', stats: { intelligence: 15 } },
+          ],
+        },
       },
       inventory: {
         items: Array.from({ length: 100 }, (_, i) => ({
           id: `item_${i}`,
           quantity: Math.floor(Math.random() * 10) + 1,
-          rarity: ['common', 'uncommon', 'rare', 'epic', 'legendary'][Math.floor(Math.random() * 5)]
-        }))
+          rarity: ['common', 'uncommon', 'rare', 'epic', 'legendary'][
+            Math.floor(Math.random() * 5)
+          ],
+        })),
       },
       gameFlags: Object.fromEntries(
         Array.from({ length: 200 }, (_, i) => [`flag_${i}`, Math.random() > 0.5])
@@ -63,9 +65,9 @@ describe('Auto-Save Performance Tests', () => {
           progress: Math.floor(Math.random() * 100),
           objectives: Array.from({ length: 5 }, (_, j) => ({
             id: `objective_${j}`,
-            completed: Math.random() > 0.5
-          }))
-        }))
+            completed: Math.random() > 0.5,
+          })),
+        })),
       },
       worldState: {
         areas: Object.fromEntries(
@@ -76,14 +78,14 @@ describe('Auto-Save Performance Tests', () => {
               completion: Math.floor(Math.random() * 100),
               secrets: Array.from({ length: 5 }, (_, j) => ({
                 id: `secret_${j}`,
-                discovered: Math.random() > 0.7
-              }))
-            }
+                discovered: Math.random() > 0.7,
+              })),
+            },
           ])
-        )
+        ),
       },
       version: '1.0.0',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     } as ReactGameState;
   });
 
@@ -115,7 +117,7 @@ describe('Auto-Save Performance Tests', () => {
       minTime: times[0],
       maxTime: times[times.length - 1],
       totalTime: times.reduce((sum, time) => sum + time, 0),
-      p95Time: times[p95Index]
+      p95Time: times[p95Index],
     };
 
     performanceMetrics[testName] = times;
@@ -139,7 +141,7 @@ describe('Auto-Save Performance Tests', () => {
       console.log('Game State Serialization Metrics:', {
         averageTime: `${metrics.averageTime.toFixed(2)}ms`,
         p95Time: `${metrics.p95Time.toFixed(2)}ms`,
-        maxTime: `${metrics.maxTime.toFixed(2)}ms`
+        maxTime: `${metrics.maxTime.toFixed(2)}ms`,
       });
     });
 
@@ -151,9 +153,9 @@ describe('Auto-Save Performance Tests', () => {
           items: Array.from({ length: 1000 }, (_, i) => ({
             id: `large_item_${i}`,
             quantity: Math.floor(Math.random() * 100) + 1,
-            properties: Array.from({ length: 20 }, (_, j) => `prop_${j}`)
-          }))
-        }
+            properties: Array.from({ length: 20 }, (_, j) => `prop_${j}`),
+          })),
+        },
       };
 
       const metrics = await measurePerformance(
@@ -171,7 +173,7 @@ describe('Auto-Save Performance Tests', () => {
       console.log('Large Game State Serialization Metrics:', {
         averageTime: `${metrics.averageTime.toFixed(2)}ms`,
         p95Time: `${metrics.p95Time.toFixed(2)}ms`,
-        dataSize: `${JSON.stringify(largeGameState).length} characters`
+        dataSize: `${JSON.stringify(largeGameState).length} characters`,
       });
     });
   });
@@ -183,11 +185,11 @@ describe('Auto-Save Performance Tests', () => {
         {
           interval: 100, // Very short interval for testing
           enabled: true,
-          maxFailures: 3
+          maxFailures: 3,
         },
         {
           onSave: mockSaveFunction,
-          getGameState: () => mockGameState
+          getGameState: () => mockGameState,
         }
       );
 
@@ -214,16 +216,17 @@ describe('Auto-Save Performance Tests', () => {
         ...mockGameState,
         currentScreen: 'combat',
         settings: {
-          autoSavePauseDuringCombat: true
-        }
+          autoSavePauseDuringCombat: true,
+        },
       };
 
       const metrics = await measurePerformance(
         'autoSavePauseDetection',
         async () => {
           // This would normally be called by the auto-save hook
-          const shouldPause = combatGameState.currentScreen === 'combat' &&
-                            combatGameState.settings.autoSavePauseDuringCombat;
+          const shouldPause =
+            combatGameState.currentScreen === 'combat' &&
+            combatGameState.settings.autoSavePauseDuringCombat;
           return shouldPause;
         },
         100
@@ -234,7 +237,7 @@ describe('Auto-Save Performance Tests', () => {
 
       console.log('Auto-Save Pause Detection Metrics:', {
         averageTime: `${metrics.averageTime.toFixed(4)}ms`,
-        maxTime: `${metrics.maxTime.toFixed(4)}ms`
+        maxTime: `${metrics.maxTime.toFixed(4)}ms`,
       });
     });
   });
@@ -265,7 +268,7 @@ describe('Auto-Save Performance Tests', () => {
         console.log('Memory Usage Test:', {
           before: `${(memoryUsageBefore / 1024 / 1024).toFixed(2)} MB`,
           after: `${(memoryUsageAfter / 1024 / 1024).toFixed(2)} MB`,
-          increase: `${(memoryIncrease / 1024).toFixed(2)} KB`
+          increase: `${(memoryIncrease / 1024).toFixed(2)} KB`,
         });
 
         // Memory increase should be minimal (< 5MB for 20 operations)
@@ -282,7 +285,8 @@ describe('Auto-Save Performance Tests', () => {
       // Start measuring frame rate
       const measureFrames = () => {
         frameTimestamps.push(performance.now());
-        if (frameTimestamps.length < 60) { // Measure 60 frames
+        if (frameTimestamps.length < 60) {
+          // Measure 60 frames
           animationId = requestAnimationFrame(measureFrames);
         }
       };
@@ -327,7 +331,7 @@ describe('Auto-Save Performance Tests', () => {
       console.log('Frame Rate Impact Metrics:', {
         averageFrameTime: `${averageFrameTime.toFixed(2)}ms`,
         maxFrameTime: `${maxFrameTime.toFixed(2)}ms`,
-        estimatedFPS: Math.round(1000 / averageFrameTime)
+        estimatedFPS: Math.round(1000 / averageFrameTime),
       });
 
       // Frame times should stay reasonable (< 20ms average, < 50ms max)
@@ -362,7 +366,7 @@ describe('Auto-Save Performance Tests', () => {
 
       console.log('Concurrent Operations Metrics:', {
         averageTime: `${metrics.averageTime.toFixed(2)}ms`,
-        p95Time: `${metrics.p95Time.toFixed(2)}ms`
+        p95Time: `${metrics.p95Time.toFixed(2)}ms`,
       });
     });
 
@@ -412,16 +416,27 @@ describe('Auto-Save Performance Tests', () => {
 
       // Only the last save should actually execute due to debouncing
       // (Implementation would need actual debouncing logic)
-      console.log('Save Call Times:', saveCallTimes.map(time => time - startTime));
+      console.log(
+        'Save Call Times:',
+        saveCallTimes.map(time => time - startTime)
+      );
     });
 
     it('should validate efficient data structures', async () => {
       // Test that game state updates are efficient
       const updateOperations = [
-        () => { mockGameState.player.experience += 100; },
-        () => { mockGameState.inventory.items.push({ id: 'new_item', quantity: 1 }); },
-        () => { mockGameState.gameFlags.new_flag = true; },
-        () => { mockGameState.story.completedQuests.push('new_quest'); }
+        () => {
+          mockGameState.player.experience += 100;
+        },
+        () => {
+          mockGameState.inventory.items.push({ id: 'new_item', quantity: 1 });
+        },
+        () => {
+          mockGameState.gameFlags.new_flag = true;
+        },
+        () => {
+          mockGameState.story.completedQuests.push('new_quest');
+        },
       ];
 
       const metrics = await measurePerformance(
@@ -438,7 +453,7 @@ describe('Auto-Save Performance Tests', () => {
 
       console.log('Game State Update Metrics:', {
         averageTime: `${metrics.averageTime.toFixed(4)}ms`,
-        maxTime: `${metrics.maxTime.toFixed(4)}ms`
+        maxTime: `${metrics.maxTime.toFixed(4)}ms`,
       });
     });
   });

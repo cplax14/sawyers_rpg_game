@@ -9,6 +9,7 @@ const AreaData = {
             name: "Peaceful Village",
             description: "A quiet village where your adventure begins. Safe from monsters.",
             type: "town",
+            shopIds: ["mistwood_general_store"], // Shops available in this area
             unlocked: true, // Always available
             unlockRequirements: {},
             encounterRate: 0,

@@ -11,16 +11,23 @@ import { Item, Equipment, PlayerStats, ItemEffect } from './game';
 // ITEM ENHANCEMENTS
 // =============================================================================
 
-export type ItemRarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary' | 'artifact' | 'unique';
+export type ItemRarity =
+  | 'common'
+  | 'uncommon'
+  | 'rare'
+  | 'epic'
+  | 'legendary'
+  | 'artifact'
+  | 'unique';
 
 export const RARITY_COLORS = {
-  common: '#22c55e',     // green
-  uncommon: '#10b981',   // emerald green
-  rare: '#3b82f6',       // blue
-  epic: '#a855f7',       // purple
-  legendary: '#f97316',  // orange
-  artifact: '#dc2626',   // red
-  unique: '#fbbf24'      // gold/amber
+  common: '#22c55e', // green
+  uncommon: '#10b981', // emerald green
+  rare: '#3b82f6', // blue
+  epic: '#a855f7', // purple
+  legendary: '#f97316', // orange
+  artifact: '#dc2626', // red
+  unique: '#fbbf24', // gold/amber
 } as const;
 
 // =============================================================================
@@ -66,7 +73,7 @@ export const RARITY_SYSTEM: Record<ItemRarity, RarityDefinition> = {
     description: 'Standard equipment found throughout the world',
     tier: 1,
     icon: '●',
-    effects: []
+    effects: [],
   },
   uncommon: {
     name: 'uncommon',
@@ -87,9 +94,9 @@ export const RARITY_SYSTEM: Record<ItemRarity, RarityDefinition> = {
         type: 'stat_bonus',
         description: 'Minor stat bonuses',
         value: 10,
-        conditions: []
-      }
-    ]
+        conditions: [],
+      },
+    ],
   },
   rare: {
     name: 'rare',
@@ -110,9 +117,9 @@ export const RARITY_SYSTEM: Record<ItemRarity, RarityDefinition> = {
         type: 'stat_bonus',
         description: 'Additional stat bonuses',
         value: 15,
-        conditions: []
-      }
-    ]
+        conditions: [],
+      },
+    ],
   },
   epic: {
     name: 'epic',
@@ -133,15 +140,15 @@ export const RARITY_SYSTEM: Record<ItemRarity, RarityDefinition> = {
         type: 'stat_bonus',
         description: 'Significant stat bonuses',
         value: 35,
-        conditions: []
+        conditions: [],
       },
       {
         type: 'special_ability',
         description: 'May have special abilities',
         value: 25,
-        conditions: []
-      }
-    ]
+        conditions: [],
+      },
+    ],
   },
   legendary: {
     name: 'legendary',
@@ -162,21 +169,21 @@ export const RARITY_SYSTEM: Record<ItemRarity, RarityDefinition> = {
         type: 'stat_bonus',
         description: 'Massive stat bonuses',
         value: 75,
-        conditions: []
+        conditions: [],
       },
       {
         type: 'special_ability',
         description: 'Guaranteed special abilities',
         value: 100,
-        conditions: []
+        conditions: [],
       },
       {
         type: 'set_bonus_chance',
         description: 'Higher chance for set bonuses',
         value: 50,
-        conditions: []
-      }
-    ]
+        conditions: [],
+      },
+    ],
   },
   artifact: {
     name: 'artifact',
@@ -197,21 +204,21 @@ export const RARITY_SYSTEM: Record<ItemRarity, RarityDefinition> = {
         type: 'stat_bonus',
         description: 'Exceptional stat bonuses',
         value: 100,
-        conditions: []
+        conditions: [],
       },
       {
         type: 'special_ability',
         description: 'Multiple special abilities',
         value: 100,
-        conditions: []
+        conditions: [],
       },
       {
         type: 'set_bonus_chance',
         description: 'Guaranteed set bonuses',
         value: 100,
-        conditions: []
-      }
-    ]
+        conditions: [],
+      },
+    ],
   },
   unique: {
     name: 'unique',
@@ -232,28 +239,28 @@ export const RARITY_SYSTEM: Record<ItemRarity, RarityDefinition> = {
         type: 'stat_bonus',
         description: 'Unmatched stat bonuses',
         value: 150,
-        conditions: []
+        conditions: [],
       },
       {
         type: 'special_ability',
         description: 'Unique special abilities',
         value: 100,
-        conditions: []
+        conditions: [],
       },
       {
         type: 'set_bonus_chance',
         description: 'Guaranteed set bonuses',
         value: 100,
-        conditions: []
+        conditions: [],
       },
       {
         type: 'upgrade_bonus',
         description: 'Enhanced upgrade potential',
         value: 200,
-        conditions: []
-      }
-    ]
-  }
+        conditions: [],
+      },
+    ],
+  },
 } as const;
 
 // =============================================================================
@@ -277,7 +284,7 @@ export interface RarityTheme {
 export const RARITY_THEMES: Record<string, RarityTheme> = {
   default: {
     name: 'Default',
-    rarities: RARITY_SYSTEM
+    rarities: RARITY_SYSTEM,
   },
   colorblind_friendly: {
     name: 'Colorblind Friendly',
@@ -286,27 +293,27 @@ export const RARITY_THEMES: Record<string, RarityTheme> = {
         color: '#666666',
         backgroundColor: '#f5f5f5',
         borderColor: '#999999',
-        icon: '○'
+        icon: '○',
       },
       rare: {
         color: '#0066cc',
         backgroundColor: '#e6f2ff',
         borderColor: '#0052a3',
-        icon: '◇'
+        icon: '◇',
       },
       epic: {
         color: '#cc6600',
         backgroundColor: '#fff2e6',
         borderColor: '#a35200',
-        icon: '▲'
+        icon: '▲',
       },
       legendary: {
         color: '#cc0066',
         backgroundColor: '#ffe6f2',
         borderColor: '#a30052',
-        icon: '♦'
-      }
-    }
+        icon: '♦',
+      },
+    },
   },
   high_contrast: {
     name: 'High Contrast',
@@ -315,28 +322,28 @@ export const RARITY_THEMES: Record<string, RarityTheme> = {
         color: '#000000',
         backgroundColor: '#ffffff',
         borderColor: '#000000',
-        textColor: '#000000'
+        textColor: '#000000',
       },
       rare: {
         color: '#000080',
         backgroundColor: '#e0e0ff',
         borderColor: '#000080',
-        textColor: '#000080'
+        textColor: '#000080',
       },
       epic: {
         color: '#800080',
         backgroundColor: '#ffe0ff',
         borderColor: '#800080',
-        textColor: '#800080'
+        textColor: '#800080',
       },
       legendary: {
         color: '#ff0000',
         backgroundColor: '#ffe0e0',
         borderColor: '#ff0000',
-        textColor: '#ff0000'
-      }
-    }
-  }
+        textColor: '#ff0000',
+      },
+    },
+  },
 };
 
 // =============================================================================
@@ -433,72 +440,58 @@ export interface RarityAnimationSet {
 
 export const RARITY_ANIMATIONS: Record<ItemRarity, RarityAnimationSet> = {
   common: {
-    drop: [
-      { type: 'glow', intensity: 0.2, speed: 0.5, enabled: false }
-    ],
-    hover: [
-      { type: 'glow', intensity: 0.3, speed: 0.7, enabled: true }
-    ],
-    select: [
-      { type: 'pulse', intensity: 0.4, speed: 0.8, enabled: true }
-    ],
-    equip: []
+    drop: [{ type: 'glow', intensity: 0.2, speed: 0.5, enabled: false }],
+    hover: [{ type: 'glow', intensity: 0.3, speed: 0.7, enabled: true }],
+    select: [{ type: 'pulse', intensity: 0.4, speed: 0.8, enabled: true }],
+    equip: [],
   },
   rare: {
     drop: [
       { type: 'glow', intensity: 0.4, speed: 0.6, enabled: true },
-      { type: 'sparkle', intensity: 0.3, speed: 0.5, enabled: true }
+      { type: 'sparkle', intensity: 0.3, speed: 0.5, enabled: true },
     ],
-    hover: [
-      { type: 'glow', intensity: 0.5, speed: 0.7, enabled: true }
-    ],
-    select: [
-      { type: 'pulse', intensity: 0.6, speed: 0.8, enabled: true }
-    ],
-    equip: [
-      { type: 'sparkle', intensity: 0.7, speed: 1.0, enabled: true }
-    ]
+    hover: [{ type: 'glow', intensity: 0.5, speed: 0.7, enabled: true }],
+    select: [{ type: 'pulse', intensity: 0.6, speed: 0.8, enabled: true }],
+    equip: [{ type: 'sparkle', intensity: 0.7, speed: 1.0, enabled: true }],
   },
   epic: {
     drop: [
       { type: 'glow', intensity: 0.6, speed: 0.7, enabled: true },
       { type: 'sparkle', intensity: 0.5, speed: 0.6, enabled: true },
-      { type: 'pulse', intensity: 0.4, speed: 0.8, enabled: true }
+      { type: 'pulse', intensity: 0.4, speed: 0.8, enabled: true },
     ],
     hover: [
       { type: 'glow', intensity: 0.7, speed: 0.8, enabled: true },
-      { type: 'float', intensity: 0.3, speed: 0.4, enabled: true }
+      { type: 'float', intensity: 0.3, speed: 0.4, enabled: true },
     ],
-    select: [
-      { type: 'pulse', intensity: 0.8, speed: 0.9, enabled: true }
-    ],
+    select: [{ type: 'pulse', intensity: 0.8, speed: 0.9, enabled: true }],
     equip: [
       { type: 'sparkle', intensity: 0.9, speed: 1.2, enabled: true },
-      { type: 'glow', intensity: 0.8, speed: 1.0, enabled: true }
-    ]
+      { type: 'glow', intensity: 0.8, speed: 1.0, enabled: true },
+    ],
   },
   legendary: {
     drop: [
       { type: 'glow', intensity: 0.8, speed: 0.8, enabled: true },
       { type: 'sparkle', intensity: 0.7, speed: 0.7, enabled: true },
       { type: 'pulse', intensity: 0.6, speed: 0.9, enabled: true },
-      { type: 'rotate', intensity: 0.3, speed: 0.2, enabled: true }
+      { type: 'rotate', intensity: 0.3, speed: 0.2, enabled: true },
     ],
     hover: [
       { type: 'glow', intensity: 0.9, speed: 0.9, enabled: true },
       { type: 'float', intensity: 0.5, speed: 0.3, enabled: true },
-      { type: 'sparkle', intensity: 0.6, speed: 0.8, enabled: true }
+      { type: 'sparkle', intensity: 0.6, speed: 0.8, enabled: true },
     ],
     select: [
       { type: 'pulse', intensity: 1.0, speed: 1.0, enabled: true },
-      { type: 'rotate', intensity: 0.4, speed: 0.5, enabled: true }
+      { type: 'rotate', intensity: 0.4, speed: 0.5, enabled: true },
     ],
     equip: [
       { type: 'sparkle', intensity: 1.0, speed: 1.5, enabled: true },
       { type: 'glow', intensity: 1.0, speed: 1.2, enabled: true },
-      { type: 'pulse', intensity: 0.8, speed: 1.0, enabled: true }
-    ]
-  }
+      { type: 'pulse', intensity: 0.8, speed: 1.0, enabled: true },
+    ],
+  },
 };
 
 // =============================================================================
@@ -533,9 +526,20 @@ export type EquipmentSlot =
   | 'charm';
 
 export type EquipmentSubtype =
-  | 'sword' | 'bow' | 'staff' | 'dagger' | 'axe' | 'mace'  // weapons
-  | 'helmet' | 'chestplate' | 'boots' | 'gloves' | 'shield'  // armor pieces
-  | 'ring' | 'necklace' | 'charm';  // accessories
+  | 'sword'
+  | 'bow'
+  | 'staff'
+  | 'dagger'
+  | 'axe'
+  | 'mace' // weapons
+  | 'helmet'
+  | 'chestplate'
+  | 'boots'
+  | 'gloves'
+  | 'shield' // armor pieces
+  | 'ring'
+  | 'necklace'
+  | 'charm'; // accessories
 
 export interface EnhancedItem extends Item {
   // Enhanced categorization
@@ -635,7 +639,7 @@ export const EXTENDED_EQUIPMENT_SLOTS = {
     icon: '⛑️',
     acceptedSubtypes: ['helmet'],
     required: false,
-    position: { x: 1, y: 0 } // Grid position for UI
+    position: { x: 1, y: 0 }, // Grid position for UI
   },
   armor: {
     slot: 'armor' as const,
@@ -643,7 +647,7 @@ export const EXTENDED_EQUIPMENT_SLOTS = {
     icon: '🛡️',
     acceptedSubtypes: ['chestplate'],
     required: false,
-    position: { x: 1, y: 1 }
+    position: { x: 1, y: 1 },
   },
   gloves: {
     slot: 'gloves' as const,
@@ -651,7 +655,7 @@ export const EXTENDED_EQUIPMENT_SLOTS = {
     icon: '🧤',
     acceptedSubtypes: ['gloves'],
     required: false,
-    position: { x: 0, y: 1 }
+    position: { x: 0, y: 1 },
   },
   boots: {
     slot: 'boots' as const,
@@ -659,7 +663,7 @@ export const EXTENDED_EQUIPMENT_SLOTS = {
     icon: '👢',
     acceptedSubtypes: ['boots'],
     required: false,
-    position: { x: 1, y: 2 }
+    position: { x: 1, y: 2 },
   },
   weapon: {
     slot: 'weapon' as const,
@@ -667,7 +671,7 @@ export const EXTENDED_EQUIPMENT_SLOTS = {
     icon: '⚔️',
     acceptedSubtypes: ['sword', 'bow', 'staff', 'dagger'],
     required: false,
-    position: { x: 0, y: 0 }
+    position: { x: 0, y: 0 },
   },
   shield: {
     slot: 'shield' as const,
@@ -675,7 +679,7 @@ export const EXTENDED_EQUIPMENT_SLOTS = {
     icon: '🛡️',
     acceptedSubtypes: ['shield'],
     required: false,
-    position: { x: 1, y: 3 }
+    position: { x: 1, y: 3 },
   },
   ring1: {
     slot: 'ring1' as const,
@@ -683,7 +687,7 @@ export const EXTENDED_EQUIPMENT_SLOTS = {
     icon: '💍',
     acceptedSubtypes: ['ring'],
     required: false,
-    position: { x: 2, y: 0 }
+    position: { x: 2, y: 0 },
   },
   ring2: {
     slot: 'ring2' as const,
@@ -691,7 +695,7 @@ export const EXTENDED_EQUIPMENT_SLOTS = {
     icon: '💍',
     acceptedSubtypes: ['ring'],
     required: false,
-    position: { x: 2, y: 1 }
+    position: { x: 2, y: 1 },
   },
   necklace: {
     slot: 'necklace' as const,
@@ -699,7 +703,7 @@ export const EXTENDED_EQUIPMENT_SLOTS = {
     icon: '📿',
     acceptedSubtypes: ['necklace'],
     required: false,
-    position: { x: 2, y: 2 }
+    position: { x: 2, y: 2 },
   },
   charm: {
     slot: 'charm' as const,
@@ -707,8 +711,8 @@ export const EXTENDED_EQUIPMENT_SLOTS = {
     icon: '🔮',
     acceptedSubtypes: ['charm'],
     required: false,
-    position: { x: 0, y: 2 }
-  }
+    position: { x: 0, y: 2 },
+  },
 } as const;
 
 // =============================================================================
@@ -782,7 +786,12 @@ export interface EquipmentCompatibility {
 
 // Detailed compatibility types (for advanced usage if needed)
 export interface CompatibilityReason {
-  type: 'level_requirement' | 'class_requirement' | 'stat_requirement' | 'slot_conflict' | 'set_requirement';
+  type:
+    | 'level_requirement'
+    | 'class_requirement'
+    | 'stat_requirement'
+    | 'slot_conflict'
+    | 'set_requirement';
   satisfied: boolean;
   current: any;
   required: any;
@@ -790,7 +799,12 @@ export interface CompatibilityReason {
 }
 
 export interface CompatibilityWarning {
-  type: 'stat_decrease' | 'set_bonus_lost' | 'durability_low' | 'weight_limit' | 'two_handed_conflict';
+  type:
+    | 'stat_decrease'
+    | 'set_bonus_lost'
+    | 'durability_low'
+    | 'weight_limit'
+    | 'two_handed_conflict';
   severity: 'low' | 'medium' | 'high';
   description: string;
   affectedStats?: string[];
@@ -802,7 +816,7 @@ export const EQUIPMENT_COMPATIBILITY_RULES = {
     warrior: ['sword', 'chestplate', 'helmet', 'boots', 'gloves'],
     mage: ['staff', 'ring', 'necklace', 'charm'],
     archer: ['bow', 'boots', 'gloves', 'ring'],
-    rogue: ['dagger', 'boots', 'gloves', 'charm']
+    rogue: ['dagger', 'boots', 'gloves', 'charm'],
   },
 
   // Stat requirements
@@ -814,13 +828,13 @@ export const EQUIPMENT_COMPATIBILITY_RULES = {
     chestplate: { defense: 8 },
     helmet: { defense: 5 },
     boots: { speed: 5 },
-    gloves: { accuracy: 5 }
+    gloves: { accuracy: 5 },
   },
 
   // Slot conflicts (items that can't be equipped together)
   slotConflicts: {
     'two-handed-sword': ['weapon', 'charm'], // Takes both weapon and charm slots
-    'shield': ['charm'] // Shield conflicts with charm slot
+    shield: ['charm'], // Shield conflicts with charm slot
   },
 
   // Weight restrictions
@@ -828,8 +842,8 @@ export const EQUIPMENT_COMPATIBILITY_RULES = {
     warrior: 50,
     mage: 20,
     archer: 30,
-    rogue: 25
-  }
+    rogue: 25,
+  },
 } as const;
 
 // =============================================================================
@@ -984,7 +998,13 @@ export interface InventorySlot {
 }
 
 export type InventorySortOption =
-  | 'name' | 'rarity' | 'type' | 'value' | 'quantity' | 'level' | 'acquired';
+  | 'name'
+  | 'rarity'
+  | 'type'
+  | 'value'
+  | 'quantity'
+  | 'level'
+  | 'acquired';
 
 export interface InventoryFilter {
   categories: ItemCategory[];
@@ -1010,8 +1030,16 @@ export interface ItemStack {
 }
 
 export type ItemOperation =
-  | 'add' | 'remove' | 'use' | 'equip' | 'unequip'
-  | 'move' | 'split' | 'merge' | 'sort' | 'drop';
+  | 'add'
+  | 'remove'
+  | 'use'
+  | 'equip'
+  | 'unequip'
+  | 'move'
+  | 'split'
+  | 'merge'
+  | 'sort'
+  | 'drop';
 
 export interface InventoryOperation {
   id: string;
@@ -1047,12 +1075,32 @@ export interface EquipItemResult {
 // =============================================================================
 
 export type InventoryOperationType =
-  | 'add_item' | 'remove_item' | 'move_item' | 'split_item' | 'merge_items'
-  | 'use_item' | 'equip_item' | 'unequip_item' | 'drop_item' | 'destroy_item'
-  | 'sort_container' | 'filter_container' | 'search_items' | 'favorite_item'
-  | 'lock_slot' | 'unlock_slot' | 'expand_container' | 'transfer_items'
-  | 'bulk_operation' | 'auto_sort' | 'auto_stack' | 'repair_item'
-  | 'upgrade_item' | 'enchant_item' | 'socket_gem' | 'salvage_item';
+  | 'add_item'
+  | 'remove_item'
+  | 'move_item'
+  | 'split_item'
+  | 'merge_items'
+  | 'use_item'
+  | 'equip_item'
+  | 'unequip_item'
+  | 'drop_item'
+  | 'destroy_item'
+  | 'sort_container'
+  | 'filter_container'
+  | 'search_items'
+  | 'favorite_item'
+  | 'lock_slot'
+  | 'unlock_slot'
+  | 'expand_container'
+  | 'transfer_items'
+  | 'bulk_operation'
+  | 'auto_sort'
+  | 'auto_stack'
+  | 'repair_item'
+  | 'upgrade_item'
+  | 'enchant_item'
+  | 'socket_gem'
+  | 'salvage_item';
 
 export interface InventoryOperationContext {
   playerId: string;
@@ -1118,8 +1166,14 @@ export interface DetailedInventoryOperation {
 }
 
 export type OperationStatus =
-  | 'pending' | 'validating' | 'executing' | 'completed'
-  | 'failed' | 'cancelled' | 'rolled_back' | 'retrying';
+  | 'pending'
+  | 'validating'
+  | 'executing'
+  | 'completed'
+  | 'failed'
+  | 'cancelled'
+  | 'rolled_back'
+  | 'retrying';
 
 export interface OperationResult {
   success: boolean;
@@ -1133,7 +1187,13 @@ export interface OperationResult {
 }
 
 export interface OperationEffect {
-  type: 'stat_change' | 'health_change' | 'mana_change' | 'buff_applied' | 'debuff_applied' | 'cooldown_started';
+  type:
+    | 'stat_change'
+    | 'health_change'
+    | 'mana_change'
+    | 'buff_applied'
+    | 'debuff_applied'
+    | 'cooldown_started';
   description: string;
   value: any;
   duration?: number;
@@ -1267,7 +1327,13 @@ export interface BatchOperation {
 
 export type BatchExecutionStrategy = 'sequential' | 'parallel' | 'optimized' | 'transactional';
 
-export type BatchOperationStatus = 'pending' | 'executing' | 'completed' | 'failed' | 'partially_completed' | 'rolled_back';
+export type BatchOperationStatus =
+  | 'pending'
+  | 'executing'
+  | 'completed'
+  | 'failed'
+  | 'partially_completed'
+  | 'rolled_back';
 
 export interface BatchProgress {
   total: number;
@@ -1327,7 +1393,11 @@ export interface PreCondition {
 export interface PostCondition {
   id: string;
   description: string;
-  check: (beforeState: InventoryState, afterState: InventoryState, operation: DetailedInventoryOperation) => boolean;
+  check: (
+    beforeState: InventoryState,
+    afterState: InventoryState,
+    operation: DetailedInventoryOperation
+  ) => boolean;
   errorMessage: string;
 }
 
@@ -1521,8 +1591,13 @@ export interface InventoryConfiguration {
 // =============================================================================
 
 export type InventoryEventType =
-  | 'item_added' | 'item_removed' | 'item_used' | 'item_equipped'
-  | 'item_unequipped' | 'inventory_full' | 'container_changed';
+  | 'item_added'
+  | 'item_removed'
+  | 'item_used'
+  | 'item_equipped'
+  | 'item_unequipped'
+  | 'inventory_full'
+  | 'container_changed';
 
 export interface InventoryEvent {
   type: InventoryEventType;
@@ -1550,7 +1625,7 @@ export enum InventoryError {
   ITEM_ON_COOLDOWN = 'ITEM_ON_COOLDOWN',
   INVALID_OPERATION = 'INVALID_OPERATION',
   SLOT_LOCKED = 'SLOT_LOCKED',
-  WEIGHT_LIMIT_EXCEEDED = 'WEIGHT_LIMIT_EXCEEDED'
+  WEIGHT_LIMIT_EXCEEDED = 'WEIGHT_LIMIT_EXCEEDED',
 }
 
 export class InventoryException extends Error {

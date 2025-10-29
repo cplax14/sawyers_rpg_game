@@ -31,7 +31,7 @@ class PerformanceMonitor {
     memoryUsage: [],
     bundleSizes: new Map(),
     userInteractions: [],
-    webVitals: {}
+    webVitals: {},
   };
 
   private observers: Map<string, PerformanceObserver | { disconnect: () => void }> = new Map();
@@ -91,7 +91,7 @@ class PerformanceMonitor {
     this.metrics.userInteractions.push({
       type,
       timestamp: performance.now(),
-      duration
+      duration,
     });
   }
 
@@ -112,14 +112,17 @@ class PerformanceMonitor {
     interactionTypes: Record<string, number>;
     webVitalsScore: 'good' | 'needs-improvement' | 'poor';
   } {
-    const totalRenders = Array.from(this.metrics.componentRenders.values()).reduce((sum, count) => sum + count, 0);
+    const totalRenders = Array.from(this.metrics.componentRenders.values()).reduce(
+      (sum, count) => sum + count,
+      0
+    );
 
     // Calculate average render times for each component
     const slowestComponents = Array.from(this.metrics.renderTimes.entries())
       .map(([name, times]) => ({
         name,
         avgTime: times.reduce((sum, time) => sum + time, 0) / times.length,
-        renders: this.metrics.componentRenders.get(name) || 0
+        renders: this.metrics.componentRenders.get(name) || 0,
       }))
       .sort((a, b) => b.avgTime - a.avgTime)
       .slice(0, 5);
@@ -128,10 +131,13 @@ class PerformanceMonitor {
     const memoryTrend = this.analyzeMemoryTrend();
 
     // Interaction type analysis
-    const interactionTypes = this.metrics.userInteractions.reduce((acc, interaction) => {
-      acc[interaction.type] = (acc[interaction.type] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const interactionTypes = this.metrics.userInteractions.reduce(
+      (acc, interaction) => {
+        acc[interaction.type] = (acc[interaction.type] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
     // Web Vitals score
     const webVitalsScore = this.calculateWebVitalsScore();
@@ -141,7 +147,7 @@ class PerformanceMonitor {
       slowestComponents,
       memoryTrend,
       interactionTypes,
-      webVitalsScore
+      webVitalsScore,
     };
   }
 
@@ -161,21 +167,23 @@ class PerformanceMonitor {
 - Components Monitored: ${metrics.componentRenders.size}
 
 🐌 Slowest Components:
-${summary.slowestComponents.map(comp =>
-  `- ${comp.name}: ${comp.avgTime.toFixed(2)}ms avg (${comp.renders} renders)`
-).join('\n')}
+${summary.slowestComponents
+  .map(comp => `- ${comp.name}: ${comp.avgTime.toFixed(2)}ms avg (${comp.renders} renders)`)
+  .join('\n')}
 
 🧠 Memory Usage:
 - Trend: ${summary.memoryTrend}
 - Samples: ${metrics.memoryUsage.length}
-- Latest: ${metrics.memoryUsage.length > 0 ?
-  `${(metrics.memoryUsage[metrics.memoryUsage.length - 1] / 1024 / 1024).toFixed(1)}MB` :
-  'N/A'}
+- Latest: ${
+      metrics.memoryUsage.length > 0
+        ? `${(metrics.memoryUsage[metrics.memoryUsage.length - 1] / 1024 / 1024).toFixed(1)}MB`
+        : 'N/A'
+    }
 
 👆 User Interactions:
-${Object.entries(summary.interactionTypes).map(([type, count]) =>
-  `- ${type}: ${count}`
-).join('\n')}
+${Object.entries(summary.interactionTypes)
+  .map(([type, count]) => `- ${type}: ${count}`)
+  .join('\n')}
 
 ⚡ Web Vitals:
 - Score: ${summary.webVitalsScore}
@@ -185,9 +193,9 @@ ${Object.entries(summary.interactionTypes).map(([type, count]) =>
 - CLS: ${metrics.webVitals.CLS ? metrics.webVitals.CLS.toFixed(3) : 'N/A'}
 
 💾 Bundle Analysis:
-${Array.from(metrics.bundleSizes.entries()).map(([name, size]) =>
-  `- ${name}: ${(size / 1024).toFixed(1)}KB`
-).join('\n')}
+${Array.from(metrics.bundleSizes.entries())
+  .map(([name, size]) => `- ${name}: ${(size / 1024).toFixed(1)}KB`)
+  .join('\n')}
 `;
 
     return report;
@@ -200,9 +208,9 @@ ${Array.from(metrics.bundleSizes.entries()).map(([name, size]) =>
     // First Contentful Paint
     if ('PerformanceObserver' in window) {
       try {
-        const fcpObserver = new PerformanceObserver((list) => {
+        const fcpObserver = new PerformanceObserver(list => {
           const entries = list.getEntries();
-          entries.forEach((entry) => {
+          entries.forEach(entry => {
             if (entry.name === 'first-contentful-paint') {
               this.metrics.webVitals.FCP = entry.startTime;
             }
@@ -213,7 +221,7 @@ ${Array.from(metrics.bundleSizes.entries()).map(([name, size]) =>
         this.observers.set('fcp', fcpObserver);
 
         // Largest Contentful Paint
-        const lcpObserver = new PerformanceObserver((list) => {
+        const lcpObserver = new PerformanceObserver(list => {
           const entries = list.getEntries();
           const lastEntry = entries[entries.length - 1];
           this.metrics.webVitals.LCP = lastEntry.startTime;
@@ -223,7 +231,7 @@ ${Array.from(metrics.bundleSizes.entries()).map(([name, size]) =>
         this.observers.set('lcp', lcpObserver);
 
         // First Input Delay
-        const fidObserver = new PerformanceObserver((list) => {
+        const fidObserver = new PerformanceObserver(list => {
           const entries = list.getEntries();
           entries.forEach((entry: any) => {
             this.metrics.webVitals.FID = entry.processingStart - entry.startTime;
@@ -234,7 +242,7 @@ ${Array.from(metrics.bundleSizes.entries()).map(([name, size]) =>
         this.observers.set('fid', fidObserver);
 
         // Cumulative Layout Shift
-        const clsObserver = new PerformanceObserver((list) => {
+        const clsObserver = new PerformanceObserver(list => {
           let cls = 0;
           const entries = list.getEntries();
           entries.forEach((entry: any) => {
@@ -247,7 +255,6 @@ ${Array.from(metrics.bundleSizes.entries()).map(([name, size]) =>
 
         clsObserver.observe({ entryTypes: ['layout-shift'] });
         this.observers.set('cls', clsObserver);
-
       } catch (error) {
         console.warn('Performance Observer not fully supported:', error);
       }
@@ -255,7 +262,9 @@ ${Array.from(metrics.bundleSizes.entries()).map(([name, size]) =>
 
     // Time to First Byte
     window.addEventListener('load', () => {
-      const navigationEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+      const navigationEntry = performance.getEntriesByType(
+        'navigation'
+      )[0] as PerformanceNavigationTiming;
       if (navigationEntry) {
         this.metrics.webVitals.TTFB = navigationEntry.responseStart;
       }
@@ -279,7 +288,7 @@ ${Array.from(metrics.bundleSizes.entries()).map(([name, size]) =>
 
     // Store cleanup function
     this.observers.set('memory', {
-      disconnect: () => clearInterval(memoryInterval)
+      disconnect: () => clearInterval(memoryInterval),
     });
   }
 
@@ -290,9 +299,13 @@ ${Array.from(metrics.bundleSizes.entries()).map(([name, size]) =>
     const interactionTypes = ['click', 'keydown', 'scroll', 'touchstart'];
 
     interactionTypes.forEach(type => {
-      document.addEventListener(type, () => {
-        this.trackUserInteraction(type);
-      }, { passive: true });
+      document.addEventListener(
+        type,
+        () => {
+          this.trackUserInteraction(type);
+        },
+        { passive: true }
+      );
     });
   }
 
@@ -369,8 +382,9 @@ export function withPerformanceTracking<P extends {}>(
   WrappedComponent: React.ComponentType<P>,
   componentName?: string
 ) {
-  const ComponentWithTracking: React.FC<P> = (props) => {
-    const name = componentName || WrappedComponent.displayName || WrappedComponent.name || 'Component';
+  const ComponentWithTracking: React.FC<P> = props => {
+    const name =
+      componentName || WrappedComponent.displayName || WrappedComponent.name || 'Component';
 
     React.useEffect(() => {
       const start = performance.now();

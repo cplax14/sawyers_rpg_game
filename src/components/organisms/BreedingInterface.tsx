@@ -12,7 +12,11 @@ import { useGameState } from '../../hooks/useGameState';
 import { useResponsive } from '../../hooks/useResponsive';
 import { EnhancedCreature } from '../../types/creatures';
 import { BreedingResult, BreedingCost } from '../../types/breeding';
-import { calculateBreedingCost, generateOffspring, validateBreeding } from '../../utils/breedingEngine';
+import {
+  calculateBreedingCost,
+  generateOffspring,
+  validateBreeding,
+} from '../../utils/breedingEngine';
 
 interface BreedingInterfaceProps {
   className?: string;
@@ -164,10 +168,7 @@ const breedingStyles = {
   },
 };
 
-export const BreedingInterface: React.FC<BreedingInterfaceProps> = ({
-  className,
-  onClose,
-}) => {
+export const BreedingInterface: React.FC<BreedingInterfaceProps> = ({ className, onClose }) => {
   const { state: gameState, dispatch } = useGameState();
   const { isMobile } = useResponsive();
 
@@ -202,7 +203,13 @@ export const BreedingInterface: React.FC<BreedingInterfaceProps> = ({
       gameState.breedingMaterials || {},
       breedingCost
     );
-  }, [selectedParent1, selectedParent2, breedingCost, gameState.player?.gold, gameState.breedingMaterials]);
+  }, [
+    selectedParent1,
+    selectedParent2,
+    breedingCost,
+    gameState.player?.gold,
+    gameState.breedingMaterials,
+  ]);
 
   // Handle parent selection
   const handleParent1Select = useCallback((creature: EnhancedCreature) => {
@@ -259,9 +266,8 @@ export const BreedingInterface: React.FC<BreedingInterfaceProps> = ({
       console.error('Breeding failed:', error);
 
       // Show user-friendly error message
-      const errorMessage = error instanceof Error
-        ? error.message
-        : 'An unknown error occurred during breeding';
+      const errorMessage =
+        error instanceof Error ? error.message : 'An unknown error occurred during breeding';
 
       alert(`Breeding Failed: ${errorMessage}`);
     } finally {
@@ -290,25 +296,25 @@ export const BreedingInterface: React.FC<BreedingInterfaceProps> = ({
   const renderBreedingTab = () => (
     <div style={breedingStyles.breedingArea}>
       {/* Parent Selection */}
-      <div style={{
-        ...breedingStyles.parentsSection,
-        gridTemplateColumns: isMobile ? '1fr' : '1fr auto 1fr',
-      }}>
+      <div
+        style={{
+          ...breedingStyles.parentsSection,
+          gridTemplateColumns: isMobile ? '1fr' : '1fr auto 1fr',
+        }}
+      >
         <BreedingParentSelector
           selectedCreature={selectedParent1}
           onSelect={handleParent1Select}
-          label="Parent 1"
+          label='Parent 1'
           excludeCreatureId={selectedParent2?.creatureId}
         />
 
-        {!isMobile && (
-          <div style={breedingStyles.plusIcon}>+</div>
-        )}
+        {!isMobile && <div style={breedingStyles.plusIcon}>+</div>}
 
         <BreedingParentSelector
           selectedCreature={selectedParent2}
           onSelect={handleParent2Select}
-          label="Parent 2"
+          label='Parent 2'
           excludeCreatureId={selectedParent1?.creatureId}
         />
       </div>
@@ -324,9 +330,9 @@ export const BreedingInterface: React.FC<BreedingInterfaceProps> = ({
             <h3 style={breedingStyles.previewTitle}>
               Offspring Preview
               <HelpTooltip
-                title="Offspring Preview"
+                title='Offspring Preview'
                 content="Generation determines stat caps (+10% per gen). Offspring will inherit 70-90% of parent stats with 40% chance for better parent's value. Each parent's abilities have 30% inheritance chance."
-                position="right"
+                position='right'
                 maxWidth={280}
                 style={{ marginLeft: '0.5rem' }}
               />
@@ -336,14 +342,18 @@ export const BreedingInterface: React.FC<BreedingInterfaceProps> = ({
                 <span style={breedingStyles.previewLabel}>
                   Generation:
                   <HelpTooltip
-                    content="Max generation is 5. Each generation grants +10% stat caps (+5% per gen bonus on base stats). Higher gens unlock more ability slots."
-                    position="top"
+                    content='Max generation is 5. Each generation grants +10% stat caps (+5% per gen bonus on base stats). Higher gens unlock more ability slots.'
+                    position='top'
                     maxWidth={250}
                     style={{ marginLeft: '0.25rem' }}
                   />
                 </span>
                 <span style={breedingStyles.previewValue}>
-                  Gen {Math.min(Math.max(selectedParent1.generation || 0, selectedParent2.generation || 0) + 1, 5)}
+                  Gen{' '}
+                  {Math.min(
+                    Math.max(selectedParent1.generation || 0, selectedParent2.generation || 0) + 1,
+                    5
+                  )}
                 </span>
               </div>
               <div style={breedingStyles.previewRow}>
@@ -356,8 +366,8 @@ export const BreedingInterface: React.FC<BreedingInterfaceProps> = ({
                 <span style={breedingStyles.previewLabel}>
                   Rarity Upgrade Chance:
                   <HelpTooltip
-                    content="10% chance to upgrade rarity tier. Legendary can become Mythical with incredible stat multipliers and ultimate abilities!"
-                    position="top"
+                    content='10% chance to upgrade rarity tier. Legendary can become Mythical with incredible stat multipliers and ultimate abilities!'
+                    position='top'
                     maxWidth={250}
                     style={{ marginLeft: '0.25rem' }}
                   />
@@ -391,8 +401,8 @@ export const BreedingInterface: React.FC<BreedingInterfaceProps> = ({
       {/* Breed Button */}
       <div style={breedingStyles.actionsSection}>
         <Button
-          variant="primary"
-          size="lg"
+          variant='primary'
+          size='lg'
           disabled={!validation.valid || isBreeding}
           onClick={handleBreedClick}
           loading={isBreeding}
@@ -404,13 +414,13 @@ export const BreedingInterface: React.FC<BreedingInterfaceProps> = ({
 
         {(selectedParent1 || selectedParent2) && (
           <Button
-            variant="secondary"
-            size="lg"
+            variant='secondary'
+            size='lg'
             onClick={() => {
               setSelectedParent1(null);
               setSelectedParent2(null);
             }}
-            aria-label="Clear selected parent creatures"
+            aria-label='Clear selected parent creatures'
           >
             Clear Selection
           </Button>
@@ -431,16 +441,14 @@ export const BreedingInterface: React.FC<BreedingInterfaceProps> = ({
         <h1 style={{ ...breedingStyles.title, fontSize: isMobile ? '1.5rem' : '2rem' }}>
           Creature Breeding
           <HelpTooltip
-            title="Creature Breeding System"
+            title='Creature Breeding System'
             content="Combine two creatures to create offspring with inherited stats and abilities. Higher generation creatures have better stat caps. There's a 10% chance for rarity upgrades!"
-            position="bottom"
+            position='bottom'
             maxWidth={300}
             style={{ marginLeft: '0.5rem' }}
           />
         </h1>
-        <p style={breedingStyles.subtitle}>
-          Combine two creatures to create powerful offspring
-        </p>
+        <p style={breedingStyles.subtitle}>Combine two creatures to create powerful offspring</p>
       </motion.div>
 
       {/* Tabs */}
@@ -458,9 +466,9 @@ export const BreedingInterface: React.FC<BreedingInterfaceProps> = ({
           onClick={() => setActiveTab('breed')}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          aria-label="Breed creatures tab"
+          aria-label='Breed creatures tab'
           aria-pressed={activeTab === 'breed'}
-          role="tab"
+          role='tab'
         >
           <span>🧬</span>
           <span>Breed</span>
@@ -474,9 +482,9 @@ export const BreedingInterface: React.FC<BreedingInterfaceProps> = ({
           onClick={() => setActiveTab('recipes')}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          aria-label="View breeding recipes tab"
+          aria-label='View breeding recipes tab'
           aria-pressed={activeTab === 'recipes'}
-          role="tab"
+          role='tab'
         >
           <span>📖</span>
           <span>Recipes</span>
@@ -490,9 +498,9 @@ export const BreedingInterface: React.FC<BreedingInterfaceProps> = ({
           onClick={() => setActiveTab('history')}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          aria-label="View breeding history tab"
+          aria-label='View breeding history tab'
           aria-pressed={activeTab === 'history'}
-          role="tab"
+          role='tab'
         >
           <span>📜</span>
           <span>History</span>
@@ -501,10 +509,10 @@ export const BreedingInterface: React.FC<BreedingInterfaceProps> = ({
 
       {/* Content */}
       <div style={breedingStyles.content}>
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode='wait'>
           {activeTab === 'breed' && (
             <motion.div
-              key="breed"
+              key='breed'
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
@@ -516,7 +524,7 @@ export const BreedingInterface: React.FC<BreedingInterfaceProps> = ({
 
           {activeTab === 'recipes' && (
             <motion.div
-              key="recipes"
+              key='recipes'
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
@@ -531,7 +539,7 @@ export const BreedingInterface: React.FC<BreedingInterfaceProps> = ({
 
           {activeTab === 'history' && (
             <motion.div
-              key="history"
+              key='history'
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
@@ -550,22 +558,23 @@ export const BreedingInterface: React.FC<BreedingInterfaceProps> = ({
       <Modal
         isOpen={showConfirmModal}
         onClose={() => setShowConfirmModal(false)}
-        title="Confirm Breeding"
-        size="md"
+        title='Confirm Breeding'
+        size='md'
       >
         <div style={breedingStyles.confirmModalContent}>
           <p style={breedingStyles.confirmText}>
             Are you sure you want to breed {selectedParent1?.name} and {selectedParent2?.name}?
           </p>
           <p style={breedingStyles.confirmText}>
-            This will cost {breedingCost?.goldAmount.toLocaleString()} gold and apply exhaustion to both parents.
+            This will cost {breedingCost?.goldAmount.toLocaleString()} gold and apply exhaustion to
+            both parents.
           </p>
 
           <div style={breedingStyles.confirmActions}>
-            <Button variant="primary" size="lg" onClick={handleConfirmBreed}>
+            <Button variant='primary' size='lg' onClick={handleConfirmBreed}>
               Confirm
             </Button>
-            <Button variant="secondary" size="lg" onClick={() => setShowConfirmModal(false)}>
+            <Button variant='secondary' size='lg' onClick={() => setShowConfirmModal(false)}>
               Cancel
             </Button>
           </div>
@@ -585,8 +594,8 @@ export const BreedingInterface: React.FC<BreedingInterfaceProps> = ({
       {/* Close Button */}
       {onClose && (
         <Button
-          variant="secondary"
-          size="sm"
+          variant='secondary'
+          size='sm'
           onClick={onClose}
           style={{
             position: 'absolute' as const,

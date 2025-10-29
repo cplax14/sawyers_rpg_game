@@ -24,7 +24,9 @@ export function useLevelUpNotifications(): UseLevelUpNotificationsReturn {
   const { levelInfo, checkLevelUp, processLevelUp } = useExperience();
   const { player } = usePlayer();
 
-  const [currentNotification, setCurrentNotification] = useState<LevelUpNotificationData | null>(null);
+  const [currentNotification, setCurrentNotification] = useState<LevelUpNotificationData | null>(
+    null
+  );
   const [notificationQueue, setNotificationQueue] = useState<LevelUpNotificationData[]>([]);
   const [lastProcessedLevel, setLastProcessedLevel] = useState<number>(1);
 
@@ -34,23 +36,26 @@ export function useLevelUpNotifications(): UseLevelUpNotificationsReturn {
   }, []);
 
   // Show level up notification
-  const showLevelUpNotification = useCallback((fromLevel: number, toLevel: number, totalXP: number) => {
-    const newNotification: LevelUpNotificationData = {
-      id: generateNotificationId(),
-      fromLevel,
-      toLevel,
-      totalXP,
-      timestamp: Date.now(),
-      isVisible: true
-    };
+  const showLevelUpNotification = useCallback(
+    (fromLevel: number, toLevel: number, totalXP: number) => {
+      const newNotification: LevelUpNotificationData = {
+        id: generateNotificationId(),
+        fromLevel,
+        toLevel,
+        totalXP,
+        timestamp: Date.now(),
+        isVisible: true,
+      };
 
-    // If there's already a notification showing, queue this one
-    if (currentNotification) {
-      setNotificationQueue(prev => [...prev, newNotification]);
-    } else {
-      setCurrentNotification(newNotification);
-    }
-  }, [currentNotification, generateNotificationId]);
+      // If there's already a notification showing, queue this one
+      if (currentNotification) {
+        setNotificationQueue(prev => [...prev, newNotification]);
+      } else {
+        setCurrentNotification(newNotification);
+      }
+    },
+    [currentNotification, generateNotificationId]
+  );
 
   // Dismiss current notification and show next in queue
   const dismissNotification = useCallback(() => {
@@ -85,22 +90,16 @@ export function useLevelUpNotifications(): UseLevelUpNotificationsReturn {
 
       if (levelUpEvent) {
         // Process the level up in the background
-        processLevelUp().then(() => {
-          // Show notification after processing is complete
-          showLevelUpNotification(
-            lastProcessedLevel,
-            calculatedLevel,
-            currentXP
-          );
-        }).catch(error => {
-          console.error('Failed to process level up:', error);
-          // Still show notification even if processing fails
-          showLevelUpNotification(
-            lastProcessedLevel,
-            calculatedLevel,
-            currentXP
-          );
-        });
+        processLevelUp()
+          .then(() => {
+            // Show notification after processing is complete
+            showLevelUpNotification(lastProcessedLevel, calculatedLevel, currentXP);
+          })
+          .catch(error => {
+            console.error('Failed to process level up:', error);
+            // Still show notification even if processing fails
+            showLevelUpNotification(lastProcessedLevel, calculatedLevel, currentXP);
+          });
       }
     }
 
@@ -108,7 +107,14 @@ export function useLevelUpNotifications(): UseLevelUpNotificationsReturn {
     if (calculatedLevel !== lastProcessedLevel) {
       setLastProcessedLevel(calculatedLevel);
     }
-  }, [player?.experience, levelInfo?.currentLevel, lastProcessedLevel, checkLevelUp, processLevelUp, showLevelUpNotification]);
+  }, [
+    player?.experience,
+    levelInfo?.currentLevel,
+    lastProcessedLevel,
+    checkLevelUp,
+    processLevelUp,
+    showLevelUpNotification,
+  ]);
 
   // Initialize last processed level from current player level
   useEffect(() => {
@@ -137,47 +143,53 @@ export function useLevelUpNotifications(): UseLevelUpNotificationsReturn {
   }, [player?.experience, lastProcessedLevel, showLevelUpNotification]);
 
   // Auto-process level ups when XP changes
-  const processAutomaticLevelUp = useCallback(async (newXP: number) => {
-    const newLevel = ExperienceCalculator.calculateLevel(newXP);
-    const currentLevel = lastProcessedLevel;
+  const processAutomaticLevelUp = useCallback(
+    async (newXP: number) => {
+      const newLevel = ExperienceCalculator.calculateLevel(newXP);
+      const currentLevel = lastProcessedLevel;
 
-    if (newLevel > currentLevel) {
-      try {
-        // Process level up through experience system
-        const levelUpEvent = checkLevelUp();
-        if (levelUpEvent) {
-          await processLevelUp();
-        }
-
-        // Show notification(s) for level gains
-        if (newLevel > currentLevel + 1) {
-          // Multiple levels gained
-          for (let level = currentLevel + 1; level <= newLevel; level++) {
-            showLevelUpNotification(level - 1, level, newXP);
+      if (newLevel > currentLevel) {
+        try {
+          // Process level up through experience system
+          const levelUpEvent = checkLevelUp();
+          if (levelUpEvent) {
+            await processLevelUp();
           }
-        } else {
-          // Single level gained
-          showLevelUpNotification(currentLevel, newLevel, newXP);
-        }
 
-        setLastProcessedLevel(newLevel);
-      } catch (error) {
-        console.error('Failed to process automatic level up:', error);
+          // Show notification(s) for level gains
+          if (newLevel > currentLevel + 1) {
+            // Multiple levels gained
+            for (let level = currentLevel + 1; level <= newLevel; level++) {
+              showLevelUpNotification(level - 1, level, newXP);
+            }
+          } else {
+            // Single level gained
+            showLevelUpNotification(currentLevel, newLevel, newXP);
+          }
+
+          setLastProcessedLevel(newLevel);
+        } catch (error) {
+          console.error('Failed to process automatic level up:', error);
+        }
       }
-    }
-  }, [lastProcessedLevel, checkLevelUp, processLevelUp, showLevelUpNotification]);
+    },
+    [lastProcessedLevel, checkLevelUp, processLevelUp, showLevelUpNotification]
+  );
 
   // Expose method for manual XP gains
-  const handleExperienceGain = useCallback((newTotalXP: number) => {
-    processAutomaticLevelUp(newTotalXP);
-  }, [processAutomaticLevelUp]);
+  const handleExperienceGain = useCallback(
+    (newTotalXP: number) => {
+      processAutomaticLevelUp(newTotalXP);
+    },
+    [processAutomaticLevelUp]
+  );
 
   return {
     currentNotification,
     showLevelUpNotification,
     dismissNotification,
     hasPendingNotifications: notificationQueue.length > 0,
-    notificationQueue
+    notificationQueue,
   };
 }
 

@@ -11,10 +11,7 @@
 
 import React from 'react';
 import { renderHook, act } from '@testing-library/react';
-import {
-  ReactGameProvider,
-  useReactGame,
-} from '../ReactGameContext';
+import { ReactGameProvider, useReactGame } from '../ReactGameContext';
 import { EnhancedCreature } from '../../types/creatures';
 import { PlayerStats } from '../../types/game';
 
@@ -205,9 +202,7 @@ describe('ReactGameContext - BREED_CREATURES Reducer', () => {
     expect(Object.keys(creatures).length).toBe(3); // 2 parents + 1 offspring
 
     // Find offspring (any creature that's not a parent)
-    const offspringId = Object.keys(creatures).find(
-      id => id !== 'parent_1' && id !== 'parent_2'
-    );
+    const offspringId = Object.keys(creatures).find(id => id !== 'parent_1' && id !== 'parent_2');
     expect(offspringId).toBeDefined();
 
     const offspring = creatures[offspringId!];
@@ -397,10 +392,24 @@ describe('ReactGameContext - BREED_CREATURES Reducer', () => {
     });
 
     const parent1 = createFullMockCreature('parent_1', {
-      stats: { attack: 100, defense: 100, magicAttack: 100, magicDefense: 100, speed: 100, accuracy: 100 },
+      stats: {
+        attack: 100,
+        defense: 100,
+        magicAttack: 100,
+        magicDefense: 100,
+        speed: 100,
+        accuracy: 100,
+      },
     });
     const parent2 = createFullMockCreature('parent_2', {
-      stats: { attack: 100, defense: 100, magicAttack: 100, magicDefense: 100, speed: 100, accuracy: 100 },
+      stats: {
+        attack: 100,
+        defense: 100,
+        magicAttack: 100,
+        magicDefense: 100,
+        speed: 100,
+        accuracy: 100,
+      },
     });
 
     act(() => {
@@ -499,7 +508,9 @@ describe('ReactGameContext - BREED_CREATURES Reducer', () => {
       });
     });
 
-    const initialCreatureCount = Object.keys(result.current.state.creatures?.creatures || {}).length;
+    const initialCreatureCount = Object.keys(
+      result.current.state.creatures?.creatures || {}
+    ).length;
 
     // WHEN: Try to breed with insufficient gold
     act(() => {

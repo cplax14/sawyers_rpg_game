@@ -47,7 +47,9 @@ describe('AreaCard', () => {
     render(<AreaCard {...defaultProps} />);
 
     expect(screen.getByText('Forest Path')).toBeInTheDocument();
-    expect(screen.getByText('A winding path through peaceful woods. Perfect for beginners.')).toBeInTheDocument();
+    expect(
+      screen.getByText('A winding path through peaceful woods. Perfect for beginners.')
+    ).toBeInTheDocument();
     expect(screen.getByText('Enter Area')).toBeInTheDocument();
   });
 
@@ -196,12 +198,7 @@ describe('AreaCard', () => {
   });
 
   it('shows level warning when player level is too low', () => {
-    render(
-      <AreaCard
-        area={{ ...mockArea, unlockRequirements: { level: 5 } }}
-        playerLevel={3}
-      />
-    );
+    render(<AreaCard area={{ ...mockArea, unlockRequirements: { level: 5 } }} playerLevel={3} />);
 
     expect(screen.getByText(/Recommended level 5/)).toBeInTheDocument();
     expect(screen.getByText(/Current: 3/)).toBeInTheDocument();
@@ -209,21 +206,19 @@ describe('AreaCard', () => {
   });
 
   it('applies correct size classes', () => {
-    const { rerender } = render(<AreaCard {...defaultProps} size="sm" />);
+    const { rerender } = render(<AreaCard {...defaultProps} size='sm' />);
     // Test functionality rather than CSS classes - all sizes should render content
     expect(screen.getByText('Forest Path')).toBeInTheDocument();
 
-    rerender(<AreaCard {...defaultProps} size="md" />);
+    rerender(<AreaCard {...defaultProps} size='md' />);
     expect(screen.getByText('Forest Path')).toBeInTheDocument();
 
-    rerender(<AreaCard {...defaultProps} size="lg" />);
+    rerender(<AreaCard {...defaultProps} size='lg' />);
     expect(screen.getByText('Forest Path')).toBeInTheDocument();
   });
 
   it('applies custom className', () => {
-    const { container } = render(
-      <AreaCard {...defaultProps} className="custom-area" />
-    );
+    const { container } = render(<AreaCard {...defaultProps} className='custom-area' />);
 
     expect(container.firstChild).toHaveClass('custom-area');
   });

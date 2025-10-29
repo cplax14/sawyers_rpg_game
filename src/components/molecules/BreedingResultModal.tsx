@@ -157,20 +157,23 @@ export const BreedingResultModal: React.FC<BreedingResultModalProps> = ({
   const { dispatch } = useGameState();
   const [customName, setCustomName] = useState(result.offspring?.name || '');
 
-  const handleNameChange = useCallback((newName: string) => {
-    if (!result.offspring) return;
+  const handleNameChange = useCallback(
+    (newName: string) => {
+      if (!result.offspring) return;
 
-    // Update creature name in game state
-    dispatch({
-      type: 'RENAME_MONSTER',
-      payload: {
-        monsterId: result.offspring.creatureId,
-        nickname: newName,
-      },
-    });
+      // Update creature name in game state
+      dispatch({
+        type: 'RENAME_MONSTER',
+        payload: {
+          monsterId: result.offspring.creatureId,
+          nickname: newName,
+        },
+      });
 
-    setCustomName(newName);
-  }, [result.offspring, dispatch]);
+      setCustomName(newName);
+    },
+    [result.offspring, dispatch]
+  );
 
   const handleSaveName = useCallback(() => {
     if (!customName.trim()) return;
@@ -179,7 +182,7 @@ export const BreedingResultModal: React.FC<BreedingResultModalProps> = ({
 
   if (!result.offspring) {
     return (
-      <Modal isOpen={isOpen} onClose={onClose} title="Breeding Failed" size="md">
+      <Modal isOpen={isOpen} onClose={onClose} title='Breeding Failed' size='md'>
         <div style={resultStyles.container}>
           <div style={resultStyles.celebration}>
             <div style={resultStyles.celebrationIcon}>😞</div>
@@ -189,11 +192,11 @@ export const BreedingResultModal: React.FC<BreedingResultModalProps> = ({
             </div>
           </div>
           <div style={resultStyles.actionsSection}>
-            <Button variant="secondary" size="lg" onClick={onClose}>
+            <Button variant='secondary' size='lg' onClick={onClose}>
               Close
             </Button>
             {onBreedAgain && (
-              <Button variant="primary" size="lg" onClick={onBreedAgain}>
+              <Button variant='primary' size='lg' onClick={onBreedAgain}>
                 Try Again
               </Button>
             )}
@@ -204,7 +207,7 @@ export const BreedingResultModal: React.FC<BreedingResultModalProps> = ({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Breeding Successful!" size="lg">
+    <Modal isOpen={isOpen} onClose={onClose} title='Breeding Successful!' size='lg'>
       <div style={resultStyles.container}>
         {/* Celebration Header */}
         <motion.div
@@ -226,9 +229,7 @@ export const BreedingResultModal: React.FC<BreedingResultModalProps> = ({
           <div style={resultStyles.title}>
             {result.rarityUpgraded ? '✨ Legendary Offspring! ✨' : 'New Creature Born!'}
           </div>
-          <div style={resultStyles.subtitle}>
-            Congratulations! Your breeding was successful!
-          </div>
+          <div style={resultStyles.subtitle}>Congratulations! Your breeding was successful!</div>
         </motion.div>
 
         {/* Rarity Upgrade Banner */}
@@ -255,18 +256,18 @@ export const BreedingResultModal: React.FC<BreedingResultModalProps> = ({
             creature={result.offspring}
             showActions={false}
             showDetails={true}
-            size="lg"
+            size='lg'
           />
 
           {/* Name Input */}
           <div style={{ marginTop: '1rem' }}>
             <input
-              type="text"
+              type='text'
               value={customName}
-              onChange={(e) => setCustomName(e.target.value)}
+              onChange={e => setCustomName(e.target.value)}
               onBlur={handleSaveName}
-              onKeyPress={(e) => e.key === 'Enter' && handleSaveName()}
-              placeholder="Enter custom name..."
+              onKeyPress={e => e.key === 'Enter' && handleSaveName()}
+              placeholder='Enter custom name...'
               style={resultStyles.nameInput}
             />
           </div>
@@ -359,16 +360,16 @@ export const BreedingResultModal: React.FC<BreedingResultModalProps> = ({
           transition={{ delay: 1.0 }}
         >
           {onViewInCollection && (
-            <Button variant="primary" size="lg" onClick={onViewInCollection}>
+            <Button variant='primary' size='lg' onClick={onViewInCollection}>
               View in Collection
             </Button>
           )}
           {onBreedAgain && (
-            <Button variant="success" size="lg" onClick={onBreedAgain}>
+            <Button variant='success' size='lg' onClick={onBreedAgain}>
               Breed Again
             </Button>
           )}
-          <Button variant="secondary" size="lg" onClick={onClose}>
+          <Button variant='secondary' size='lg' onClick={onClose}>
             Close
           </Button>
         </motion.div>

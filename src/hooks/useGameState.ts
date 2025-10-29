@@ -1,12 +1,6 @@
 import { useContext, useCallback, useMemo } from 'react';
 import { ReactGameContext, ReactGameState, GameAction } from '../contexts/ReactGameContext';
-import {
-  ReactPlayer,
-  ReactArea,
-  ReactMonster,
-  ReactItem,
-  GameSettings
-} from '../types/game';
+import { ReactPlayer, ReactArea, ReactMonster, ReactItem, GameSettings } from '../types/game';
 
 /**
  * Custom hooks for managing game state
@@ -32,51 +26,60 @@ export const useGameState = () => {
 export const usePlayer = () => {
   const { state, dispatch } = useGameState();
 
-  const createPlayer = useCallback((
-    name: string,
-    characterClassId: string
-  ) => {
-    dispatch({
-      type: 'CREATE_PLAYER',
-      payload: { name, class: characterClassId }
-    });
-  }, [dispatch]);
+  const createPlayer = useCallback(
+    (name: string, characterClassId: string) => {
+      dispatch({
+        type: 'CREATE_PLAYER',
+        payload: { name, class: characterClassId },
+      });
+    },
+    [dispatch]
+  );
 
-  const updatePlayerStats = useCallback((stats: Partial<ReactPlayer['baseStats']>) => {
-    if (!state.player) return;
+  const updatePlayerStats = useCallback(
+    (stats: Partial<ReactPlayer['baseStats']>) => {
+      if (!state.player) return;
 
-    dispatch({
-      type: 'UPDATE_PLAYER_STATS',
-      payload: { playerId: state.player.id, stats }
-    });
-  }, [dispatch, state.player?.id]);
+      dispatch({
+        type: 'UPDATE_PLAYER_STATS',
+        payload: { playerId: state.player.id, stats },
+      });
+    },
+    [dispatch, state.player?.id]
+  );
 
   const levelUpPlayer = useCallback(() => {
     if (!state.player) return;
 
     dispatch({
       type: 'LEVEL_UP_PLAYER',
-      payload: { playerId: state.player.id }
+      payload: { playerId: state.player.id },
     });
   }, [dispatch, state.player?.id]);
 
-  const addExperience = useCallback((experience: number) => {
-    if (!state.player) return;
+  const addExperience = useCallback(
+    (experience: number) => {
+      if (!state.player) return;
 
-    dispatch({
-      type: 'ADD_EXPERIENCE',
-      payload: { playerId: state.player.id, experience }
-    });
-  }, [dispatch, state.player?.id]);
+      dispatch({
+        type: 'ADD_EXPERIENCE',
+        payload: { playerId: state.player.id, experience },
+      });
+    },
+    [dispatch, state.player?.id]
+  );
 
-  const addGold = useCallback((gold: number) => {
-    if (!state.player) return;
+  const addGold = useCallback(
+    (gold: number) => {
+      if (!state.player) return;
 
-    dispatch({
-      type: 'ADD_GOLD',
-      payload: { playerId: state.player.id, gold }
-    });
-  }, [dispatch, state.player?.id]);
+      dispatch({
+        type: 'ADD_GOLD',
+        payload: { playerId: state.player.id, gold },
+      });
+    },
+    [dispatch, state.player?.id]
+  );
 
   // Player computed values
   const playerLevel = useMemo(() => {
@@ -109,7 +112,7 @@ export const usePlayer = () => {
     playerLevel,
     playerGold,
     experienceToNextLevel,
-    isPlayerAlive
+    isPlayerAlive,
   };
 };
 
@@ -119,33 +122,45 @@ export const usePlayer = () => {
 export const useWorld = () => {
   const { state, dispatch } = useGameState();
 
-  const changeArea = useCallback((areaId: string) => {
-    dispatch({
-      type: 'CHANGE_AREA',
-      payload: { areaId }
-    });
-  }, [dispatch]);
+  const changeArea = useCallback(
+    (areaId: string) => {
+      dispatch({
+        type: 'CHANGE_AREA',
+        payload: { areaId },
+      });
+    },
+    [dispatch]
+  );
 
-  const unlockArea = useCallback((areaId: string) => {
-    dispatch({
-      type: 'UNLOCK_AREA',
-      payload: { areaId }
-    });
-  }, [dispatch]);
+  const unlockArea = useCallback(
+    (areaId: string) => {
+      dispatch({
+        type: 'UNLOCK_AREA',
+        payload: { areaId },
+      });
+    },
+    [dispatch]
+  );
 
-  const setStoryFlag = useCallback((flag: string, value: boolean = true) => {
-    dispatch({
-      type: 'SET_STORY_FLAG',
-      payload: { flag, value }
-    });
-  }, [dispatch]);
+  const setStoryFlag = useCallback(
+    (flag: string, value: boolean = true) => {
+      dispatch({
+        type: 'SET_STORY_FLAG',
+        payload: { flag, value },
+      });
+    },
+    [dispatch]
+  );
 
-  const completeQuest = useCallback((questId: string) => {
-    dispatch({
-      type: 'COMPLETE_QUEST',
-      payload: { questId }
-    });
-  }, [dispatch]);
+  const completeQuest = useCallback(
+    (questId: string) => {
+      dispatch({
+        type: 'COMPLETE_QUEST',
+        payload: { questId },
+      });
+    },
+    [dispatch]
+  );
 
   // World computed values
   const currentAreaId = useMemo(() => {
@@ -164,34 +179,50 @@ export const useWorld = () => {
     return state.storyFlags;
   }, [state.storyFlags]);
 
-  const hasStoryFlag = useCallback((flag: string): boolean => {
-    return state.storyFlags[flag] === true;
-  }, [state.storyFlags]);
+  const hasStoryFlag = useCallback(
+    (flag: string): boolean => {
+      return state.storyFlags[flag] === true;
+    },
+    [state.storyFlags]
+  );
 
-  const isAreaUnlocked = useCallback((areaId: string): boolean => {
-    // Check React state first
-    if (state.unlockedAreas.includes(areaId)) {
-      return true;
-    }
+  const isAreaUnlocked = useCallback(
+    (areaId: string): boolean => {
+      // Check React state first
+      if (state.unlockedAreas.includes(areaId)) {
+        return true;
+      }
 
-    // Check legacy AreaData system with current state
-    if (typeof window !== 'undefined' && (window as any).AreaData) {
-      const AreaData = (window as any).AreaData;
-      const storyProgress = Object.keys(state.storyFlags).filter(flag => state.storyFlags[flag]);
-      const playerLevel = state.player?.level || 1;
-      const inventory: string[] = []; // TODO: Extract item IDs from inventory
-      const playerClass = state.player?.class || null;
-      const defeatedBosses: string[] = []; // TODO: Track defeated bosses
+      // Check legacy AreaData system with current state
+      if (typeof window !== 'undefined' && (window as any).AreaData) {
+        const AreaData = (window as any).AreaData;
+        const storyProgress = Object.keys(state.storyFlags).filter(flag => state.storyFlags[flag]);
+        const playerLevel = state.player?.level || 1;
+        const inventory: string[] = []; // TODO: Extract item IDs from inventory
+        const playerClass = state.player?.class || null;
+        const defeatedBosses: string[] = []; // TODO: Track defeated bosses
 
-      return AreaData.isAreaUnlocked(areaId, storyProgress, playerLevel, inventory, playerClass, defeatedBosses);
-    }
+        return AreaData.isAreaUnlocked(
+          areaId,
+          storyProgress,
+          playerLevel,
+          inventory,
+          playerClass,
+          defeatedBosses
+        );
+      }
 
-    return false;
-  }, [state.unlockedAreas, state.storyFlags, state.player]);
+      return false;
+    },
+    [state.unlockedAreas, state.storyFlags, state.player]
+  );
 
-  const isQuestCompleted = useCallback((questId: string): boolean => {
-    return state.completedQuests.includes(questId);
-  }, [state.completedQuests]);
+  const isQuestCompleted = useCallback(
+    (questId: string): boolean => {
+      return state.completedQuests.includes(questId);
+    },
+    [state.completedQuests]
+  );
 
   return {
     currentAreaId,
@@ -204,7 +235,7 @@ export const useWorld = () => {
     completeQuest,
     hasStoryFlag,
     isAreaUnlocked,
-    isQuestCompleted
+    isQuestCompleted,
   };
 };
 
@@ -214,59 +245,80 @@ export const useWorld = () => {
 export const useInventory = () => {
   const { state, dispatch } = useGameState();
 
-  const addItem = useCallback((item: ReactItem, quantity: number = 1) => {
-    dispatch({
-      type: 'ADD_ITEM',
-      payload: { item, quantity }
-    });
-  }, [dispatch]);
+  const addItem = useCallback(
+    (item: ReactItem, quantity: number = 1) => {
+      dispatch({
+        type: 'ADD_ITEM',
+        payload: { item, quantity },
+      });
+    },
+    [dispatch]
+  );
 
-  const removeItem = useCallback((itemId: string, quantity: number = 1) => {
-    dispatch({
-      type: 'REMOVE_ITEM',
-      payload: { itemId, quantity }
-    });
-  }, [dispatch]);
+  const removeItem = useCallback(
+    (itemId: string, quantity: number = 1) => {
+      dispatch({
+        type: 'REMOVE_ITEM',
+        payload: { itemId, quantity },
+      });
+    },
+    [dispatch]
+  );
 
-  const useItem = useCallback((itemId: string) => {
-    dispatch({
-      type: 'USE_ITEM',
-      payload: { itemId }
-    });
-  }, [dispatch]);
+  const useItem = useCallback(
+    (itemId: string) => {
+      dispatch({
+        type: 'USE_ITEM',
+        payload: { itemId },
+      });
+    },
+    [dispatch]
+  );
 
-  const equipItem = useCallback((itemId: string) => {
-    if (!state.player) return;
+  const equipItem = useCallback(
+    (itemId: string) => {
+      if (!state.player) return;
 
-    dispatch({
-      type: 'EQUIP_ITEM',
-      payload: { playerId: state.player.id, itemId }
-    });
-  }, [dispatch, state.player]);
+      dispatch({
+        type: 'EQUIP_ITEM',
+        payload: { playerId: state.player.id, itemId },
+      });
+    },
+    [dispatch, state.player]
+  );
 
   // Inventory computed values
   const inventory = useMemo(() => {
     return state.inventory;
   }, [state.inventory]);
 
-  const getItemCount = useCallback((itemId: string): number => {
-    const inventoryItem = state.inventory.find(item => item.id === itemId);
-    return inventoryItem?.quantity || 0;
-  }, [state.inventory]);
+  const getItemCount = useCallback(
+    (itemId: string): number => {
+      const inventoryItem = state.inventory.find(item => item.id === itemId);
+      return inventoryItem?.quantity || 0;
+    },
+    [state.inventory]
+  );
 
-  const hasItem = useCallback((itemId: string, minQuantity: number = 1): boolean => {
-    return getItemCount(itemId) >= minQuantity;
-  }, [getItemCount]);
+  const hasItem = useCallback(
+    (itemId: string, minQuantity: number = 1): boolean => {
+      return getItemCount(itemId) >= minQuantity;
+    },
+    [getItemCount]
+  );
 
-  const getItemsByType = useCallback((type: string): ReactItem[] => {
-    return state.inventory
-      .filter(item => item.type === type)
-      .map(item => ({ ...item, quantity: item.quantity || 1 }));
-  }, [state.inventory]);
+  const getItemsByType = useCallback(
+    (type: string): ReactItem[] => {
+      return state.inventory
+        .filter(item => item.type === type)
+        .map(item => ({ ...item, quantity: item.quantity || 1 }));
+    },
+    [state.inventory]
+  );
 
   const inventoryValue = useMemo(() => {
     return state.inventory.reduce((total, item) => {
-      return total + (item.value * (item.quantity || 1));
+      return total + item.value * (item.quantity || 1);
     }, 0);
   }, [state.inventory]);
 
@@ -279,7 +331,7 @@ export const useInventory = () => {
     getItemCount,
     hasItem,
     getItemsByType,
-    inventoryValue
+    inventoryValue,
   };
 };
 
@@ -289,46 +341,64 @@ export const useInventory = () => {
 export const useMonsters = () => {
   const { state, dispatch } = useGameState();
 
-  const captureMonster = useCallback((monster: ReactMonster) => {
-    dispatch({
-      type: 'CAPTURE_MONSTER',
-      payload: { monster }
-    });
-  }, [dispatch]);
+  const captureMonster = useCallback(
+    (monster: ReactMonster) => {
+      dispatch({
+        type: 'CAPTURE_MONSTER',
+        payload: { monster },
+      });
+    },
+    [dispatch]
+  );
 
-  const releaseMonster = useCallback((monsterId: string) => {
-    dispatch({
-      type: 'RELEASE_MONSTER',
-      payload: { monsterId }
-    });
-  }, [dispatch]);
+  const releaseMonster = useCallback(
+    (monsterId: string) => {
+      dispatch({
+        type: 'RELEASE_MONSTER',
+        payload: { monsterId },
+      });
+    },
+    [dispatch]
+  );
 
-  const updateMonster = useCallback((monsterId: string, updates: Partial<ReactMonster>) => {
-    dispatch({
-      type: 'UPDATE_MONSTER',
-      payload: { monsterId, updates }
-    });
-  }, [dispatch]);
+  const updateMonster = useCallback(
+    (monsterId: string, updates: Partial<ReactMonster>) => {
+      dispatch({
+        type: 'UPDATE_MONSTER',
+        payload: { monsterId, updates },
+      });
+    },
+    [dispatch]
+  );
 
-  const renameMonster = useCallback((monsterId: string, nickname: string) => {
-    dispatch({
-      type: 'RENAME_MONSTER',
-      payload: { monsterId, nickname }
-    });
-  }, [dispatch]);
+  const renameMonster = useCallback(
+    (monsterId: string, nickname: string) => {
+      dispatch({
+        type: 'RENAME_MONSTER',
+        payload: { monsterId, nickname },
+      });
+    },
+    [dispatch]
+  );
 
   // Monster computed values
   const capturedMonsters = useMemo(() => {
     return state.capturedMonsters;
   }, [state.capturedMonsters]);
 
-  const getMonsterById = useCallback((monsterId: string): ReactMonster | undefined => {
-    return state.capturedMonsters.find(monster => monster.id === monsterId);
-  }, [state.capturedMonsters]);
+  const getMonsterById = useCallback(
+    (monsterId: string): ReactMonster | undefined => {
+      return state.capturedMonsters.find(monster => monster.id === monsterId);
+    },
+    [state.capturedMonsters]
+  );
 
-  const getMonstersBySpecies = useCallback((species: string): ReactMonster[] => {
-    return state.capturedMonsters.filter(monster => monster.species === species);
-  }, [state.capturedMonsters]);
+  const getMonstersBySpecies = useCallback(
+    (species: string): ReactMonster[] => {
+      return state.capturedMonsters.filter(monster => monster.species === species);
+    },
+    [state.capturedMonsters]
+  );
 
   const monsterCount = useMemo(() => {
     return state.capturedMonsters.length;
@@ -350,7 +420,7 @@ export const useMonsters = () => {
     getMonsterById,
     getMonstersBySpecies,
     monsterCount,
-    averageMonsterLevel
+    averageMonsterLevel,
   };
 };
 
@@ -360,26 +430,35 @@ export const useMonsters = () => {
 export const useUI = () => {
   const { state, dispatch } = useGameState();
 
-  const navigateToScreen = useCallback((screen: ReactGameState['currentScreen']) => {
-    dispatch({
-      type: 'SET_CURRENT_SCREEN',
-      payload: screen
-    });
-  }, [dispatch]);
+  const navigateToScreen = useCallback(
+    (screen: ReactGameState['currentScreen']) => {
+      dispatch({
+        type: 'SET_CURRENT_SCREEN',
+        payload: screen,
+      });
+    },
+    [dispatch]
+  );
 
-  const setLoading = useCallback((isLoading: boolean) => {
-    dispatch({
-      type: 'SET_LOADING',
-      payload: { isLoading }
-    });
-  }, [dispatch]);
+  const setLoading = useCallback(
+    (isLoading: boolean) => {
+      dispatch({
+        type: 'SET_LOADING',
+        payload: { isLoading },
+      });
+    },
+    [dispatch]
+  );
 
-  const setError = useCallback((error: string | null) => {
-    dispatch({
-      type: 'SET_ERROR',
-      payload: { error }
-    });
-  }, [dispatch]);
+  const setError = useCallback(
+    (error: string | null) => {
+      dispatch({
+        type: 'SET_ERROR',
+        payload: { error },
+      });
+    },
+    [dispatch]
+  );
 
   const clearError = useCallback(() => {
     setError(null);
@@ -410,7 +489,7 @@ export const useUI = () => {
     navigateToScreen,
     setLoading,
     setError,
-    clearError
+    clearError,
   };
 };
 
@@ -420,16 +499,19 @@ export const useUI = () => {
 export const useSettings = () => {
   const { state, dispatch } = useGameState();
 
-  const updateSettings = useCallback((settings: Partial<GameSettings>) => {
-    dispatch({
-      type: 'UPDATE_SETTINGS',
-      payload: { settings }
-    });
-  }, [dispatch]);
+  const updateSettings = useCallback(
+    (settings: Partial<GameSettings>) => {
+      dispatch({
+        type: 'UPDATE_SETTINGS',
+        payload: { settings },
+      });
+    },
+    [dispatch]
+  );
 
   const resetSettings = useCallback(() => {
     dispatch({
-      type: 'RESET_SETTINGS'
+      type: 'RESET_SETTINGS',
     });
   }, [dispatch]);
 
@@ -441,7 +523,7 @@ export const useSettings = () => {
   return {
     settings,
     updateSettings,
-    resetSettings
+    resetSettings,
   };
 };
 
@@ -451,16 +533,19 @@ export const useSettings = () => {
 export const useCombat = () => {
   const { state, dispatch } = useGameState();
 
-  const startCombat = useCallback((species: string, level: number) => {
-    dispatch({
-      type: 'START_COMBAT',
-      payload: { species, level }
-    });
-  }, [dispatch]);
+  const startCombat = useCallback(
+    (species: string, level: number) => {
+      dispatch({
+        type: 'START_COMBAT',
+        payload: { species, level },
+      });
+    },
+    [dispatch]
+  );
 
   const endCombat = useCallback(() => {
     dispatch({
-      type: 'END_COMBAT'
+      type: 'END_COMBAT',
     });
   }, [dispatch]);
 
@@ -477,7 +562,7 @@ export const useCombat = () => {
     currentEncounter,
     isInCombat,
     startCombat,
-    endCombat
+    endCombat,
   };
 };
 
@@ -488,62 +573,71 @@ export const useCombat = () => {
 export const useSaveLoad = () => {
   const { state, dispatch } = useGameState();
 
-  const saveGame = useCallback(async (slotIndex: number, saveName?: string): Promise<boolean> => {
-    try {
-      // Update auto-save activity to show user interaction
-      if (typeof window !== 'undefined' && window.gameAutoSaveManager) {
-        window.gameAutoSaveManager.updateActivity();
-      }
-
-      // For now, dispatch the action (will be enhanced when save system actions are implemented)
-      dispatch({
-        type: 'SAVE_GAME',
-        payload: {
-          slotIndex,
-          saveName: saveName || `Save ${slotIndex + 1}`,
-          timestamp: Date.now()
+  const saveGame = useCallback(
+    async (slotIndex: number, saveName?: string): Promise<boolean> => {
+      try {
+        // Update auto-save activity to show user interaction
+        if (typeof window !== 'undefined' && window.gameAutoSaveManager) {
+          window.gameAutoSaveManager.updateActivity();
         }
-      });
 
-      return true;
-    } catch (error) {
-      console.error('Save failed:', error);
-      return false;
-    }
-  }, [dispatch]);
+        // For now, dispatch the action (will be enhanced when save system actions are implemented)
+        dispatch({
+          type: 'SAVE_GAME',
+          payload: {
+            slotIndex,
+            saveName: saveName || `Save ${slotIndex + 1}`,
+            timestamp: Date.now(),
+          },
+        });
 
-  const loadGame = useCallback(async (slotIndex: number): Promise<boolean> => {
-    try {
-      // Update auto-save activity
-      if (typeof window !== 'undefined' && window.gameAutoSaveManager) {
-        window.gameAutoSaveManager.updateActivity();
+        return true;
+      } catch (error) {
+        console.error('Save failed:', error);
+        return false;
       }
+    },
+    [dispatch]
+  );
 
-      dispatch({
-        type: 'LOAD_GAME',
-        payload: { slotIndex }
-      });
+  const loadGame = useCallback(
+    async (slotIndex: number): Promise<boolean> => {
+      try {
+        // Update auto-save activity
+        if (typeof window !== 'undefined' && window.gameAutoSaveManager) {
+          window.gameAutoSaveManager.updateActivity();
+        }
 
-      return true;
-    } catch (error) {
-      console.error('Load failed:', error);
-      return false;
-    }
-  }, [dispatch]);
+        dispatch({
+          type: 'LOAD_GAME',
+          payload: { slotIndex },
+        });
 
-  const deleteSave = useCallback(async (slotIndex: number): Promise<boolean> => {
-    try {
-      dispatch({
-        type: 'DELETE_SAVE',
-        payload: { slotIndex }
-      });
+        return true;
+      } catch (error) {
+        console.error('Load failed:', error);
+        return false;
+      }
+    },
+    [dispatch]
+  );
 
-      return true;
-    } catch (error) {
-      console.error('Delete save failed:', error);
-      return false;
-    }
-  }, [dispatch]);
+  const deleteSave = useCallback(
+    async (slotIndex: number): Promise<boolean> => {
+      try {
+        dispatch({
+          type: 'DELETE_SAVE',
+          payload: { slotIndex },
+        });
+
+        return true;
+      } catch (error) {
+        console.error('Delete save failed:', error);
+        return false;
+      }
+    },
+    [dispatch]
+  );
 
   // Save/Load computed values
   const saveSlots = useMemo(() => {
@@ -588,6 +682,6 @@ export const useSaveLoad = () => {
     // Auto-save integration functions
     pauseAutoSave,
     resumeAutoSave,
-    forceAutoSave
+    forceAutoSave,
   };
 };

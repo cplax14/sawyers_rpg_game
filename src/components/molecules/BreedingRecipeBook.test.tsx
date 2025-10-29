@@ -39,9 +39,7 @@ const mockRecipes: BreedingRecipe[] = [
     parentSpecies1: 'goblin',
     parentSpecies2: 'wolf',
     offspringSpecies: 'goblin_wolf',
-    materials: [
-      { itemId: 'wolf_pelt', quantity: 3, name: 'Wolf Pelt' },
-    ],
+    materials: [{ itemId: 'wolf_pelt', quantity: 3, name: 'Wolf Pelt' }],
   },
   {
     id: 'recipe_dragon_phoenix',
@@ -68,9 +66,7 @@ const mockRecipes: BreedingRecipe[] = [
     parentSpecies1: null,
     parentSpecies2: null,
     offspringSpecies: 'elemental_hybrid',
-    materials: [
-      { itemId: 'elemental_core', quantity: 2, name: 'Elemental Core' },
-    ],
+    materials: [{ itemId: 'elemental_core', quantity: 2, name: 'Elemental Core' }],
     unlockRequirements: {
       minPlayerLevel: 10,
     },
@@ -91,33 +87,20 @@ describe('BreedingRecipeBook', () => {
 
   describe('Component Rendering', () => {
     it('should render recipe book title', () => {
-      renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={[]}
-          playerLevel={1}
-        />
-      );
+      renderWithGameContext(<BreedingRecipeBook discoveredRecipes={[]} playerLevel={1} />);
 
       expect(screen.getByText('Breeding Recipe Book')).toBeInTheDocument();
     });
 
     it('should render recipe book subtitle', () => {
-      renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={[]}
-          playerLevel={1}
-        />
-      );
+      renderWithGameContext(<BreedingRecipeBook discoveredRecipes={[]} playerLevel={1} />);
 
       expect(screen.getByText(/discover special breeding combinations/i)).toBeInTheDocument();
     });
 
     it('should load recipes from window data', async () => {
       renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={['recipe_slime_fusion']}
-          playerLevel={1}
-        />
+        <BreedingRecipeBook discoveredRecipes={['recipe_slime_fusion']} playerLevel={1} />
       );
 
       await waitFor(() => {
@@ -128,12 +111,7 @@ describe('BreedingRecipeBook', () => {
 
   describe('Progress Tracking', () => {
     it('should display discovery progress bar', () => {
-      renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={[]}
-          playerLevel={1}
-        />
-      );
+      renderWithGameContext(<BreedingRecipeBook discoveredRecipes={[]} playerLevel={1} />);
 
       expect(screen.getByText(/0 \/ 4 recipes discovered/i)).toBeInTheDocument();
     });
@@ -153,10 +131,7 @@ describe('BreedingRecipeBook', () => {
 
     it('should show 100% when all recipes discovered', async () => {
       renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={mockRecipes.map(r => r.id)}
-          playerLevel={1}
-        />
+        <BreedingRecipeBook discoveredRecipes={mockRecipes.map(r => r.id)} playerLevel={1} />
       );
 
       await waitFor(() => {
@@ -166,10 +141,7 @@ describe('BreedingRecipeBook', () => {
 
     it('should animate progress bar fill', () => {
       renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={['recipe_slime_fusion']}
-          playerLevel={1}
-        />
+        <BreedingRecipeBook discoveredRecipes={['recipe_slime_fusion']} playerLevel={1} />
       );
 
       // Progress bar should animate to 25% (1/4)
@@ -180,24 +152,20 @@ describe('BreedingRecipeBook', () => {
   describe('Recipe Display - Discovered', () => {
     it('should display discovered recipe with full details', async () => {
       renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={['recipe_slime_fusion']}
-          playerLevel={1}
-        />
+        <BreedingRecipeBook discoveredRecipes={['recipe_slime_fusion']} playerLevel={1} />
       );
 
       await waitFor(() => {
         expect(screen.getByText('Slime Fusion')).toBeInTheDocument();
-        expect(screen.getByText('Combine two slimes to create a stronger slime')).toBeInTheDocument();
+        expect(
+          screen.getByText('Combine two slimes to create a stronger slime')
+        ).toBeInTheDocument();
       });
     });
 
     it('should show Discovered status badge', async () => {
       renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={['recipe_slime_fusion']}
-          playerLevel={1}
-        />
+        <BreedingRecipeBook discoveredRecipes={['recipe_slime_fusion']} playerLevel={1} />
       );
 
       await waitFor(() => {
@@ -207,10 +175,7 @@ describe('BreedingRecipeBook', () => {
 
     it('should display parent species combination', async () => {
       renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={['recipe_hybrid_beast']}
-          playerLevel={1}
-        />
+        <BreedingRecipeBook discoveredRecipes={['recipe_hybrid_beast']} playerLevel={1} />
       );
 
       await waitFor(() => {
@@ -222,10 +187,7 @@ describe('BreedingRecipeBook', () => {
 
     it('should display offspring species', async () => {
       renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={['recipe_hybrid_beast']}
-          playerLevel={1}
-        />
+        <BreedingRecipeBook discoveredRecipes={['recipe_hybrid_beast']} playerLevel={1} />
       );
 
       await waitFor(() => {
@@ -235,10 +197,7 @@ describe('BreedingRecipeBook', () => {
 
     it('should display required materials', async () => {
       renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={['recipe_hybrid_beast']}
-          playerLevel={1}
-        />
+        <BreedingRecipeBook discoveredRecipes={['recipe_hybrid_beast']} playerLevel={1} />
       );
 
       await waitFor(() => {
@@ -250,10 +209,7 @@ describe('BreedingRecipeBook', () => {
 
     it('should display guaranteed bonuses', async () => {
       renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={['recipe_dragon_phoenix']}
-          playerLevel={1}
-        />
+        <BreedingRecipeBook discoveredRecipes={['recipe_dragon_phoenix']} playerLevel={1} />
       );
 
       await waitFor(() => {
@@ -266,10 +222,7 @@ describe('BreedingRecipeBook', () => {
 
     it('should show Any when parent species not specified', async () => {
       renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={['recipe_elemental_fusion']}
-          playerLevel={10}
-        />
+        <BreedingRecipeBook discoveredRecipes={['recipe_elemental_fusion']} playerLevel={10} />
       );
 
       await waitFor(() => {
@@ -280,12 +233,7 @@ describe('BreedingRecipeBook', () => {
 
   describe('Recipe Display - Locked', () => {
     it('should display locked recipe with ??? name', async () => {
-      renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={[]}
-          playerLevel={1}
-        />
-      );
+      renderWithGameContext(<BreedingRecipeBook discoveredRecipes={[]} playerLevel={1} />);
 
       await waitFor(() => {
         const questionMarks = screen.getAllByText('???');
@@ -294,12 +242,7 @@ describe('BreedingRecipeBook', () => {
     });
 
     it('should show Locked status badge', async () => {
-      renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={[]}
-          playerLevel={1}
-        />
-      );
+      renderWithGameContext(<BreedingRecipeBook discoveredRecipes={[]} playerLevel={1} />);
 
       await waitFor(() => {
         expect(screen.getAllByText('Locked')).toHaveLength(mockRecipes.length);
@@ -307,12 +250,7 @@ describe('BreedingRecipeBook', () => {
     });
 
     it('should hide recipe details when locked', async () => {
-      renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={[]}
-          playerLevel={1}
-        />
-      );
+      renderWithGameContext(<BreedingRecipeBook discoveredRecipes={[]} playerLevel={1} />);
 
       await waitFor(() => {
         expect(screen.queryByText('Slime Fusion')).not.toBeInTheDocument();
@@ -321,25 +259,17 @@ describe('BreedingRecipeBook', () => {
     });
 
     it('should show generic locked description', async () => {
-      renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={[]}
-          playerLevel={1}
-        />
-      );
+      renderWithGameContext(<BreedingRecipeBook discoveredRecipes={[]} playerLevel={1} />);
 
       await waitFor(() => {
-        expect(screen.getAllByText(/breed different creature combinations/i).length).toBeGreaterThan(0);
+        expect(
+          screen.getAllByText(/breed different creature combinations/i).length
+        ).toBeGreaterThan(0);
       });
     });
 
     it('should display hint when available', async () => {
-      renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={[]}
-          playerLevel={1}
-        />
-      );
+      renderWithGameContext(<BreedingRecipeBook discoveredRecipes={[]} playerLevel={1} />);
 
       await waitFor(() => {
         expect(screen.getByText(/combine the mightiest creatures/i)).toBeInTheDocument();
@@ -348,10 +278,7 @@ describe('BreedingRecipeBook', () => {
 
     it('should apply dashed border to locked recipes', async () => {
       const { container } = renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={[]}
-          playerLevel={1}
-        />
+        <BreedingRecipeBook discoveredRecipes={[]} playerLevel={1} />
       );
 
       await waitFor(() => {
@@ -363,12 +290,7 @@ describe('BreedingRecipeBook', () => {
 
   describe('Search Functionality', () => {
     it('should display search input', () => {
-      renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={[]}
-          playerLevel={1}
-        />
-      );
+      renderWithGameContext(<BreedingRecipeBook discoveredRecipes={[]} playerLevel={1} />);
 
       expect(screen.getByPlaceholderText('Search recipes...')).toBeInTheDocument();
     });
@@ -398,10 +320,7 @@ describe('BreedingRecipeBook', () => {
     it('should filter recipes by description', async () => {
       const user = userEvent.setup();
       renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={mockRecipes.map(r => r.id)}
-          playerLevel={1}
-        />
+        <BreedingRecipeBook discoveredRecipes={mockRecipes.map(r => r.id)} playerLevel={1} />
       );
 
       await waitFor(() => {
@@ -419,10 +338,7 @@ describe('BreedingRecipeBook', () => {
     it('should filter recipes by offspring species', async () => {
       const user = userEvent.setup();
       renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={mockRecipes.map(r => r.id)}
-          playerLevel={1}
-        />
+        <BreedingRecipeBook discoveredRecipes={mockRecipes.map(r => r.id)} playerLevel={1} />
       );
 
       await waitFor(() => {
@@ -440,10 +356,7 @@ describe('BreedingRecipeBook', () => {
     it('should be case-insensitive', async () => {
       const user = userEvent.setup();
       renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={['recipe_slime_fusion']}
-          playerLevel={1}
-        />
+        <BreedingRecipeBook discoveredRecipes={['recipe_slime_fusion']} playerLevel={1} />
       );
 
       await waitFor(() => {
@@ -461,10 +374,7 @@ describe('BreedingRecipeBook', () => {
     it('should show empty state when search has no results', async () => {
       const user = userEvent.setup();
       renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={mockRecipes.map(r => r.id)}
-          playerLevel={1}
-        />
+        <BreedingRecipeBook discoveredRecipes={mockRecipes.map(r => r.id)} playerLevel={1} />
       );
 
       const searchInput = screen.getByPlaceholderText('Search recipes...');
@@ -478,12 +388,7 @@ describe('BreedingRecipeBook', () => {
 
   describe('Filter by Discovery Status', () => {
     it('should display filter buttons', () => {
-      renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={[]}
-          playerLevel={1}
-        />
-      );
+      renderWithGameContext(<BreedingRecipeBook discoveredRecipes={[]} playerLevel={1} />);
 
       expect(screen.getByRole('button', { name: /all recipes/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /discovered/i })).toBeInTheDocument();
@@ -491,12 +396,7 @@ describe('BreedingRecipeBook', () => {
     });
 
     it('should show All Recipes as active by default', () => {
-      renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={[]}
-          playerLevel={1}
-        />
-      );
+      renderWithGameContext(<BreedingRecipeBook discoveredRecipes={[]} playerLevel={1} />);
 
       const allButton = screen.getByRole('button', { name: /all recipes/i });
       expect(allButton).toHaveStyle({ color: '#d4af37' });
@@ -505,10 +405,7 @@ describe('BreedingRecipeBook', () => {
     it('should filter to discovered recipes only', async () => {
       const user = userEvent.setup();
       renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={['recipe_slime_fusion']}
-          playerLevel={1}
-        />
+        <BreedingRecipeBook discoveredRecipes={['recipe_slime_fusion']} playerLevel={1} />
       );
 
       await waitFor(() => {
@@ -527,10 +424,7 @@ describe('BreedingRecipeBook', () => {
     it('should filter to locked recipes only', async () => {
       const user = userEvent.setup();
       renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={['recipe_slime_fusion']}
-          playerLevel={1}
-        />
+        <BreedingRecipeBook discoveredRecipes={['recipe_slime_fusion']} playerLevel={1} />
       );
 
       await waitFor(() => {
@@ -549,10 +443,7 @@ describe('BreedingRecipeBook', () => {
     it('should return to all recipes when All Recipes clicked', async () => {
       const user = userEvent.setup();
       renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={['recipe_slime_fusion']}
-          playerLevel={1}
-        />
+        <BreedingRecipeBook discoveredRecipes={['recipe_slime_fusion']} playerLevel={1} />
       );
 
       // Filter to discovered
@@ -602,10 +493,7 @@ describe('BreedingRecipeBook', () => {
   describe('Unlock Requirements', () => {
     it('should show locked recipe even if level requirement not met', async () => {
       renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={['recipe_elemental_fusion']}
-          playerLevel={5}
-        />
+        <BreedingRecipeBook discoveredRecipes={['recipe_elemental_fusion']} playerLevel={5} />
       );
 
       await waitFor(() => {
@@ -615,10 +503,7 @@ describe('BreedingRecipeBook', () => {
 
     it('should unlock recipe when level requirement met', async () => {
       renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={['recipe_elemental_fusion']}
-          playerLevel={10}
-        />
+        <BreedingRecipeBook discoveredRecipes={['recipe_elemental_fusion']} playerLevel={10} />
       );
 
       await waitFor(() => {
@@ -631,12 +516,7 @@ describe('BreedingRecipeBook', () => {
     it('should show empty state when no recipes available', async () => {
       (window as any).BreedingRecipeData = { recipes: [] };
 
-      renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={[]}
-          playerLevel={1}
-        />
-      );
+      renderWithGameContext(<BreedingRecipeBook discoveredRecipes={[]} playerLevel={1} />);
 
       await waitFor(() => {
         expect(screen.getByText(/no breeding recipes available/i)).toBeInTheDocument();
@@ -646,12 +526,7 @@ describe('BreedingRecipeBook', () => {
     it('should show 0/0 progress when no recipes', async () => {
       (window as any).BreedingRecipeData = { recipes: [] };
 
-      renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={[]}
-          playerLevel={1}
-        />
-      );
+      renderWithGameContext(<BreedingRecipeBook discoveredRecipes={[]} playerLevel={1} />);
 
       await waitFor(() => {
         expect(screen.getByText(/0 \/ 0 recipes discovered/i)).toBeInTheDocument();
@@ -662,10 +537,7 @@ describe('BreedingRecipeBook', () => {
   describe('Animations', () => {
     it('should animate recipe cards on render', async () => {
       renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={['recipe_slime_fusion']}
-          playerLevel={1}
-        />
+        <BreedingRecipeBook discoveredRecipes={['recipe_slime_fusion']} playerLevel={1} />
       );
 
       await waitFor(() => {
@@ -675,10 +547,7 @@ describe('BreedingRecipeBook', () => {
 
     it('should stagger card animations', async () => {
       renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={mockRecipes.map(r => r.id)}
-          playerLevel={10}
-        />
+        <BreedingRecipeBook discoveredRecipes={mockRecipes.map(r => r.id)} playerLevel={10} />
       );
 
       await waitFor(() => {
@@ -690,35 +559,20 @@ describe('BreedingRecipeBook', () => {
 
   describe('Accessibility', () => {
     it('should have proper headings', () => {
-      renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={[]}
-          playerLevel={1}
-        />
-      );
+      renderWithGameContext(<BreedingRecipeBook discoveredRecipes={[]} playerLevel={1} />);
 
       expect(screen.getByText('Breeding Recipe Book')).toBeInTheDocument();
     });
 
     it('should have accessible search input', () => {
-      renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={[]}
-          playerLevel={1}
-        />
-      );
+      renderWithGameContext(<BreedingRecipeBook discoveredRecipes={[]} playerLevel={1} />);
 
       const searchInput = screen.getByPlaceholderText('Search recipes...');
       expect(searchInput).toHaveAttribute('type', 'text');
     });
 
     it('should have accessible filter buttons', () => {
-      renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={[]}
-          playerLevel={1}
-        />
-      );
+      renderWithGameContext(<BreedingRecipeBook discoveredRecipes={[]} playerLevel={1} />);
 
       expect(screen.getByRole('button', { name: /all recipes/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /discovered/i })).toBeInTheDocument();
@@ -730,12 +584,7 @@ describe('BreedingRecipeBook', () => {
     it('should handle missing window.BreedingRecipeData gracefully', async () => {
       delete (window as any).BreedingRecipeData;
 
-      renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={[]}
-          playerLevel={1}
-        />
-      );
+      renderWithGameContext(<BreedingRecipeBook discoveredRecipes={[]} playerLevel={1} />);
 
       // Should still render without crashing
       expect(screen.getByText('Breeding Recipe Book')).toBeInTheDocument();
@@ -744,12 +593,7 @@ describe('BreedingRecipeBook', () => {
     it('should handle malformed recipe data', async () => {
       (window as any).BreedingRecipeData = { recipes: null };
 
-      renderWithGameContext(
-        <BreedingRecipeBook
-          discoveredRecipes={[]}
-          playerLevel={1}
-        />
-      );
+      renderWithGameContext(<BreedingRecipeBook discoveredRecipes={[]} playerLevel={1} />);
 
       // Should handle gracefully
       await waitFor(() => {

@@ -21,18 +21,18 @@ const mockGameState = {
       constitution: 14,
       intelligence: 10,
       wisdom: 8,
-      charisma: 6
+      charisma: 6,
     },
     inventory: [],
     equipment: {},
-    gold: 500
+    gold: 500,
   },
   currentArea: 'town',
   areas: {},
   isLoading: false,
   lastSaved: new Date(),
   totalPlayTime: 3600000, // 1 hour in ms
-  gameVersion: '1.0.0'
+  gameVersion: '1.0.0',
 } as any; // Using any to avoid needing full ReactGameState type
 
 describe('GameStateSerializer', () => {
@@ -54,7 +54,7 @@ describe('GameStateSerializer', () => {
   test('should handle Date objects', () => {
     const stateWithDate = {
       ...mockGameState,
-      lastSaved: new Date('2023-01-01T00:00:00Z')
+      lastSaved: new Date('2023-01-01T00:00:00Z'),
     };
 
     const serialized = serializer.serialize(stateWithDate);
@@ -67,7 +67,10 @@ describe('GameStateSerializer', () => {
   test('should handle Map objects', () => {
     const stateWithMap = {
       ...mockGameState,
-      customMap: new Map([['key1', 'value1'], ['key2', 'value2']])
+      customMap: new Map([
+        ['key1', 'value1'],
+        ['key2', 'value2'],
+      ]),
     };
 
     const serialized = serializer.serialize(stateWithMap as any);
@@ -126,7 +129,7 @@ describe('DataCompressor', () => {
         compressionRatio: 0.5,
         algorithm: 'lz-string',
         isCompressed: true,
-        metadata: { timestamp: new Date(), checksum: 'abc', version: '1.0.0' }
+        metadata: { timestamp: new Date(), checksum: 'abc', version: '1.0.0' },
       },
       {
         data: 'test2',
@@ -135,8 +138,8 @@ describe('DataCompressor', () => {
         compressionRatio: 0,
         algorithm: 'none',
         isCompressed: false,
-        metadata: { timestamp: new Date(), checksum: 'def', version: '1.0.0' }
-      }
+        metadata: { timestamp: new Date(), checksum: 'def', version: '1.0.0' },
+      },
     ];
 
     const stats = compressor.getCompressionStats(results);
@@ -152,7 +155,7 @@ describe('DataCompressor', () => {
     // Create large mock state to trigger chunking
     const largeState = {
       ...mockGameState,
-      largeData: 'x'.repeat(100000) // 100KB of data
+      largeData: 'x'.repeat(100000), // 100KB of data
     };
 
     const compressor = new DataCompressor({ chunkSize: 1000 });
@@ -174,12 +177,13 @@ describe('DataCompressor', () => {
       ...result,
       metadata: {
         ...result.metadata,
-        checksum: 'invalid-checksum'
-      }
+        checksum: 'invalid-checksum',
+      },
     };
 
-    await expect(compressor.decompressGameState(corruptedResult))
-      .rejects.toThrow(/integrity check failed/i);
+    await expect(compressor.decompressGameState(corruptedResult)).rejects.toThrow(
+      /integrity check failed/i
+    );
   });
 });
 
@@ -188,7 +192,7 @@ describe('Compression Utilities Integration', () => {
     const compressor = new DataCompressor({
       algorithm: 'lz-string',
       level: 'balanced',
-      enableBase64: true
+      enableBase64: true,
     });
 
     // Simulate cloud storage save operation
@@ -201,7 +205,7 @@ describe('Compression Utilities Integration', () => {
       compressedSize: compressionResult.compressedSize,
       compressionRatio: compressionResult.compressionRatio,
       algorithm: compressionResult.algorithm,
-      isCompressed: compressionResult.isCompressed
+      isCompressed: compressionResult.isCompressed,
     };
 
     // Simulate cloud storage load operation
@@ -216,8 +220,8 @@ describe('Compression Utilities Integration', () => {
       metadata: {
         timestamp: new Date(),
         checksum: metadata.checksum,
-        version: '1.0.0'
-      }
+        version: '1.0.0',
+      },
     };
 
     const decompressed = await compressor.decompressGameState(reconstructedResult);

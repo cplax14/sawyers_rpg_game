@@ -15,11 +15,27 @@ export interface GameEvents {
   'story:show': (storyData: any) => void;
   'ui:screenchange': (screenName: string) => void;
   // Animation events
-  'animation:combat:attack': (data: { attacker: string; target: string; weaponType?: string }) => void;
-  'animation:combat:spell': (data: { caster: string; target: string; element: string; spell: string }) => void;
-  'animation:combat:damage': (data: { target: string; damage: number; type: 'physical' | 'magical' }) => void;
+  'animation:combat:attack': (data: {
+    attacker: string;
+    target: string;
+    weaponType?: string;
+  }) => void;
+  'animation:combat:spell': (data: {
+    caster: string;
+    target: string;
+    element: string;
+    spell: string;
+  }) => void;
+  'animation:combat:damage': (data: {
+    target: string;
+    damage: number;
+    type: 'physical' | 'magical';
+  }) => void;
   'animation:combat:heal': (data: { target: string; amount: number }) => void;
-  'animation:ui:notification': (data: { message: string; type: 'info' | 'warning' | 'error' | 'success' }) => void;
+  'animation:ui:notification': (data: {
+    message: string;
+    type: 'info' | 'warning' | 'error' | 'success';
+  }) => void;
   'animation:player:levelup': (data: { newLevel: number; stats: any }) => void;
   'animation:item:found': (data: { item: string; quantity: number }) => void;
   'animation:monster:captured': (data: { monster: string }) => void;
@@ -38,7 +54,7 @@ class VanillaBridge {
   private lastMaxHp = 0;
 
   constructor() {
-    this.gameReadyPromise = new Promise((resolve) => {
+    this.gameReadyPromise = new Promise(resolve => {
       this.gameReadyResolve = resolve;
     });
 
@@ -61,7 +77,7 @@ class VanillaBridge {
   }
 
   private async waitForGame(): Promise<void> {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const checkReady = () => {
         if (
           typeof window !== 'undefined' &&
@@ -131,8 +147,7 @@ class VanillaBridge {
 
     // Monitor player HP changes
     if (gameState.player) {
-      if (gameState.player.hp !== this.lastHp ||
-          gameState.player.maxHp !== this.lastMaxHp) {
+      if (gameState.player.hp !== this.lastHp || gameState.player.maxHp !== this.lastMaxHp) {
         this.lastHp = gameState.player.hp;
         this.lastMaxHp = gameState.player.maxHp;
         this.emit('player:hpchange', gameState.player.hp, gameState.player.maxHp);
@@ -228,7 +243,11 @@ class VanillaBridge {
   /**
    * Trigger a damage animation
    */
-  triggerDamageAnimation(target: string, damage: number, type: 'physical' | 'magical' = 'physical'): void {
+  triggerDamageAnimation(
+    target: string,
+    damage: number,
+    type: 'physical' | 'magical' = 'physical'
+  ): void {
     this.emit('animation:combat:damage', { target, damage, type });
   }
 
@@ -242,7 +261,10 @@ class VanillaBridge {
   /**
    * Trigger a notification animation
    */
-  triggerNotificationAnimation(message: string, type: 'info' | 'warning' | 'error' | 'success' = 'info'): void {
+  triggerNotificationAnimation(
+    message: string,
+    type: 'info' | 'warning' | 'error' | 'success' = 'info'
+  ): void {
     this.emit('animation:ui:notification', { message, type });
   }
 
@@ -278,7 +300,11 @@ class VanillaBridge {
     if (originalDealDamage) {
       window.gameState.dealDamage = (target: any, damage: number, type?: string) => {
         // Trigger damage animation before dealing damage
-        this.triggerDamageAnimation(target.name || 'target', damage, type === 'spell' ? 'magical' : 'physical');
+        this.triggerDamageAnimation(
+          target.name || 'target',
+          damage,
+          type === 'spell' ? 'magical' : 'physical'
+        );
 
         const result = originalDealDamage.call(window.gameState, target, damage, type);
         return result;
@@ -304,15 +330,12 @@ class VanillaBridge {
         const result = originalLevelUp.apply(window.gameState.player, args);
 
         // Trigger level up animation after leveling up
-        this.triggerLevelUpAnimation(
-          window.gameState.player.level,
-          {
-            hp: window.gameState.player.maxHp,
-            mp: window.gameState.player.maxMp,
-            attack: window.gameState.player.attack,
-            defense: window.gameState.player.defense
-          }
-        );
+        this.triggerLevelUpAnimation(window.gameState.player.level, {
+          hp: window.gameState.player.maxHp,
+          mp: window.gameState.player.maxMp,
+          attack: window.gameState.player.attack,
+          defense: window.gameState.player.defense,
+        });
 
         return result;
       };

@@ -8,16 +8,18 @@ jest.mock('framer-motion', () => {
 
   // Create a mock motion component that accepts Framer Motion props
   const createMotionComponent = (component: string) => {
-    return React.forwardRef(({ children, onAnimationComplete, onExitComplete, ...props }: any, ref: any) => {
-      // Call lifecycle callbacks immediately in tests
-      React.useEffect(() => {
-        if (onAnimationComplete) {
-          onAnimationComplete();
-        }
-      }, [onAnimationComplete]);
+    return React.forwardRef(
+      ({ children, onAnimationComplete, onExitComplete, ...props }: any, ref: any) => {
+        // Call lifecycle callbacks immediately in tests
+        React.useEffect(() => {
+          if (onAnimationComplete) {
+            onAnimationComplete();
+          }
+        }, [onAnimationComplete]);
 
-      return React.createElement(component, { ...props, ref }, children);
-    });
+        return React.createElement(component, { ...props, ref }, children);
+      }
+    );
   };
 
   return {
@@ -28,7 +30,13 @@ jest.mock('framer-motion', () => {
       span: createMotionComponent('span'),
       img: createMotionComponent('img'),
     },
-    AnimatePresence: ({ children, onExitComplete }: { children: React.ReactNode, onExitComplete?: () => void }) => {
+    AnimatePresence: ({
+      children,
+      onExitComplete,
+    }: {
+      children: React.ReactNode;
+      onExitComplete?: () => void;
+    }) => {
       // Call exit callback immediately in tests
       React.useEffect(() => {
         return () => {
@@ -142,7 +150,7 @@ global.indexedDB = indexedDBMock as any;
 
 // Mock uuid for ES module compatibility
 jest.mock('uuid', () => ({
-  v4: jest.fn(() => 'mock-uuid-v4')
+  v4: jest.fn(() => 'mock-uuid-v4'),
 }));
 
 // Mock Firebase configuration to avoid import.meta issues
@@ -223,9 +231,9 @@ jest.mock('./config/firebase', () => {
       VITE_FIREBASE_STORAGE_BUCKET: 'mock-storage-bucket',
       VITE_FIREBASE_MESSAGING_SENDER_ID: 'mock-sender-id',
       VITE_FIREBASE_APP_ID: 'mock-app-id',
-      VITE_USE_FIREBASE_EMULATOR: 'false'
-    }
-  }
+      VITE_USE_FIREBASE_EMULATOR: 'false',
+    },
+  },
 };
 
 // Mock window.CharacterData for game data

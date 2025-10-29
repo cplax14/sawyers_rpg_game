@@ -35,7 +35,7 @@ describe('useCreatures Hook', () => {
       strength: 12,
       defense: 8,
       agility: 15,
-      intelligence: 10
+      intelligence: 10,
     },
     types: ['nature', 'spirit'],
     element: 'nature',
@@ -44,7 +44,7 @@ describe('useCreatures Hook', () => {
       happiness: 80,
       loyalty: 60,
       nature: 'friendly',
-      temperament: 'calm'
+      temperament: 'calm',
     },
     captureDate: new Date().toISOString(),
     location: 'forest',
@@ -63,8 +63,8 @@ describe('useCreatures Hook', () => {
       timesUsedInCombat: 3,
       timesFed: 10,
       timesTrained: 5,
-      discoverySource: 'wild_encounter'
-    }
+      discoverySource: 'wild_encounter',
+    },
   };
 
   const mockMonster: Monster = {
@@ -87,7 +87,7 @@ describe('useCreatures Hook', () => {
     moves: ['leaf_whip', 'heal'],
     abilities: ['photosynthesis'],
     captureRate: 0.3,
-    isShiny: false
+    isShiny: false,
   };
 
   const mockBestiaryEntry = {
@@ -96,7 +96,7 @@ describe('useCreatures Hook', () => {
     encountered: 5,
     captured: 1,
     firstSeen: new Date().toISOString(),
-    completionLevel: 'basic' as any
+    completionLevel: 'basic' as any,
   };
 
   const mockGameStateReturn = {
@@ -111,8 +111,8 @@ describe('useCreatures Hook', () => {
           agility: 18,
           intelligence: 14,
           health: 100,
-          mana: 60
-        }
+          mana: 60,
+        },
       },
       creatures: {
         ownedCreatures: [mockCreature],
@@ -123,19 +123,19 @@ describe('useCreatures Hook', () => {
           discovered: 1,
           captured: 1,
           total: 10,
-          completionPercentage: 10
-        }
-      }
+          completionPercentage: 10,
+        },
+      },
     },
     updateGameState: jest.fn(),
-    saveGame: jest.fn()
+    saveGame: jest.fn(),
   };
 
   const mockInventory = {
     removeItem: jest.fn().mockResolvedValue({ success: true }),
     addItem: jest.fn().mockResolvedValue({ success: true }),
     getItemsByCategory: jest.fn().mockReturnValue([]),
-    addEventListener: jest.fn()
+    addEventListener: jest.fn(),
   };
 
   beforeEach(() => {
@@ -435,7 +435,10 @@ describe('useCreatures Hook', () => {
 
       await act(async () => {
         try {
-          const discoverResult = await result.current.discoverCreature('new_species', 'wild_encounter');
+          const discoverResult = await result.current.discoverCreature(
+            'new_species',
+            'wild_encounter'
+          );
           expect(discoverResult).toBeDefined();
           expect(typeof discoverResult).toBe('object');
           expect(discoverResult).toHaveProperty('success');
@@ -451,7 +454,9 @@ describe('useCreatures Hook', () => {
 
       await act(async () => {
         try {
-          const updateResult = await result.current.updateBestiaryEntry('forest_spirit', { encountered: 6 });
+          const updateResult = await result.current.updateBestiaryEntry('forest_spirit', {
+            encountered: 6,
+          });
           expect(updateResult).toBeDefined();
           expect(typeof updateResult).toBe('object');
           expect(updateResult).toHaveProperty('success');
@@ -481,7 +486,7 @@ describe('useCreatures Hook', () => {
         const filter: Partial<CreatureFilter> = {
           species: 'forest_spirit',
           rarity: 'common',
-          element: 'nature'
+          element: 'nature',
         };
         result.current.updateFilter(filter);
       });

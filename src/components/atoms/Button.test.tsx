@@ -13,21 +13,21 @@ describe('Button', () => {
   });
 
   it('renders different variants correctly', () => {
-    const { rerender } = render(<Button variant="secondary">Secondary</Button>);
+    const { rerender } = render(<Button variant='secondary'>Secondary</Button>);
     expect(screen.getByRole('button')).toHaveClass('btn-secondary');
 
-    rerender(<Button variant="danger">Danger</Button>);
+    rerender(<Button variant='danger'>Danger</Button>);
     expect(screen.getByRole('button')).toHaveClass('btn-danger');
 
-    rerender(<Button variant="success">Success</Button>);
+    rerender(<Button variant='success'>Success</Button>);
     expect(screen.getByRole('button')).toHaveClass('btn-success');
   });
 
   it('renders different sizes correctly', () => {
-    const { rerender } = render(<Button size="sm">Small</Button>);
+    const { rerender } = render(<Button size='sm'>Small</Button>);
     expect(screen.getByRole('button')).toHaveClass('btn-sm');
 
-    rerender(<Button size="lg">Large</Button>);
+    rerender(<Button size='lg'>Large</Button>);
     expect(screen.getByRole('button')).toHaveClass('btn-lg');
   });
 
@@ -52,8 +52,8 @@ describe('Button', () => {
   });
 
   it('renders with icons', () => {
-    const beforeIcon = <span data-testid="before-icon">🚀</span>;
-    const afterIcon = <span data-testid="after-icon">✨</span>;
+    const beforeIcon = <span data-testid='before-icon'>🚀</span>;
+    const afterIcon = <span data-testid='after-icon'>✨</span>;
 
     render(
       <Button iconBefore={beforeIcon} iconAfter={afterIcon}>
@@ -88,7 +88,11 @@ describe('Button', () => {
     const user = userEvent.setup();
     const handleClick = jest.fn();
 
-    render(<Button onClick={handleClick} disabled>Disabled</Button>);
+    render(
+      <Button onClick={handleClick} disabled>
+        Disabled
+      </Button>
+    );
 
     const button = screen.getByRole('button');
     await user.click(button);
@@ -100,7 +104,11 @@ describe('Button', () => {
     const user = userEvent.setup();
     const handleClick = jest.fn();
 
-    render(<Button onClick={handleClick} loading>Loading</Button>);
+    render(
+      <Button onClick={handleClick} loading>
+        Loading
+      </Button>
+    );
 
     const button = screen.getByRole('button');
     await user.click(button);
@@ -118,7 +126,7 @@ describe('Button', () => {
   });
 
   it('applies custom className', () => {
-    render(<Button className="custom-class">Custom</Button>);
+    render(<Button className='custom-class'>Custom</Button>);
 
     const button = screen.getByRole('button');
     expect(button).toHaveClass('custom-class');
@@ -126,7 +134,7 @@ describe('Button', () => {
 
   it('passes through HTML attributes', () => {
     render(
-      <Button type="submit" data-testid="submit-button">
+      <Button type='submit' data-testid='submit-button'>
         Submit
       </Button>
     );
@@ -137,7 +145,7 @@ describe('Button', () => {
 
   it('maintains accessibility with screen readers', () => {
     render(
-      <Button aria-label="Custom aria label" aria-describedby="help-text">
+      <Button aria-label='Custom aria label' aria-describedby='help-text'>
         Button
       </Button>
     );

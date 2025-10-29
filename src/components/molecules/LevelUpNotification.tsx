@@ -26,7 +26,7 @@ export const LevelUpNotification: React.FC<LevelUpNotificationProps> = ({
   totalXP,
   onClose,
   onViewStats,
-  autoCloseDelay = 5000
+  autoCloseDelay = 5000,
 }) => {
   const [shouldAutoClose, setShouldAutoClose] = useState(true);
   const [timeRemaining, setTimeRemaining] = useState(autoCloseDelay / 1000);
@@ -35,7 +35,7 @@ export const LevelUpNotification: React.FC<LevelUpNotificationProps> = ({
   const getLevelRewards = (level: number): LevelUpReward[] => {
     const baseRewards: LevelUpReward[] = [
       { type: 'stat', name: 'Health', value: '+10', icon: '❤️' },
-      { type: 'stat', name: 'Mana', value: '+5', icon: '💙' }
+      { type: 'stat', name: 'Mana', value: '+5', icon: '💙' },
     ];
 
     // Add special rewards at milestone levels
@@ -48,11 +48,21 @@ export const LevelUpNotification: React.FC<LevelUpNotificationProps> = ({
     }
 
     if (level === 20) {
-      baseRewards.push({ type: 'feature', name: 'Creature Breeding', value: 'Unlocked', icon: '🐣' });
+      baseRewards.push({
+        type: 'feature',
+        name: 'Creature Breeding',
+        value: 'Unlocked',
+        icon: '🐣',
+      });
     }
 
     if (level === 30) {
-      baseRewards.push({ type: 'feature', name: 'Advanced Trading', value: 'Unlocked', icon: '💰' });
+      baseRewards.push({
+        type: 'feature',
+        name: 'Advanced Trading',
+        value: 'Unlocked',
+        icon: '💰',
+      });
     }
 
     return baseRewards;
@@ -84,49 +94,49 @@ export const LevelUpNotification: React.FC<LevelUpNotificationProps> = ({
     hidden: {
       opacity: 0,
       scale: 0.8,
-      y: -50
+      y: -50,
     },
     visible: {
       opacity: 1,
       scale: 1,
       y: 0,
       transition: {
-        type: "spring",
+        type: 'spring',
         damping: 20,
         stiffness: 300,
-        duration: 0.6
-      }
+        duration: 0.6,
+      },
     },
     exit: {
       opacity: 0,
       scale: 0.9,
       y: 50,
       transition: {
-        duration: 0.3
-      }
-    }
+        duration: 0.3,
+      },
+    },
   };
 
   const glowVariants = {
     glow: {
       boxShadow: [
-        "0 0 20px rgba(79, 195, 247, 0.4)",
-        "0 0 40px rgba(79, 195, 247, 0.6)",
-        "0 0 20px rgba(79, 195, 247, 0.4)"
+        '0 0 20px rgba(79, 195, 247, 0.4)',
+        '0 0 40px rgba(79, 195, 247, 0.6)',
+        '0 0 20px rgba(79, 195, 247, 0.4)',
       ],
       transition: {
         duration: 2,
         repeat: Infinity,
-        ease: "easeInOut"
-      }
-    }
+        ease: 'easeInOut',
+      },
+    },
   };
 
   return (
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          className="level-up-overlay"
+          className='level-up-overlay'
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -142,18 +152,18 @@ export const LevelUpNotification: React.FC<LevelUpNotificationProps> = ({
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 10000,
-            padding: '1rem'
+            padding: '1rem',
           }}
-          onClick={(e) => {
+          onClick={e => {
             if (e.target === e.currentTarget) onClose();
           }}
         >
           <motion.div
-            className="level-up-notification"
+            className='level-up-notification'
             variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
+            initial='hidden'
+            animate='visible'
+            exit='exit'
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             style={{
@@ -166,36 +176,39 @@ export const LevelUpNotification: React.FC<LevelUpNotificationProps> = ({
               color: '#f4f4f4',
               textAlign: 'center',
               position: 'relative',
-              overflow: 'hidden'
+              overflow: 'hidden',
             }}
           >
             {/* Background glow effect */}
             <motion.div
               variants={glowVariants}
-              animate="glow"
+              animate='glow'
               style={{
                 position: 'absolute',
                 top: -2,
                 left: -2,
                 right: -2,
                 bottom: -2,
-                background: 'linear-gradient(135deg, rgba(79, 195, 247, 0.1), rgba(41, 182, 246, 0.1))',
+                background:
+                  'linear-gradient(135deg, rgba(79, 195, 247, 0.1), rgba(41, 182, 246, 0.1))',
                 borderRadius: '20px',
-                zIndex: -1
+                zIndex: -1,
               }}
             />
 
             {/* Confetti particles */}
-            <div style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              pointerEvents: 'none',
-              overflow: 'hidden',
-              borderRadius: '20px'
-            }}>
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                pointerEvents: 'none',
+                overflow: 'hidden',
+                borderRadius: '20px',
+              }}
+            >
               {Array.from({ length: 12 }, (_, i) => (
                 <motion.div
                   key={i}
@@ -206,18 +219,18 @@ export const LevelUpNotification: React.FC<LevelUpNotificationProps> = ({
                     background: ['#4fc3f7', '#29b6f6', '#ffd700', '#ff6b9d'][i % 4],
                     borderRadius: '50%',
                     left: `${Math.random() * 100}%`,
-                    top: `${Math.random() * 100}%`
+                    top: `${Math.random() * 100}%`,
                   }}
                   animate={{
                     y: [0, -20, 0],
                     opacity: [0, 1, 0],
-                    scale: [0, 1, 0]
+                    scale: [0, 1, 0],
                   }}
                   transition={{
                     duration: 2,
                     repeat: Infinity,
                     delay: i * 0.2,
-                    ease: "easeInOut"
+                    ease: 'easeInOut',
                   }}
                 />
               ))}
@@ -242,7 +255,7 @@ export const LevelUpNotification: React.FC<LevelUpNotificationProps> = ({
                 justifyContent: 'center',
                 color: '#f4f4f4',
                 cursor: 'pointer',
-                fontSize: '1.2rem'
+                fontSize: '1.2rem',
               }}
             >
               ✕
@@ -250,31 +263,35 @@ export const LevelUpNotification: React.FC<LevelUpNotificationProps> = ({
 
             {/* Auto-close timer */}
             {shouldAutoClose && timeRemaining > 0 && (
-              <div style={{
-                position: 'absolute',
-                top: '1rem',
-                left: '1rem',
-                fontSize: '0.8rem',
-                opacity: 0.6,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}>
-                <div style={{
-                  width: '20px',
-                  height: '20px',
-                  borderRadius: '50%',
-                  border: '2px solid rgba(255, 255, 255, 0.3)',
-                  borderTop: '2px solid #4fc3f7',
-                  position: 'relative'
-                }}>
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '1rem',
+                  left: '1rem',
+                  fontSize: '0.8rem',
+                  opacity: 0.6,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                }}
+              >
+                <div
+                  style={{
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '50%',
+                    border: '2px solid rgba(255, 255, 255, 0.3)',
+                    borderTop: '2px solid #4fc3f7',
+                    position: 'relative',
+                  }}
+                >
                   <motion.div
                     style={{
                       position: 'absolute',
                       top: '50%',
                       left: '50%',
                       transform: 'translate(-50%, -50%)',
-                      fontSize: '0.7rem'
+                      fontSize: '0.7rem',
                     }}
                   >
                     {timeRemaining}
@@ -293,15 +310,15 @@ export const LevelUpNotification: React.FC<LevelUpNotificationProps> = ({
               <motion.div
                 style={{
                   fontSize: '3rem',
-                  marginBottom: '0.5rem'
+                  marginBottom: '0.5rem',
                 }}
                 animate={{
                   scale: [1, 1.1, 1],
-                  rotate: [0, 5, -5, 0]
+                  rotate: [0, 5, -5, 0],
                 }}
                 transition={{
                   duration: 0.6,
-                  ease: "easeInOut"
+                  ease: 'easeInOut',
                 }}
               >
                 🎉
@@ -313,14 +330,14 @@ export const LevelUpNotification: React.FC<LevelUpNotificationProps> = ({
                   fontWeight: 'bold',
                   color: '#4fc3f7',
                   margin: '0 0 0.5rem 0',
-                  textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)'
+                  textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
                 }}
                 animate={{
-                  scale: [0.9, 1.05, 1]
+                  scale: [0.9, 1.05, 1],
                 }}
                 transition={{
                   duration: 0.8,
-                  ease: "easeOut"
+                  ease: 'easeOut',
                 }}
               >
                 LEVEL UP!
@@ -330,16 +347,20 @@ export const LevelUpNotification: React.FC<LevelUpNotificationProps> = ({
                 style={{
                   fontSize: '1.2rem',
                   marginBottom: '1.5rem',
-                  opacity: 0.9
+                  opacity: 0.9,
                 }}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 0.9 }}
                 transition={{ delay: 0.5 }}
               >
                 {levelsGained > 1 ? (
-                  <>Level {fromLevel} → {toLevel} (+{levelsGained} levels!)</>
+                  <>
+                    Level {fromLevel} → {toLevel} (+{levelsGained} levels!)
+                  </>
                 ) : (
-                  <>Level {fromLevel} → {toLevel}</>
+                  <>
+                    Level {fromLevel} → {toLevel}
+                  </>
                 )}
               </motion.div>
 
@@ -350,7 +371,7 @@ export const LevelUpNotification: React.FC<LevelUpNotificationProps> = ({
                   borderRadius: '12px',
                   padding: '1rem',
                   marginBottom: '1.5rem',
-                  border: '1px solid rgba(255, 255, 255, 0.1)'
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
                 }}
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
@@ -372,20 +393,24 @@ export const LevelUpNotification: React.FC<LevelUpNotificationProps> = ({
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.8 }}
                 >
-                  <h3 style={{
-                    fontSize: '1.3rem',
-                    color: '#ffd700',
-                    marginBottom: '1rem',
-                    textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)'
-                  }}>
+                  <h3
+                    style={{
+                      fontSize: '1.3rem',
+                      color: '#ffd700',
+                      marginBottom: '1rem',
+                      textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
+                    }}
+                  >
                     🎁 Rewards Unlocked
                   </h3>
 
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-                    gap: '0.75rem'
-                  }}>
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                      gap: '0.75rem',
+                    }}
+                  >
                     {rewards.map((reward, index) => (
                       <motion.div
                         key={index}
@@ -394,24 +419,24 @@ export const LevelUpNotification: React.FC<LevelUpNotificationProps> = ({
                           border: '1px solid rgba(255, 215, 0, 0.3)',
                           borderRadius: '8px',
                           padding: '0.75rem',
-                          textAlign: 'center'
+                          textAlign: 'center',
                         }}
                         initial={{ scale: 0, rotate: -10 }}
                         animate={{ scale: 1, rotate: 0 }}
                         transition={{
                           delay: 0.9 + index * 0.1,
-                          type: "spring",
-                          stiffness: 200
+                          type: 'spring',
+                          stiffness: 200,
                         }}
                       >
                         <div style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>
                           {reward.icon}
                         </div>
-                        <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>
-                          {reward.name}
-                        </div>
+                        <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>{reward.name}</div>
                         {reward.value && (
-                          <div style={{ fontSize: '0.8rem', color: '#ffd700', marginTop: '0.25rem' }}>
+                          <div
+                            style={{ fontSize: '0.8rem', color: '#ffd700', marginTop: '0.25rem' }}
+                          >
                             {reward.value}
                           </div>
                         )}
@@ -427,7 +452,7 @@ export const LevelUpNotification: React.FC<LevelUpNotificationProps> = ({
                   display: 'flex',
                   gap: '1rem',
                   justifyContent: 'center',
-                  flexWrap: 'wrap'
+                  flexWrap: 'wrap',
                 }}
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
@@ -446,7 +471,7 @@ export const LevelUpNotification: React.FC<LevelUpNotificationProps> = ({
                       color: 'white',
                       fontWeight: '600',
                       cursor: 'pointer',
-                      fontSize: '1rem'
+                      fontSize: '1rem',
                     }}
                   >
                     📊 View Stats
@@ -465,7 +490,7 @@ export const LevelUpNotification: React.FC<LevelUpNotificationProps> = ({
                     color: '#f4f4f4',
                     fontWeight: '600',
                     cursor: 'pointer',
-                    fontSize: '1rem'
+                    fontSize: '1rem',
                   }}
                 >
                   Continue

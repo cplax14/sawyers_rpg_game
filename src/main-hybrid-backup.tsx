@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     width: rootElement.offsetWidth,
     height: rootElement.offsetHeight,
     display: window.getComputedStyle(rootElement).display,
-    position: window.getComputedStyle(rootElement).position
+    position: window.getComputedStyle(rootElement).position,
   });
 
   const root = createRoot(rootElement);

@@ -5,7 +5,10 @@ import { useLazyLoading } from '../../hooks/useLazyLoading';
 import { useVirtualizedGrid } from '../../hooks/useVirtualizedGrid';
 
 interface LazyVirtualizedGridProps<T> {
-  loadFunction: (page: number, pageSize: number) => Promise<{ items: T[]; totalCount: number; hasMore: boolean }>;
+  loadFunction: (
+    page: number,
+    pageSize: number
+  ) => Promise<{ items: T[]; totalCount: number; hasMore: boolean }>;
   renderItem: (item: T, index: number) => React.ReactNode;
   renderSkeleton?: (index: number) => React.ReactNode;
   getItemKey: (item: T, index: number) => string | number;
@@ -47,26 +50,21 @@ export function LazyVirtualizedGrid<T>({
   className,
   style,
   onScroll,
-  emptyState
+  emptyState,
 }: LazyVirtualizedGridProps<T>) {
   // Lazy loading setup
-  const lazyConfig = useMemo(() => ({
-    pageSize,
-    preloadDistance,
-    throttleMs: 200,
-    maxCacheSize: pageSize * 10 // Keep 10 pages in cache
-  }), [pageSize, preloadDistance]);
+  const lazyConfig = useMemo(
+    () => ({
+      pageSize,
+      preloadDistance,
+      throttleMs: 200,
+      maxCacheSize: pageSize * 10, // Keep 10 pages in cache
+    }),
+    [pageSize, preloadDistance]
+  );
 
-  const {
-    items,
-    loading,
-    hasMore,
-    totalCount,
-    loadMore,
-    getItem,
-    preloadAround,
-    isPageLoaded
-  } = useLazyLoading(loadFunction, lazyConfig);
+  const { items, loading, hasMore, totalCount, loadMore, getItem, preloadAround, isPageLoaded } =
+    useLazyLoading(loadFunction, lazyConfig);
 
   // Virtualization setup
   const virtualGridSettings = useVirtualizedGrid({
@@ -75,44 +73,44 @@ export function LazyVirtualizedGrid<T>({
     minItemWidth,
     itemHeight,
     gap,
-    threshold: 30 // Lower threshold since we have lazy loading
+    threshold: 30, // Lower threshold since we have lazy loading
   });
 
   // Combined item rendering function
-  const renderVirtualItem = useCallback((item: T | undefined, index: number) => {
-    // Check if item is loaded
-    if (item === undefined) {
-      // Trigger loading for this item
-      const loadedItem = getItem(index);
+  const renderVirtualItem = useCallback(
+    (item: T | undefined, index: number) => {
+      // Check if item is loaded
+      if (item === undefined) {
+        // Trigger loading for this item
+        const loadedItem = getItem(index);
 
-      if (loadedItem) {
-        return renderItem(loadedItem, index);
+        if (loadedItem) {
+          return renderItem(loadedItem, index);
+        }
+
+        // Show skeleton while loading
+        if (renderSkeleton) {
+          return renderSkeleton(index);
+        }
+
+        return <SkeletonCard type={skeletonType} size='md' key={`skeleton-${index}`} />;
       }
 
-      // Show skeleton while loading
-      if (renderSkeleton) {
-        return renderSkeleton(index);
-      }
-
-      return (
-        <SkeletonCard
-          type={skeletonType}
-          size="md"
-          key={`skeleton-${index}`}
-        />
-      );
-    }
-
-    return renderItem(item, index);
-  }, [getItem, renderItem, renderSkeleton, skeletonType]);
+      return renderItem(item, index);
+    },
+    [getItem, renderItem, renderSkeleton, skeletonType]
+  );
 
   // Enhanced key function that handles undefined items
-  const getVirtualItemKey = useCallback((item: T | undefined, index: number) => {
-    if (item === undefined) {
-      return `loading-${index}`;
-    }
-    return getItemKey(item, index);
-  }, [getItemKey]);
+  const getVirtualItemKey = useCallback(
+    (item: T | undefined, index: number) => {
+      if (item === undefined) {
+        return `loading-${index}`;
+      }
+      return getItemKey(item, index);
+    },
+    [getItemKey]
+  );
 
   // Create a padded items array that includes placeholders for unloaded items
   const paddedItems = useMemo(() => {
@@ -130,39 +128,42 @@ export function LazyVirtualizedGrid<T>({
   }, [items, totalCount]);
 
   // Handle scroll events for preloading
-  const handleScroll = useCallback((scrollTop: number) => {
-    onScroll?.(scrollTop);
+  const handleScroll = useCallback(
+    (scrollTop: number) => {
+      onScroll?.(scrollTop);
 
-    // Calculate which items are currently visible
-    const rowHeight = itemHeight + gap;
-    const visibleStartRow = Math.floor(scrollTop / rowHeight);
-    const visibleEndRow = Math.ceil((scrollTop + containerHeight) / rowHeight);
+      // Calculate which items are currently visible
+      const rowHeight = itemHeight + gap;
+      const visibleStartRow = Math.floor(scrollTop / rowHeight);
+      const visibleEndRow = Math.ceil((scrollTop + containerHeight) / rowHeight);
 
-    const startIndex = visibleStartRow * virtualGridSettings.itemsPerRow;
-    const endIndex = visibleEndRow * virtualGridSettings.itemsPerRow;
+      const startIndex = visibleStartRow * virtualGridSettings.itemsPerRow;
+      const endIndex = visibleEndRow * virtualGridSettings.itemsPerRow;
 
-    // Preload around visible area
-    const centerIndex = Math.floor((startIndex + endIndex) / 2);
-    preloadAround(centerIndex);
+      // Preload around visible area
+      const centerIndex = Math.floor((startIndex + endIndex) / 2);
+      preloadAround(centerIndex);
 
-    // Load more if approaching end
-    const loadThreshold = totalCount - (pageSize * 2);
-    if (endIndex > loadThreshold && hasMore && !loading) {
-      loadMore();
-    }
-  }, [
-    onScroll,
-    itemHeight,
-    gap,
-    containerHeight,
-    virtualGridSettings.itemsPerRow,
-    preloadAround,
-    totalCount,
-    pageSize,
-    hasMore,
-    loading,
-    loadMore
-  ]);
+      // Load more if approaching end
+      const loadThreshold = totalCount - pageSize * 2;
+      if (endIndex > loadThreshold && hasMore && !loading) {
+        loadMore();
+      }
+    },
+    [
+      onScroll,
+      itemHeight,
+      gap,
+      containerHeight,
+      virtualGridSettings.itemsPerRow,
+      preloadAround,
+      totalCount,
+      pageSize,
+      hasMore,
+      loading,
+      loadMore,
+    ]
+  );
 
   // Load initial data
   useEffect(() => {
@@ -174,15 +175,17 @@ export function LazyVirtualizedGrid<T>({
   // Empty state
   if (totalCount === 0 && !loading) {
     return (
-      <div style={{
-        height: containerHeight,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: '#94a3b8',
-        textAlign: 'center',
-        ...style
-      }}>
+      <div
+        style={{
+          height: containerHeight,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#94a3b8',
+          textAlign: 'center',
+          ...style,
+        }}
+      >
         {emptyState || 'No items found'}
       </div>
     );
@@ -218,26 +221,26 @@ export function LazyVirtualizedGrid<T>({
         gridTemplateColumns: `repeat(${virtualGridSettings.itemsPerRow}, 1fr)`,
         gap: `${gap}px`,
         padding: `${gap}px`,
-        ...style
+        ...style,
       }}
-      onScroll={(e) => handleScroll(e.currentTarget.scrollTop)}
+      onScroll={e => handleScroll(e.currentTarget.scrollTop)}
     >
       {paddedItems.slice(0, Math.min(paddedItems.length, 100)).map((item, index) => (
-        <div key={getVirtualItemKey(item, index)}>
-          {renderVirtualItem(item, index)}
-        </div>
+        <div key={getVirtualItemKey(item, index)}>{renderVirtualItem(item, index)}</div>
       ))}
 
       {/* Loading indicator */}
       {loading && hasMore && (
-        <div style={{
-          gridColumn: '1 / -1',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          padding: '20px',
-          color: '#94a3b8'
-        }}>
+        <div
+          style={{
+            gridColumn: '1 / -1',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: '20px',
+            color: '#94a3b8',
+          }}
+        >
           Loading more items...
         </div>
       )}

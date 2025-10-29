@@ -35,10 +35,7 @@
 import React from 'react';
 import { renderHook, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import {
-  ReactGameProvider,
-  useReactGame,
-} from '../../contexts/ReactGameContext';
+import { ReactGameProvider, useReactGame } from '../../contexts/ReactGameContext';
 
 // =============================================================================
 // TEST SETUP
@@ -55,62 +52,62 @@ const mockItemDatabase = {
     id: 'iron_sword',
     name: 'Iron Sword',
     type: 'weapon',
-    equipmentSlot: 'weapon'
+    equipmentSlot: 'weapon',
   },
   leather_vest: {
     id: 'leather_vest',
     name: 'Leather Vest',
     type: 'armor',
-    equipmentSlot: 'armor'
+    equipmentSlot: 'armor',
   },
   iron_helmet: {
     id: 'iron_helmet',
     name: 'Iron Helmet',
     type: 'armor',
-    equipmentSlot: 'helmet'
+    equipmentSlot: 'helmet',
   },
   simple_necklace: {
     id: 'simple_necklace',
     name: 'Simple Necklace',
     type: 'accessory',
-    equipmentSlot: 'necklace'
+    equipmentSlot: 'necklace',
   },
   wooden_shield: {
     id: 'wooden_shield',
     name: 'Wooden Shield',
     type: 'armor',
-    equipmentSlot: 'shield'
+    equipmentSlot: 'shield',
   },
   leather_gloves: {
     id: 'leather_gloves',
     name: 'Leather Gloves',
     type: 'armor',
-    equipmentSlot: 'gloves'
+    equipmentSlot: 'gloves',
   },
   leather_boots: {
     id: 'leather_boots',
     name: 'Leather Boots',
     type: 'armor',
-    equipmentSlot: 'boots'
+    equipmentSlot: 'boots',
   },
   bronze_ring: {
     id: 'bronze_ring',
     name: 'Bronze Ring',
     type: 'accessory',
-    equipmentSlot: 'ring'
+    equipmentSlot: 'ring',
   },
   silver_ring: {
     id: 'silver_ring',
     name: 'Silver Ring',
     type: 'accessory',
-    equipmentSlot: 'ring'
+    equipmentSlot: 'ring',
   },
   lucky_charm: {
     id: 'lucky_charm',
     name: 'Lucky Charm',
     type: 'accessory',
-    equipmentSlot: 'charm'
-  }
+    equipmentSlot: 'charm',
+  },
 };
 
 // Setup mock ItemData.getItem function
@@ -121,7 +118,7 @@ const mockItemDataGetItem = (itemId: string) => {
 // Install mock before tests
 beforeAll(() => {
   (window as any).ItemData = {
-    getItem: mockItemDataGetItem
+    getItem: mockItemDataGetItem,
   };
 });
 
@@ -146,9 +143,9 @@ const createMockIronSword = () => ({
     magicAttack: 0,
     magicDefense: 0,
     speed: 0,
-    accuracy: 2
+    accuracy: 2,
   },
-  icon: '⚔️'
+  icon: '⚔️',
 });
 
 const createMockLeatherVest = () => ({
@@ -166,9 +163,9 @@ const createMockLeatherVest = () => ({
     magicAttack: 0,
     magicDefense: 5,
     speed: -2,
-    accuracy: 0
+    accuracy: 0,
   },
-  icon: '🛡️'
+  icon: '🛡️',
 });
 
 const createMockIronHelmet = () => ({
@@ -186,9 +183,9 @@ const createMockIronHelmet = () => ({
     magicAttack: 0,
     magicDefense: 3,
     speed: 0,
-    accuracy: 0
+    accuracy: 0,
   },
-  icon: '⛑️'
+  icon: '⛑️',
 });
 
 const createMockSimpleNecklace = () => ({
@@ -206,9 +203,9 @@ const createMockSimpleNecklace = () => ({
     magicAttack: 0,
     magicDefense: 2,
     speed: 0,
-    accuracy: 0
+    accuracy: 0,
   },
-  icon: '📿'
+  icon: '📿',
 });
 
 const createMockWoodenShield = () => ({
@@ -226,9 +223,9 @@ const createMockWoodenShield = () => ({
     magicAttack: 0,
     magicDefense: 5,
     speed: -1,
-    accuracy: 0
+    accuracy: 0,
   },
-  icon: '🛡️'
+  icon: '🛡️',
 });
 
 const createMockLeatherGloves = () => ({
@@ -246,9 +243,9 @@ const createMockLeatherGloves = () => ({
     magicAttack: 0,
     magicDefense: 0,
     speed: 0,
-    accuracy: 1
+    accuracy: 1,
   },
-  icon: '🧤'
+  icon: '🧤',
 });
 
 const createMockLeatherBoots = () => ({
@@ -266,9 +263,9 @@ const createMockLeatherBoots = () => ({
     magicAttack: 0,
     magicDefense: 0,
     speed: 2,
-    accuracy: 0
+    accuracy: 0,
   },
-  icon: '👢'
+  icon: '👢',
 });
 
 const createMockBronzeRing = () => ({
@@ -286,9 +283,9 @@ const createMockBronzeRing = () => ({
     magicAttack: 0,
     magicDefense: 0,
     speed: 0,
-    accuracy: 0
+    accuracy: 0,
   },
-  icon: '💍'
+  icon: '💍',
 });
 
 const createMockSilverRing = () => ({
@@ -306,9 +303,9 @@ const createMockSilverRing = () => ({
     magicAttack: 1,
     magicDefense: 1,
     speed: 0,
-    accuracy: 0
+    accuracy: 0,
   },
-  icon: '💍'
+  icon: '💍',
 });
 
 const createMockLuckyCharm = () => ({
@@ -326,9 +323,9 @@ const createMockLuckyCharm = () => ({
     magicAttack: 0,
     magicDefense: 0,
     speed: 0,
-    accuracy: 5
+    accuracy: 5,
   },
-  icon: '🍀'
+  icon: '🍀',
 });
 
 // =============================================================================
@@ -356,16 +353,16 @@ describe('Equipment Persistence Through Save/Load', () => {
 
       // Create full set of equipment (one for each slot)
       const fullEquipment = [
-        createMockIronHelmet(),      // helmet
-        createMockSimpleNecklace(),  // necklace
-        createMockLeatherVest(),     // armor
-        createMockIronSword(),       // weapon
-        createMockWoodenShield(),    // shield
-        createMockLeatherGloves(),   // gloves
-        createMockLeatherBoots(),    // boots
-        createMockBronzeRing(),      // ring1
-        createMockSilverRing(),      // ring2
-        createMockLuckyCharm(),      // charm
+        createMockIronHelmet(), // helmet
+        createMockSimpleNecklace(), // necklace
+        createMockLeatherVest(), // armor
+        createMockIronSword(), // weapon
+        createMockWoodenShield(), // shield
+        createMockLeatherGloves(), // gloves
+        createMockLeatherBoots(), // boots
+        createMockBronzeRing(), // ring1
+        createMockSilverRing(), // ring2
+        createMockLuckyCharm(), // charm
       ];
 
       act(() => {
@@ -401,8 +398,8 @@ describe('Equipment Persistence Through Save/Load', () => {
           payload: {
             slotIndex: 0,
             saveName: 'Full Equipment Test',
-            timestamp: Date.now()
-          }
+            timestamp: Date.now(),
+          },
         });
       });
 
@@ -416,7 +413,7 @@ describe('Equipment Persistence Through Save/Load', () => {
       act(() => {
         result2.current.dispatch({
           type: 'LOAD_GAME',
-          payload: { slotIndex: 0 }
+          payload: { slotIndex: 0 },
         });
       });
 
@@ -463,8 +460,8 @@ describe('Equipment Persistence Through Save/Load', () => {
           payload: {
             slotIndex: 0,
             saveName: 'ID Format Test',
-            timestamp: Date.now()
-          }
+            timestamp: Date.now(),
+          },
         });
       });
 
@@ -501,7 +498,7 @@ describe('Equipment Persistence Through Save/Load', () => {
       act(() => {
         result.current.dispatch({
           type: 'SAVE_GAME',
-          payload: { slotIndex: 0, saveName: 'Reference Test', timestamp: Date.now() }
+          payload: { slotIndex: 0, saveName: 'Reference Test', timestamp: Date.now() },
         });
       });
 
@@ -510,7 +507,7 @@ describe('Equipment Persistence Through Save/Load', () => {
       act(() => {
         result2.current.dispatch({
           type: 'LOAD_GAME',
-          payload: { slotIndex: 0 }
+          payload: { slotIndex: 0 },
         });
       });
 
@@ -518,12 +515,8 @@ describe('Equipment Persistence Through Save/Load', () => {
       const weaponId = result2.current.state.player?.equipment.weapon;
       const helmetId = result2.current.state.player?.equipment.helmet;
 
-      const weaponInInventory = result2.current.state.inventory.find(
-        item => item.id === weaponId
-      );
-      const helmetInInventory = result2.current.state.inventory.find(
-        item => item.id === helmetId
-      );
+      const weaponInInventory = result2.current.state.inventory.find(item => item.id === weaponId);
+      const helmetInInventory = result2.current.state.inventory.find(item => item.id === helmetId);
 
       expect(weaponInInventory).toBeDefined();
       expect(weaponInInventory?.name).toBe('Iron Sword');
@@ -569,7 +562,7 @@ describe('Equipment Persistence Through Save/Load', () => {
       act(() => {
         result.current.dispatch({
           type: 'SAVE_GAME',
-          payload: { slotIndex: 1, saveName: 'Partial Equipment', timestamp: Date.now() }
+          payload: { slotIndex: 1, saveName: 'Partial Equipment', timestamp: Date.now() },
         });
       });
 
@@ -578,7 +571,7 @@ describe('Equipment Persistence Through Save/Load', () => {
       act(() => {
         result2.current.dispatch({
           type: 'LOAD_GAME',
-          payload: { slotIndex: 1 }
+          payload: { slotIndex: 1 },
         });
       });
 
@@ -618,7 +611,7 @@ describe('Equipment Persistence Through Save/Load', () => {
       act(() => {
         result.current.dispatch({
           type: 'SAVE_GAME',
-          payload: { slotIndex: 0, saveName: 'Empty Slots', timestamp: Date.now() }
+          payload: { slotIndex: 0, saveName: 'Empty Slots', timestamp: Date.now() },
         });
       });
 
@@ -664,7 +657,7 @@ describe('Equipment Persistence Through Save/Load', () => {
       act(() => {
         result.current.dispatch({
           type: 'SAVE_GAME',
-          payload: { slotIndex: 2, saveName: 'Empty Equipment', timestamp: Date.now() }
+          payload: { slotIndex: 2, saveName: 'Empty Equipment', timestamp: Date.now() },
         });
       });
 
@@ -673,7 +666,7 @@ describe('Equipment Persistence Through Save/Load', () => {
       act(() => {
         result2.current.dispatch({
           type: 'LOAD_GAME',
-          payload: { slotIndex: 2 }
+          payload: { slotIndex: 2 },
         });
       });
 
@@ -706,7 +699,7 @@ describe('Equipment Persistence Through Save/Load', () => {
       act(() => {
         result.current.dispatch({
           type: 'SAVE_GAME',
-          payload: { slotIndex: 0, saveName: 'No Errors Test', timestamp: Date.now() }
+          payload: { slotIndex: 0, saveName: 'No Errors Test', timestamp: Date.now() },
         });
       });
 
@@ -717,7 +710,7 @@ describe('Equipment Persistence Through Save/Load', () => {
         act(() => {
           result2.current.dispatch({
             type: 'LOAD_GAME',
-            payload: { slotIndex: 0 }
+            payload: { slotIndex: 0 },
           });
         });
       }).not.toThrow();
@@ -752,7 +745,7 @@ describe('Equipment Persistence Through Save/Load', () => {
       act(() => {
         result.current.dispatch({
           type: 'SAVE_GAME',
-          payload: { slotIndex: 0, saveName: 'Validation Test', timestamp: Date.now() }
+          payload: { slotIndex: 0, saveName: 'Validation Test', timestamp: Date.now() },
         });
       });
 
@@ -768,7 +761,7 @@ describe('Equipment Persistence Through Save/Load', () => {
       act(() => {
         result2.current.dispatch({
           type: 'LOAD_GAME',
-          payload: { slotIndex: 0 }
+          payload: { slotIndex: 0 },
         });
       });
 
@@ -807,7 +800,7 @@ describe('Equipment Persistence Through Save/Load', () => {
       act(() => {
         result.current.dispatch({
           type: 'SAVE_GAME',
-          payload: { slotIndex: 0, saveName: 'Mixed Test', timestamp: Date.now() }
+          payload: { slotIndex: 0, saveName: 'Mixed Test', timestamp: Date.now() },
         });
       });
 
@@ -823,7 +816,7 @@ describe('Equipment Persistence Through Save/Load', () => {
       act(() => {
         result2.current.dispatch({
           type: 'LOAD_GAME',
-          payload: { slotIndex: 0 }
+          payload: { slotIndex: 0 },
         });
       });
 
@@ -861,7 +854,7 @@ describe('Equipment Persistence Through Save/Load', () => {
             magicAttack: 5,
             magicDefense: 5,
             speed: 7,
-            accuracy: 80
+            accuracy: 80,
           },
           stats: {
             attack: 10,
@@ -869,21 +862,17 @@ describe('Equipment Persistence Through Save/Load', () => {
             magicAttack: 5,
             magicDefense: 5,
             speed: 7,
-            accuracy: 80
+            accuracy: 80,
           },
           // OLD FORMAT: Only 3 slots
           equipment: {
             weapon: 'iron_sword',
             armor: 'leather_vest',
-            accessory: 'bronze_ring'
+            accessory: 'bronze_ring',
           },
-          spells: []
+          spells: [],
         },
-        inventory: [
-          createMockIronSword(),
-          createMockLeatherVest(),
-          createMockBronzeRing()
-        ],
+        inventory: [createMockIronSword(), createMockLeatherVest(), createMockBronzeRing()],
         currentArea: 'starting_town',
         unlockedAreas: ['starting_town'],
         storyFlags: { tutorial_complete: true },
@@ -892,8 +881,8 @@ describe('Equipment Persistence Through Save/Load', () => {
         timestamp: Date.now(),
         // OLD FORMAT: No equipment version or version 0.0
         metadata: {
-          equipmentVersion: '0.0'
-        }
+          equipmentVersion: '0.0',
+        },
       };
 
       // Save old format to localStorage
@@ -905,7 +894,7 @@ describe('Equipment Persistence Through Save/Load', () => {
       act(() => {
         result.current.dispatch({
           type: 'LOAD_GAME',
-          payload: { slotIndex: 3 }
+          payload: { slotIndex: 3 },
         });
       });
 
@@ -963,7 +952,7 @@ describe('Equipment Persistence Through Save/Load', () => {
             magicAttack: 15,
             magicDefense: 10,
             speed: 8,
-            accuracy: 75
+            accuracy: 75,
           },
           stats: {
             attack: 5,
@@ -971,14 +960,14 @@ describe('Equipment Persistence Through Save/Load', () => {
             magicAttack: 15,
             magicDefense: 10,
             speed: 8,
-            accuracy: 75
+            accuracy: 75,
           },
           equipment: {
             weapon: 'iron_sword',
             armor: null,
-            accessory: null
+            accessory: null,
           },
-          spells: []
+          spells: [],
         },
         inventory: [createMockIronSword()],
         currentArea: 'starting_town',
@@ -986,7 +975,7 @@ describe('Equipment Persistence Through Save/Load', () => {
         storyFlags: {},
         completedQuests: [],
         totalPlayTime: 1800,
-        timestamp: Date.now()
+        timestamp: Date.now(),
         // No metadata at all
       };
 
@@ -998,7 +987,7 @@ describe('Equipment Persistence Through Save/Load', () => {
       act(() => {
         result.current.dispatch({
           type: 'LOAD_GAME',
-          payload: { slotIndex: 4 }
+          payload: { slotIndex: 4 },
         });
       });
 
@@ -1043,7 +1032,7 @@ describe('Equipment Persistence Through Save/Load', () => {
       act(() => {
         result1.current.dispatch({
           type: 'SAVE_GAME',
-          payload: { slotIndex: 0, saveName: 'Cycle 1', timestamp: Date.now() }
+          payload: { slotIndex: 0, saveName: 'Cycle 1', timestamp: Date.now() },
         });
       });
 
@@ -1053,7 +1042,7 @@ describe('Equipment Persistence Through Save/Load', () => {
       act(() => {
         result2.current.dispatch({
           type: 'LOAD_GAME',
-          payload: { slotIndex: 0 }
+          payload: { slotIndex: 0 },
         });
       });
 
@@ -1070,7 +1059,7 @@ describe('Equipment Persistence Through Save/Load', () => {
       act(() => {
         result2.current.dispatch({
           type: 'SAVE_GAME',
-          payload: { slotIndex: 0, saveName: 'Cycle 2', timestamp: Date.now() }
+          payload: { slotIndex: 0, saveName: 'Cycle 2', timestamp: Date.now() },
         });
       });
 
@@ -1080,7 +1069,7 @@ describe('Equipment Persistence Through Save/Load', () => {
       act(() => {
         result3.current.dispatch({
           type: 'LOAD_GAME',
-          payload: { slotIndex: 0 }
+          payload: { slotIndex: 0 },
         });
       });
 
@@ -1101,7 +1090,7 @@ describe('Equipment Persistence Through Save/Load', () => {
         slot0.current.equipItem('weapon', 'iron_sword');
         slot0.current.dispatch({
           type: 'SAVE_GAME',
-          payload: { slotIndex: 0, saveName: 'Slot 0', timestamp: Date.now() }
+          payload: { slotIndex: 0, saveName: 'Slot 0', timestamp: Date.now() },
         });
       });
 
@@ -1114,7 +1103,7 @@ describe('Equipment Persistence Through Save/Load', () => {
         slot1.current.equipItem('armor', 'leather_vest');
         slot1.current.dispatch({
           type: 'SAVE_GAME',
-          payload: { slotIndex: 1, saveName: 'Slot 1', timestamp: Date.now() }
+          payload: { slotIndex: 1, saveName: 'Slot 1', timestamp: Date.now() },
         });
       });
 
@@ -1124,7 +1113,7 @@ describe('Equipment Persistence Through Save/Load', () => {
       act(() => {
         load0.current.dispatch({
           type: 'LOAD_GAME',
-          payload: { slotIndex: 0 }
+          payload: { slotIndex: 0 },
         });
       });
 
@@ -1138,7 +1127,7 @@ describe('Equipment Persistence Through Save/Load', () => {
       act(() => {
         load1.current.dispatch({
           type: 'LOAD_GAME',
-          payload: { slotIndex: 1 }
+          payload: { slotIndex: 1 },
         });
       });
 
@@ -1168,7 +1157,7 @@ describe('Equipment Persistence Through Save/Load', () => {
       act(() => {
         result.current.dispatch({
           type: 'SAVE_GAME',
-          payload: { slotIndex: 0, saveName: 'Version Test', timestamp: Date.now() }
+          payload: { slotIndex: 0, saveName: 'Version Test', timestamp: Date.now() },
         });
       });
 

@@ -9,7 +9,7 @@ import {
   validateEquippedItems,
   cleanInvalidEquipment,
   validateEquipmentSlot,
-  getValidationSummary
+  getValidationSummary,
 } from '../equipmentValidation';
 import type { Equipment } from '../../contexts/ReactGameContext';
 
@@ -22,15 +22,15 @@ const mockItemData = {
   getItem: jest.fn((itemId: string) => {
     // Valid items in our mock database
     const validItems: Record<string, any> = {
-      'iron_sword': { id: 'iron_sword', name: 'Iron Sword', type: 'weapon' },
-      'steel_armor': { id: 'steel_armor', name: 'Steel Armor', type: 'armor' },
-      'magic_ring': { id: 'magic_ring', name: 'Magic Ring', type: 'accessory' },
-      'leather_boots': { id: 'leather_boots', name: 'Leather Boots', type: 'armor' },
-      'steel_helmet': { id: 'steel_helmet', name: 'Steel Helmet', type: 'armor' }
+      iron_sword: { id: 'iron_sword', name: 'Iron Sword', type: 'weapon' },
+      steel_armor: { id: 'steel_armor', name: 'Steel Armor', type: 'armor' },
+      magic_ring: { id: 'magic_ring', name: 'Magic Ring', type: 'accessory' },
+      leather_boots: { id: 'leather_boots', name: 'Leather Boots', type: 'armor' },
+      steel_helmet: { id: 'steel_helmet', name: 'Steel Helmet', type: 'armor' },
     };
 
     return validItems[itemId] || null;
-  })
+  }),
 };
 
 // Set up global ItemData mock
@@ -64,7 +64,7 @@ describe('validateEquippedItems', () => {
       boots: null,
       ring1: null,
       ring2: null,
-      charm: null
+      charm: null,
     };
 
     const result = validateEquippedItems(equipment);
@@ -87,7 +87,7 @@ describe('validateEquippedItems', () => {
       boots: 'leather_boots',
       ring1: 'magic_ring',
       ring2: null,
-      charm: null
+      charm: null,
     };
 
     const result = validateEquippedItems(equipment);
@@ -105,16 +105,16 @@ describe('validateEquippedItems', () => {
   it('should identify invalid items that no longer exist', () => {
     const equipment: Equipment = {
       weapon: 'deleted_sword', // This item doesn't exist
-      armor: 'steel_armor',    // This item exists
+      armor: 'steel_armor', // This item exists
       accessory: null,
       helmet: null,
       necklace: null,
       shield: null,
       gloves: null,
-      boots: 'removed_boots',  // This item doesn't exist
+      boots: 'removed_boots', // This item doesn't exist
       ring1: null,
       ring2: null,
-      charm: null
+      charm: null,
     };
 
     const result = validateEquippedItems(equipment);
@@ -142,7 +142,7 @@ describe('validateEquippedItems', () => {
       boots: 'invalid_8',
       ring1: 'invalid_9',
       ring2: 'invalid_10',
-      charm: 'invalid_11'
+      charm: 'invalid_11',
     };
 
     const result = validateEquippedItems(equipment);
@@ -169,7 +169,7 @@ describe('validateEquippedItems', () => {
       boots: null,
       ring1: null,
       ring2: null,
-      charm: null
+      charm: null,
     };
 
     // Suppress console.error for this test
@@ -200,7 +200,7 @@ describe('cleanInvalidEquipment', () => {
       boots: null,
       ring1: null,
       ring2: null,
-      charm: null
+      charm: null,
     };
 
     const cleaned = cleanInvalidEquipment(equipment);
@@ -212,17 +212,17 @@ describe('cleanInvalidEquipment', () => {
 
   it('should remove invalid items and set slots to null', () => {
     const equipment: Equipment = {
-      weapon: 'deleted_sword',  // Invalid
-      armor: 'steel_armor',     // Valid
+      weapon: 'deleted_sword', // Invalid
+      armor: 'steel_armor', // Valid
       accessory: null,
-      helmet: 'steel_helmet',   // Valid
+      helmet: 'steel_helmet', // Valid
       necklace: null,
       shield: null,
       gloves: null,
-      boots: 'removed_boots',   // Invalid
-      ring1: 'magic_ring',      // Valid
+      boots: 'removed_boots', // Invalid
+      ring1: 'magic_ring', // Valid
       ring2: null,
-      charm: null
+      charm: null,
     };
 
     // Suppress console warnings for this test
@@ -257,7 +257,7 @@ describe('cleanInvalidEquipment', () => {
       boots: null,
       ring1: null,
       ring2: null,
-      charm: null
+      charm: null,
     };
 
     const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
@@ -288,7 +288,7 @@ describe('cleanInvalidEquipment', () => {
       boots: null,
       ring1: null,
       ring2: null,
-      charm: null
+      charm: null,
     };
 
     const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
@@ -323,9 +323,7 @@ describe('validateEquipmentSlot', () => {
     const isValid = validateEquipmentSlot('deleted_item', 'armor');
     expect(isValid).toBe(false);
 
-    expect(consoleWarnSpy).toHaveBeenCalledWith(
-      expect.stringContaining('deleted_item')
-    );
+    expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('deleted_item'));
 
     consoleWarnSpy.mockRestore();
   });
@@ -350,7 +348,7 @@ describe('getValidationSummary', () => {
       isValid: true,
       invalidSlots: [],
       validSlots: ['weapon', 'armor'] as any,
-      warnings: []
+      warnings: [],
     };
 
     const summary = getValidationSummary(validResult);
@@ -363,7 +361,7 @@ describe('getValidationSummary', () => {
       isValid: false,
       invalidSlots: ['weapon', 'boots'] as any,
       validSlots: ['armor', 'helmet'] as any,
-      warnings: ['warning 1', 'warning 2']
+      warnings: ['warning 1', 'warning 2'],
     };
 
     const summary = getValidationSummary(invalidResult);
@@ -382,17 +380,17 @@ describe('Equipment Validation Integration', () => {
   it('should handle a realistic save game scenario with mixed valid/invalid items', () => {
     // Simulate loading a save game where some items were removed in an update
     const savedEquipment: Equipment = {
-      weapon: 'iron_sword',        // Valid - still exists
-      armor: 'old_armor_v1',       // Invalid - removed in update
+      weapon: 'iron_sword', // Valid - still exists
+      armor: 'old_armor_v1', // Invalid - removed in update
       accessory: null,
-      helmet: 'steel_helmet',      // Valid - still exists
+      helmet: 'steel_helmet', // Valid - still exists
       necklace: null,
       shield: null,
       gloves: null,
-      boots: 'deprecated_boots',   // Invalid - removed in update
-      ring1: 'magic_ring',         // Valid - still exists
+      boots: 'deprecated_boots', // Invalid - removed in update
+      ring1: 'magic_ring', // Valid - still exists
       ring2: null,
-      charm: null
+      charm: null,
     };
 
     const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
@@ -438,7 +436,7 @@ describe('Equipment Validation Integration', () => {
       boots: null,
       ring1: null,
       ring2: null,
-      charm: null
+      charm: null,
     };
 
     const cleaned = cleanInvalidEquipment(freshEquipment);
@@ -460,7 +458,7 @@ describe('Equipment Validation Integration', () => {
       boots: null,
       ring1: null,
       ring2: null,
-      charm: null
+      charm: null,
     } as Equipment;
 
     const cleaned = cleanInvalidEquipment(legacyEquipment);

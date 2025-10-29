@@ -19,18 +19,48 @@ const mockItemData = {
   getItem: jest.fn((itemId: string) => {
     // Valid items in our mock database with equipmentSlot info
     const validItems: Record<string, any> = {
-      'iron_sword': { id: 'iron_sword', name: 'Iron Sword', type: 'weapon', equipmentSlot: 'weapon' },
-      'steel_armor': { id: 'steel_armor', name: 'Steel Armor', type: 'armor', equipmentSlot: 'armor' },
-      'bronze_ring': { id: 'bronze_ring', name: 'Bronze Ring', type: 'accessory', equipmentSlot: 'ring1' },
-      'jade_necklace': { id: 'jade_necklace', name: 'Jade Necklace', type: 'accessory', equipmentSlot: 'necklace' },
-      'lucky_charm': { id: 'lucky_charm', name: 'Lucky Charm', type: 'accessory', equipmentSlot: 'charm' },
-      'generic_accessory': { id: 'generic_accessory', name: 'Generic Accessory', type: 'accessory' }, // No equipmentSlot
-      'leather_boots': { id: 'leather_boots', name: 'Leather Boots', type: 'armor', equipmentSlot: 'boots' },
-      'steel_helmet': { id: 'steel_helmet', name: 'Steel Helmet', type: 'armor', equipmentSlot: 'helmet' }
+      iron_sword: { id: 'iron_sword', name: 'Iron Sword', type: 'weapon', equipmentSlot: 'weapon' },
+      steel_armor: {
+        id: 'steel_armor',
+        name: 'Steel Armor',
+        type: 'armor',
+        equipmentSlot: 'armor',
+      },
+      bronze_ring: {
+        id: 'bronze_ring',
+        name: 'Bronze Ring',
+        type: 'accessory',
+        equipmentSlot: 'ring1',
+      },
+      jade_necklace: {
+        id: 'jade_necklace',
+        name: 'Jade Necklace',
+        type: 'accessory',
+        equipmentSlot: 'necklace',
+      },
+      lucky_charm: {
+        id: 'lucky_charm',
+        name: 'Lucky Charm',
+        type: 'accessory',
+        equipmentSlot: 'charm',
+      },
+      generic_accessory: { id: 'generic_accessory', name: 'Generic Accessory', type: 'accessory' }, // No equipmentSlot
+      leather_boots: {
+        id: 'leather_boots',
+        name: 'Leather Boots',
+        type: 'armor',
+        equipmentSlot: 'boots',
+      },
+      steel_helmet: {
+        id: 'steel_helmet',
+        name: 'Steel Helmet',
+        type: 'armor',
+        equipmentSlot: 'helmet',
+      },
     };
 
     return validItems[itemId] || null;
-  })
+  }),
 };
 
 // Set up global ItemData mock
@@ -64,7 +94,7 @@ describe('migrateEquipmentSlots - Migration Detection', () => {
     const oldEquipment = {
       weapon: 'iron_sword',
       armor: 'steel_armor',
-      accessory: 'bronze_ring'
+      accessory: 'bronze_ring',
     };
 
     const migrated = migrateEquipmentSlots(oldEquipment);
@@ -98,7 +128,7 @@ describe('migrateEquipmentSlots - Migration Detection', () => {
       boots: 'leather_boots',
       ring1: 'bronze_ring',
       ring2: null,
-      charm: null
+      charm: null,
     };
 
     const result = migrateEquipmentSlots(newEquipment, '1.0');
@@ -124,7 +154,7 @@ describe('migrateEquipmentSlots - Migration Detection', () => {
     const emptyEquipment = {
       weapon: null,
       armor: null,
-      accessory: null
+      accessory: null,
     };
 
     const migrated = migrateEquipmentSlots(emptyEquipment);
@@ -156,7 +186,7 @@ describe('migrateEquipmentSlots - Slot Preservation', () => {
     const oldEquipment = {
       weapon: 'iron_sword',
       armor: null,
-      accessory: null
+      accessory: null,
     };
 
     const migrated = migrateEquipmentSlots(oldEquipment);
@@ -172,7 +202,7 @@ describe('migrateEquipmentSlots - Slot Preservation', () => {
     const oldEquipment = {
       weapon: null,
       armor: 'steel_armor',
-      accessory: null
+      accessory: null,
     };
 
     const migrated = migrateEquipmentSlots(oldEquipment);
@@ -188,7 +218,7 @@ describe('migrateEquipmentSlots - Slot Preservation', () => {
     const oldEquipment = {
       weapon: 'iron_sword',
       armor: 'steel_armor',
-      accessory: 'bronze_ring'
+      accessory: 'bronze_ring',
     };
 
     const migrated = migrateEquipmentSlots(oldEquipment);
@@ -196,9 +226,10 @@ describe('migrateEquipmentSlots - Slot Preservation', () => {
     expect(migrated.weapon).toBe('iron_sword');
     expect(migrated.armor).toBe('steel_armor');
     // Accessory should be mapped somewhere (ring1, necklace, or charm)
-    const accessoryMapped = migrated.ring1 === 'bronze_ring' ||
-                            migrated.necklace === 'bronze_ring' ||
-                            migrated.charm === 'bronze_ring';
+    const accessoryMapped =
+      migrated.ring1 === 'bronze_ring' ||
+      migrated.necklace === 'bronze_ring' ||
+      migrated.charm === 'bronze_ring';
     expect(accessoryMapped).toBe(true);
 
     restore();
@@ -216,7 +247,7 @@ describe('migrateEquipmentSlots - Accessory Mapping', () => {
     const oldEquipment = {
       weapon: null,
       armor: null,
-      accessory: 'bronze_ring' // Has equipmentSlot: 'ring1'
+      accessory: 'bronze_ring', // Has equipmentSlot: 'ring1'
     };
 
     const migrated = migrateEquipmentSlots(oldEquipment);
@@ -234,7 +265,7 @@ describe('migrateEquipmentSlots - Accessory Mapping', () => {
     const oldEquipment = {
       weapon: null,
       armor: null,
-      accessory: 'jade_necklace' // Has equipmentSlot: 'necklace'
+      accessory: 'jade_necklace', // Has equipmentSlot: 'necklace'
     };
 
     const migrated = migrateEquipmentSlots(oldEquipment);
@@ -252,7 +283,7 @@ describe('migrateEquipmentSlots - Accessory Mapping', () => {
     const oldEquipment = {
       weapon: null,
       armor: null,
-      accessory: 'lucky_charm' // Has equipmentSlot: 'charm'
+      accessory: 'lucky_charm', // Has equipmentSlot: 'charm'
     };
 
     const migrated = migrateEquipmentSlots(oldEquipment);
@@ -270,7 +301,7 @@ describe('migrateEquipmentSlots - Accessory Mapping', () => {
     const oldEquipment = {
       weapon: null,
       armor: null,
-      accessory: 'generic_accessory' // No equipmentSlot property
+      accessory: 'generic_accessory', // No equipmentSlot property
     };
 
     const migrated = migrateEquipmentSlots(oldEquipment);
@@ -288,7 +319,7 @@ describe('migrateEquipmentSlots - Accessory Mapping', () => {
     const oldEquipment = {
       weapon: null,
       armor: null,
-      accessory: 'nonexistent_item' // Item doesn't exist in database
+      accessory: 'nonexistent_item', // Item doesn't exist in database
     };
 
     const migrated = migrateEquipmentSlots(oldEquipment);
@@ -310,7 +341,7 @@ describe('migrateEquipmentSlots - Accessory Mapping', () => {
     const oldEquipment = {
       weapon: null,
       armor: null,
-      accessory: 'bronze_ring'
+      accessory: 'bronze_ring',
     };
 
     const migrated = migrateEquipmentSlots(oldEquipment);
@@ -337,7 +368,7 @@ describe('migrateEquipmentSlots - New Slot Initialization', () => {
     const oldEquipment = {
       weapon: 'iron_sword',
       armor: 'steel_armor',
-      accessory: null
+      accessory: null,
     };
 
     const migrated = migrateEquipmentSlots(oldEquipment);
@@ -357,7 +388,7 @@ describe('migrateEquipmentSlots - New Slot Initialization', () => {
     const restore = suppressConsoleLogs();
 
     const oldEquipment = {
-      weapon: 'iron_sword'
+      weapon: 'iron_sword',
       // Missing armor and accessory
     };
 
@@ -392,7 +423,7 @@ describe('migrateEquipmentSlots - Console Messages', () => {
     const oldEquipment = {
       weapon: 'iron_sword',
       armor: null,
-      accessory: null
+      accessory: null,
     };
 
     migrateEquipmentSlots(oldEquipment);
@@ -410,7 +441,7 @@ describe('migrateEquipmentSlots - Console Messages', () => {
     const oldEquipment = {
       weapon: 'iron_sword',
       armor: null,
-      accessory: null
+      accessory: null,
     };
 
     migrateEquipmentSlots(oldEquipment);
@@ -428,7 +459,7 @@ describe('migrateEquipmentSlots - Console Messages', () => {
     const oldEquipment = {
       weapon: null,
       armor: null,
-      accessory: 'bronze_ring'
+      accessory: 'bronze_ring',
     };
 
     migrateEquipmentSlots(oldEquipment);
@@ -454,15 +485,13 @@ describe('migrateEquipmentSlots - Console Messages', () => {
       boots: null,
       ring1: 'bronze_ring',
       ring2: null,
-      charm: null
+      charm: null,
     };
 
     migrateEquipmentSlots(newEquipment, '1.0');
 
     // Should not log migration messages
-    expect(consoleLogSpy).not.toHaveBeenCalledWith(
-      expect.stringContaining('Migrating equipment')
-    );
+    expect(consoleLogSpy).not.toHaveBeenCalledWith(expect.stringContaining('Migrating equipment'));
 
     consoleLogSpy.mockRestore();
   });
@@ -499,7 +528,7 @@ describe('migrateEquipmentSlots - Edge Cases', () => {
     const oldEquipment = {
       weapon: undefined as any,
       armor: undefined as any,
-      accessory: undefined as any
+      accessory: undefined as any,
     };
 
     const migrated = migrateEquipmentSlots(oldEquipment);
@@ -517,7 +546,7 @@ describe('migrateEquipmentSlots - Edge Cases', () => {
     const oldEquipment = {
       weapon: 'iron_sword',
       armor: 'steel_armor',
-      accessory: null
+      accessory: null,
     };
 
     const migrated = migrateEquipmentSlots(oldEquipment);
@@ -568,7 +597,7 @@ describe('migrateEquipmentSlots - Integration', () => {
     const oldSaveEquipment = {
       weapon: 'iron_sword',
       armor: 'steel_armor',
-      accessory: 'bronze_ring'
+      accessory: 'bronze_ring',
     };
 
     const migrated = migrateEquipmentSlots(oldSaveEquipment);
@@ -596,7 +625,7 @@ describe('migrateEquipmentSlots - Integration', () => {
     const oldSaveEquipment = {
       weapon: 'iron_sword',
       armor: 'steel_armor',
-      accessory: null
+      accessory: null,
     };
 
     const migrated = migrateEquipmentSlots(oldSaveEquipment);
@@ -619,7 +648,7 @@ describe('migrateEquipmentSlots - Integration', () => {
     const newPlayerEquipment = {
       weapon: null,
       armor: null,
-      accessory: null
+      accessory: null,
     };
 
     const migrated = migrateEquipmentSlots(newPlayerEquipment);
@@ -644,7 +673,7 @@ describe('migrateEquipmentSlots - Version-Based Migration', () => {
     const oldEquipment = {
       weapon: 'iron_sword',
       armor: 'steel_armor',
-      accessory: 'bronze_ring'
+      accessory: 'bronze_ring',
     };
 
     const result = migrateEquipmentSlots(oldEquipment, '0.0');
@@ -681,7 +710,7 @@ describe('migrateEquipmentSlots - Version-Based Migration', () => {
       ring1: 'bronze_ring',
       ring2: null,
       charm: null,
-      accessory: null
+      accessory: null,
     };
 
     const result = migrateEquipmentSlots(currentEquipment, '1.0');
@@ -707,7 +736,7 @@ describe('migrateEquipmentSlots - Version-Based Migration', () => {
     const legacyEquipment = {
       weapon: 'iron_sword',
       armor: null,
-      accessory: null
+      accessory: null,
     };
 
     // Call without version parameter
@@ -728,15 +757,13 @@ describe('migrateEquipmentSlots - Version-Based Migration', () => {
     const oldEquipment = {
       weapon: 'iron_sword',
       armor: null,
-      accessory: null
+      accessory: null,
     };
 
     migrateEquipmentSlots(oldEquipment, '0.0');
 
     // Should log the version being migrated from
-    expect(consoleLogSpy).toHaveBeenCalledWith(
-      expect.stringContaining('version 0.0 to 1.0')
-    );
+    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('version 0.0 to 1.0'));
 
     consoleLogSpy.mockRestore();
   });
@@ -747,7 +774,7 @@ describe('migrateEquipmentSlots - Version-Based Migration', () => {
     const oldEquipment = {
       weapon: 'iron_sword',
       armor: 'steel_armor',
-      accessory: 'jade_necklace'
+      accessory: 'jade_necklace',
     };
 
     const result = migrateEquipmentSlots(oldEquipment, undefined);
@@ -769,7 +796,7 @@ describe('migrateEquipmentSlots - Version-Based Migration', () => {
     const partialEquipment = {
       weapon: 'iron_sword',
       armor: 'steel_armor',
-      helmet: 'steel_helmet'
+      helmet: 'steel_helmet',
       // Missing other slots
     };
 
@@ -809,7 +836,7 @@ describe('migrateEquipmentSlots - Version Tracking Integration', () => {
     const oldSaveEquipment = {
       weapon: 'iron_sword',
       armor: 'steel_armor',
-      accessory: 'bronze_ring'
+      accessory: 'bronze_ring',
     };
 
     // Version is undefined/missing in old saves
@@ -845,7 +872,7 @@ describe('migrateEquipmentSlots - Version Tracking Integration', () => {
       ring1: 'bronze_ring',
       ring2: 'silver_ring',
       charm: 'lucky_charm',
-      accessory: null
+      accessory: null,
     };
 
     const result = migrateEquipmentSlots(currentSaveEquipment, '1.0');
@@ -870,7 +897,7 @@ describe('migrateEquipmentSlots - Version Tracking Integration', () => {
       ring1: 'bronze_ring',
       ring2: null,
       charm: null,
-      accessory: null
+      accessory: null,
     };
 
     // Even if we pass a future version, it should handle gracefully

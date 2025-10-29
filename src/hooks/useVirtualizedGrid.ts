@@ -35,7 +35,7 @@ export function useVirtualizedGrid({
   minItemWidth,
   itemHeight,
   gap = 16,
-  threshold = 100
+  threshold = 100,
 }: UseVirtualizedGridProps): VirtualizedGridSettings {
   const { isMobile, isTablet, screenWidth } = useResponsive();
   const [containerWidth, setContainerWidth] = useState(screenWidth || 1024);
@@ -55,7 +55,7 @@ export function useVirtualizedGrid({
     const adjustedHeight = isMobile ? itemHeight * 0.9 : itemHeight;
 
     // Calculate items per row based on available width
-    const availableWidth = containerWidth - (adjustedGap * 2); // Account for container padding
+    const availableWidth = containerWidth - adjustedGap * 2; // Account for container padding
     const itemWidth = adjustedMinWidth + adjustedGap;
     const maxItemsPerRow = Math.floor(availableWidth / itemWidth);
     const itemsPerRow = Math.max(1, maxItemsPerRow);
@@ -82,7 +82,7 @@ export function useVirtualizedGrid({
       shouldVirtualize,
       containerHeight,
       overscan,
-      estimatedTotalHeight
+      estimatedTotalHeight,
     };
   }, [
     containerWidth,
@@ -93,7 +93,7 @@ export function useVirtualizedGrid({
     threshold,
     isMobile,
     isTablet,
-    containerHeight
+    containerHeight,
   ]);
 
   return gridSettings;
@@ -107,55 +107,54 @@ export function useVirtualizedGridPerformance() {
     renderTime: 0,
     visibleItems: 0,
     totalItems: 0,
-    memoryUsage: 0
+    memoryUsage: 0,
   });
 
-  const recordRenderMetrics = useCallback((
-    startTime: number,
-    visibleItems: number,
-    totalItems: number
-  ) => {
-    const renderTime = performance.now() - startTime;
+  const recordRenderMetrics = useCallback(
+    (startTime: number, visibleItems: number, totalItems: number) => {
+      const renderTime = performance.now() - startTime;
 
-    // Estimate memory usage (rough calculation)
-    const estimatedMemoryPerItem = 0.1; // KB per item
-    const memoryUsage = visibleItems * estimatedMemoryPerItem;
+      // Estimate memory usage (rough calculation)
+      const estimatedMemoryPerItem = 0.1; // KB per item
+      const memoryUsage = visibleItems * estimatedMemoryPerItem;
 
-    setMetrics({
-      renderTime,
-      visibleItems,
-      totalItems,
-      memoryUsage
-    });
+      setMetrics({
+        renderTime,
+        visibleItems,
+        totalItems,
+        memoryUsage,
+      });
 
-    // Log performance warnings in development
-    if (process.env.NODE_ENV === 'development') {
-      if (renderTime > 16) { // 60fps threshold
-        console.warn(`VirtualizedGrid: Slow render detected (${renderTime.toFixed(2)}ms)`, {
-          visibleItems,
-          totalItems,
-          renderTime
-        });
+      // Log performance warnings in development
+      if (process.env.NODE_ENV === 'development') {
+        if (renderTime > 16) {
+          // 60fps threshold
+          console.warn(`VirtualizedGrid: Slow render detected (${renderTime.toFixed(2)}ms)`, {
+            visibleItems,
+            totalItems,
+            renderTime,
+          });
+        }
       }
-    }
-  }, []);
+    },
+    []
+  );
 
   const getPerformanceReport = useCallback(() => {
-    const efficiency = metrics.totalItems > 0
-      ? ((metrics.visibleItems / metrics.totalItems) * 100).toFixed(1)
-      : '0';
+    const efficiency =
+      metrics.totalItems > 0 ? ((metrics.visibleItems / metrics.totalItems) * 100).toFixed(1) : '0';
 
     return {
       ...metrics,
       efficiency: `${efficiency}%`,
-      fps: metrics.renderTime > 0 ? Math.round(1000 / metrics.renderTime) : 0
+      fps: metrics.renderTime > 0 ? Math.round(1000 / metrics.renderTime) : 0,
     };
   }, [metrics]);
 
   return {
     metrics,
     recordRenderMetrics,
-    getPerformanceReport
+    getPerformanceReport,
   };
 }
 

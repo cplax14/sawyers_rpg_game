@@ -34,17 +34,17 @@ const cardStyles = {
     transition: 'all 0.3s ease',
     overflow: 'hidden',
     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-    backdropFilter: 'blur(8px)'
+    backdropFilter: 'blur(8px)',
   },
   containerSm: {
-    padding: '0.75rem'
+    padding: '0.75rem',
   },
   containerLg: {
-    padding: '1.25rem'
+    padding: '1.25rem',
   },
   containerDisabled: {
     opacity: 0.6,
-    cursor: 'not-allowed'
+    cursor: 'not-allowed',
   },
   border: {
     position: 'absolute' as const,
@@ -55,7 +55,7 @@ const cardStyles = {
     borderRadius: '12px',
     padding: '2px',
     background: 'linear-gradient(135deg, transparent, transparent)',
-    pointerEvents: 'none' as const
+    pointerEvents: 'none' as const,
   },
   content: {
     position: 'relative' as const,
@@ -63,17 +63,17 @@ const cardStyles = {
     height: '100%',
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: '0.75rem'
+    gap: '0.75rem',
   },
   header: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    gap: '0.5rem'
+    gap: '0.5rem',
   },
   titleContainer: {
     flex: 1,
-    minWidth: 0
+    minWidth: 0,
   },
   title: {
     fontSize: '1rem',
@@ -81,25 +81,25 @@ const cardStyles = {
     color: '#d4af37',
     margin: '0 0 0.25rem 0',
     lineHeight: '1.2',
-    wordBreak: 'break-word' as const
+    wordBreak: 'break-word' as const,
   },
   titleSm: {
-    fontSize: '0.9rem'
+    fontSize: '0.9rem',
   },
   titleLg: {
-    fontSize: '1.1rem'
+    fontSize: '1.1rem',
   },
   species: {
     fontSize: '0.75rem',
     color: '#94a3b8',
     margin: 0,
-    fontWeight: '500'
+    fontWeight: '500',
   },
   statusBadges: {
     display: 'flex',
     flexDirection: 'column' as const,
     gap: '0.25rem',
-    alignItems: 'flex-end'
+    alignItems: 'flex-end',
   },
   levelBadge: {
     background: 'rgba(212, 175, 55, 0.2)',
@@ -109,7 +109,7 @@ const cardStyles = {
     fontWeight: 'bold',
     color: '#d4af37',
     whiteSpace: 'nowrap' as const,
-    border: '1px solid rgba(212, 175, 55, 0.3)'
+    border: '1px solid rgba(212, 175, 55, 0.3)',
   },
   rarityBadge: {
     borderRadius: '12px',
@@ -117,7 +117,7 @@ const cardStyles = {
     fontSize: '0.7rem',
     fontWeight: 'bold',
     whiteSpace: 'nowrap' as const,
-    border: '1px solid transparent'
+    border: '1px solid transparent',
   },
   avatar: {
     width: '60px',
@@ -129,17 +129,17 @@ const cardStyles = {
     justifyContent: 'center',
     fontSize: '2rem',
     margin: '0 auto 0.5rem',
-    border: '2px solid rgba(255, 255, 255, 0.2)'
+    border: '2px solid rgba(255, 255, 255, 0.2)',
   },
   avatarSm: {
     width: '50px',
     height: '50px',
-    fontSize: '1.5rem'
+    fontSize: '1.5rem',
   },
   avatarLg: {
     width: '70px',
     height: '70px',
-    fontSize: '2.5rem'
+    fontSize: '2.5rem',
   },
   description: {
     fontSize: '0.8rem',
@@ -149,36 +149,36 @@ const cardStyles = {
     overflow: 'hidden',
     display: '-webkit-box',
     WebkitLineClamp: 2,
-    WebkitBoxOrient: 'vertical' as const
+    WebkitBoxOrient: 'vertical' as const,
   },
   descriptionExpanded: {
     WebkitLineClamp: 'unset',
-    display: 'block'
+    display: 'block',
   },
   tags: {
     display: 'flex',
     flexWrap: 'wrap' as const,
     gap: '0.5rem',
-    marginTop: '0.5rem'
+    marginTop: '0.5rem',
   },
   tag: {
     fontSize: '0.7rem',
     padding: '0.2rem 0.4rem',
     borderRadius: '6px',
-    fontWeight: '500'
+    fontWeight: '500',
   },
   typeTag: {
     background: 'rgba(59, 130, 246, 0.2)',
     color: '#60a5fa',
-    border: '1px solid rgba(59, 130, 246, 0.3)'
+    border: '1px solid rgba(59, 130, 246, 0.3)',
   },
   elementTag: {
-    border: '1px solid rgba(255, 255, 255, 0.3)'
+    border: '1px solid rgba(255, 255, 255, 0.3)',
   },
   sizeTag: {
     background: 'rgba(156, 163, 175, 0.2)',
     color: '#9ca3af',
-    border: '1px solid rgba(156, 163, 175, 0.3)'
+    border: '1px solid rgba(156, 163, 175, 0.3)',
   },
   stats: {
     display: 'grid',
@@ -187,42 +187,42 @@ const cardStyles = {
     marginTop: '0.5rem',
     padding: '0.5rem',
     background: 'rgba(0, 0, 0, 0.2)',
-    borderRadius: '6px'
+    borderRadius: '6px',
   },
   statItem: {
     textAlign: 'center' as const,
-    fontSize: '0.7rem'
+    fontSize: '0.7rem',
   },
   statLabel: {
     color: '#94a3b8',
-    display: 'block'
+    display: 'block',
   },
   statValue: {
     color: '#f4f4f4',
     fontWeight: 'bold',
     fontSize: '0.8rem',
     display: 'block',
-    marginTop: '0.1rem'
+    marginTop: '0.1rem',
   },
   personality: {
     fontSize: '0.7rem',
     color: '#94a3b8',
     marginTop: '0.5rem',
-    fontStyle: 'italic'
+    fontStyle: 'italic',
   },
   actions: {
     display: 'flex',
     gap: '0.5rem',
     marginTop: 'auto',
-    paddingTop: '0.5rem'
+    paddingTop: '0.5rem',
   },
   actionButton: {
     flex: 1,
     fontSize: '0.7rem',
-    padding: '0.4rem 0.6rem'
+    padding: '0.4rem 0.6rem',
   },
   primaryAction: {
-    flex: 2
+    flex: 2,
   },
   expandButton: {
     background: 'transparent',
@@ -232,7 +232,7 @@ const cardStyles = {
     fontSize: '0.7rem',
     padding: '0.25rem',
     marginTop: '0.25rem',
-    transition: 'color 0.2s ease'
+    transition: 'color 0.2s ease',
   },
   loadingOverlay: {
     position: 'absolute' as const,
@@ -245,12 +245,12 @@ const cardStyles = {
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: '12px',
-    zIndex: 10
+    zIndex: 10,
   },
   captureDate: {
     fontSize: '0.7rem',
     color: '#94a3b8',
-    marginTop: '0.5rem'
+    marginTop: '0.5rem',
   },
   discoveryBadge: {
     background: 'rgba(34, 197, 94, 0.2)',
@@ -259,14 +259,14 @@ const cardStyles = {
     padding: '0.2rem 0.4rem',
     fontSize: '0.6rem',
     fontWeight: 'bold',
-    border: '1px solid rgba(34, 197, 94, 0.3)'
+    border: '1px solid rgba(34, 197, 94, 0.3)',
   },
   lineageSection: {
     marginTop: '0.75rem',
     padding: '0.75rem',
     background: 'rgba(139, 92, 246, 0.1)',
     borderRadius: '8px',
-    border: '1px solid rgba(139, 92, 246, 0.3)'
+    border: '1px solid rgba(139, 92, 246, 0.3)',
   },
   lineageTitle: {
     fontSize: '0.75rem',
@@ -275,23 +275,23 @@ const cardStyles = {
     marginBottom: '0.5rem',
     display: 'flex',
     alignItems: 'center',
-    gap: '0.25rem'
+    gap: '0.25rem',
   },
   lineageTree: {
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: '0.5rem'
+    gap: '0.5rem',
   },
   lineageRow: {
     display: 'flex',
     alignItems: 'center',
     gap: '0.5rem',
-    fontSize: '0.7rem'
+    fontSize: '0.7rem',
   },
   lineageLabel: {
     color: '#94a3b8',
     minWidth: '60px',
-    fontWeight: '500'
+    fontWeight: '500',
   },
   lineageValue: {
     color: '#e2e8f0',
@@ -299,12 +299,12 @@ const cardStyles = {
     padding: '0.25rem 0.5rem',
     background: 'rgba(255, 255, 255, 0.05)',
     borderRadius: '4px',
-    border: '1px solid rgba(139, 92, 246, 0.2)'
+    border: '1px solid rgba(139, 92, 246, 0.2)',
   },
   lineageUnknown: {
     color: '#94a3b8',
     fontStyle: 'italic',
-    opacity: 0.7
+    opacity: 0.7,
   },
   exhaustionBadge: {
     background: 'rgba(239, 68, 68, 0.2)',
@@ -316,17 +316,17 @@ const cardStyles = {
     border: '1px solid rgba(239, 68, 68, 0.3)',
     display: 'flex',
     alignItems: 'center',
-    gap: '0.25rem'
+    gap: '0.25rem',
   },
   exhaustionOverlay: {
     opacity: 0.6,
-    filter: 'grayscale(40%)'
+    filter: 'grayscale(40%)',
   },
   statPenalty: {
     color: '#ef4444',
     fontSize: '0.65rem',
     fontStyle: 'italic',
-    marginLeft: '0.25rem'
+    marginLeft: '0.25rem',
   },
   generationBadge: {
     position: 'absolute' as const,
@@ -342,7 +342,7 @@ const cardStyles = {
     fontWeight: 'bold',
     border: '2px solid',
     zIndex: 2,
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)'
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
   },
   mythicalAura: {
     position: 'absolute' as const,
@@ -353,7 +353,7 @@ const cardStyles = {
     borderRadius: '12px',
     pointerEvents: 'none' as const,
     zIndex: 0,
-    animation: 'mythicalPulse 2s ease-in-out infinite'
+    animation: 'mythicalPulse 2s ease-in-out infinite',
   },
   bredIndicator: {
     position: 'absolute' as const,
@@ -369,8 +369,8 @@ const cardStyles = {
     zIndex: 2,
     display: 'flex',
     alignItems: 'center',
-    gap: '0.25rem'
-  }
+    gap: '0.25rem',
+  },
 };
 
 // Element colors
@@ -384,7 +384,7 @@ const elementColors = {
   ice: { bg: 'rgba(147, 197, 253, 0.2)', color: '#93c5fd', border: 'rgba(147, 197, 253, 0.3)' },
   lightning: { bg: 'rgba(255, 215, 0, 0.2)', color: '#ffd700', border: 'rgba(255, 215, 0, 0.3)' },
   nature: { bg: 'rgba(34, 197, 94, 0.2)', color: '#22c55e', border: 'rgba(34, 197, 94, 0.3)' },
-  neutral: { bg: 'rgba(107, 114, 128, 0.2)', color: '#6b7280', border: 'rgba(107, 114, 128, 0.3)' }
+  neutral: { bg: 'rgba(107, 114, 128, 0.2)', color: '#6b7280', border: 'rgba(107, 114, 128, 0.3)' },
 };
 
 // Rarity colors
@@ -394,7 +394,7 @@ const rarityColors = {
   rare: { bg: 'rgba(59, 130, 246, 0.2)', color: '#3b82f6', border: 'rgba(59, 130, 246, 0.3)' },
   epic: { bg: 'rgba(168, 85, 247, 0.2)', color: '#a855f7', border: 'rgba(168, 85, 247, 0.3)' },
   legendary: { bg: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', border: 'rgba(245, 158, 11, 0.3)' },
-  mythical: { bg: 'rgba(236, 72, 153, 0.2)', color: '#ec4899', border: 'rgba(236, 72, 153, 0.3)' }
+  mythical: { bg: 'rgba(236, 72, 153, 0.2)', color: '#ec4899', border: 'rgba(236, 72, 153, 0.3)' },
 };
 
 // Generation badge colors
@@ -404,7 +404,11 @@ const generationColors = {
   2: { bg: 'rgba(192, 192, 192, 0.3)', color: '#c0c0c0', border: '#a8a8a8' }, // Gen 2 - Silver
   3: { bg: 'rgba(255, 215, 0, 0.3)', color: '#ffd700', border: '#daa520' }, // Gen 3 - Gold
   4: { bg: 'rgba(229, 228, 226, 0.3)', color: '#e5e4e2', border: '#c0c0c0' }, // Gen 4 - Platinum
-  5: { bg: 'linear-gradient(135deg, #ff0080, #ff8c00, #40e0d0, #9b59b6)', color: '#fff', border: '#fff' } // Gen 5 - Rainbow
+  5: {
+    bg: 'linear-gradient(135deg, #ff0080, #ff8c00, #40e0d0, #9b59b6)',
+    color: '#fff',
+    border: '#fff',
+  }, // Gen 5 - Rainbow
 };
 
 // Element emojis for avatar fallback
@@ -418,7 +422,7 @@ const elementEmojis = {
   ice: '❄️',
   lightning: '⚡',
   nature: '🌿',
-  neutral: '⭕'
+  neutral: '⭕',
 };
 
 export const CreatureCard: React.FC<CreatureCardProps> = ({
@@ -434,7 +438,7 @@ export const CreatureCard: React.FC<CreatureCardProps> = ({
   showDetails = true,
   size = 'md',
   className = '',
-  disabled = false
+  disabled = false,
 }) => {
   const { gameState } = useGameState();
   const { isMobile } = useResponsive();
@@ -443,7 +447,7 @@ export const CreatureCard: React.FC<CreatureCardProps> = ({
     addToTeam,
     removeFromTeam,
     renameCreature,
-    isLoading: creaturesLoading
+    isLoading: creaturesLoading,
   } = useCreatures();
 
   // Local state
@@ -454,7 +458,8 @@ export const CreatureCard: React.FC<CreatureCardProps> = ({
 
   // Get styling based on element and rarity
   const elementColor = elementColors[creature.element] || elementColors.neutral;
-  const rarityColor = rarityColors[creature.rarity as keyof typeof rarityColors] || rarityColors.common;
+  const rarityColor =
+    rarityColors[creature.rarity as keyof typeof rarityColors] || rarityColors.common;
 
   // Handle creature actions
   const handleRelease = useCallback(async () => {
@@ -564,7 +569,7 @@ export const CreatureCard: React.FC<CreatureCardProps> = ({
     const base = {
       ...cardStyles.container,
       border: `2px solid ${elementColor.border}`,
-      boxShadow: `0 2px 8px rgba(0, 0, 0, 0.1), 0 0 20px ${elementColor.color}20`
+      boxShadow: `0 2px 8px rgba(0, 0, 0, 0.1), 0 0 20px ${elementColor.color}20`,
     };
 
     if (size === 'sm') Object.assign(base, cardStyles.containerSm);
@@ -586,7 +591,7 @@ export const CreatureCard: React.FC<CreatureCardProps> = ({
   const getAvatarStyles = () => {
     const base = {
       ...cardStyles.avatar,
-      borderColor: elementColor.border
+      borderColor: elementColor.border,
     };
     if (size === 'sm') Object.assign(base, cardStyles.avatarSm);
     if (size === 'lg') Object.assign(base, cardStyles.avatarLg);
@@ -605,13 +610,21 @@ export const CreatureCard: React.FC<CreatureCardProps> = ({
     if (viewMode === 'collection') {
       actions.push(
         { key: 'team', label: 'Add to Team', action: handleAddToTeam, variant: 'primary' as const },
-        { key: 'rename', label: 'Rename', action: () => setShowRenameInput(true), variant: 'secondary' as const },
+        {
+          key: 'rename',
+          label: 'Rename',
+          action: () => setShowRenameInput(true),
+          variant: 'secondary' as const,
+        },
         { key: 'release', label: 'Release', action: handleRelease, variant: 'danger' as const }
       );
     } else if (viewMode === 'team') {
-      actions.push(
-        { key: 'remove', label: 'Remove', action: handleRemoveFromTeam, variant: 'danger' as const }
-      );
+      actions.push({
+        key: 'remove',
+        label: 'Remove',
+        action: handleRemoveFromTeam,
+        variant: 'danger' as const,
+      });
     }
 
     return actions;
@@ -620,13 +633,14 @@ export const CreatureCard: React.FC<CreatureCardProps> = ({
   // Get generation badge styling
   const getGenerationBadgeStyle = () => {
     const generation = creature.generation || 0;
-    const genColor = generationColors[generation as keyof typeof generationColors] || generationColors[0];
+    const genColor =
+      generationColors[generation as keyof typeof generationColors] || generationColors[0];
 
     return {
       ...cardStyles.generationBadge,
       background: genColor.bg,
       color: genColor.color,
-      borderColor: genColor.border
+      borderColor: genColor.border,
     };
   };
 
@@ -641,10 +655,14 @@ export const CreatureCard: React.FC<CreatureCardProps> = ({
       className={className}
       style={getContainerStyles()}
       onClick={handleCardClick}
-      whileHover={disabled ? {} : {
-        scale: 1.02,
-        boxShadow: `0 4px 16px rgba(0, 0, 0, 0.15), 0 0 30px ${elementColor.color}30`
-      }}
+      whileHover={
+        disabled
+          ? {}
+          : {
+              scale: 1.02,
+              boxShadow: `0 4px 16px rgba(0, 0, 0, 0.15), 0 0 30px ${elementColor.color}30`,
+            }
+      }
       whileTap={disabled ? {} : { scale: 0.98 }}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -657,16 +675,16 @@ export const CreatureCard: React.FC<CreatureCardProps> = ({
           style={{
             ...cardStyles.mythicalAura,
             background: 'radial-gradient(circle, rgba(236, 72, 153, 0.2) 0%, transparent 70%)',
-            boxShadow: '0 0 40px rgba(236, 72, 153, 0.4), inset 0 0 40px rgba(236, 72, 153, 0.2)'
+            boxShadow: '0 0 40px rgba(236, 72, 153, 0.4), inset 0 0 40px rgba(236, 72, 153, 0.2)',
           }}
           animate={{
             opacity: [0.3, 0.6, 0.3],
-            scale: [1, 1.02, 1]
+            scale: [1, 1.02, 1],
           }}
           transition={{
             duration: 2,
             repeat: Infinity,
-            ease: 'easeInOut'
+            ease: 'easeInOut',
           }}
         />
       )}
@@ -694,9 +712,9 @@ export const CreatureCard: React.FC<CreatureCardProps> = ({
             {showRenameInput ? (
               <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                 <input
-                  type="text"
+                  type='text'
                   value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
+                  onChange={e => setNewName(e.target.value)}
                   style={{
                     background: 'rgba(255, 255, 255, 0.1)',
                     border: '1px solid rgba(212, 175, 55, 0.3)',
@@ -705,9 +723,9 @@ export const CreatureCard: React.FC<CreatureCardProps> = ({
                     color: '#f4f4f4',
                     fontSize: '0.8rem',
                     outline: 'none',
-                    flex: 1
+                    flex: 1,
                   }}
-                  onKeyPress={(e) => e.key === 'Enter' && handleRename()}
+                  onKeyPress={e => e.key === 'Enter' && handleRename()}
                   autoFocus
                 />
                 <button
@@ -719,7 +737,7 @@ export const CreatureCard: React.FC<CreatureCardProps> = ({
                     padding: '0.25rem 0.5rem',
                     color: '#22c55e',
                     fontSize: '0.7rem',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
                   }}
                 >
                   ✓
@@ -736,7 +754,7 @@ export const CreatureCard: React.FC<CreatureCardProps> = ({
                     padding: '0.25rem 0.5rem',
                     color: '#ef4444',
                     fontSize: '0.7rem',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
                   }}
                 >
                   ✕
@@ -744,9 +762,7 @@ export const CreatureCard: React.FC<CreatureCardProps> = ({
               </div>
             ) : (
               <>
-                <h3 style={getTitleStyles()}>
-                  {creature.name}
-                </h3>
+                <h3 style={getTitleStyles()}>{creature.name}</h3>
                 <p style={cardStyles.species}>
                   {creature.species} • {creature.creatureType}
                 </p>
@@ -755,24 +771,25 @@ export const CreatureCard: React.FC<CreatureCardProps> = ({
           </div>
 
           <div style={cardStyles.statusBadges}>
-            <div style={cardStyles.levelBadge}>
-              Lv. {creature.level}
-            </div>
-            <div style={{
-              ...cardStyles.rarityBadge,
-              background: rarityColor.bg,
-              color: rarityColor.color,
-              borderColor: rarityColor.border
-            }}>
+            <div style={cardStyles.levelBadge}>Lv. {creature.level}</div>
+            <div
+              style={{
+                ...cardStyles.rarityBadge,
+                background: rarityColor.bg,
+                color: rarityColor.color,
+                borderColor: rarityColor.border,
+              }}
+            >
               {creature.rarity}
             </div>
             {viewMode === 'bestiary' && !creature.capturedAt && (
-              <div style={cardStyles.discoveryBadge}>
-                Discovered
-              </div>
+              <div style={cardStyles.discoveryBadge}>Discovered</div>
             )}
             {creature.exhaustionLevel && creature.exhaustionLevel > 0 && (
-              <div style={cardStyles.exhaustionBadge} title={`Exhausted: -${creature.exhaustionLevel * 20}% stats`}>
+              <div
+                style={cardStyles.exhaustionBadge}
+                title={`Exhausted: -${creature.exhaustionLevel * 20}% stats`}
+              >
                 <span>😴</span>
                 <span>×{creature.exhaustionLevel}</span>
               </div>
@@ -781,10 +798,14 @@ export const CreatureCard: React.FC<CreatureCardProps> = ({
         </div>
 
         {/* Avatar */}
-        <div style={{
-          ...getAvatarStyles(),
-          ...(creature.exhaustionLevel && creature.exhaustionLevel > 0 ? cardStyles.exhaustionOverlay : {})
-        }}>
+        <div
+          style={{
+            ...getAvatarStyles(),
+            ...(creature.exhaustionLevel && creature.exhaustionLevel > 0
+              ? cardStyles.exhaustionOverlay
+              : {}),
+          }}
+        >
           {creature.sprite ? (
             <img
               src={creature.sprite}
@@ -798,28 +819,30 @@ export const CreatureCard: React.FC<CreatureCardProps> = ({
 
         {/* Description */}
         {showDetails && creature.description && (
-          <p style={{
-            ...cardStyles.description,
-            ...(isExpanded ? cardStyles.descriptionExpanded : {})
-          }}>
+          <p
+            style={{
+              ...cardStyles.description,
+              ...(isExpanded ? cardStyles.descriptionExpanded : {}),
+            }}
+          >
             {creature.description}
           </p>
         )}
 
         {/* Tags */}
         <div style={cardStyles.tags}>
-          <span style={{
-            ...cardStyles.tag,
-            ...cardStyles.elementTag,
-            background: elementColor.bg,
-            color: elementColor.color,
-            borderColor: elementColor.border
-          }}>
+          <span
+            style={{
+              ...cardStyles.tag,
+              ...cardStyles.elementTag,
+              background: elementColor.bg,
+              color: elementColor.color,
+              borderColor: elementColor.border,
+            }}
+          >
             {creature.element}
           </span>
-          <span style={{ ...cardStyles.tag, ...cardStyles.sizeTag }}>
-            {creature.size}
-          </span>
+          <span style={{ ...cardStyles.tag, ...cardStyles.sizeTag }}>{creature.size}</span>
         </div>
 
         {/* Expanded Details */}
@@ -863,15 +886,17 @@ export const CreatureCard: React.FC<CreatureCardProps> = ({
 
               {/* Exhaustion Warning */}
               {creature.exhaustionLevel && creature.exhaustionLevel > 0 && (
-                <div style={{
-                  fontSize: '0.7rem',
-                  color: '#ef4444',
-                  marginTop: '0.5rem',
-                  padding: '0.5rem',
-                  background: 'rgba(239, 68, 68, 0.1)',
-                  borderRadius: '6px',
-                  border: '1px solid rgba(239, 68, 68, 0.3)'
-                }}>
+                <div
+                  style={{
+                    fontSize: '0.7rem',
+                    color: '#ef4444',
+                    marginTop: '0.5rem',
+                    padding: '0.5rem',
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    borderRadius: '6px',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                  }}
+                >
                   <strong>Exhausted:</strong> All stats reduced by {creature.exhaustionLevel * 20}%.
                   Use recovery items or rest to restore.
                 </div>
@@ -880,8 +905,7 @@ export const CreatureCard: React.FC<CreatureCardProps> = ({
               {/* Personality */}
               {creature.personality && (
                 <div style={cardStyles.personality}>
-                  Mood: {creature.personality.mood} •
-                  Loyalty: {creature.personality.loyalty}%
+                  Mood: {creature.personality.mood} • Loyalty: {creature.personality.loyalty}%
                 </div>
               )}
 
@@ -917,12 +941,14 @@ export const CreatureCard: React.FC<CreatureCardProps> = ({
                       </span>
                     </div>
                     {(creature.generation || 0) >= 3 && (
-                      <div style={{
-                        fontSize: '0.65rem',
-                        color: '#94a3b8',
-                        marginTop: '0.25rem',
-                        fontStyle: 'italic'
-                      }}>
+                      <div
+                        style={{
+                          fontSize: '0.65rem',
+                          color: '#94a3b8',
+                          marginTop: '0.25rem',
+                          fontStyle: 'italic',
+                        }}
+                      >
                         Multi-generational lineage ({creature.generation} generations)
                       </div>
                     )}
@@ -936,7 +962,7 @@ export const CreatureCard: React.FC<CreatureCardProps> = ({
         {/* Expand Button */}
         {showDetails && (
           <button
-            onClick={(e) => {
+            onClick={e => {
               e.stopPropagation();
               setIsExpanded(!isExpanded);
             }}
@@ -958,13 +984,15 @@ export const CreatureCard: React.FC<CreatureCardProps> = ({
               <Button
                 key={action.key}
                 variant={action.variant}
-                size="sm"
-                onClick={(e) => {
+                size='sm'
+                onClick={e => {
                   e.stopPropagation();
                   action.action();
                 }}
                 disabled={isLoading || creaturesLoading}
-                style={action.variant === 'primary' ? cardStyles.primaryAction : cardStyles.actionButton}
+                style={
+                  action.variant === 'primary' ? cardStyles.primaryAction : cardStyles.actionButton
+                }
               >
                 {action.label}
               </Button>
@@ -982,7 +1010,7 @@ export const CreatureCard: React.FC<CreatureCardProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <LoadingSpinner size="sm" />
+            <LoadingSpinner size='sm' />
           </motion.div>
         )}
       </AnimatePresence>

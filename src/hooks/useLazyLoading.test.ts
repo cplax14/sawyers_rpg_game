@@ -6,7 +6,7 @@ const generateTestItems = (count: number, prefix = 'item') =>
   Array.from({ length: count }, (_, i) => ({
     id: `${prefix}-${i}`,
     name: `${prefix.charAt(0).toUpperCase() + prefix.slice(1)} ${i}`,
-    value: i * 10
+    value: i * 10,
   }));
 
 describe('useLazyLoading', () => {
@@ -24,7 +24,7 @@ describe('useLazyLoading', () => {
       return {
         items,
         totalCount: allItems.length,
-        hasMore: endIndex < allItems.length
+        hasMore: endIndex < allItems.length,
       };
     });
 
@@ -32,7 +32,7 @@ describe('useLazyLoading', () => {
     pageSize: 10,
     preloadDistance: 1,
     throttleMs: 100,
-    maxCacheSize: 100
+    maxCacheSize: 100,
   };
 
   beforeEach(() => {
@@ -49,9 +49,7 @@ describe('useLazyLoading', () => {
       const allItems = generateTestItems(50);
       const mockLoadFunction = createMockLoadFunction(allItems);
 
-      const { result } = renderHook(() =>
-        useLazyLoading(mockLoadFunction, defaultConfig)
-      );
+      const { result } = renderHook(() => useLazyLoading(mockLoadFunction, defaultConfig));
 
       expect(result.current.items).toEqual([]);
       expect(result.current.loading).toBe(false);
@@ -65,9 +63,7 @@ describe('useLazyLoading', () => {
       const allItems = generateTestItems(50);
       const mockLoadFunction = createMockLoadFunction(allItems);
 
-      const { result } = renderHook(() =>
-        useLazyLoading(mockLoadFunction, defaultConfig)
-      );
+      const { result } = renderHook(() => useLazyLoading(mockLoadFunction, defaultConfig));
 
       await act(async () => {
         await result.current.loadMore();
@@ -84,9 +80,7 @@ describe('useLazyLoading', () => {
       const allItems = generateTestItems(50);
       const mockLoadFunction = createMockLoadFunction(allItems);
 
-      const { result } = renderHook(() =>
-        useLazyLoading(mockLoadFunction, defaultConfig)
-      );
+      const { result } = renderHook(() => useLazyLoading(mockLoadFunction, defaultConfig));
 
       await act(async () => {
         await result.current.loadPage(3);
@@ -101,9 +95,7 @@ describe('useLazyLoading', () => {
       const allItems = generateTestItems(50);
       const mockLoadFunction = createMockLoadFunction(allItems);
 
-      const { result } = renderHook(() =>
-        useLazyLoading(mockLoadFunction, defaultConfig)
-      );
+      const { result } = renderHook(() => useLazyLoading(mockLoadFunction, defaultConfig));
 
       // Load some data first
       await act(async () => {
@@ -129,9 +121,7 @@ describe('useLazyLoading', () => {
       const allItems = generateTestItems(50);
       const mockLoadFunction = createMockLoadFunction(allItems);
 
-      const { result } = renderHook(() =>
-        useLazyLoading(mockLoadFunction, defaultConfig)
-      );
+      const { result } = renderHook(() => useLazyLoading(mockLoadFunction, defaultConfig));
 
       await act(async () => {
         await result.current.loadPage(0);
@@ -145,9 +135,7 @@ describe('useLazyLoading', () => {
       const allItems = generateTestItems(50);
       const mockLoadFunction = createMockLoadFunction(allItems);
 
-      const { result } = renderHook(() =>
-        useLazyLoading(mockLoadFunction, defaultConfig)
-      );
+      const { result } = renderHook(() => useLazyLoading(mockLoadFunction, defaultConfig));
 
       const item = result.current.getItem(25); // Page 2
       expect(item).toBeUndefined();
@@ -158,9 +146,7 @@ describe('useLazyLoading', () => {
       const allItems = generateTestItems(50);
       const mockLoadFunction = createMockLoadFunction(allItems);
 
-      const { result } = renderHook(() =>
-        useLazyLoading(mockLoadFunction, defaultConfig)
-      );
+      const { result } = renderHook(() => useLazyLoading(mockLoadFunction, defaultConfig));
 
       expect(result.current.isPageLoaded(0)).toBe(false);
 
@@ -220,9 +206,7 @@ describe('useLazyLoading', () => {
     it('should handle loading errors gracefully', async () => {
       const mockLoadFunction = jest.fn().mockRejectedValue(new Error('Load failed'));
 
-      const { result } = renderHook(() =>
-        useLazyLoading(mockLoadFunction, defaultConfig)
-      );
+      const { result } = renderHook(() => useLazyLoading(mockLoadFunction, defaultConfig));
 
       await act(async () => {
         try {
@@ -239,9 +223,7 @@ describe('useLazyLoading', () => {
     it('should handle non-Error exceptions', async () => {
       const mockLoadFunction = jest.fn().mockRejectedValue('String error');
 
-      const { result } = renderHook(() =>
-        useLazyLoading(mockLoadFunction, defaultConfig)
-      );
+      const { result } = renderHook(() => useLazyLoading(mockLoadFunction, defaultConfig));
 
       await act(async () => {
         try {
@@ -291,16 +273,14 @@ describe('useLazyLoading', () => {
       const allItems = generateTestItems(50);
       const mockLoadFunction = createMockLoadFunction(allItems);
 
-      const { result } = renderHook(() =>
-        useLazyLoading(mockLoadFunction, defaultConfig)
-      );
+      const { result } = renderHook(() => useLazyLoading(mockLoadFunction, defaultConfig));
 
       // Load page 0 multiple times
       await act(async () => {
         await Promise.all([
           result.current.loadPage(0),
           result.current.loadPage(0),
-          result.current.loadPage(0)
+          result.current.loadPage(0),
         ]);
       });
 
@@ -311,9 +291,7 @@ describe('useLazyLoading', () => {
       const allItems = generateTestItems(50);
       const mockLoadFunction = createMockLoadFunction(allItems, 100); // Add delay
 
-      const { result } = renderHook(() =>
-        useLazyLoading(mockLoadFunction, defaultConfig)
-      );
+      const { result } = renderHook(() => useLazyLoading(mockLoadFunction, defaultConfig));
 
       act(() => {
         result.current.loadMore();
@@ -330,12 +308,10 @@ describe('useLazyInventoryLoading', () => {
     const mockLoadItems = jest.fn().mockResolvedValue({
       items: [],
       totalCount: 0,
-      hasMore: false
+      hasMore: false,
     });
 
-    const { result } = renderHook(() =>
-      useLazyInventoryLoading(mockLoadItems)
-    );
+    const { result } = renderHook(() => useLazyInventoryLoading(mockLoadItems));
 
     expect(result.current.items).toEqual([]);
   });
@@ -344,7 +320,7 @@ describe('useLazyInventoryLoading', () => {
     const mockLoadItems = jest.fn().mockResolvedValue({
       items: [{ id: '1', name: 'Item 1' }],
       totalCount: 1,
-      hasMore: false
+      hasMore: false,
     });
 
     const { result, rerender } = renderHook(
@@ -372,12 +348,10 @@ describe('useLazyCreatureLoading', () => {
     const mockLoadCreatures = jest.fn().mockResolvedValue({
       items: [],
       totalCount: 0,
-      hasMore: false
+      hasMore: false,
     });
 
-    const { result } = renderHook(() =>
-      useLazyCreatureLoading(mockLoadCreatures)
-    );
+    const { result } = renderHook(() => useLazyCreatureLoading(mockLoadCreatures));
 
     expect(result.current.items).toEqual([]);
   });
@@ -386,7 +360,7 @@ describe('useLazyCreatureLoading', () => {
     const mockLoadCreatures = jest.fn().mockResolvedValue({
       items: [{ id: '1', name: 'Dragon' }],
       totalCount: 1,
-      hasMore: false
+      hasMore: false,
     });
 
     const { result, rerender } = renderHook(

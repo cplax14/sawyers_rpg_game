@@ -32,114 +32,114 @@ interface ParticleSystemProps {
  * Creates a configurable particle emission system with physics-based motion
  * Used for spell effects, impacts, explosions, and ambient magical effects
  */
-export const ParticleSystem: React.FC<ParticleSystemProps> = React.memo(({
-  originX,
-  originY,
-  particleCount,
-  colors,
-  spread,
-  lifetime,
-  size = 6,
-  gravity = 0,
-  fadeOut = true,
-  onComplete
-}) => {
-  // Generate particles with randomized properties
-  const particles: Particle[] = React.useMemo(() => {
-    return Array.from({ length: particleCount }, (_, i) => {
-      // Random angle for particle direction
-      const angle = Math.random() * Math.PI * 2;
+export const ParticleSystem: React.FC<ParticleSystemProps> = React.memo(
+  ({
+    originX,
+    originY,
+    particleCount,
+    colors,
+    spread,
+    lifetime,
+    size = 6,
+    gravity = 0,
+    fadeOut = true,
+    onComplete,
+  }) => {
+    // Generate particles with randomized properties
+    const particles: Particle[] = React.useMemo(() => {
+      return Array.from({ length: particleCount }, (_, i) => {
+        // Random angle for particle direction
+        const angle = Math.random() * Math.PI * 2;
 
-      // Random velocity magnitude within spread range
-      const velocity = (Math.random() * 0.5 + 0.5) * spread;
+        // Random velocity magnitude within spread range
+        const velocity = (Math.random() * 0.5 + 0.5) * spread;
 
-      // Velocity components
-      const vx = Math.cos(angle) * velocity;
-      const vy = Math.sin(angle) * velocity;
+        // Velocity components
+        const vx = Math.cos(angle) * velocity;
+        const vy = Math.sin(angle) * velocity;
 
-      // Random color from palette
-      const color = colors[Math.floor(Math.random() * colors.length)];
+        // Random color from palette
+        const color = colors[Math.floor(Math.random() * colors.length)];
 
-      // Random size variation (80% to 120% of base size)
-      const particleSize = size * (0.8 + Math.random() * 0.4);
+        // Random size variation (80% to 120% of base size)
+        const particleSize = size * (0.8 + Math.random() * 0.4);
 
-      // Random lifetime variation (80% to 120% of base lifetime)
-      const particleLifetime = lifetime * (0.8 + Math.random() * 0.4);
+        // Random lifetime variation (80% to 120% of base lifetime)
+        const particleLifetime = lifetime * (0.8 + Math.random() * 0.4);
 
-      // Stagger particle emission slightly
-      const delay = (i / particleCount) * 0.1;
+        // Stagger particle emission slightly
+        const delay = (i / particleCount) * 0.1;
 
-      return {
-        id: i,
-        x: 0,
-        y: 0,
-        vx,
-        vy,
-        color,
-        size: particleSize,
-        lifetime: particleLifetime,
-        delay
-      };
-    });
-  }, [particleCount, colors, spread, lifetime, size]);
+        return {
+          id: i,
+          x: 0,
+          y: 0,
+          vx,
+          vy,
+          color,
+          size: particleSize,
+          lifetime: particleLifetime,
+          delay,
+        };
+      });
+    }, [particleCount, colors, spread, lifetime, size]);
 
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      style={{
-        position: 'absolute',
-        left: originX,
-        top: originY,
-        width: 0,
-        height: 0,
-        pointerEvents: 'none',
-        zIndex: 100
-      }}
-    >
-      {particles.map((particle, index) => {
-        // Calculate final position based on velocity and gravity
-        const finalX = particle.vx * 100;
-        const finalY = particle.vy * 100 + (gravity * particle.lifetime / 2);
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        style={{
+          position: 'absolute',
+          left: originX,
+          top: originY,
+          width: 0,
+          height: 0,
+          pointerEvents: 'none',
+          zIndex: 100,
+        }}
+      >
+        {particles.map((particle, index) => {
+          // Calculate final position based on velocity and gravity
+          const finalX = particle.vx * 100;
+          const finalY = particle.vy * 100 + (gravity * particle.lifetime) / 2;
 
-        return (
-          <motion.div
-            key={particle.id}
-            initial={{
-              x: 0,
-              y: 0,
-              scale: 0,
-              opacity: 0
-            }}
-            animate={{
-              x: finalX,
-              y: finalY,
-              scale: fadeOut ? [0, 1, 1, 0] : [0, 1, 1],
-              opacity: fadeOut ? [0, 1, 0.8, 0] : [0, 1, 1],
-              transition: {
-                duration: particle.lifetime / 1000,
-                delay: particle.delay,
-                ease: 'easeOut',
-                times: fadeOut ? [0, 0.1, 0.7, 1] : [0, 0.2, 1]
-              }
-            }}
-            onAnimationComplete={
-              index === particles.length - 1 ? onComplete : undefined
-            }
-            style={{
-              position: 'absolute',
-              width: particle.size,
-              height: particle.size,
-              borderRadius: '50%',
-              background: particle.color,
-              boxShadow: `0 0 ${particle.size * 1.5}px ${particle.color}`
-            }}
-          />
-        );
-      })}
-    </motion.div>
-  );
-});
+          return (
+            <motion.div
+              key={particle.id}
+              initial={{
+                x: 0,
+                y: 0,
+                scale: 0,
+                opacity: 0,
+              }}
+              animate={{
+                x: finalX,
+                y: finalY,
+                scale: fadeOut ? [0, 1, 1, 0] : [0, 1, 1],
+                opacity: fadeOut ? [0, 1, 0.8, 0] : [0, 1, 1],
+                transition: {
+                  duration: particle.lifetime / 1000,
+                  delay: particle.delay,
+                  ease: 'easeOut',
+                  times: fadeOut ? [0, 0.1, 0.7, 1] : [0, 0.2, 1],
+                },
+              }}
+              onAnimationComplete={index === particles.length - 1 ? onComplete : undefined}
+              style={{
+                position: 'absolute',
+                width: particle.size,
+                height: particle.size,
+                borderRadius: '50%',
+                background: particle.color,
+                boxShadow: `0 0 ${particle.size * 1.5}px ${particle.color}`,
+              }}
+            />
+          );
+        })}
+      </motion.div>
+    );
+  }
+);
 
 ParticleSystem.displayName = 'ParticleSystem';
 
@@ -154,7 +154,7 @@ export const PARTICLE_PRESETS = {
     lifetime: 800,
     size: 8,
     gravity: 50,
-    fadeOut: true
+    fadeOut: true,
   },
 
   // Magical sparkles (slow, gentle)
@@ -164,7 +164,7 @@ export const PARTICLE_PRESETS = {
     lifetime: 1200,
     size: 4,
     gravity: -20, // Negative gravity = float upward
-    fadeOut: true
+    fadeOut: true,
   },
 
   // Impact debris (fast fall)
@@ -174,7 +174,7 @@ export const PARTICLE_PRESETS = {
     lifetime: 1000,
     size: 6,
     gravity: 150,
-    fadeOut: true
+    fadeOut: true,
   },
 
   // Gathering energy (converging)
@@ -184,7 +184,7 @@ export const PARTICLE_PRESETS = {
     lifetime: 600,
     size: 5,
     gravity: 0,
-    fadeOut: false
+    fadeOut: false,
   },
 
   // Ambient glow (minimal movement)
@@ -194,7 +194,7 @@ export const PARTICLE_PRESETS = {
     lifetime: 2000,
     size: 3,
     gravity: 0,
-    fadeOut: true
+    fadeOut: true,
   },
 
   // Fire embers (upward drift)
@@ -204,7 +204,7 @@ export const PARTICLE_PRESETS = {
     lifetime: 1500,
     size: 4,
     gravity: -30,
-    fadeOut: true
+    fadeOut: true,
   },
 
   // Ice crystals (sharp, fast)
@@ -214,7 +214,7 @@ export const PARTICLE_PRESETS = {
     lifetime: 700,
     size: 5,
     gravity: 80,
-    fadeOut: true
+    fadeOut: true,
   },
 
   // Lightning sparks (erratic, fast)
@@ -224,7 +224,7 @@ export const PARTICLE_PRESETS = {
     lifetime: 400,
     size: 3,
     gravity: 0,
-    fadeOut: true
+    fadeOut: true,
   },
 
   // Healing light (gentle ascent)
@@ -234,7 +234,7 @@ export const PARTICLE_PRESETS = {
     lifetime: 1400,
     size: 6,
     gravity: -40,
-    fadeOut: true
+    fadeOut: true,
   },
 
   // Poison bubbles (slow float)
@@ -244,6 +244,6 @@ export const PARTICLE_PRESETS = {
     lifetime: 2000,
     size: 8,
     gravity: -15,
-    fadeOut: true
-  }
+    fadeOut: true,
+  },
 } as const;

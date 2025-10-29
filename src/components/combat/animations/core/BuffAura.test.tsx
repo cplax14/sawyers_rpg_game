@@ -10,7 +10,7 @@ describe('BuffAura', () => {
     auraColor: '#ffd700',
     pulseSpeed: 2,
     particles: true,
-    isActive: true
+    isActive: true,
   };
 
   describe('Rendering', () => {
@@ -20,16 +20,12 @@ describe('BuffAura', () => {
     });
 
     it('should render when isActive is true', () => {
-      const { container } = render(
-        <BuffAura {...defaultProps} isActive={true} />
-      );
+      const { container } = render(<BuffAura {...defaultProps} isActive={true} />);
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('should not render when isActive is false', () => {
-      const { container } = render(
-        <BuffAura {...defaultProps} isActive={false} />
-      );
+      const { container } = render(<BuffAura {...defaultProps} isActive={false} />);
       expect(container.firstChild).toBeNull();
     });
 
@@ -44,41 +40,31 @@ describe('BuffAura', () => {
   describe('Prop Validation', () => {
     it('should handle different colors', () => {
       const auraColor = '#9c27b0';
-      const { container } = render(
-        <BuffAura {...defaultProps} auraColor={auraColor} />
-      );
+      const { container } = render(<BuffAura {...defaultProps} auraColor={auraColor} />);
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('should handle different pulse speeds', () => {
-      const { container } = render(
-        <BuffAura {...defaultProps} pulseSpeed={0.5} />
-      );
+      const { container } = render(<BuffAura {...defaultProps} pulseSpeed={0.5} />);
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('should handle particles enabled', () => {
-      const { container } = render(
-        <BuffAura {...defaultProps} particles={true} />
-      );
+      const { container } = render(<BuffAura {...defaultProps} particles={true} />);
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper).toBeInTheDocument();
       // Should include orbital particles and sparkles
     });
 
     it('should handle particles disabled', () => {
-      const { container } = render(
-        <BuffAura {...defaultProps} particles={false} />
-      );
+      const { container } = render(<BuffAura {...defaultProps} particles={false} />);
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper).toBeInTheDocument();
       // Should not include orbital particles or sparkles
     });
 
     it('should handle custom intensity', () => {
-      const { container } = render(
-        <BuffAura {...defaultProps} intensity={0.8} />
-      );
+      const { container } = render(<BuffAura {...defaultProps} intensity={0.8} />);
       expect(container.firstChild).toBeInTheDocument();
     });
 
@@ -89,9 +75,7 @@ describe('BuffAura', () => {
     });
 
     it('should handle different positions', () => {
-      const { container } = render(
-        <BuffAura {...defaultProps} targetX={300} targetY={400} />
-      );
+      const { container } = render(<BuffAura {...defaultProps} targetX={300} targetY={400} />);
       const wrapper = container.querySelector('div');
       expect(wrapper?.style.left).toBe('300px');
       expect(wrapper?.style.top).toBe('400px');
@@ -106,16 +90,12 @@ describe('BuffAura', () => {
     });
 
     it('should render in persistent mode when explicitly set', () => {
-      const { container } = render(
-        <BuffAura {...defaultProps} persistent={true} />
-      );
+      const { container } = render(<BuffAura {...defaultProps} persistent={true} />);
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('should render in temporary mode', () => {
-      const { container } = render(
-        <BuffAura {...defaultProps} persistent={false} />
-      );
+      const { container } = render(<BuffAura {...defaultProps} persistent={false} />);
       expect(container.firstChild).toBeInTheDocument();
     });
   });
@@ -123,18 +103,14 @@ describe('BuffAura', () => {
   describe('Animation Lifecycle', () => {
     it('should call onComplete for temporary auras', () => {
       const onComplete = jest.fn();
-      render(
-        <BuffAura {...defaultProps} persistent={false} onComplete={onComplete} />
-      );
+      render(<BuffAura {...defaultProps} persistent={false} onComplete={onComplete} />);
       // In the mocked version, onComplete would be called immediately
       // In real implementation, it would be called after animation completes
     });
 
     it('should not call onComplete for persistent auras', () => {
       const onComplete = jest.fn();
-      render(
-        <BuffAura {...defaultProps} persistent={true} onComplete={onComplete} />
-      );
+      render(<BuffAura {...defaultProps} persistent={true} onComplete={onComplete} />);
       // Persistent auras don't call onComplete (infinite loop)
     });
 
@@ -146,36 +122,28 @@ describe('BuffAura', () => {
 
   describe('Orbital Particles', () => {
     it('should generate 8 orbital particles when particles is true', () => {
-      const { container } = render(
-        <BuffAura {...defaultProps} particles={true} />
-      );
+      const { container } = render(<BuffAura {...defaultProps} particles={true} />);
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper).toBeInTheDocument();
       // Should have 8 orbital particles
     });
 
     it('should not generate orbital particles when particles is false', () => {
-      const { container } = render(
-        <BuffAura {...defaultProps} particles={false} />
-      );
+      const { container } = render(<BuffAura {...defaultProps} particles={false} />);
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper).toBeInTheDocument();
       // Should have no orbital particles
     });
 
     it('should position orbital particles in circular pattern', () => {
-      const { container } = render(
-        <BuffAura {...defaultProps} particles={true} />
-      );
+      const { container } = render(<BuffAura {...defaultProps} particles={true} />);
       // Particles should be evenly distributed around circle
       // Each particle at angle = (i / 8) * 2π
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('should position orbital particles at 50px radius', () => {
-      const { container } = render(
-        <BuffAura {...defaultProps} particles={true} />
-      );
+      const { container } = render(<BuffAura {...defaultProps} particles={true} />);
       // Particles orbit at radius = 50
       expect(container.firstChild).toBeInTheDocument();
     });
@@ -183,16 +151,12 @@ describe('BuffAura', () => {
 
   describe('Sparkle Effects', () => {
     it('should render 3 sparkles when particles is true', () => {
-      const { container } = render(
-        <BuffAura {...defaultProps} particles={true} />
-      );
+      const { container } = render(<BuffAura {...defaultProps} particles={true} />);
       expect(container).toHaveTextContent('✨');
     });
 
     it('should not render sparkles when particles is false', () => {
-      const { container } = render(
-        <BuffAura {...defaultProps} particles={false} />
-      );
+      const { container } = render(<BuffAura {...defaultProps} particles={false} />);
       // Should not have sparkles
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper).toBeInTheDocument();
@@ -245,17 +209,13 @@ describe('BuffAura', () => {
 
   describe('Pulse Animation Differences', () => {
     it('should use infinite repeat for persistent mode', () => {
-      const { container } = render(
-        <BuffAura {...defaultProps} persistent={true} />
-      );
+      const { container } = render(<BuffAura {...defaultProps} persistent={true} />);
       expect(container.firstChild).toBeInTheDocument();
       // Persistent mode has repeat: Infinity
     });
 
     it('should not repeat for temporary mode', () => {
-      const { container } = render(
-        <BuffAura {...defaultProps} persistent={false} />
-      );
+      const { container } = render(<BuffAura {...defaultProps} persistent={false} />);
       expect(container.firstChild).toBeInTheDocument();
       // Temporary mode has repeat: 0
     });
@@ -278,62 +238,46 @@ describe('BuffAura', () => {
 
   describe('Edge Cases', () => {
     it('should handle negative coordinates', () => {
-      const { container } = render(
-        <BuffAura {...defaultProps} targetX={-50} targetY={-50} />
-      );
+      const { container } = render(<BuffAura {...defaultProps} targetX={-50} targetY={-50} />);
       const wrapper = container.querySelector('div');
       expect(wrapper?.style.left).toBe('-50px');
       expect(wrapper?.style.top).toBe('-50px');
     });
 
     it('should handle very large coordinates', () => {
-      const { container } = render(
-        <BuffAura {...defaultProps} targetX={10000} targetY={10000} />
-      );
+      const { container } = render(<BuffAura {...defaultProps} targetX={10000} targetY={10000} />);
       const wrapper = container.querySelector('div');
       expect(wrapper?.style.left).toBe('10000px');
       expect(wrapper?.style.top).toBe('10000px');
     });
 
     it('should handle zero intensity', () => {
-      const { container } = render(
-        <BuffAura {...defaultProps} intensity={0} />
-      );
+      const { container } = render(<BuffAura {...defaultProps} intensity={0} />);
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('should handle intensity greater than 1', () => {
-      const { container } = render(
-        <BuffAura {...defaultProps} intensity={1.5} />
-      );
+      const { container } = render(<BuffAura {...defaultProps} intensity={1.5} />);
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('should handle zero pulse speed', () => {
-      const { container } = render(
-        <BuffAura {...defaultProps} pulseSpeed={0} />
-      );
+      const { container } = render(<BuffAura {...defaultProps} pulseSpeed={0} />);
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('should handle very fast pulse speed', () => {
-      const { container } = render(
-        <BuffAura {...defaultProps} pulseSpeed={0.1} />
-      );
+      const { container } = render(<BuffAura {...defaultProps} pulseSpeed={0.1} />);
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('should handle very slow pulse speed', () => {
-      const { container } = render(
-        <BuffAura {...defaultProps} pulseSpeed={10} />
-      );
+      const { container } = render(<BuffAura {...defaultProps} pulseSpeed={10} />);
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('should handle toggling isActive', () => {
-      const { container, rerender } = render(
-        <BuffAura {...defaultProps} isActive={true} />
-      );
+      const { container, rerender } = render(<BuffAura {...defaultProps} isActive={true} />);
       expect(container.firstChild).toBeInTheDocument();
 
       rerender(<BuffAura {...defaultProps} isActive={false} />);
@@ -344,9 +288,7 @@ describe('BuffAura', () => {
     });
 
     it('should handle toggling particles', () => {
-      const { container, rerender } = render(
-        <BuffAura {...defaultProps} particles={true} />
-      );
+      const { container, rerender } = render(<BuffAura {...defaultProps} particles={true} />);
       expect(container).toHaveTextContent('✨');
 
       rerender(<BuffAura {...defaultProps} particles={false} />);
@@ -355,9 +297,7 @@ describe('BuffAura', () => {
     });
 
     it('should handle switching between persistent and temporary', () => {
-      const { container, rerender } = render(
-        <BuffAura {...defaultProps} persistent={true} />
-      );
+      const { container, rerender } = render(<BuffAura {...defaultProps} persistent={true} />);
       expect(container.firstChild).toBeInTheDocument();
 
       rerender(<BuffAura {...defaultProps} persistent={false} />);

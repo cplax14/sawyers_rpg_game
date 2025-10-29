@@ -28,7 +28,7 @@ export const QuickActionBar: React.FC<QuickActionBarProps> = ({
   showLabels = true,
   showShortcuts = true,
   className = '',
-  style = {}
+  style = {},
 }) => {
   const getVariantColors = (variant: string = 'secondary') => {
     const variants = {
@@ -36,26 +36,26 @@ export const QuickActionBar: React.FC<QuickActionBarProps> = ({
         background: 'rgba(79, 195, 247, 0.2)',
         border: '1px solid rgba(79, 195, 247, 0.4)',
         color: '#4fc3f7',
-        hoverBackground: 'rgba(79, 195, 247, 0.3)'
+        hoverBackground: 'rgba(79, 195, 247, 0.3)',
       },
       secondary: {
         background: 'rgba(255, 255, 255, 0.05)',
         border: '1px solid rgba(255, 255, 255, 0.1)',
         color: '#f4f4f4',
-        hoverBackground: 'rgba(255, 255, 255, 0.1)'
+        hoverBackground: 'rgba(255, 255, 255, 0.1)',
       },
       success: {
         background: 'rgba(34, 197, 94, 0.2)',
         border: '1px solid rgba(34, 197, 94, 0.4)',
         color: '#22c55e',
-        hoverBackground: 'rgba(34, 197, 94, 0.3)'
+        hoverBackground: 'rgba(34, 197, 94, 0.3)',
       },
       danger: {
         background: 'rgba(239, 68, 68, 0.2)',
         border: '1px solid rgba(239, 68, 68, 0.4)',
         color: '#ef4444',
-        hoverBackground: 'rgba(239, 68, 68, 0.3)'
-      }
+        hoverBackground: 'rgba(239, 68, 68, 0.3)',
+      },
     };
 
     return variants[variant as keyof typeof variants] || variants.secondary;
@@ -67,34 +67,31 @@ export const QuickActionBar: React.FC<QuickActionBarProps> = ({
         return {
           display: 'flex',
           flexDirection: 'column' as const,
-          gap: '0.5rem'
+          gap: '0.5rem',
         };
       case 'compact':
         return {
           display: 'flex',
           flexWrap: 'wrap' as const,
-          gap: '0.25rem'
+          gap: '0.25rem',
         };
       default:
         return {
           display: 'flex',
           gap: '0.75rem',
-          alignItems: 'center'
+          alignItems: 'center',
         };
     }
   };
 
   const containerStyle = {
     ...getLayoutStyles(),
-    ...style
+    ...style,
   };
 
   return (
-    <div
-      className={`quick-action-bar ${className}`}
-      style={containerStyle}
-    >
-      {actions.map((action) => {
+    <div className={`quick-action-bar ${className}`} style={containerStyle}>
+      {actions.map(action => {
         const colors = getVariantColors(action.variant);
         const isCompact = layout === 'compact';
 
@@ -102,10 +99,14 @@ export const QuickActionBar: React.FC<QuickActionBarProps> = ({
           <motion.button
             key={action.id}
             onClick={action.disabled ? undefined : action.action}
-            whileHover={action.disabled ? {} : {
-              backgroundColor: colors.hoverBackground,
-              scale: 1.02
-            }}
+            whileHover={
+              action.disabled
+                ? {}
+                : {
+                    backgroundColor: colors.hoverBackground,
+                    scale: 1.02,
+                  }
+            }
             whileTap={action.disabled ? {} : { scale: 0.98 }}
             title={action.description}
             style={{
@@ -124,56 +125,60 @@ export const QuickActionBar: React.FC<QuickActionBarProps> = ({
               position: 'relative',
               opacity: action.disabled ? 0.5 : 1,
               minWidth: isCompact ? '2.5rem' : 'auto',
-              justifyContent: isCompact ? 'center' : 'flex-start'
+              justifyContent: isCompact ? 'center' : 'flex-start',
             }}
           >
             {/* Icon */}
-            <span style={{
-              fontSize: isCompact ? '1rem' : '1.1rem',
-              lineHeight: 1
-            }}>
+            <span
+              style={{
+                fontSize: isCompact ? '1rem' : '1.1rem',
+                lineHeight: 1,
+              }}
+            >
               {action.icon}
             </span>
 
             {/* Label (if not compact and showLabels is true) */}
             {!isCompact && showLabels && (
-              <span style={{ whiteSpace: 'nowrap' }}>
-                {action.label}
-              </span>
+              <span style={{ whiteSpace: 'nowrap' }}>{action.label}</span>
             )}
 
             {/* Keyboard shortcut (if enabled and not compact) */}
             {!isCompact && showShortcuts && action.shortcut && (
-              <span style={{
-                background: 'rgba(0, 0, 0, 0.3)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '4px',
-                padding: '0.2rem 0.4rem',
-                fontSize: '0.7rem',
-                fontFamily: 'monospace',
-                opacity: 0.8,
-                marginLeft: 'auto'
-              }}>
+              <span
+                style={{
+                  background: 'rgba(0, 0, 0, 0.3)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '4px',
+                  padding: '0.2rem 0.4rem',
+                  fontSize: '0.7rem',
+                  fontFamily: 'monospace',
+                  opacity: 0.8,
+                  marginLeft: 'auto',
+                }}
+              >
                 {action.shortcut.toUpperCase()}
               </span>
             )}
 
             {/* Badge */}
             {action.badge && (
-              <span style={{
-                position: 'absolute',
-                top: '-0.25rem',
-                right: '-0.25rem',
-                background: '#ef4444',
-                color: 'white',
-                fontSize: '0.7rem',
-                fontWeight: 'bold',
-                padding: '0.1rem 0.4rem',
-                borderRadius: '10px',
-                minWidth: '18px',
-                textAlign: 'center',
-                lineHeight: 1.2
-              }}>
+              <span
+                style={{
+                  position: 'absolute',
+                  top: '-0.25rem',
+                  right: '-0.25rem',
+                  background: '#ef4444',
+                  color: 'white',
+                  fontSize: '0.7rem',
+                  fontWeight: 'bold',
+                  padding: '0.1rem 0.4rem',
+                  borderRadius: '10px',
+                  minWidth: '18px',
+                  textAlign: 'center',
+                  lineHeight: 1.2,
+                }}
+              >
                 {action.badge}
               </span>
             )}
@@ -199,7 +204,7 @@ export const getEquipmentQuickActions = (callbacks: {
     description: 'Repair all damaged equipment',
     action: callbacks.onRepairAll || (() => {}),
     variant: 'success',
-    disabled: !callbacks.onRepairAll
+    disabled: !callbacks.onRepairAll,
   },
   {
     id: 'quick-equip',
@@ -209,7 +214,7 @@ export const getEquipmentQuickActions = (callbacks: {
     description: 'Equip best available gear',
     action: callbacks.onQuickEquipBest || (() => {}),
     variant: 'primary',
-    disabled: !callbacks.onQuickEquipBest
+    disabled: !callbacks.onQuickEquipBest,
   },
   {
     id: 'save-loadout',
@@ -219,7 +224,7 @@ export const getEquipmentQuickActions = (callbacks: {
     description: 'Save current equipment setup',
     action: callbacks.onSaveLoadout || (() => {}),
     variant: 'secondary',
-    disabled: !callbacks.onSaveLoadout
+    disabled: !callbacks.onSaveLoadout,
   },
   {
     id: 'compare',
@@ -229,8 +234,8 @@ export const getEquipmentQuickActions = (callbacks: {
     description: 'Show stat comparison',
     action: callbacks.onShowComparison || (() => {}),
     variant: 'secondary',
-    disabled: !callbacks.onShowComparison
-  }
+    disabled: !callbacks.onShowComparison,
+  },
 ];
 
 export const getItemsQuickActions = (callbacks: {
@@ -247,7 +252,7 @@ export const getItemsQuickActions = (callbacks: {
     description: 'Sort inventory by category and rarity',
     action: callbacks.onAutoSort || (() => {}),
     variant: 'primary',
-    disabled: !callbacks.onAutoSort
+    disabled: !callbacks.onAutoSort,
   },
   {
     id: 'use-selected',
@@ -257,7 +262,7 @@ export const getItemsQuickActions = (callbacks: {
     description: 'Use the selected consumable',
     action: callbacks.onUseSelected || (() => {}),
     variant: 'success',
-    disabled: !callbacks.onUseSelected
+    disabled: !callbacks.onUseSelected,
   },
   {
     id: 'sell-junk',
@@ -267,7 +272,7 @@ export const getItemsQuickActions = (callbacks: {
     description: 'Sell all junk items',
     action: callbacks.onSellJunk || (() => {}),
     variant: 'secondary',
-    disabled: !callbacks.onSellJunk
+    disabled: !callbacks.onSellJunk,
   },
   {
     id: 'stack-all',
@@ -277,8 +282,8 @@ export const getItemsQuickActions = (callbacks: {
     description: 'Stack identical items',
     action: callbacks.onStackAll || (() => {}),
     variant: 'secondary',
-    disabled: !callbacks.onStackAll
-  }
+    disabled: !callbacks.onStackAll,
+  },
 ];
 
 export const getCreaturesQuickActions = (callbacks: {
@@ -295,7 +300,7 @@ export const getCreaturesQuickActions = (callbacks: {
     description: 'Feed all hungry creatures',
     action: callbacks.onFeedAll || (() => {}),
     variant: 'success',
-    disabled: !callbacks.onFeedAll
+    disabled: !callbacks.onFeedAll,
   },
   {
     id: 'summon-best',
@@ -305,7 +310,7 @@ export const getCreaturesQuickActions = (callbacks: {
     description: 'Summon strongest creature',
     action: callbacks.onSummonBest || (() => {}),
     variant: 'primary',
-    disabled: !callbacks.onSummonBest
+    disabled: !callbacks.onSummonBest,
   },
   {
     id: 'breed',
@@ -315,7 +320,7 @@ export const getCreaturesQuickActions = (callbacks: {
     description: 'Breed selected creatures',
     action: callbacks.onBreedSelected || (() => {}),
     variant: 'secondary',
-    disabled: !callbacks.onBreedSelected
+    disabled: !callbacks.onBreedSelected,
   },
   {
     id: 'release',
@@ -325,8 +330,8 @@ export const getCreaturesQuickActions = (callbacks: {
     description: 'Release selected creature',
     action: callbacks.onReleaseSelected || (() => {}),
     variant: 'danger',
-    disabled: !callbacks.onReleaseSelected
-  }
+    disabled: !callbacks.onReleaseSelected,
+  },
 ];
 
 export const getStatsQuickActions = (callbacks: {
@@ -342,7 +347,7 @@ export const getStatsQuickActions = (callbacks: {
     description: 'View progression history',
     action: callbacks.onShowHistory || (() => {}),
     variant: 'primary',
-    disabled: !callbacks.onShowHistory
+    disabled: !callbacks.onShowHistory,
   },
   {
     id: 'export-stats',
@@ -352,7 +357,7 @@ export const getStatsQuickActions = (callbacks: {
     description: 'Export character statistics',
     action: callbacks.onExportStats || (() => {}),
     variant: 'secondary',
-    disabled: !callbacks.onExportStats
+    disabled: !callbacks.onExportStats,
   },
   {
     id: 'reset-progress',
@@ -362,8 +367,8 @@ export const getStatsQuickActions = (callbacks: {
     description: 'Reset progression tracking',
     action: callbacks.onResetProgress || (() => {}),
     variant: 'danger',
-    disabled: !callbacks.onResetProgress
-  }
+    disabled: !callbacks.onResetProgress,
+  },
 ];
 
 export default QuickActionBar;

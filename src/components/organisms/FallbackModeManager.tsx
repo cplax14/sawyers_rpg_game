@@ -19,9 +19,11 @@ interface FallbackModeManagerProps {
 export const FallbackModeManager: React.FC<FallbackModeManagerProps> = ({
   isOpen,
   onClose,
-  onContactSupport
+  onContactSupport,
 }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'capabilities' | 'pending' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'capabilities' | 'pending' | 'settings'>(
+    'overview'
+  );
   const [isRestoring, setIsRestoring] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
 
@@ -32,14 +34,10 @@ export const FallbackModeManager: React.FC<FallbackModeManagerProps> = ({
     getUnavailableCapabilities,
     getStatusMessage,
     getPendingSyncStatus,
-    attemptRestoration
+    attemptRestoration,
   } = useServiceMode();
 
-  const {
-    syncPendingSaves,
-    getSaveStatus,
-    pendingCloudSaves
-  } = useSmartSave();
+  const { syncPendingSaves, getSaveStatus, pendingCloudSaves } = useSmartSave();
 
   const getModeColor = (serviceMode: ServiceMode): string => {
     switch (serviceMode) {
@@ -115,7 +113,7 @@ export const FallbackModeManager: React.FC<FallbackModeManagerProps> = ({
           alignItems: 'center',
           justifyContent: 'center',
           zIndex: 10000,
-          padding: '1rem'
+          padding: '1rem',
         }}
         onClick={onClose}
       >
@@ -134,37 +132,41 @@ export const FallbackModeManager: React.FC<FallbackModeManagerProps> = ({
             overflow: 'hidden',
             boxShadow: '0 25px 50px rgba(0, 0, 0, 0.5)',
             display: 'flex',
-            flexDirection: 'column'
+            flexDirection: 'column',
           }}
-          onClick={(e) => e.stopPropagation()}
+          onClick={e => e.stopPropagation()}
         >
           {/* Header */}
-          <div style={{
-            padding: '1.5rem',
-            borderBottom: '1px solid #374151',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between'
-          }}>
+          <div
+            style={{
+              padding: '1.5rem',
+              borderBottom: '1px solid #374151',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <span style={{ fontSize: '1.5rem' }}>
-                {getModeIcon(mode)}
-              </span>
+              <span style={{ fontSize: '1.5rem' }}>{getModeIcon(mode)}</span>
               <div>
-                <h2 style={{
-                  margin: 0,
-                  color: '#f9fafb',
-                  fontSize: '1.5rem',
-                  fontWeight: 'bold'
-                }}>
+                <h2
+                  style={{
+                    margin: 0,
+                    color: '#f9fafb',
+                    fontSize: '1.5rem',
+                    fontWeight: 'bold',
+                  }}
+                >
                   Service Mode Manager
                 </h2>
-                <p style={{
-                  margin: '0.25rem 0 0 0',
-                  color: getModeColor(mode),
-                  fontSize: '0.875rem',
-                  fontWeight: 'semibold'
-                }}>
+                <p
+                  style={{
+                    margin: '0.25rem 0 0 0',
+                    color: getModeColor(mode),
+                    fontSize: '0.875rem',
+                    fontWeight: 'semibold',
+                  }}
+                >
                   {getStatusMessage()}
                 </p>
               </div>
@@ -179,7 +181,7 @@ export const FallbackModeManager: React.FC<FallbackModeManagerProps> = ({
                 cursor: 'pointer',
                 padding: '0.5rem',
                 borderRadius: '6px',
-                fontSize: '1.25rem'
+                fontSize: '1.25rem',
               }}
             >
               ✕
@@ -187,17 +189,19 @@ export const FallbackModeManager: React.FC<FallbackModeManagerProps> = ({
           </div>
 
           {/* Tabs */}
-          <div style={{
-            display: 'flex',
-            borderBottom: '1px solid #374151',
-            backgroundColor: '#111827'
-          }}>
+          <div
+            style={{
+              display: 'flex',
+              borderBottom: '1px solid #374151',
+              backgroundColor: '#111827',
+            }}
+          >
             {[
               { id: 'overview', label: 'Overview', icon: '📊' },
               { id: 'capabilities', label: 'Features', icon: '⚙️' },
               { id: 'pending', label: 'Pending', icon: '⏳' },
-              { id: 'settings', label: 'Options', icon: '🔧' }
-            ].map((tab) => (
+              { id: 'settings', label: 'Options', icon: '🔧' },
+            ].map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
@@ -214,21 +218,26 @@ export const FallbackModeManager: React.FC<FallbackModeManagerProps> = ({
                   gap: '0.5rem',
                   fontSize: '0.875rem',
                   fontWeight: activeTab === tab.id ? 'semibold' : 'normal',
-                  borderBottom: activeTab === tab.id ? `2px solid ${getModeColor(mode)}` : '2px solid transparent'
+                  borderBottom:
+                    activeTab === tab.id
+                      ? `2px solid ${getModeColor(mode)}`
+                      : '2px solid transparent',
                 }}
               >
                 <span>{tab.icon}</span>
                 {tab.label}
                 {tab.id === 'pending' && pendingSync.count > 0 && (
-                  <span style={{
-                    backgroundColor: '#f59e0b',
-                    color: 'white',
-                    fontSize: '0.7rem',
-                    padding: '0.125rem 0.375rem',
-                    borderRadius: '10px',
-                    fontWeight: 'bold',
-                    marginLeft: '0.25rem'
-                  }}>
+                  <span
+                    style={{
+                      backgroundColor: '#f59e0b',
+                      color: 'white',
+                      fontSize: '0.7rem',
+                      padding: '0.125rem 0.375rem',
+                      borderRadius: '10px',
+                      fontWeight: 'bold',
+                      marginLeft: '0.25rem',
+                    }}
+                  >
                     {pendingSync.count}
                   </span>
                 )}
@@ -237,63 +246,77 @@ export const FallbackModeManager: React.FC<FallbackModeManagerProps> = ({
           </div>
 
           {/* Content */}
-          <div style={{
-            flex: 1,
-            overflow: 'auto',
-            padding: '1.5rem',
-            color: '#f3f4f6'
-          }}>
+          <div
+            style={{
+              flex: 1,
+              overflow: 'auto',
+              padding: '1.5rem',
+              color: '#f3f4f6',
+            }}
+          >
             {activeTab === 'overview' && (
               <div>
                 {/* Current Status */}
-                <div style={{
-                  backgroundColor: getModeColor(mode) + '20',
-                  border: `1px solid ${getModeColor(mode)}`,
-                  borderRadius: '8px',
-                  padding: '1rem',
-                  marginBottom: '1.5rem'
-                }}>
-                  <h3 style={{
-                    margin: '0 0 0.5rem 0',
-                    color: '#f9fafb',
-                    fontSize: '1.125rem'
-                  }}>
+                <div
+                  style={{
+                    backgroundColor: getModeColor(mode) + '20',
+                    border: `1px solid ${getModeColor(mode)}`,
+                    borderRadius: '8px',
+                    padding: '1rem',
+                    marginBottom: '1.5rem',
+                  }}
+                >
+                  <h3
+                    style={{
+                      margin: '0 0 0.5rem 0',
+                      color: '#f9fafb',
+                      fontSize: '1.125rem',
+                    }}
+                  >
                     Current Status
                   </h3>
-                  <p style={{
-                    margin: '0 0 1rem 0',
-                    color: '#d1d5db',
-                    lineHeight: '1.5'
-                  }}>
+                  <p
+                    style={{
+                      margin: '0 0 1rem 0',
+                      color: '#d1d5db',
+                      lineHeight: '1.5',
+                    }}
+                  >
                     {getStatusMessage()}
                   </p>
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: '1fr 1fr',
-                    gap: '1rem',
-                    fontSize: '0.875rem'
-                  }}>
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: '1fr 1fr',
+                      gap: '1rem',
+                      fontSize: '0.875rem',
+                    }}
+                  >
                     <div>
-                      <strong>Last Updated:</strong><br />
+                      <strong>Last Updated:</strong>
+                      <br />
                       {config.timestamp.toLocaleString()}
                     </div>
                     <div>
-                      <strong>Auto Retry:</strong><br />
+                      <strong>Auto Retry:</strong>
+                      <br />
                       {config.autoRetryEnabled ? 'Enabled' : 'Disabled'}
                     </div>
                   </div>
                 </div>
 
                 {/* Quick Actions */}
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                  gap: '1rem',
-                  marginBottom: '1.5rem'
-                }}>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                    gap: '1rem',
+                    marginBottom: '1.5rem',
+                  }}
+                >
                   {mode !== ServiceMode.CLOUD_ENABLED && (
                     <Button
-                      variant="primary"
+                      variant='primary'
                       onClick={handleRestore}
                       disabled={isRestoring || mode === ServiceMode.OFFLINE}
                       style={{ width: '100%' }}
@@ -304,7 +327,7 @@ export const FallbackModeManager: React.FC<FallbackModeManagerProps> = ({
 
                   {pendingSync.count > 0 && (
                     <Button
-                      variant="secondary"
+                      variant='secondary'
                       onClick={handleSyncPending}
                       disabled={isSyncing || mode !== ServiceMode.CLOUD_ENABLED}
                       style={{ width: '100%' }}
@@ -314,35 +337,37 @@ export const FallbackModeManager: React.FC<FallbackModeManagerProps> = ({
                   )}
 
                   {onContactSupport && (
-                    <Button
-                      variant="outline"
-                      onClick={onContactSupport}
-                      style={{ width: '100%' }}
-                    >
+                    <Button variant='outline' onClick={onContactSupport} style={{ width: '100%' }}>
                       Contact Support
                     </Button>
                   )}
                 </div>
 
                 {/* Impact Summary */}
-                <div style={{
-                  backgroundColor: '#111827',
-                  borderRadius: '8px',
-                  padding: '1rem'
-                }}>
-                  <h4 style={{
-                    margin: '0 0 0.75rem 0',
-                    color: '#f9fafb',
-                    fontSize: '1rem'
-                  }}>
+                <div
+                  style={{
+                    backgroundColor: '#111827',
+                    borderRadius: '8px',
+                    padding: '1rem',
+                  }}
+                >
+                  <h4
+                    style={{
+                      margin: '0 0 0.75rem 0',
+                      color: '#f9fafb',
+                      fontSize: '1rem',
+                    }}
+                  >
                     Service Impact
                   </h4>
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: '1fr 1fr',
-                    gap: '1rem',
-                    fontSize: '0.875rem'
-                  }}>
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: '1fr 1fr',
+                      gap: '1rem',
+                      fontSize: '0.875rem',
+                    }}
+                  >
                     <div>
                       <div style={{ color: '#10b981', marginBottom: '0.25rem' }}>
                         ✅ Available: {availableCapabilities.length}
@@ -355,9 +380,7 @@ export const FallbackModeManager: React.FC<FallbackModeManagerProps> = ({
                       <div style={{ color: '#f59e0b', marginBottom: '0.25rem' }}>
                         ⏳ Pending Syncs: {pendingSync.count}
                       </div>
-                      <div style={{ color: '#6b7280' }}>
-                        💾 Local Saves: Active
-                      </div>
+                      <div style={{ color: '#6b7280' }}>💾 Local Saves: Active</div>
                     </div>
                   </div>
                 </div>
@@ -366,24 +389,28 @@ export const FallbackModeManager: React.FC<FallbackModeManagerProps> = ({
 
             {activeTab === 'capabilities' && (
               <div>
-                <h3 style={{
-                  margin: '0 0 1rem 0',
-                  color: '#f9fafb',
-                  fontSize: '1.25rem'
-                }}>
+                <h3
+                  style={{
+                    margin: '0 0 1rem 0',
+                    color: '#f9fafb',
+                    fontSize: '1.25rem',
+                  }}
+                >
                   Feature Availability
                 </h3>
 
                 {/* Available Features */}
                 <div style={{ marginBottom: '1.5rem' }}>
-                  <h4 style={{
-                    margin: '0 0 0.75rem 0',
-                    color: '#10b981',
-                    fontSize: '1rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem'
-                  }}>
+                  <h4
+                    style={{
+                      margin: '0 0 0.75rem 0',
+                      color: '#10b981',
+                      fontSize: '1rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                    }}
+                  >
                     ✅ Available Features ({availableCapabilities.length})
                   </h4>
                   {availableCapabilities.map((capability, index) => (
@@ -394,7 +421,7 @@ export const FallbackModeManager: React.FC<FallbackModeManagerProps> = ({
                         border: '1px solid #10b981',
                         borderRadius: '6px',
                         padding: '0.75rem',
-                        marginBottom: '0.5rem'
+                        marginBottom: '0.5rem',
                       }}
                     >
                       <div style={{ fontWeight: 'semibold', marginBottom: '0.25rem' }}>
@@ -410,14 +437,16 @@ export const FallbackModeManager: React.FC<FallbackModeManagerProps> = ({
                 {/* Unavailable Features */}
                 {unavailableCapabilities.length > 0 && (
                   <div>
-                    <h4 style={{
-                      margin: '0 0 0.75rem 0',
-                      color: '#ef4444',
-                      fontSize: '1rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem'
-                    }}>
+                    <h4
+                      style={{
+                        margin: '0 0 0.75rem 0',
+                        color: '#ef4444',
+                        fontSize: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                      }}
+                    >
                       ❌ Unavailable Features ({unavailableCapabilities.length})
                     </h4>
                     {unavailableCapabilities.map((capability, index) => (
@@ -428,21 +457,23 @@ export const FallbackModeManager: React.FC<FallbackModeManagerProps> = ({
                           border: '1px solid #ef4444',
                           borderRadius: '6px',
                           padding: '0.75rem',
-                          marginBottom: '0.5rem'
+                          marginBottom: '0.5rem',
                         }}
                       >
-                        <div style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          marginBottom: '0.25rem'
-                        }}>
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            marginBottom: '0.25rem',
+                          }}
+                        >
                           <span style={{ fontWeight: 'semibold' }}>{capability.name}</span>
                           {capability.fallbackBehavior && (
                             <HelpTooltip
                               content={`Fallback: ${capability.fallbackBehavior}`}
-                              icon="ℹ️"
-                              position="left"
+                              icon='ℹ️'
+                              position='left'
                             />
                           )}
                         </div>
@@ -450,11 +481,13 @@ export const FallbackModeManager: React.FC<FallbackModeManagerProps> = ({
                           {capability.description}
                         </div>
                         {capability.fallbackBehavior && (
-                          <div style={{
-                            fontSize: '0.75rem',
-                            color: '#f59e0b',
-                            marginTop: '0.25rem'
-                          }}>
+                          <div
+                            style={{
+                              fontSize: '0.75rem',
+                              color: '#f59e0b',
+                              marginTop: '0.25rem',
+                            }}
+                          >
                             Fallback: {capability.fallbackBehavior}
                           </div>
                         )}
@@ -467,36 +500,44 @@ export const FallbackModeManager: React.FC<FallbackModeManagerProps> = ({
 
             {activeTab === 'pending' && (
               <div>
-                <h3 style={{
-                  margin: '0 0 1rem 0',
-                  color: '#f9fafb',
-                  fontSize: '1.25rem'
-                }}>
+                <h3
+                  style={{
+                    margin: '0 0 1rem 0',
+                    color: '#f9fafb',
+                    fontSize: '1.25rem',
+                  }}
+                >
                   Pending Operations
                 </h3>
 
                 {pendingSync.count > 0 ? (
                   <div>
-                    <div style={{
-                      backgroundColor: '#7c2d12',
-                      border: '1px solid #ea580c',
-                      borderRadius: '8px',
-                      padding: '1rem',
-                      marginBottom: '1rem'
-                    }}>
-                      <h4 style={{
-                        margin: '0 0 0.5rem 0',
-                        color: '#fed7aa',
-                        fontSize: '1rem'
-                      }}>
+                    <div
+                      style={{
+                        backgroundColor: '#7c2d12',
+                        border: '1px solid #ea580c',
+                        borderRadius: '8px',
+                        padding: '1rem',
+                        marginBottom: '1rem',
+                      }}
+                    >
+                      <h4
+                        style={{
+                          margin: '0 0 0.5rem 0',
+                          color: '#fed7aa',
+                          fontSize: '1rem',
+                        }}
+                      >
                         Sync Queue Status
                       </h4>
-                      <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: '1fr 1fr',
-                        gap: '1rem',
-                        marginBottom: '1rem'
-                      }}>
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: '1fr 1fr',
+                          gap: '1rem',
+                          marginBottom: '1rem',
+                        }}
+                      >
                         <div>
                           <div style={{ color: '#fed7aa', fontSize: '0.875rem' }}>
                             <strong>Pending Items:</strong> {pendingSync.count}
@@ -508,7 +549,8 @@ export const FallbackModeManager: React.FC<FallbackModeManagerProps> = ({
                         <div>
                           {pendingSync.oldestItem && (
                             <div style={{ color: '#fed7aa', fontSize: '0.875rem' }}>
-                              <strong>Oldest Item:</strong><br />
+                              <strong>Oldest Item:</strong>
+                              <br />
                               {pendingSync.oldestItem.toLocaleString()}
                             </div>
                           )}
@@ -516,7 +558,7 @@ export const FallbackModeManager: React.FC<FallbackModeManagerProps> = ({
                       </div>
 
                       <Button
-                        variant="primary"
+                        variant='primary'
                         onClick={handleSyncPending}
                         disabled={isSyncing || mode !== ServiceMode.CLOUD_ENABLED}
                         style={{ width: '100%' }}
@@ -525,26 +567,32 @@ export const FallbackModeManager: React.FC<FallbackModeManagerProps> = ({
                       </Button>
                     </div>
 
-                    <div style={{
-                      backgroundColor: '#1e3a8a',
-                      border: '1px solid #3b82f6',
-                      borderRadius: '8px',
-                      padding: '1rem'
-                    }}>
-                      <h4 style={{
-                        margin: '0 0 0.5rem 0',
-                        color: '#dbeafe',
-                        fontSize: '1rem'
-                      }}>
+                    <div
+                      style={{
+                        backgroundColor: '#1e3a8a',
+                        border: '1px solid #3b82f6',
+                        borderRadius: '8px',
+                        padding: '1rem',
+                      }}
+                    >
+                      <h4
+                        style={{
+                          margin: '0 0 0.5rem 0',
+                          color: '#dbeafe',
+                          fontSize: '1rem',
+                        }}
+                      >
                         What happens to pending syncs?
                       </h4>
-                      <ul style={{
-                        margin: 0,
-                        paddingLeft: '1.25rem',
-                        color: '#dbeafe',
-                        fontSize: '0.875rem',
-                        lineHeight: '1.5'
-                      }}>
+                      <ul
+                        style={{
+                          margin: 0,
+                          paddingLeft: '1.25rem',
+                          color: '#dbeafe',
+                          fontSize: '0.875rem',
+                          lineHeight: '1.5',
+                        }}
+                      >
                         <li>Operations are queued when cloud services are unavailable</li>
                         <li>Data is safely stored locally until sync is possible</li>
                         <li>Automatic sync occurs when cloud services are restored</li>
@@ -553,16 +601,16 @@ export const FallbackModeManager: React.FC<FallbackModeManagerProps> = ({
                     </div>
                   </div>
                 ) : (
-                  <div style={{
-                    textAlign: 'center',
-                    color: '#9ca3af',
-                    padding: '2rem'
-                  }}>
+                  <div
+                    style={{
+                      textAlign: 'center',
+                      color: '#9ca3af',
+                      padding: '2rem',
+                    }}
+                  >
                     <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>✅</div>
                     <p>No pending operations</p>
-                    <p style={{ fontSize: '0.875rem' }}>
-                      All data is synchronized and up to date
-                    </p>
+                    <p style={{ fontSize: '0.875rem' }}>All data is synchronized and up to date</p>
                   </div>
                 )}
               </div>
@@ -570,73 +618,91 @@ export const FallbackModeManager: React.FC<FallbackModeManagerProps> = ({
 
             {activeTab === 'settings' && (
               <div>
-                <h3 style={{
-                  margin: '0 0 1rem 0',
-                  color: '#f9fafb',
-                  fontSize: '1.25rem'
-                }}>
+                <h3
+                  style={{
+                    margin: '0 0 1rem 0',
+                    color: '#f9fafb',
+                    fontSize: '1.25rem',
+                  }}
+                >
                   Fallback Options
                 </h3>
 
                 <div style={{ marginBottom: '1.5rem' }}>
-                  <h4 style={{
-                    margin: '0 0 0.75rem 0',
-                    color: '#f9fafb',
-                    fontSize: '1rem'
-                  }}>
+                  <h4
+                    style={{
+                      margin: '0 0 0.75rem 0',
+                      color: '#f9fafb',
+                      fontSize: '1rem',
+                    }}
+                  >
                     Auto-Recovery Settings
                   </h4>
-                  <div style={{
-                    backgroundColor: '#111827',
-                    borderRadius: '8px',
-                    padding: '1rem'
-                  }}>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      marginBottom: '0.75rem'
-                    }}>
+                  <div
+                    style={{
+                      backgroundColor: '#111827',
+                      borderRadius: '8px',
+                      padding: '1rem',
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        marginBottom: '0.75rem',
+                      }}
+                    >
                       <span>Auto-retry cloud services</span>
-                      <span style={{
-                        color: config.autoRetryEnabled ? '#10b981' : '#ef4444'
-                      }}>
+                      <span
+                        style={{
+                          color: config.autoRetryEnabled ? '#10b981' : '#ef4444',
+                        }}
+                      >
                         {config.autoRetryEnabled ? 'Enabled' : 'Disabled'}
                       </span>
                     </div>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      fontSize: '0.875rem',
-                      color: '#9ca3af'
-                    }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        fontSize: '0.875rem',
+                        color: '#9ca3af',
+                      }}
+                    >
                       <span>Retry interval</span>
                       <span>{Math.round(config.retryInterval / 1000)}s</span>
                     </div>
                   </div>
                 </div>
 
-                <div style={{
-                  backgroundColor: '#1e3a8a',
-                  border: '1px solid #3b82f6',
-                  borderRadius: '8px',
-                  padding: '1rem'
-                }}>
-                  <h4 style={{
-                    margin: '0 0 0.75rem 0',
-                    color: '#dbeafe',
-                    fontSize: '1rem'
-                  }}>
+                <div
+                  style={{
+                    backgroundColor: '#1e3a8a',
+                    border: '1px solid #3b82f6',
+                    borderRadius: '8px',
+                    padding: '1rem',
+                  }}
+                >
+                  <h4
+                    style={{
+                      margin: '0 0 0.75rem 0',
+                      color: '#dbeafe',
+                      fontSize: '1rem',
+                    }}
+                  >
                     Graceful Degradation Features
                   </h4>
-                  <ul style={{
-                    margin: 0,
-                    paddingLeft: '1.25rem',
-                    color: '#dbeafe',
-                    fontSize: '0.875rem',
-                    lineHeight: '1.6'
-                  }}>
+                  <ul
+                    style={{
+                      margin: 0,
+                      paddingLeft: '1.25rem',
+                      color: '#dbeafe',
+                      fontSize: '0.875rem',
+                      lineHeight: '1.6',
+                    }}
+                  >
                     <li>Automatic fallback to local storage when cloud is unavailable</li>
                     <li>Smart save operations that choose the best available method</li>
                     <li>Pending operation queue for delayed synchronization</li>

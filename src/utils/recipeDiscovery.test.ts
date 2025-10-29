@@ -2,7 +2,12 @@
  * Tests for Recipe Discovery System
  */
 
-import { checkRecipeDiscovery, checkRecipeDiscoveryAfterCapture, isRecipeUnlockable, calculateRecipeProgress } from './recipeDiscovery';
+import {
+  checkRecipeDiscovery,
+  checkRecipeDiscoveryAfterCapture,
+  isRecipeUnlockable,
+  calculateRecipeProgress,
+} from './recipeDiscovery';
 import { EnhancedCreature } from '../types/creatures';
 
 describe('Recipe Discovery System', () => {
@@ -121,12 +126,7 @@ describe('Recipe Discovery System', () => {
         creature2: { species: 'wyvern' } as EnhancedCreature,
       };
 
-      const result = checkRecipeDiscovery(
-        creatures,
-        [],
-        35,
-        { dragon_peak_unlocked: true }
-      );
+      const result = checkRecipeDiscovery(creatures, [], 35, { dragon_peak_unlocked: true });
 
       expect(result.newlyDiscovered).toContain('ancient_dragon');
     });
@@ -143,13 +143,7 @@ describe('Recipe Discovery System', () => {
         species: 'slime',
       } as EnhancedCreature;
 
-      const result = checkRecipeDiscoveryAfterCapture(
-        newCreature,
-        existingCreatures,
-        [],
-        1,
-        {}
-      );
+      const result = checkRecipeDiscoveryAfterCapture(newCreature, existingCreatures, [], 1, {});
 
       expect(result.newlyDiscovered).toContain('slime_fusion');
     });
@@ -164,13 +158,7 @@ describe('Recipe Discovery System', () => {
         species: 'goblin',
       } as EnhancedCreature;
 
-      const result = checkRecipeDiscoveryAfterCapture(
-        newCreature,
-        existingCreatures,
-        [],
-        1,
-        {}
-      );
+      const result = checkRecipeDiscoveryAfterCapture(newCreature, existingCreatures, [], 1, {});
 
       expect(result.newlyDiscovered).toContain('worg_creation');
     });

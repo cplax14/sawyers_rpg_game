@@ -14,24 +14,14 @@ interface ImpactEffectsProps {
   onComplete?: () => void;
 }
 
-export const ImpactEffects: React.FC<ImpactEffectsProps> = ({
-  config,
-  isActive,
-  onComplete
-}) => {
-  const {
-    x,
-    y,
-    damage,
-    isCritical = false,
-    element = 'arcane'
-  } = config;
+export const ImpactEffects: React.FC<ImpactEffectsProps> = ({ config, isActive, onComplete }) => {
+  const { x, y, damage, isCritical = false, element = 'arcane' } = config;
 
   const elementColors = {
     arcane: { primary: '#8b5cf6', secondary: '#a78bfa' },
     fire: { primary: '#f59e0b', secondary: '#fbbf24' },
     ice: { primary: '#3b82f6', secondary: '#60a5fa' },
-    lightning: { primary: '#eab308', secondary: '#facc15' }
+    lightning: { primary: '#eab308', secondary: '#facc15' },
   };
 
   const colors = elementColors[element];
@@ -45,7 +35,7 @@ export const ImpactEffects: React.FC<ImpactEffectsProps> = ({
       id: i,
       offsetX: Math.cos(angle) * distance,
       offsetY: Math.sin(angle) * distance,
-      delay: Math.random() * 0.1
+      delay: Math.random() * 0.1,
     };
   });
 
@@ -58,7 +48,7 @@ export const ImpactEffects: React.FC<ImpactEffectsProps> = ({
         left: x,
         top: y,
         pointerEvents: 'none',
-        zIndex: 102
+        zIndex: 102,
       }}
     >
       {/* Impact flash */}
@@ -66,11 +56,11 @@ export const ImpactEffects: React.FC<ImpactEffectsProps> = ({
         initial={{ scale: 0, opacity: 0 }}
         animate={{
           scale: [0, 1.5, 0],
-          opacity: [0, 1, 0]
+          opacity: [0, 1, 0],
         }}
         transition={{
           duration: 0.3,
-          ease: "easeOut"
+          ease: 'easeOut',
         }}
         onAnimationComplete={onComplete}
         style={{
@@ -82,7 +72,7 @@ export const ImpactEffects: React.FC<ImpactEffectsProps> = ({
           boxShadow: `0 0 40px ${colors.primary}`,
           left: -30,
           top: -30,
-          filter: 'blur(4px)'
+          filter: 'blur(4px)',
         }}
       />
 
@@ -91,12 +81,12 @@ export const ImpactEffects: React.FC<ImpactEffectsProps> = ({
         initial={{ scale: 0, opacity: 0 }}
         animate={{
           scale: [0, 2, 0],
-          opacity: [0, 0.6, 0]
+          opacity: [0, 0.6, 0],
         }}
         transition={{
           duration: 0.4,
           delay: 0.05,
-          ease: "easeOut"
+          ease: 'easeOut',
         }}
         style={{
           position: 'absolute',
@@ -105,31 +95,31 @@ export const ImpactEffects: React.FC<ImpactEffectsProps> = ({
           borderRadius: '50%',
           border: `3px solid ${colors.secondary}`,
           left: -40,
-          top: -40
+          top: -40,
         }}
       />
 
       {/* Explosion particles */}
       <AnimatePresence>
-        {particles.map((particle) => (
+        {particles.map(particle => (
           <motion.div
             key={particle.id}
             initial={{
               x: 0,
               y: 0,
               scale: 1,
-              opacity: 1
+              opacity: 1,
             }}
             animate={{
               x: particle.offsetX,
               y: particle.offsetY,
               scale: 0,
-              opacity: 0
+              opacity: 0,
             }}
             transition={{
               duration: 0.5,
               delay: particle.delay,
-              ease: "easeOut"
+              ease: 'easeOut',
             }}
             style={{
               position: 'absolute',
@@ -139,7 +129,7 @@ export const ImpactEffects: React.FC<ImpactEffectsProps> = ({
               backgroundColor: colors.secondary,
               boxShadow: `0 0 8px ${colors.secondary}`,
               left: -3,
-              top: -3
+              top: -3,
             }}
           />
         ))}
@@ -150,20 +140,20 @@ export const ImpactEffects: React.FC<ImpactEffectsProps> = ({
         initial={{
           y: 0,
           scale: 0,
-          opacity: 0
+          opacity: 0,
         }}
         animate={{
           y: -80,
           scale: isCritical ? [0, 1.3, 1] : [0, 1],
-          opacity: [0, 1, 1, 0]
+          opacity: [0, 1, 1, 0],
         }}
         transition={{
           duration: 1.2,
-          ease: "easeOut",
+          ease: 'easeOut',
           opacity: {
             times: [0, 0.2, 0.8, 1],
-            duration: 1.2
-          }
+            duration: 1.2,
+          },
         }}
         style={{
           position: 'absolute',
@@ -177,13 +167,11 @@ export const ImpactEffects: React.FC<ImpactEffectsProps> = ({
             : '2px 2px 4px rgba(0,0,0,0.8)',
           fontFamily: 'var(--font-heading)',
           minWidth: 80,
-          textAlign: 'center'
+          textAlign: 'center',
         }}
       >
         {isCritical && (
-          <div style={{ fontSize: '1rem', color: '#ff6666', marginBottom: -5 }}>
-            CRITICAL!
-          </div>
+          <div style={{ fontSize: '1rem', color: '#ff6666', marginBottom: -5 }}>CRITICAL!</div>
         )}
         {damage}
       </motion.div>
@@ -201,26 +189,26 @@ export const ImpactEffects: React.FC<ImpactEffectsProps> = ({
                   x: 0,
                   y: 0,
                   scale: 0,
-                  opacity: 0
+                  opacity: 0,
                 }}
                 animate={{
                   x: Math.cos(angle) * distance,
                   y: Math.sin(angle) * distance,
                   scale: [0, 1, 0],
                   opacity: [0, 1, 0],
-                  rotate: [0, 180]
+                  rotate: [0, 180],
                 }}
                 transition={{
                   duration: 0.6,
                   delay: i * 0.05,
-                  ease: "easeOut"
+                  ease: 'easeOut',
                 }}
                 style={{
                   position: 'absolute',
                   width: 8,
                   height: 8,
                   left: -4,
-                  top: -4
+                  top: -4,
                 }}
               >
                 <div
@@ -228,8 +216,9 @@ export const ImpactEffects: React.FC<ImpactEffectsProps> = ({
                     width: '100%',
                     height: '100%',
                     background: 'linear-gradient(45deg, #ffff00, #ff4444)',
-                    clipPath: 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)',
-                    filter: 'drop-shadow(0 0 4px #ff0000)'
+                    clipPath:
+                      'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)',
+                    filter: 'drop-shadow(0 0 4px #ff0000)',
                   }}
                 />
               </motion.div>

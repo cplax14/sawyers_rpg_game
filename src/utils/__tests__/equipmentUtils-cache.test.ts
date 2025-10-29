@@ -6,7 +6,7 @@
 import {
   checkEquipmentCompatibility,
   clearCompatibilityCache,
-  getCompatibilityCacheStats
+  getCompatibilityCacheStats,
 } from '../equipmentUtils';
 import { EnhancedItem, EquipmentSet } from '../../types/inventory';
 import { PlayerStats } from '../../types/game';
@@ -19,7 +19,7 @@ describe('Equipment Compatibility Cache', () => {
     magicAttack: 10,
     magicDefense: 10,
     speed: 10,
-    accuracy: 85
+    accuracy: 85,
   };
 
   const mockSword: EnhancedItem = {
@@ -33,13 +33,13 @@ describe('Equipment Compatibility Cache', () => {
     value: 100,
     weight: 3,
     statModifiers: {
-      attack: { value: 15, type: 'flat' }
+      attack: { value: 15, type: 'flat' },
     },
     requirements: {
       level: 5,
       classes: ['warrior', 'paladin'],
-      stats: { attack: 8 }
-    }
+      stats: { attack: 8 },
+    },
   };
 
   const mockShield: EnhancedItem = {
@@ -53,8 +53,8 @@ describe('Equipment Compatibility Cache', () => {
     value: 80,
     weight: 4,
     statModifiers: {
-      defense: { value: 12, type: 'flat' }
-    }
+      defense: { value: 12, type: 'flat' },
+    },
   };
 
   const mockTwoHandedSword: EnhancedItem = {
@@ -69,11 +69,11 @@ describe('Equipment Compatibility Cache', () => {
     value: 250,
     weight: 8,
     statModifiers: {
-      attack: { value: 30, type: 'flat' }
+      attack: { value: 30, type: 'flat' },
     },
     requirements: {
-      level: 10
-    }
+      level: 10,
+    },
   };
 
   beforeEach(() => {
@@ -84,22 +84,16 @@ describe('Equipment Compatibility Cache', () => {
   describe('Cache Hit/Miss Behavior', () => {
     it('should return cached result on second identical call', () => {
       // First call - cache miss
-      const result1 = checkEquipmentCompatibility(
-        mockSword,
-        'weapon',
-        10,
-        'warrior',
-        { ...mockPlayerStats, attack: 15 }
-      );
+      const result1 = checkEquipmentCompatibility(mockSword, 'weapon', 10, 'warrior', {
+        ...mockPlayerStats,
+        attack: 15,
+      });
 
       // Second call with identical parameters - cache hit
-      const result2 = checkEquipmentCompatibility(
-        mockSword,
-        'weapon',
-        10,
-        'warrior',
-        { ...mockPlayerStats, attack: 15 }
-      );
+      const result2 = checkEquipmentCompatibility(mockSword, 'weapon', 10, 'warrior', {
+        ...mockPlayerStats,
+        attack: 15,
+      });
 
       // Results should be identical
       expect(result1).toEqual(result2);
@@ -114,13 +108,7 @@ describe('Equipment Compatibility Cache', () => {
 
     it('should miss cache when parameters change', () => {
       // First call
-      checkEquipmentCompatibility(
-        mockSword,
-        'weapon',
-        10,
-        'warrior',
-        mockPlayerStats
-      );
+      checkEquipmentCompatibility(mockSword, 'weapon', 10, 'warrior', mockPlayerStats);
 
       // Second call with different level - cache miss
       checkEquipmentCompatibility(
@@ -138,13 +126,7 @@ describe('Equipment Compatibility Cache', () => {
 
     it('should miss cache when player class changes', () => {
       // First call
-      checkEquipmentCompatibility(
-        mockSword,
-        'weapon',
-        10,
-        'warrior',
-        mockPlayerStats
-      );
+      checkEquipmentCompatibility(mockSword, 'weapon', 10, 'warrior', mockPlayerStats);
 
       // Second call with different class - cache miss
       checkEquipmentCompatibility(
@@ -162,13 +144,7 @@ describe('Equipment Compatibility Cache', () => {
 
     it('should miss cache when player stats change', () => {
       // First call
-      checkEquipmentCompatibility(
-        mockSword,
-        'weapon',
-        10,
-        'warrior',
-        mockPlayerStats
-      );
+      checkEquipmentCompatibility(mockSword, 'weapon', 10, 'warrior', mockPlayerStats);
 
       // Second call with different stats - cache miss
       checkEquipmentCompatibility(
@@ -186,13 +162,7 @@ describe('Equipment Compatibility Cache', () => {
 
     it('should miss cache when target slot changes', () => {
       // First call
-      checkEquipmentCompatibility(
-        mockSword,
-        'weapon',
-        10,
-        'warrior',
-        mockPlayerStats
-      );
+      checkEquipmentCompatibility(mockSword, 'weapon', 10, 'warrior', mockPlayerStats);
 
       // Second call with different slot - cache miss
       checkEquipmentCompatibility(
@@ -219,7 +189,7 @@ describe('Equipment Compatibility Cache', () => {
         necklace: undefined,
         ring1: undefined,
         ring2: undefined,
-        charm: undefined
+        charm: undefined,
       };
 
       const equipmentWithoutShield: EquipmentSet = {
@@ -232,7 +202,7 @@ describe('Equipment Compatibility Cache', () => {
         necklace: undefined,
         ring1: undefined,
         ring2: undefined,
-        charm: undefined
+        charm: undefined,
       };
 
       // First call with shield equipped
@@ -267,13 +237,7 @@ describe('Equipment Compatibility Cache', () => {
 
       // Perform same check multiple times
       for (let i = 0; i < iterations; i++) {
-        checkEquipmentCompatibility(
-          mockSword,
-          'weapon',
-          10,
-          'warrior',
-          mockPlayerStats
-        );
+        checkEquipmentCompatibility(mockSword, 'weapon', 10, 'warrior', mockPlayerStats);
       }
 
       const stats = getCompatibilityCacheStats();
@@ -287,23 +251,11 @@ describe('Equipment Compatibility Cache', () => {
 
       // Check each item twice
       items.forEach(item => {
-        checkEquipmentCompatibility(
-          item,
-          item.equipmentSlot!,
-          10,
-          'warrior',
-          mockPlayerStats
-        );
+        checkEquipmentCompatibility(item, item.equipmentSlot!, 10, 'warrior', mockPlayerStats);
       });
 
       items.forEach(item => {
-        checkEquipmentCompatibility(
-          item,
-          item.equipmentSlot!,
-          10,
-          'warrior',
-          mockPlayerStats
-        );
+        checkEquipmentCompatibility(item, item.equipmentSlot!, 10, 'warrior', mockPlayerStats);
       });
 
       const stats = getCompatibilityCacheStats();
@@ -319,16 +271,10 @@ describe('Equipment Compatibility Cache', () => {
       for (let i = 0; i < 101; i++) {
         const item: EnhancedItem = {
           ...mockSword,
-          id: `item_${i}`
+          id: `item_${i}`,
         };
 
-        checkEquipmentCompatibility(
-          item,
-          'weapon',
-          10,
-          'warrior',
-          mockPlayerStats
-        );
+        checkEquipmentCompatibility(item, 'weapon', 10, 'warrior', mockPlayerStats);
       }
 
       const stats = getCompatibilityCacheStats();
@@ -338,16 +284,10 @@ describe('Equipment Compatibility Cache', () => {
       // First item should have been evicted
       const firstItem: EnhancedItem = {
         ...mockSword,
-        id: 'item_0'
+        id: 'item_0',
       };
 
-      checkEquipmentCompatibility(
-        firstItem,
-        'weapon',
-        10,
-        'warrior',
-        mockPlayerStats
-      );
+      checkEquipmentCompatibility(firstItem, 'weapon', 10, 'warrior', mockPlayerStats);
 
       const statsAfter = getCompatibilityCacheStats();
       expect(statsAfter.misses).toBe(102); // Cache miss for evicted item
@@ -358,31 +298,19 @@ describe('Equipment Compatibility Cache', () => {
       for (let i = 0; i < 100; i++) {
         const item: EnhancedItem = {
           ...mockSword,
-          id: `item_${i}`
+          id: `item_${i}`,
         };
 
-        checkEquipmentCompatibility(
-          item,
-          'weapon',
-          10,
-          'warrior',
-          mockPlayerStats
-        );
+        checkEquipmentCompatibility(item, 'weapon', 10, 'warrior', mockPlayerStats);
       }
 
       // Access first item again (should move to end)
       const firstItem: EnhancedItem = {
         ...mockSword,
-        id: 'item_0'
+        id: 'item_0',
       };
 
-      checkEquipmentCompatibility(
-        firstItem,
-        'weapon',
-        10,
-        'warrior',
-        mockPlayerStats
-      );
+      checkEquipmentCompatibility(firstItem, 'weapon', 10, 'warrior', mockPlayerStats);
 
       const statsAfterAccess = getCompatibilityCacheStats();
       expect(statsAfterAccess.hits).toBe(1); // Cache hit
@@ -390,25 +318,13 @@ describe('Equipment Compatibility Cache', () => {
       // Add one more item (should evict item_1, not item_0)
       const newItem: EnhancedItem = {
         ...mockSword,
-        id: 'item_100'
+        id: 'item_100',
       };
 
-      checkEquipmentCompatibility(
-        newItem,
-        'weapon',
-        10,
-        'warrior',
-        mockPlayerStats
-      );
+      checkEquipmentCompatibility(newItem, 'weapon', 10, 'warrior', mockPlayerStats);
 
       // item_0 should still be cached
-      checkEquipmentCompatibility(
-        firstItem,
-        'weapon',
-        10,
-        'warrior',
-        mockPlayerStats
-      );
+      checkEquipmentCompatibility(firstItem, 'weapon', 10, 'warrior', mockPlayerStats);
 
       const statsFinal = getCompatibilityCacheStats();
       expect(statsFinal.hits).toBe(2); // Both accesses should be hits
@@ -536,13 +452,10 @@ describe('Equipment Compatibility Cache', () => {
       expect(freshResult.reasons.length).toBeGreaterThan(0);
 
       // Get cached result
-      const cachedResult = checkEquipmentCompatibility(
-        mockSword,
-        'weapon',
-        3,
-        'warrior',
-        { ...mockPlayerStats, attack: 5 }
-      );
+      const cachedResult = checkEquipmentCompatibility(mockSword, 'weapon', 3, 'warrior', {
+        ...mockPlayerStats,
+        attack: 5,
+      });
 
       // Should be identical
       expect(cachedResult).toEqual(freshResult);
@@ -563,7 +476,7 @@ describe('Equipment Compatibility Cache', () => {
         necklace: undefined,
         ring1: undefined,
         ring2: undefined,
-        charm: undefined
+        charm: undefined,
       };
 
       // Get fresh result with two-handed weapon and shield conflict

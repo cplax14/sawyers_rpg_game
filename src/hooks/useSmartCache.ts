@@ -39,7 +39,7 @@ export function useSmartCache<K, V>(config: Partial<CacheConfig> = {}) {
     maxSize = 500,
     defaultTTL = 5 * 60 * 1000, // 5 minutes
     cleanupInterval = 60 * 1000, // 1 minute
-    enableStats = true
+    enableStats = true,
   } = config;
 
   const cache = useRef(new Map<K, CacheEntry<V>>());
@@ -48,7 +48,7 @@ export function useSmartCache<K, V>(config: Partial<CacheConfig> = {}) {
     misses: 0,
     evictions: 0,
     size: 0,
-    hitRate: 0
+    hitRate: 0,
   });
   const tagMap = useRef(new Map<string, Set<K>>());
   const cleanupTimer = useRef<NodeJS.Timeout | null>(null);
@@ -95,94 +95,106 @@ export function useSmartCache<K, V>(config: Partial<CacheConfig> = {}) {
   }, [enableStats]);
 
   // Get item from cache
-  const get = useCallback((key: K): V | undefined => {
-    const entry = cache.current.get(key);
+  const get = useCallback(
+    (key: K): V | undefined => {
+      const entry = cache.current.get(key);
 
-    if (!entry) {
-      if (enableStats) {
-        stats.current.misses++;
+      if (!entry) {
+        if (enableStats) {
+          stats.current.misses++;
+        }
+        return undefined;
       }
-      return undefined;
-    }
 
-    const now = Date.now();
+      const now = Date.now();
 
-    // Check if expired
-    if (now - entry.timestamp > entry.ttl) {
-      cache.current.delete(key);
-      if (enableStats) {
-        stats.current.misses++;
-        stats.current.size--;
-      }
-      return undefined;
-    }
-
-    // Update access statistics
-    entry.accessCount++;
-    entry.timestamp = now; // Update for LRU
-
-    if (enableStats) {
-      stats.current.hits++;
-      const total = stats.current.hits + stats.current.misses;
-      stats.current.hitRate = stats.current.hits / total;
-    }
-
-    return entry.data;
-  }, [enableStats]);
-
-  // Set item in cache
-  const set = useCallback((key: K, value: V, options: SmartCacheOptions = {}) => {
-    const { ttl = defaultTTL, tags = [] } = options;
-
-    // Cleanup if at capacity
-    if (cache.current.size >= maxSize) {
-      evictLRU();
-    }
-
-    const entry: CacheEntry<V> = {
-      data: value,
-      timestamp: Date.now(),
-      accessCount: 1,
-      ttl
-    };
-
-    cache.current.set(key, entry);
-
-    // Update tag mappings
-    for (const tag of tags) {
-      if (!tagMap.current.has(tag)) {
-        tagMap.current.set(tag, new Set());
-      }
-      tagMap.current.get(tag)!.add(key);
-    }
-
-    if (enableStats) {
-      stats.current.size++;
-    }
-  }, [defaultTTL, maxSize, evictLRU, enableStats]);
-
-  // Delete item from cache
-  const remove = useCallback((key: K) => {
-    const deleted = cache.current.delete(key);
-    if (deleted && enableStats) {
-      stats.current.size--;
-    }
-    return deleted;
-  }, [enableStats]);
-
-  // Invalidate by tag
-  const invalidateByTag = useCallback((tag: string) => {
-    const keys = tagMap.current.get(tag);
-    if (keys) {
-      for (const key of keys) {
+      // Check if expired
+      if (now - entry.timestamp > entry.ttl) {
         cache.current.delete(key);
         if (enableStats) {
+          stats.current.misses++;
           stats.current.size--;
         }
+        return undefined;
       }
-      tagMap.current.delete(tag);
-    }
-  }, [enableStats]);
+
+      // Update access statistics
+      entry.accessCount++;
+      entry.timestamp = now; // Update for LRU
+
+      if (enableStats) {
+        stats.current.hits++;
+        const total = stats.current.hits + stats.current.misses;
+        stats.current.hitRate = stats.current.hits / total;
+      }
+
+      return entry.data;
+    },
+    [enableStats]
+  );
+
+  // Set item in cache
+  const set = useCallback(
+    (key: K, value: V, options: SmartCacheOptions = {}) => {
+      const { ttl = defaultTTL, tags = [] } = options;
+
+      // Cleanup if at capacity
+      if (cache.current.size >= maxSize) {
+        evictLRU();
+      }
+
+      const entry: CacheEntry<V> = {
+        data: value,
+        timestamp: Date.now(),
+        accessCount: 1,
+        ttl,
+      };
+
+      cache.current.set(key, entry);
+
+      // Update tag mappings
+      for (const tag of tags) {
+        if (!tagMap.current.has(tag)) {
+          tagMap.current.set(tag, new Set());
+        }
+        tagMap.current.get(tag)!.add(key);
+      }
+
+      if (enableStats) {
+        stats.current.size++;
+      }
+    },
+    [defaultTTL, maxSize, evictLRU, enableStats]
+  );
+
+  // Delete item from cache
+  const remove = useCallback(
+    (key: K) => {
+      const deleted = cache.current.delete(key);
+      if (deleted && enableStats) {
+        stats.current.size--;
+      }
+      return deleted;
+    },
+    [enableStats]
+  );
+
+  // Invalidate by tag
+  const invalidateByTag = useCallback(
+    (tag: string) => {
+      const keys = tagMap.current.get(tag);
+      if (keys) {
+        for (const key of keys) {
+          cache.current.delete(key);
+          if (enableStats) {
+            stats.current.size--;
+          }
+        }
+        tagMap.current.delete(tag);
+      }
+    },
+    [enableStats]
+  );
 
   // Clear all cache
   const clear = useCallback(() => {
@@ -199,37 +211,43 @@ export function useSmartCache<K, V>(config: Partial<CacheConfig> = {}) {
   }, []);
 
   // Memoized cache operations
-  const memoizedGet = useCallback((key: K, fetcher: () => V | Promise<V>, options?: SmartCacheOptions) => {
-    const cached = get(key);
-    if (cached !== undefined) {
-      return Promise.resolve(cached);
-    }
+  const memoizedGet = useCallback(
+    (key: K, fetcher: () => V | Promise<V>, options?: SmartCacheOptions) => {
+      const cached = get(key);
+      if (cached !== undefined) {
+        return Promise.resolve(cached);
+      }
 
-    const result = fetcher();
+      const result = fetcher();
 
-    if (result instanceof Promise) {
-      return result.then(data => {
-        set(key, data, options);
-        return data;
-      });
-    } else {
-      set(key, result, options);
-      return Promise.resolve(result);
-    }
-  }, [get, set]);
+      if (result instanceof Promise) {
+        return result.then(data => {
+          set(key, data, options);
+          return data;
+        });
+      } else {
+        set(key, result, options);
+        return Promise.resolve(result);
+      }
+    },
+    [get, set]
+  );
 
   // Prefetch data
-  const prefetch = useCallback(async (key: K, fetcher: () => V | Promise<V>, options?: SmartCacheOptions) => {
-    // Only prefetch if not already cached
-    if (get(key) === undefined) {
-      try {
-        const data = await fetcher();
-        set(key, data, { ...options, priority: 'low' });
-      } catch (error) {
-        console.warn(`Prefetch failed for key ${String(key)}:`, error);
+  const prefetch = useCallback(
+    async (key: K, fetcher: () => V | Promise<V>, options?: SmartCacheOptions) => {
+      // Only prefetch if not already cached
+      if (get(key) === undefined) {
+        try {
+          const data = await fetcher();
+          set(key, data, { ...options, priority: 'low' });
+        } catch (error) {
+          console.warn(`Prefetch failed for key ${String(key)}:`, error);
+        }
       }
-    }
-  }, [get, set]);
+    },
+    [get, set]
+  );
 
   // Setup cleanup interval
   useEffect(() => {
@@ -254,7 +272,7 @@ export function useSmartCache<K, V>(config: Partial<CacheConfig> = {}) {
     // Utility methods
     has: useCallback((key: K) => cache.current.has(key), []),
     size: useCallback(() => cache.current.size, []),
-    keys: useCallback(() => Array.from(cache.current.keys()), [])
+    keys: useCallback(() => Array.from(cache.current.keys()), []),
   };
 }
 
@@ -266,7 +284,7 @@ export function useInventoryCache() {
     maxSize: 1000,
     defaultTTL: 10 * 60 * 1000, // 10 minutes for items
     cleanupInterval: 2 * 60 * 1000, // 2 minutes
-    enableStats: true
+    enableStats: true,
   });
 }
 
@@ -278,7 +296,7 @@ export function useCreatureCache() {
     maxSize: 800,
     defaultTTL: 15 * 60 * 1000, // 15 minutes for creatures
     cleanupInterval: 3 * 60 * 1000, // 3 minutes
-    enableStats: true
+    enableStats: true,
   });
 }
 
@@ -290,6 +308,6 @@ export function useStatsCache() {
     maxSize: 200,
     defaultTTL: 5 * 60 * 1000, // 5 minutes for stats
     cleanupInterval: 60 * 1000, // 1 minute
-    enableStats: true
+    enableStats: true,
   });
 }

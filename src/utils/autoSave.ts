@@ -55,7 +55,7 @@ export class AutoSaveManager {
       maxFailures: 3,
       initialDelay: 60000, // 1 minute initial delay
       autoSaveSlot: 0,
-      ...config
+      ...config,
     };
 
     this.state = {
@@ -64,7 +64,7 @@ export class AutoSaveManager {
       nextSaveTime: 0,
       consecutiveFailures: 0,
       lastSaveTime: 0,
-      lastSaveSuccess: true
+      lastSaveSuccess: true,
     };
 
     this.callbacks = callbacks;
@@ -134,7 +134,7 @@ export class AutoSaveManager {
    * Check if auto-save should be active based on user activity
    */
   private isUserActive(): boolean {
-    return (Date.now() - this.activityTimestamp) < this.INACTIVITY_THRESHOLD;
+    return Date.now() - this.activityTimestamp < this.INACTIVITY_THRESHOLD;
   }
 
   /**
@@ -189,7 +189,6 @@ export class AutoSaveManager {
       } else {
         throw new Error('Save operation returned false');
       }
-
     } catch (error) {
       this.state.consecutiveFailures++;
       this.state.lastSaveSuccess = false;
@@ -201,7 +200,9 @@ export class AutoSaveManager {
       if (this.state.consecutiveFailures >= this.config.maxFailures) {
         this.config.enabled = false;
         this.stop();
-        this.callbacks.onAutoSaveDisabled?.(`Too many consecutive failures (${this.state.consecutiveFailures})`);
+        this.callbacks.onAutoSaveDisabled?.(
+          `Too many consecutive failures (${this.state.consecutiveFailures})`
+        );
         return;
       }
     }
@@ -324,7 +325,7 @@ export const createDefaultAutoSaveConfig = (): AutoSaveConfig => ({
   enabled: true,
   maxFailures: 3,
   initialDelay: 60000, // 1 minute
-  autoSaveSlot: 0
+  autoSaveSlot: 0,
 });
 
 /**

@@ -70,12 +70,8 @@ describe('validateParticleCount', () => {
 
       // Assert
       expect(consoleWarn).toHaveBeenCalledTimes(1);
-      expect(consoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining('LightningAnimation')
-      );
-      expect(consoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining('Particle count (25)')
-      );
+      expect(consoleWarn).toHaveBeenCalledWith(expect.stringContaining('LightningAnimation'));
+      expect(consoleWarn).toHaveBeenCalledWith(expect.stringContaining('Particle count (25)'));
       expect(consoleWarn).toHaveBeenCalledWith(
         expect.stringContaining('exceeds recommended max (20)')
       );
@@ -92,9 +88,7 @@ describe('validateParticleCount', () => {
 
       // Assert
       expect(consoleWarn).toHaveBeenCalledTimes(1);
-      expect(consoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining('Particle count (21)')
-      );
+      expect(consoleWarn).toHaveBeenCalledWith(expect.stringContaining('Particle count (21)'));
       expect(consoleError).not.toHaveBeenCalled();
     });
 
@@ -108,9 +102,7 @@ describe('validateParticleCount', () => {
 
       // Assert
       expect(consoleWarn).toHaveBeenCalledTimes(1);
-      expect(consoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining('Particle count (30)')
-      );
+      expect(consoleWarn).toHaveBeenCalledWith(expect.stringContaining('Particle count (30)'));
       expect(consoleError).not.toHaveBeenCalled();
     });
 
@@ -124,18 +116,10 @@ describe('validateParticleCount', () => {
 
       // Assert
       expect(consoleError).toHaveBeenCalledTimes(1);
-      expect(consoleError).toHaveBeenCalledWith(
-        expect.stringContaining('FireballAnimation')
-      );
-      expect(consoleError).toHaveBeenCalledWith(
-        expect.stringContaining('Particle count (31)')
-      );
-      expect(consoleError).toHaveBeenCalledWith(
-        expect.stringContaining('EXCEEDS maximum (30)')
-      );
-      expect(consoleError).toHaveBeenCalledWith(
-        expect.stringContaining('performance issues')
-      );
+      expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('FireballAnimation'));
+      expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('Particle count (31)'));
+      expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('EXCEEDS maximum (30)'));
+      expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('performance issues'));
     });
 
     it('errors for very high particle counts', () => {
@@ -148,12 +132,8 @@ describe('validateParticleCount', () => {
 
       // Assert
       expect(consoleError).toHaveBeenCalledTimes(1);
-      expect(consoleError).toHaveBeenCalledWith(
-        expect.stringContaining('Particle count (100)')
-      );
-      expect(consoleError).toHaveBeenCalledWith(
-        expect.stringContaining('EXCEEDS maximum (30)')
-      );
+      expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('Particle count (100)'));
+      expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('EXCEEDS maximum (30)'));
     });
 
     it('includes phase information when provided', () => {
@@ -170,9 +150,7 @@ describe('validateParticleCount', () => {
       expect(consoleWarn).toHaveBeenCalledWith(
         expect.stringContaining('FireballAnimation - impact')
       );
-      expect(consoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining('Particle count (25)')
-      );
+      expect(consoleWarn).toHaveBeenCalledWith(expect.stringContaining('Particle count (25)'));
     });
 
     it('includes different phases correctly', () => {
@@ -183,15 +161,9 @@ describe('validateParticleCount', () => {
 
       // Assert
       expect(consoleWarn).toHaveBeenCalledTimes(3);
-      expect(consoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining('MeteorAnimation - charge')
-      );
-      expect(consoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining('MeteorAnimation - travel')
-      );
-      expect(consoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining('MeteorAnimation - impact')
-      );
+      expect(consoleWarn).toHaveBeenCalledWith(expect.stringContaining('MeteorAnimation - charge'));
+      expect(consoleWarn).toHaveBeenCalledWith(expect.stringContaining('MeteorAnimation - travel'));
+      expect(consoleWarn).toHaveBeenCalledWith(expect.stringContaining('MeteorAnimation - impact'));
     });
 
     it('works without phase parameter', () => {
@@ -204,12 +176,8 @@ describe('validateParticleCount', () => {
 
       // Assert
       expect(consoleWarn).toHaveBeenCalledTimes(1);
-      expect(consoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining('IceShardAnimation')
-      );
-      expect(consoleWarn).toHaveBeenCalledWith(
-        expect.not.stringContaining(' - ')
-      );
+      expect(consoleWarn).toHaveBeenCalledWith(expect.stringContaining('IceShardAnimation'));
+      expect(consoleWarn).toHaveBeenCalledWith(expect.not.stringContaining(' - '));
     });
 
     it('handles zero particle count without warnings', () => {
@@ -357,9 +325,7 @@ describe('validateParticleCount', () => {
       expect(consoleWarn).toHaveBeenCalledTimes(1);
       // When phase is empty string, it's still treated as falsy by the code
       // so the location becomes just the component name without " - "
-      expect(consoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining('TestAnimation]')
-      );
+      expect(consoleWarn).toHaveBeenCalledWith(expect.stringContaining('TestAnimation]'));
     });
 
     it('handles special characters in component name', () => {
@@ -403,9 +369,7 @@ describe('validateParticleCount', () => {
 
       // Assert
       expect(consoleWarn).toHaveBeenCalledTimes(1);
-      expect(consoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining('Particle count (25.7)')
-      );
+      expect(consoleWarn).toHaveBeenCalledWith(expect.stringContaining('Particle count (25.7)'));
     });
   });
 
@@ -519,15 +483,11 @@ describe('validateParticleCount', () => {
       validateParticleCount(count, componentName, phase);
 
       // Assert
-      expect(consoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining('⚠️')
-      );
+      expect(consoleWarn).toHaveBeenCalledWith(expect.stringContaining('⚠️'));
       expect(consoleWarn).toHaveBeenCalledWith(
         expect.stringContaining('[FireballAnimation - impact]')
       );
-      expect(consoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining('Particle count (25)')
-      );
+      expect(consoleWarn).toHaveBeenCalledWith(expect.stringContaining('Particle count (25)'));
       expect(consoleWarn).toHaveBeenCalledWith(
         expect.stringContaining('exceeds recommended max (20)')
       );
@@ -545,21 +505,11 @@ describe('validateParticleCount', () => {
       validateParticleCount(count, componentName);
 
       // Assert
-      expect(consoleError).toHaveBeenCalledWith(
-        expect.stringContaining('🚨')
-      );
-      expect(consoleError).toHaveBeenCalledWith(
-        expect.stringContaining('[MeteorAnimation]')
-      );
-      expect(consoleError).toHaveBeenCalledWith(
-        expect.stringContaining('Particle count (35)')
-      );
-      expect(consoleError).toHaveBeenCalledWith(
-        expect.stringContaining('EXCEEDS maximum (30)')
-      );
-      expect(consoleError).toHaveBeenCalledWith(
-        expect.stringContaining('performance issues')
-      );
+      expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('🚨'));
+      expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('[MeteorAnimation]'));
+      expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('Particle count (35)'));
+      expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('EXCEEDS maximum (30)'));
+      expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('performance issues'));
       expect(consoleError).toHaveBeenCalledWith(
         expect.stringContaining('Reduce particle count immediately')
       );

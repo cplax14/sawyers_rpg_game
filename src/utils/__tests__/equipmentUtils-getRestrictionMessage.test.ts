@@ -12,7 +12,7 @@ describe('getRestrictionMessage', () => {
     it('should generate message with player level and required level', () => {
       const context: RestrictionMessageContext = {
         requiredLevel: 10,
-        playerLevel: 5
+        playerLevel: 5,
       };
 
       const message = getRestrictionMessage('level', context);
@@ -24,7 +24,7 @@ describe('getRestrictionMessage', () => {
 
     it('should generate message without player level if not provided', () => {
       const context: RestrictionMessageContext = {
-        requiredLevel: 15
+        requiredLevel: 15,
       };
 
       const message = getRestrictionMessage('level', context);
@@ -36,7 +36,7 @@ describe('getRestrictionMessage', () => {
 
     it('should generate generic message if required level is not provided', () => {
       const context: RestrictionMessageContext = {
-        playerLevel: 5
+        playerLevel: 5,
       };
 
       const message = getRestrictionMessage('level', context);
@@ -47,7 +47,7 @@ describe('getRestrictionMessage', () => {
     it('should use kid-friendly language with exclamation marks', () => {
       const context: RestrictionMessageContext = {
         requiredLevel: 20,
-        playerLevel: 10
+        playerLevel: 10,
       };
 
       const message = getRestrictionMessage('level', context);
@@ -61,7 +61,7 @@ describe('getRestrictionMessage', () => {
     it('should format single class requirement', () => {
       const context: RestrictionMessageContext = {
         requiredClasses: ['warrior'],
-        itemType: 'sword'
+        itemType: 'sword',
       };
 
       const message = getRestrictionMessage('class', context);
@@ -74,7 +74,7 @@ describe('getRestrictionMessage', () => {
     it('should format two classes with "and"', () => {
       const context: RestrictionMessageContext = {
         requiredClasses: ['warrior', 'knight'],
-        itemType: 'shield'
+        itemType: 'shield',
       };
 
       const message = getRestrictionMessage('class', context);
@@ -86,7 +86,7 @@ describe('getRestrictionMessage', () => {
     it('should format three or more classes with commas and "and"', () => {
       const context: RestrictionMessageContext = {
         requiredClasses: ['warrior', 'knight', 'paladin'],
-        itemType: 'armor'
+        itemType: 'armor',
       };
 
       const message = getRestrictionMessage('class', context);
@@ -97,7 +97,7 @@ describe('getRestrictionMessage', () => {
 
     it('should default to "item" if itemType not provided', () => {
       const context: RestrictionMessageContext = {
-        requiredClasses: ['mage']
+        requiredClasses: ['mage'],
       };
 
       const message = getRestrictionMessage('class', context);
@@ -109,7 +109,7 @@ describe('getRestrictionMessage', () => {
     it('should handle empty class array gracefully', () => {
       const context: RestrictionMessageContext = {
         requiredClasses: [],
-        itemType: 'weapon'
+        itemType: 'weapon',
       };
 
       const message = getRestrictionMessage('class', context);
@@ -120,7 +120,7 @@ describe('getRestrictionMessage', () => {
     it('should use kid-friendly pluralization', () => {
       const context: RestrictionMessageContext = {
         requiredClasses: ['cleric'],
-        itemType: 'staff'
+        itemType: 'staff',
       };
 
       const message = getRestrictionMessage('class', context);
@@ -136,7 +136,7 @@ describe('getRestrictionMessage', () => {
         statName: 'attack',
         requiredStatValue: 20,
         playerStatValue: 15,
-        itemType: 'greatsword'
+        itemType: 'greatsword',
       };
 
       const message = getRestrictionMessage('stat', context);
@@ -151,7 +151,7 @@ describe('getRestrictionMessage', () => {
         statName: 'magicAttack',
         requiredStatValue: 30,
         playerStatValue: 10,
-        itemType: 'wand'
+        itemType: 'wand',
       };
 
       const message = getRestrictionMessage('stat', context);
@@ -165,7 +165,7 @@ describe('getRestrictionMessage', () => {
         statName: 'magicDefense',
         requiredStatValue: 25,
         playerStatValue: 18,
-        itemType: 'robe'
+        itemType: 'robe',
       };
 
       const message = getRestrictionMessage('stat', context);
@@ -178,7 +178,7 @@ describe('getRestrictionMessage', () => {
       const context: RestrictionMessageContext = {
         statName: 'speed',
         requiredStatValue: 40,
-        itemType: 'boots'
+        itemType: 'boots',
       };
 
       const message = getRestrictionMessage('stat', context);
@@ -190,7 +190,7 @@ describe('getRestrictionMessage', () => {
 
     it('should generate generic message if stat info is missing', () => {
       const context: RestrictionMessageContext = {
-        itemType: 'weapon'
+        itemType: 'weapon',
       };
 
       const message = getRestrictionMessage('stat', context);
@@ -202,7 +202,7 @@ describe('getRestrictionMessage', () => {
       const context: RestrictionMessageContext = {
         statName: 'defense',
         requiredStatValue: 15,
-        playerStatValue: 10
+        playerStatValue: 10,
       };
 
       const message = getRestrictionMessage('stat', context);
@@ -215,7 +215,7 @@ describe('getRestrictionMessage', () => {
     it('should generate message for helmet in wrong slot', () => {
       const context: RestrictionMessageContext = {
         itemSlot: 'helmet',
-        targetSlot: 'weapon'
+        targetSlot: 'weapon',
       };
 
       const message = getRestrictionMessage('slot', context);
@@ -228,7 +228,7 @@ describe('getRestrictionMessage', () => {
     it('should use "an" article for armor', () => {
       const context: RestrictionMessageContext = {
         itemSlot: 'armor',
-        targetSlot: 'helmet'
+        targetSlot: 'helmet',
       };
 
       const message = getRestrictionMessage('slot', context);
@@ -240,7 +240,7 @@ describe('getRestrictionMessage', () => {
     it('should use "a" article for weapon', () => {
       const context: RestrictionMessageContext = {
         itemSlot: 'weapon',
-        targetSlot: 'armor'
+        targetSlot: 'armor',
       };
 
       const message = getRestrictionMessage('slot', context);
@@ -252,7 +252,7 @@ describe('getRestrictionMessage', () => {
     it('should handle ring1/ring2 normalization', () => {
       const context: RestrictionMessageContext = {
         itemSlot: 'ring',
-        targetSlot: 'weapon'
+        targetSlot: 'weapon',
       };
 
       const message = getRestrictionMessage('slot', context);
@@ -272,7 +272,7 @@ describe('getRestrictionMessage', () => {
 
     it('should handle missing targetSlot', () => {
       const context: RestrictionMessageContext = {
-        itemSlot: 'boots'
+        itemSlot: 'boots',
       };
 
       const message = getRestrictionMessage('slot', context);
@@ -282,7 +282,7 @@ describe('getRestrictionMessage', () => {
 
     it('should handle missing itemSlot', () => {
       const context: RestrictionMessageContext = {
-        targetSlot: 'gloves'
+        targetSlot: 'gloves',
       };
 
       const message = getRestrictionMessage('slot', context);
@@ -338,7 +338,7 @@ describe('getRestrictionMessage', () => {
     it('should use simple, clear language for level restrictions', () => {
       const context: RestrictionMessageContext = {
         requiredLevel: 10,
-        playerLevel: 5
+        playerLevel: 5,
       };
 
       const message = getRestrictionMessage('level', context);
@@ -353,8 +353,12 @@ describe('getRestrictionMessage', () => {
       const messages = [
         getRestrictionMessage('level', { requiredLevel: 10, playerLevel: 5 }),
         getRestrictionMessage('class', { requiredClasses: ['warrior'], itemType: 'sword' }),
-        getRestrictionMessage('stat', { statName: 'attack', requiredStatValue: 20, playerStatValue: 10 }),
-        getRestrictionMessage('slot', { itemSlot: 'helmet', targetSlot: 'weapon' })
+        getRestrictionMessage('stat', {
+          statName: 'attack',
+          requiredStatValue: 20,
+          playerStatValue: 10,
+        }),
+        getRestrictionMessage('slot', { itemSlot: 'helmet', targetSlot: 'weapon' }),
       ];
 
       messages.forEach(message => {
@@ -367,7 +371,7 @@ describe('getRestrictionMessage', () => {
         getRestrictionMessage('level', { requiredLevel: 10 }),
         getRestrictionMessage('class', { requiredClasses: ['mage'] }),
         getRestrictionMessage('stat', { statName: 'attack', requiredStatValue: 20 }),
-        getRestrictionMessage('slot', { itemSlot: 'boots', targetSlot: 'weapon' })
+        getRestrictionMessage('slot', { itemSlot: 'boots', targetSlot: 'weapon' }),
       ];
 
       messages.forEach(message => {
@@ -378,13 +382,13 @@ describe('getRestrictionMessage', () => {
     it('should use second-person "you" to be friendly and direct', () => {
       const levelMessage = getRestrictionMessage('level', {
         requiredLevel: 10,
-        playerLevel: 5
+        playerLevel: 5,
       });
 
       const statMessage = getRestrictionMessage('stat', {
         statName: 'attack',
         requiredStatValue: 20,
-        playerStatValue: 15
+        playerStatValue: 15,
       });
 
       expect(levelMessage).toMatch(/you/i);
@@ -394,9 +398,17 @@ describe('getRestrictionMessage', () => {
     it('should keep messages concise and readable', () => {
       const messages = [
         getRestrictionMessage('level', { requiredLevel: 10, playerLevel: 5 }),
-        getRestrictionMessage('class', { requiredClasses: ['warrior', 'knight'], itemType: 'sword' }),
-        getRestrictionMessage('stat', { statName: 'magicAttack', requiredStatValue: 20, playerStatValue: 10, itemType: 'wand' }),
-        getRestrictionMessage('slot', { itemSlot: 'helmet', targetSlot: 'weapon' })
+        getRestrictionMessage('class', {
+          requiredClasses: ['warrior', 'knight'],
+          itemType: 'sword',
+        }),
+        getRestrictionMessage('stat', {
+          statName: 'magicAttack',
+          requiredStatValue: 20,
+          playerStatValue: 10,
+          itemType: 'wand',
+        }),
+        getRestrictionMessage('slot', { itemSlot: 'helmet', targetSlot: 'weapon' }),
       ];
 
       messages.forEach(message => {
@@ -413,17 +425,17 @@ describe('getRestrictionMessage', () => {
     it('should correctly use formatClassList for class formatting', () => {
       const singleClass = getRestrictionMessage('class', {
         requiredClasses: ['warrior'],
-        itemType: 'sword'
+        itemType: 'sword',
       });
 
       const twoClasses = getRestrictionMessage('class', {
         requiredClasses: ['warrior', 'knight'],
-        itemType: 'shield'
+        itemType: 'shield',
       });
 
       const threeClasses = getRestrictionMessage('class', {
         requiredClasses: ['warrior', 'knight', 'paladin'],
-        itemType: 'armor'
+        itemType: 'armor',
       });
 
       expect(singleClass).toMatch(/Warriors/); // Plural
@@ -434,17 +446,17 @@ describe('getRestrictionMessage', () => {
     it('should correctly use formatStatName for stat formatting', () => {
       const attack = getRestrictionMessage('stat', {
         statName: 'attack',
-        requiredStatValue: 10
+        requiredStatValue: 10,
       });
 
       const magicAttack = getRestrictionMessage('stat', {
         statName: 'magicAttack',
-        requiredStatValue: 15
+        requiredStatValue: 15,
       });
 
       const magicDefense = getRestrictionMessage('stat', {
         statName: 'magicDefense',
-        requiredStatValue: 20
+        requiredStatValue: 20,
       });
 
       expect(attack).toMatch(/Attack/); // Capitalized
@@ -455,12 +467,12 @@ describe('getRestrictionMessage', () => {
     it('should correctly use formatSlotNameForDisplay for slot formatting', () => {
       const message1 = getRestrictionMessage('slot', {
         itemSlot: 'ring1',
-        targetSlot: 'weapon'
+        targetSlot: 'weapon',
       });
 
       const message2 = getRestrictionMessage('slot', {
         itemSlot: 'ring2',
-        targetSlot: 'armor'
+        targetSlot: 'armor',
       });
 
       // Both ring1 and ring2 should be formatted as "ring"
@@ -473,12 +485,12 @@ describe('getRestrictionMessage', () => {
     it('should correctly use getArticle for a/an determination', () => {
       const aMessage = getRestrictionMessage('slot', {
         itemSlot: 'helmet',
-        targetSlot: 'weapon'
+        targetSlot: 'weapon',
       });
 
       const anMessage = getRestrictionMessage('slot', {
         itemSlot: 'armor',
-        targetSlot: 'helmet'
+        targetSlot: 'helmet',
       });
 
       expect(aMessage).toMatch(/a helmet/);

@@ -46,11 +46,7 @@ describe('BreedingCostDisplay', () => {
   describe('Gold Cost Display', () => {
     it('should display gold cost amount', () => {
       renderWithGameContext(
-        <BreedingCostDisplay
-          cost={mockBasicCost}
-          playerGold={10000}
-          playerMaterials={{}}
-        />
+        <BreedingCostDisplay cost={mockBasicCost} playerGold={10000} playerMaterials={{}} />
       );
 
       expect(screen.getByText('5,000')).toBeInTheDocument();
@@ -58,11 +54,7 @@ describe('BreedingCostDisplay', () => {
 
     it('should display gold icon', () => {
       renderWithGameContext(
-        <BreedingCostDisplay
-          cost={mockBasicCost}
-          playerGold={10000}
-          playerMaterials={{}}
-        />
+        <BreedingCostDisplay cost={mockBasicCost} playerGold={10000} playerMaterials={{}} />
       );
 
       expect(screen.getByText('💰')).toBeInTheDocument();
@@ -70,11 +62,7 @@ describe('BreedingCostDisplay', () => {
 
     it('should display "Gold Required" label', () => {
       renderWithGameContext(
-        <BreedingCostDisplay
-          cost={mockBasicCost}
-          playerGold={10000}
-          playerMaterials={{}}
-        />
+        <BreedingCostDisplay cost={mockBasicCost} playerGold={10000} playerMaterials={{}} />
       );
 
       expect(screen.getByText('Gold Required:')).toBeInTheDocument();
@@ -82,11 +70,7 @@ describe('BreedingCostDisplay', () => {
 
     it('should show green color when player has enough gold', () => {
       renderWithGameContext(
-        <BreedingCostDisplay
-          cost={mockBasicCost}
-          playerGold={10000}
-          playerMaterials={{}}
-        />
+        <BreedingCostDisplay cost={mockBasicCost} playerGold={10000} playerMaterials={{}} />
       );
 
       const goldAmount = screen.getByText('5,000');
@@ -95,11 +79,7 @@ describe('BreedingCostDisplay', () => {
 
     it('should show red color when player lacks gold', () => {
       renderWithGameContext(
-        <BreedingCostDisplay
-          cost={mockBasicCost}
-          playerGold={1000}
-          playerMaterials={{}}
-        />
+        <BreedingCostDisplay cost={mockBasicCost} playerGold={1000} playerMaterials={{}} />
       );
 
       const goldAmount = screen.getByText('5,000');
@@ -108,11 +88,7 @@ describe('BreedingCostDisplay', () => {
 
     it('should display player current gold', () => {
       renderWithGameContext(
-        <BreedingCostDisplay
-          cost={mockBasicCost}
-          playerGold={7500}
-          playerMaterials={{}}
-        />
+        <BreedingCostDisplay cost={mockBasicCost} playerGold={7500} playerMaterials={{}} />
       );
 
       expect(screen.getByText('Your Gold:')).toBeInTheDocument();
@@ -123,11 +99,7 @@ describe('BreedingCostDisplay', () => {
   describe('Cost Breakdown', () => {
     it('should display cost breakdown by default', () => {
       renderWithGameContext(
-        <BreedingCostDisplay
-          cost={mockBasicCost}
-          playerGold={10000}
-          playerMaterials={{}}
-        />
+        <BreedingCostDisplay cost={mockBasicCost} playerGold={10000} playerMaterials={{}} />
       );
 
       expect(screen.getByText('Base Cost:')).toBeInTheDocument();
@@ -136,11 +108,7 @@ describe('BreedingCostDisplay', () => {
 
     it('should display rarity multiplier', () => {
       renderWithGameContext(
-        <BreedingCostDisplay
-          cost={mockBasicCost}
-          playerGold={10000}
-          playerMaterials={{}}
-        />
+        <BreedingCostDisplay cost={mockBasicCost} playerGold={10000} playerMaterials={{}} />
       );
 
       expect(screen.getByText('Rarity Multiplier:')).toBeInTheDocument();
@@ -149,11 +117,7 @@ describe('BreedingCostDisplay', () => {
 
     it('should display generation tax', () => {
       renderWithGameContext(
-        <BreedingCostDisplay
-          cost={mockBasicCost}
-          playerGold={10000}
-          playerMaterials={{}}
-        />
+        <BreedingCostDisplay cost={mockBasicCost} playerGold={10000} playerMaterials={{}} />
       );
 
       expect(screen.getByText('Generation Tax:')).toBeInTheDocument();
@@ -162,11 +126,7 @@ describe('BreedingCostDisplay', () => {
 
     it('should display breeding count tax', () => {
       renderWithGameContext(
-        <BreedingCostDisplay
-          cost={mockBasicCost}
-          playerGold={10000}
-          playerMaterials={{}}
-        />
+        <BreedingCostDisplay cost={mockBasicCost} playerGold={10000} playerMaterials={{}} />
       );
 
       expect(screen.getByText('Breeding Count Tax:')).toBeInTheDocument();
@@ -175,11 +135,7 @@ describe('BreedingCostDisplay', () => {
 
     it('should display total gold in breakdown', () => {
       renderWithGameContext(
-        <BreedingCostDisplay
-          cost={mockBasicCost}
-          playerGold={10000}
-          playerMaterials={{}}
-        />
+        <BreedingCostDisplay cost={mockBasicCost} playerGold={10000} playerMaterials={{}} />
       );
 
       expect(screen.getByText('Total Gold:')).toBeInTheDocument();
@@ -212,11 +168,7 @@ describe('BreedingCostDisplay', () => {
       };
 
       renderWithGameContext(
-        <BreedingCostDisplay
-          cost={largeCost}
-          playerGold={2000000}
-          playerMaterials={{}}
-        />
+        <BreedingCostDisplay cost={largeCost} playerGold={2000000} playerMaterials={{}} />
       );
 
       expect(screen.getByText('1,500,000')).toBeInTheDocument();
@@ -226,11 +178,7 @@ describe('BreedingCostDisplay', () => {
   describe('Material Requirements', () => {
     it('should display material section when materials required', () => {
       renderWithGameContext(
-        <BreedingCostDisplay
-          cost={mockCostWithMaterials}
-          playerGold={20000}
-          playerMaterials={{}}
-        />
+        <BreedingCostDisplay cost={mockCostWithMaterials} playerGold={20000} playerMaterials={{}} />
       );
 
       expect(screen.getByText('Required Materials')).toBeInTheDocument();
@@ -238,11 +186,7 @@ describe('BreedingCostDisplay', () => {
 
     it('should display all required materials', () => {
       renderWithGameContext(
-        <BreedingCostDisplay
-          cost={mockCostWithMaterials}
-          playerGold={20000}
-          playerMaterials={{}}
-        />
+        <BreedingCostDisplay cost={mockCostWithMaterials} playerGold={20000} playerMaterials={{}} />
       );
 
       expect(screen.getByText('Dragon Scale')).toBeInTheDocument();
@@ -252,11 +196,7 @@ describe('BreedingCostDisplay', () => {
 
     it('should display material quantities', () => {
       renderWithGameContext(
-        <BreedingCostDisplay
-          cost={mockCostWithMaterials}
-          playerGold={20000}
-          playerMaterials={{}}
-        />
+        <BreedingCostDisplay cost={mockCostWithMaterials} playerGold={20000} playerMaterials={{}} />
       );
 
       expect(screen.getByText('0 / 5')).toBeInTheDocument(); // Dragon Scale
@@ -266,11 +206,7 @@ describe('BreedingCostDisplay', () => {
 
     it('should display material icons', () => {
       renderWithGameContext(
-        <BreedingCostDisplay
-          cost={mockCostWithMaterials}
-          playerGold={20000}
-          playerMaterials={{}}
-        />
+        <BreedingCostDisplay cost={mockCostWithMaterials} playerGold={20000} playerMaterials={{}} />
       );
 
       const icons = screen.getAllByText('📦');
@@ -310,11 +246,7 @@ describe('BreedingCostDisplay', () => {
 
     it('should show message when no materials required', () => {
       renderWithGameContext(
-        <BreedingCostDisplay
-          cost={mockBasicCost}
-          playerGold={10000}
-          playerMaterials={{}}
-        />
+        <BreedingCostDisplay cost={mockBasicCost} playerGold={10000} playerMaterials={{}} />
       );
 
       expect(screen.getByText('No special materials required - gold only!')).toBeInTheDocument();
@@ -354,11 +286,7 @@ describe('BreedingCostDisplay', () => {
 
     it('should show 0 for materials not in inventory', () => {
       renderWithGameContext(
-        <BreedingCostDisplay
-          cost={mockCostWithMaterials}
-          playerGold={20000}
-          playerMaterials={{}}
-        />
+        <BreedingCostDisplay cost={mockCostWithMaterials} playerGold={20000} playerMaterials={{}} />
       );
 
       expect(screen.getByText('0 / 5')).toBeInTheDocument();
@@ -370,11 +298,7 @@ describe('BreedingCostDisplay', () => {
   describe('Layout and Styling', () => {
     it('should render with proper structure', () => {
       renderWithGameContext(
-        <BreedingCostDisplay
-          cost={mockBasicCost}
-          playerGold={10000}
-          playerMaterials={{}}
-        />
+        <BreedingCostDisplay cost={mockBasicCost} playerGold={10000} playerMaterials={{}} />
       );
 
       expect(screen.getByText('Breeding Cost')).toBeInTheDocument();
@@ -382,11 +306,7 @@ describe('BreedingCostDisplay', () => {
 
     it('should display materials in grid layout', () => {
       const { container } = renderWithGameContext(
-        <BreedingCostDisplay
-          cost={mockCostWithMaterials}
-          playerGold={20000}
-          playerMaterials={{}}
-        />
+        <BreedingCostDisplay cost={mockCostWithMaterials} playerGold={20000} playerMaterials={{}} />
       );
 
       // Materials should be in a grid
@@ -397,11 +317,7 @@ describe('BreedingCostDisplay', () => {
 
     it('should animate on mount', () => {
       renderWithGameContext(
-        <BreedingCostDisplay
-          cost={mockBasicCost}
-          playerGold={10000}
-          playerMaterials={{}}
-        />
+        <BreedingCostDisplay cost={mockBasicCost} playerGold={10000} playerMaterials={{}} />
       );
 
       // Component should be present after animation
@@ -421,11 +337,7 @@ describe('BreedingCostDisplay', () => {
       };
 
       renderWithGameContext(
-        <BreedingCostDisplay
-          cost={zeroCost}
-          playerGold={1000}
-          playerMaterials={{}}
-        />
+        <BreedingCostDisplay cost={zeroCost} playerGold={1000} playerMaterials={{}} />
       );
 
       expect(screen.getByText('0')).toBeInTheDocument();
@@ -433,11 +345,7 @@ describe('BreedingCostDisplay', () => {
 
     it('should handle player with zero gold', () => {
       renderWithGameContext(
-        <BreedingCostDisplay
-          cost={mockBasicCost}
-          playerGold={0}
-          playerMaterials={{}}
-        />
+        <BreedingCostDisplay cost={mockBasicCost} playerGold={0} playerMaterials={{}} />
       );
 
       const playerGoldElement = screen.getByText('0');
@@ -475,11 +383,7 @@ describe('BreedingCostDisplay', () => {
       };
 
       renderWithGameContext(
-        <BreedingCostDisplay
-          cost={highMultiplierCost}
-          playerGold={200000}
-          playerMaterials={{}}
-        />
+        <BreedingCostDisplay cost={highMultiplierCost} playerGold={200000} playerMaterials={{}} />
       );
 
       expect(screen.getByText('×16.0')).toBeInTheDocument();
@@ -509,11 +413,7 @@ describe('BreedingCostDisplay', () => {
   describe('Accessibility', () => {
     it('should have proper heading for cost section', () => {
       renderWithGameContext(
-        <BreedingCostDisplay
-          cost={mockBasicCost}
-          playerGold={10000}
-          playerMaterials={{}}
-        />
+        <BreedingCostDisplay cost={mockBasicCost} playerGold={10000} playerMaterials={{}} />
       );
 
       expect(screen.getByText('Breeding Cost')).toBeInTheDocument();
@@ -521,11 +421,7 @@ describe('BreedingCostDisplay', () => {
 
     it('should have proper heading for materials section', () => {
       renderWithGameContext(
-        <BreedingCostDisplay
-          cost={mockCostWithMaterials}
-          playerGold={20000}
-          playerMaterials={{}}
-        />
+        <BreedingCostDisplay cost={mockCostWithMaterials} playerGold={20000} playerMaterials={{}} />
       );
 
       expect(screen.getByText('Required Materials')).toBeInTheDocument();
@@ -533,11 +429,7 @@ describe('BreedingCostDisplay', () => {
 
     it('should use semantic color indicators', () => {
       renderWithGameContext(
-        <BreedingCostDisplay
-          cost={mockBasicCost}
-          playerGold={10000}
-          playerMaterials={{}}
-        />
+        <BreedingCostDisplay cost={mockBasicCost} playerGold={10000} playerMaterials={{}} />
       );
 
       // Green for sufficient, red for insufficient

@@ -77,7 +77,7 @@ class LevelUpManager {
   getCurrentState(): { level: number; xp: number } {
     return {
       level: this.lastKnownLevel,
-      xp: this.lastKnownXP
+      xp: this.lastKnownXP,
     };
   }
 
@@ -122,7 +122,7 @@ export const createLevelUpIntegration = (showNotification: LevelUpCallback) => {
     // Manual trigger
     trigger: (fromLevel: number, toLevel: number, totalXP: number) => {
       triggerLevelUp(fromLevel, toLevel, totalXP);
-    }
+    },
   };
 };
 

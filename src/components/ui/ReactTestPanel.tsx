@@ -35,7 +35,7 @@ const ReactTestPanel: React.FC<ReactTestPanelProps> = ({ isVisible = true }) => 
         value: 25,
         quantity: 3,
         icon: '🧪',
-        effects: [{ type: 'heal', value: 50 }]
+        effects: [{ type: 'heal', value: 50 }],
       },
       {
         id: 'steel_sword',
@@ -46,8 +46,8 @@ const ReactTestPanel: React.FC<ReactTestPanelProps> = ({ isVisible = true }) => 
         value: 150,
         quantity: 1,
         icon: '⚔️',
-        stats: { attack: 15 }
-      }
+        stats: { attack: 15 },
+      },
     ]);
   };
 
@@ -64,7 +64,7 @@ const ReactTestPanel: React.FC<ReactTestPanelProps> = ({ isVisible = true }) => 
     display: 'flex',
     flexDirection: 'column',
     gap: '0.5rem',
-    minWidth: '200px'
+    minWidth: '200px',
   };
 
   const titleStyle: React.CSSProperties = {
@@ -72,7 +72,7 @@ const ReactTestPanel: React.FC<ReactTestPanelProps> = ({ isVisible = true }) => 
     fontWeight: 'bold',
     marginBottom: '0.5rem',
     fontSize: '0.9rem',
-    textAlign: 'center'
+    textAlign: 'center',
   };
 
   const playerInfoStyle: React.CSSProperties = {
@@ -81,28 +81,33 @@ const ReactTestPanel: React.FC<ReactTestPanelProps> = ({ isVisible = true }) => 
     marginBottom: '0.5rem',
     padding: '0.5rem',
     background: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: '4px'
+    borderRadius: '4px',
   };
 
   return (
     <div style={panelStyle}>
-      <div style={{
-        ...titleStyle,
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        cursor: 'pointer'
-      }} onClick={() => setIsCollapsed(!isCollapsed)}>
-        <span>React Test Panel</span>
-        <button style={{
-          background: 'none',
-          border: 'none',
-          color: '#d4af37',
+      <div
+        style={{
+          ...titleStyle,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
           cursor: 'pointer',
-          fontSize: '0.8rem',
-          padding: '2px 4px',
-          borderRadius: '2px'
-        }}>
+        }}
+        onClick={() => setIsCollapsed(!isCollapsed)}
+      >
+        <span>React Test Panel</span>
+        <button
+          style={{
+            background: 'none',
+            border: 'none',
+            color: '#d4af37',
+            cursor: 'pointer',
+            fontSize: '0.8rem',
+            padding: '2px 4px',
+            borderRadius: '2px',
+          }}
+        >
           {isCollapsed ? '▼' : '▲'}
         </button>
       </div>
@@ -111,7 +116,9 @@ const ReactTestPanel: React.FC<ReactTestPanelProps> = ({ isVisible = true }) => 
         <>
           {state.player ? (
             <div style={playerInfoStyle}>
-              <div><strong>{state.player.name}</strong></div>
+              <div>
+                <strong>{state.player.name}</strong>
+              </div>
               <div>Level {state.player.level}</div>
               <div>{state.player.experience} XP</div>
               <div>{state.player.gold} Gold</div>
@@ -119,17 +126,11 @@ const ReactTestPanel: React.FC<ReactTestPanelProps> = ({ isVisible = true }) => 
               <div>Screen: {state.currentScreen}</div>
             </div>
           ) : (
-            <div style={playerInfoStyle}>
-              No player created
-            </div>
+            <div style={playerInfoStyle}>No player created</div>
           )}
 
           {!state.player && (
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={handleCreateTestPlayer}
-            >
+            <Button variant='primary' size='sm' onClick={handleCreateTestPlayer}>
               Create Test Player
             </Button>
           )}
@@ -137,51 +138,31 @@ const ReactTestPanel: React.FC<ReactTestPanelProps> = ({ isVisible = true }) => 
           {state.player && (
             <>
               <Button
-                variant="primary"
-                size="sm"
+                variant='primary'
+                size='sm'
                 onClick={handleTestCombat}
                 disabled={state.currentEncounter !== null}
               >
                 Start Test Combat
               </Button>
 
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={handleOpenInventory}
-              >
+              <Button variant='secondary' size='sm' onClick={handleOpenInventory}>
                 Open Inventory
               </Button>
 
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={handleAddTestItems}
-              >
+              <Button variant='secondary' size='sm' onClick={handleAddTestItems}>
                 Add Test Items
               </Button>
 
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setCurrentScreen('creatures')}
-              >
+              <Button variant='secondary' size='sm' onClick={() => setCurrentScreen('creatures')}>
                 🐉 Creatures
               </Button>
 
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setCurrentScreen('breeding')}
-              >
+              <Button variant='secondary' size='sm' onClick={() => setCurrentScreen('breeding')}>
                 🧬 Breeding
               </Button>
 
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setCurrentScreen('world-map')}
-              >
+              <Button variant='secondary' size='sm' onClick={() => setCurrentScreen('world-map')}>
                 World Map
               </Button>
             </>

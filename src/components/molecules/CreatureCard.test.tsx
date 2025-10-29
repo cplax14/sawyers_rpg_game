@@ -34,7 +34,7 @@ const createMockCreature = (overrides: Partial<EnhancedCreature> = {}): Enhanced
     magicAttack: 15,
     magicDefense: 14,
     speed: 16,
-    accuracy: 85
+    accuracy: 85,
   },
   currentStats: {
     attack: 20,
@@ -42,7 +42,7 @@ const createMockCreature = (overrides: Partial<EnhancedCreature> = {}): Enhanced
     magicAttack: 15,
     magicDefense: 14,
     speed: 16,
-    accuracy: 85
+    accuracy: 85,
   },
   stats: {
     attack: 20,
@@ -50,7 +50,7 @@ const createMockCreature = (overrides: Partial<EnhancedCreature> = {}): Enhanced
     magicAttack: 15,
     magicDefense: 14,
     speed: 16,
-    accuracy: 85
+    accuracy: 85,
   },
   types: ['beast'],
   rarity: 'common',
@@ -72,7 +72,7 @@ const createMockCreature = (overrides: Partial<EnhancedCreature> = {}): Enhanced
     loyalty: 50,
     happiness: 50,
     energy: 50,
-    sociability: 50
+    sociability: 50,
   },
   nature: {
     name: 'Neutral',
@@ -80,8 +80,8 @@ const createMockCreature = (overrides: Partial<EnhancedCreature> = {}): Enhanced
     behaviorModifiers: {
       aggression: 0,
       defensiveness: 0,
-      cooperation: 0
-    }
+      cooperation: 0,
+    },
   },
   individualStats: {
     hpIV: 15,
@@ -95,14 +95,14 @@ const createMockCreature = (overrides: Partial<EnhancedCreature> = {}): Enhanced
     defenseEV: 0,
     magicAttackEV: 0,
     magicDefenseEV: 0,
-    speedEV: 0
+    speedEV: 0,
   },
   genetics: {
     parentIds: [],
     generation: 0,
     inheritedTraits: [],
     mutations: [],
-    breedingPotential: 1
+    breedingPotential: 1,
   },
   breedingGroup: ['test'],
   fertility: 1,
@@ -119,7 +119,7 @@ const createMockCreature = (overrides: Partial<EnhancedCreature> = {}): Enhanced
     favorite: false,
     tags: [],
     notes: '',
-    completionLevel: 'captured'
+    completionLevel: 'captured',
   },
   sprite: 'test.png',
   description: 'A test creature for unit testing',
@@ -129,7 +129,7 @@ const createMockCreature = (overrides: Partial<EnhancedCreature> = {}): Enhanced
   timesEncountered: 1,
   attack: 20,
   defense: 18,
-  ...overrides
+  ...overrides,
 });
 
 // Wrapper to provide context
@@ -193,7 +193,7 @@ describe('CreatureCard - Exhaustion Display', () => {
     const creature = createMockCreature({
       exhaustionLevel: 1,
       attack: 20,
-      defense: 18
+      defense: 18,
     });
 
     render(<CreatureCard creature={creature} />, { wrapper });
@@ -326,7 +326,7 @@ describe('CreatureCard - Combined Features', () => {
   it('should show both generation badge and exhaustion for bred exhausted creature', () => {
     const creature = createMockCreature({
       generation: 2,
-      exhaustionLevel: 1
+      exhaustionLevel: 1,
     });
 
     render(<CreatureCard creature={creature} />, { wrapper });
@@ -342,7 +342,7 @@ describe('CreatureCard - Combined Features', () => {
   it('should show generation badge, exhaustion, and bred indicator together', () => {
     const creature = createMockCreature({
       generation: 3,
-      exhaustionLevel: 2
+      exhaustionLevel: 2,
     });
 
     render(<CreatureCard creature={creature} />, { wrapper });
@@ -359,7 +359,7 @@ describe('CreatureCard - Combined Features', () => {
   it('should show mythical aura with generation badge for bred mythical creature', () => {
     const creature = createMockCreature({
       generation: 4,
-      rarity: 'mythical'
+      rarity: 'mythical',
     });
 
     const { container } = render(<CreatureCard creature={creature} />, { wrapper });
@@ -375,7 +375,7 @@ describe('CreatureCard - Combined Features', () => {
     const creature = createMockCreature({
       generation: 5,
       exhaustionLevel: 3,
-      rarity: 'mythical'
+      rarity: 'mythical',
     });
 
     const { container } = render(<CreatureCard creature={creature} />, { wrapper });

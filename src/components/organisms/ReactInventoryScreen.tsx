@@ -12,14 +12,17 @@ const ReactInventoryScreen: React.FC<ReactInventoryScreenProps> = ({ className, 
 
   if (!state.player) {
     return (
-      <div className={className} style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: '100vh',
-        background: 'linear-gradient(135deg, #1a1a2e, #16213e, #0f3460)',
-        color: '#f4f4f4'
-      }}>
+      <div
+        className={className}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+          background: 'linear-gradient(135deg, #1a1a2e, #16213e, #0f3460)',
+          color: '#f4f4f4',
+        }}
+      >
         <div>No player data found...</div>
       </div>
     );
@@ -43,12 +46,18 @@ const ReactInventoryScreen: React.FC<ReactInventoryScreenProps> = ({ className, 
 
   const getRarityColor = (rarity: string) => {
     switch (rarity) {
-      case 'legendary': return '#ff6b35';
-      case 'epic': return '#9d4edd';
-      case 'rare': return '#3b82f6';
-      case 'uncommon': return '#10b981';
-      case 'common': return '#6b7280';
-      default: return '#6b7280';
+      case 'legendary':
+        return '#ff6b35';
+      case 'epic':
+        return '#9d4edd';
+      case 'rare':
+        return '#3b82f6';
+      case 'uncommon':
+        return '#10b981';
+      case 'common':
+        return '#6b7280';
+      default:
+        return '#6b7280';
     }
   };
 
@@ -64,14 +73,14 @@ const ReactInventoryScreen: React.FC<ReactInventoryScreenProps> = ({ className, 
     color: '#f4f4f4',
     padding: '1rem',
     boxSizing: 'border-box',
-    overflow: 'auto'
+    overflow: 'auto',
   };
 
   const headerStyle: React.CSSProperties = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '1.5rem'
+    marginBottom: '1.5rem',
   };
 
   const titleStyle: React.CSSProperties = {
@@ -79,7 +88,7 @@ const ReactInventoryScreen: React.FC<ReactInventoryScreenProps> = ({ className, 
     fontWeight: 'bold',
     margin: 0,
     color: '#d4af37',
-    textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)'
+    textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
   };
 
   const statsStyle: React.CSSProperties = {
@@ -90,32 +99,32 @@ const ReactInventoryScreen: React.FC<ReactInventoryScreenProps> = ({ className, 
     borderRadius: '12px',
     padding: '1.5rem',
     marginBottom: '2rem',
-    border: '2px solid rgba(212, 175, 55, 0.3)'
+    border: '2px solid rgba(212, 175, 55, 0.3)',
   };
 
   const statItemStyle: React.CSSProperties = {
     textAlign: 'center',
-    padding: '0.5rem'
+    padding: '0.5rem',
   };
 
   const statValueStyle: React.CSSProperties = {
     fontSize: '1.5rem',
     fontWeight: 'bold',
     color: '#d4af37',
-    display: 'block'
+    display: 'block',
   };
 
   const statLabelStyle: React.CSSProperties = {
     fontSize: '0.9rem',
     color: '#94a3b8',
     textTransform: 'uppercase',
-    letterSpacing: '0.5px'
+    letterSpacing: '0.5px',
   };
 
   const tabsStyle: React.CSSProperties = {
     display: 'flex',
     gap: '0.5rem',
-    marginBottom: '1rem'
+    marginBottom: '1rem',
   };
 
   const tabStyle = (active: boolean): React.CSSProperties => ({
@@ -126,7 +135,7 @@ const ReactInventoryScreen: React.FC<ReactInventoryScreenProps> = ({ className, 
     borderRadius: '8px',
     cursor: 'pointer',
     fontWeight: 'bold',
-    transition: 'all 0.3s ease'
+    transition: 'all 0.3s ease',
   });
 
   const contentStyle: React.CSSProperties = {
@@ -134,13 +143,13 @@ const ReactInventoryScreen: React.FC<ReactInventoryScreenProps> = ({ className, 
     background: 'rgba(255, 255, 255, 0.05)',
     borderRadius: '12px',
     padding: '1.5rem',
-    border: '1px solid rgba(255, 255, 255, 0.1)'
+    border: '1px solid rgba(255, 255, 255, 0.1)',
   };
 
   const itemGridStyle: React.CSSProperties = {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-    gap: '1rem'
+    gap: '1rem',
   };
 
   const itemCardStyle = (item: ReactItem): React.CSSProperties => ({
@@ -149,31 +158,31 @@ const ReactInventoryScreen: React.FC<ReactInventoryScreenProps> = ({ className, 
     borderRadius: '12px',
     padding: '1rem',
     transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-    position: 'relative'
+    position: 'relative',
   });
 
   const itemHeaderStyle: React.CSSProperties = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: '0.75rem'
+    marginBottom: '0.75rem',
   };
 
   const itemIconStyle: React.CSSProperties = {
     fontSize: '2rem',
-    marginRight: '0.75rem'
+    marginRight: '0.75rem',
   };
 
   const itemNameStyle = (rarity: string): React.CSSProperties => ({
     fontWeight: 'bold',
     color: getRarityColor(rarity),
-    fontSize: '1.1rem'
+    fontSize: '1.1rem',
   });
 
   const itemActionsStyle: React.CSSProperties = {
     display: 'flex',
     gap: '0.5rem',
-    marginTop: '1rem'
+    marginTop: '1rem',
   };
 
   const emptyStateStyle: React.CSSProperties = {
@@ -181,10 +190,12 @@ const ReactInventoryScreen: React.FC<ReactInventoryScreenProps> = ({ className, 
     color: '#94a3b8',
     fontSize: '1.2rem',
     padding: '3rem 1rem',
-    fontStyle: 'italic'
+    fontStyle: 'italic',
   };
 
-  const [activeTab, setActiveTab] = React.useState<'all' | 'consumable' | 'weapon' | 'armor' | 'material'>('all');
+  const [activeTab, setActiveTab] = React.useState<
+    'all' | 'consumable' | 'weapon' | 'armor' | 'material'
+  >('all');
 
   const getFilteredItems = () => {
     if (activeTab === 'all') return state.inventory;
@@ -193,18 +204,14 @@ const ReactInventoryScreen: React.FC<ReactInventoryScreenProps> = ({ className, 
 
   const filteredItems = getFilteredItems();
 
-  const totalValue = state.inventory.reduce((sum, item) => sum + (item.value * item.quantity), 0);
+  const totalValue = state.inventory.reduce((sum, item) => sum + item.value * item.quantity, 0);
 
   return (
     <div className={className} style={containerStyle}>
       {/* Header */}
       <div style={headerStyle}>
         <h1 style={titleStyle}>🎒 Inventory</h1>
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={handleClose}
-        >
+        <Button variant='secondary' size='sm' onClick={handleClose}>
           ← Back
         </Button>
       </div>
@@ -235,10 +242,7 @@ const ReactInventoryScreen: React.FC<ReactInventoryScreenProps> = ({ className, 
 
       {/* Category Tabs */}
       <div style={tabsStyle}>
-        <button
-          style={tabStyle(activeTab === 'all')}
-          onClick={() => setActiveTab('all')}
-        >
+        <button style={tabStyle(activeTab === 'all')} onClick={() => setActiveTab('all')}>
           All ({state.inventory.length})
         </button>
         <button
@@ -247,22 +251,13 @@ const ReactInventoryScreen: React.FC<ReactInventoryScreenProps> = ({ className, 
         >
           Consumables ({getItemsByType('consumable').length})
         </button>
-        <button
-          style={tabStyle(activeTab === 'weapon')}
-          onClick={() => setActiveTab('weapon')}
-        >
+        <button style={tabStyle(activeTab === 'weapon')} onClick={() => setActiveTab('weapon')}>
           Weapons ({getItemsByType('weapon').length})
         </button>
-        <button
-          style={tabStyle(activeTab === 'armor')}
-          onClick={() => setActiveTab('armor')}
-        >
+        <button style={tabStyle(activeTab === 'armor')} onClick={() => setActiveTab('armor')}>
           Armor ({getItemsByType('armor').length})
         </button>
-        <button
-          style={tabStyle(activeTab === 'material')}
-          onClick={() => setActiveTab('material')}
-        >
+        <button style={tabStyle(activeTab === 'material')} onClick={() => setActiveTab('material')}>
           Materials ({getItemsByType('material').length})
         </button>
       </div>
@@ -275,7 +270,7 @@ const ReactInventoryScreen: React.FC<ReactInventoryScreenProps> = ({ className, 
           </div>
         ) : (
           <div style={itemGridStyle}>
-            {filteredItems.map((item) => (
+            {filteredItems.map(item => (
               <div key={item.id} style={itemCardStyle(item)}>
                 <div style={itemHeaderStyle}>
                   <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -301,14 +296,17 @@ const ReactInventoryScreen: React.FC<ReactInventoryScreenProps> = ({ className, 
                 {item.effects && item.effects.length > 0 && (
                   <div style={{ marginBottom: '1rem' }}>
                     {item.effects.map((effect, index) => (
-                      <div key={index} style={{
-                        fontSize: '0.8rem',
-                        color: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        padding: '0.25rem 0.5rem',
-                        borderRadius: '4px',
-                        marginBottom: '0.25rem'
-                      }}>
+                      <div
+                        key={index}
+                        style={{
+                          fontSize: '0.8rem',
+                          color: '#10b981',
+                          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                          padding: '0.25rem 0.5rem',
+                          borderRadius: '4px',
+                          marginBottom: '0.25rem',
+                        }}
+                      >
                         {effect.type}: {effect.value}
                         {effect.duration && ` (${effect.duration}s)`}
                       </div>
@@ -319,8 +317,8 @@ const ReactInventoryScreen: React.FC<ReactInventoryScreenProps> = ({ className, 
                 <div style={itemActionsStyle}>
                   {item.type === 'consumable' && (
                     <Button
-                      variant="primary"
-                      size="sm"
+                      variant='primary'
+                      size='sm'
                       onClick={() => handleUseItem(item.id)}
                       disabled={item.quantity <= 0}
                     >
@@ -328,8 +326,8 @@ const ReactInventoryScreen: React.FC<ReactInventoryScreenProps> = ({ className, 
                     </Button>
                   )}
                   <Button
-                    variant="danger"
-                    size="sm"
+                    variant='danger'
+                    size='sm'
                     onClick={() => handleDropItem(item.id)}
                     disabled={item.quantity <= 0}
                   >

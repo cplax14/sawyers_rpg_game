@@ -27,79 +27,79 @@ const tooltipStyles = {
     minWidth: '200px',
     maxWidth: '300px',
     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-    backdropFilter: 'blur(8px)'
+    backdropFilter: 'blur(8px)',
   },
   header: {
     marginBottom: '0.5rem',
     paddingBottom: '0.5rem',
-    borderBottom: '1px solid rgba(212, 175, 55, 0.3)'
+    borderBottom: '1px solid rgba(212, 175, 55, 0.3)',
   },
   itemName: {
     fontSize: '0.9rem',
     fontWeight: 'bold',
     color: '#d4af37',
-    margin: '0 0 0.25rem 0'
+    margin: '0 0 0.25rem 0',
   },
   slotName: {
     fontSize: '0.7rem',
     color: '#94a3b8',
-    margin: 0
+    margin: 0,
   },
   statsSection: {
-    marginBottom: '0.5rem'
+    marginBottom: '0.5rem',
   },
   statRow: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: '0.25rem',
-    padding: '0.2rem 0'
+    padding: '0.2rem 0',
   },
   statLabel: {
-    color: '#94a3b8'
+    color: '#94a3b8',
   },
   statValue: {
     color: '#f4f4f4',
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   },
   changeSection: {
     borderTop: '1px solid rgba(212, 175, 55, 0.2)',
-    paddingTop: '0.5rem'
+    paddingTop: '0.5rem',
   },
   changeTitle: {
     fontSize: '0.75rem',
     fontWeight: 'bold',
     color: '#d4af37',
-    marginBottom: '0.25rem'
+    marginBottom: '0.25rem',
   },
   changeRow: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: '0.2rem',
-    fontSize: '0.75rem'
+    fontSize: '0.75rem',
   },
   improvementChange: {
-    color: '#10b981'
+    color: '#10b981',
   },
   degradeChange: {
-    color: '#ef4444'
+    color: '#ef4444',
   },
   neutralChange: {
-    color: '#94a3b8'
+    color: '#94a3b8',
   },
   noItem: {
     textAlign: 'center' as const,
     color: '#94a3b8',
-    fontStyle: 'italic'
+    fontStyle: 'italic',
   },
   quickAction: {
     fontSize: '0.7rem',
     color: '#94a3b8',
     fontStyle: 'italic',
     marginTop: '0.5rem',
-    textAlign: 'center' as const
-  }
+    textAlign: 'center' as const,
+  },
 };
 
 // Rarity colors
@@ -109,7 +109,7 @@ const rarityColors = {
   rare: '#8b5cf6',
   epic: '#f59e0b',
   legendary: '#ef4444',
-  mythical: '#ec4899'
+  mythical: '#ec4899',
 };
 
 export const StatPreviewTooltip: React.FC<StatPreviewTooltipProps> = ({
@@ -120,7 +120,7 @@ export const StatPreviewTooltip: React.FC<StatPreviewTooltipProps> = ({
   playerLevel = 1,
   playerClass = 'adventurer',
   showValidation = true,
-  className = ''
+  className = '',
 }) => {
   // Calculate stat changes if previewing an item
   const statComparison = useMemo(() => {
@@ -131,13 +131,7 @@ export const StatPreviewTooltip: React.FC<StatPreviewTooltipProps> = ({
   // Check validation if previewing an item
   const validationResult = useMemo(() => {
     if (!previewItem || !showValidation) return null;
-    return checkEquipmentCompatibility(
-      previewItem,
-      slot,
-      playerLevel,
-      playerClass,
-      baseStats
-    );
+    return checkEquipmentCompatibility(previewItem, slot, playerLevel, playerClass, baseStats);
   }, [previewItem, slot, playerLevel, playerClass, baseStats, showValidation]);
 
   // Get display item (preview item or current item)
@@ -170,12 +164,8 @@ export const StatPreviewTooltip: React.FC<StatPreviewTooltipProps> = ({
         <div style={tooltipStyles.header}>
           <h4 style={tooltipStyles.itemName}>Empty {formatSlotName(slot)}</h4>
         </div>
-        <div style={tooltipStyles.noItem}>
-          No item equipped in this slot
-        </div>
-        <div style={tooltipStyles.quickAction}>
-          Click to equip an item
-        </div>
+        <div style={tooltipStyles.noItem}>No item equipped in this slot</div>
+        <div style={tooltipStyles.quickAction}>Click to equip an item</div>
       </motion.div>
     );
   }
@@ -185,7 +175,7 @@ export const StatPreviewTooltip: React.FC<StatPreviewTooltipProps> = ({
       className={className}
       style={{
         ...tooltipStyles.container,
-        borderColor: getRarityColor(displayItem.rarity)
+        borderColor: getRarityColor(displayItem.rarity),
       }}
       initial={{ opacity: 0, scale: 0.9, y: 10 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -193,10 +183,12 @@ export const StatPreviewTooltip: React.FC<StatPreviewTooltipProps> = ({
     >
       {/* Header */}
       <div style={tooltipStyles.header}>
-        <h4 style={{
-          ...tooltipStyles.itemName,
-          color: getRarityColor(displayItem.rarity)
-        }}>
+        <h4
+          style={{
+            ...tooltipStyles.itemName,
+            color: getRarityColor(displayItem.rarity),
+          }}
+        >
           {displayItem.name}
         </h4>
         <p style={tooltipStyles.slotName}>
@@ -212,18 +204,19 @@ export const StatPreviewTooltip: React.FC<StatPreviewTooltipProps> = ({
               <span style={tooltipStyles.statLabel}>
                 {stat.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}:
               </span>
-              <span style={{
-                ...tooltipStyles.statValue,
-                color: modifier.value > 0 ? '#10b981' : modifier.value < 0 ? '#ef4444' : '#94a3b8'
-              }}>
+              <span
+                style={{
+                  ...tooltipStyles.statValue,
+                  color:
+                    modifier.value > 0 ? '#10b981' : modifier.value < 0 ? '#ef4444' : '#94a3b8',
+                }}
+              >
                 {formatStatValue(modifier.value)}
               </span>
             </div>
           ))
         ) : (
-          <div style={tooltipStyles.noItem}>
-            No stat bonuses
-          </div>
+          <div style={tooltipStyles.noItem}>No stat bonuses</div>
         )}
       </div>
 
@@ -242,9 +235,11 @@ export const StatPreviewTooltip: React.FC<StatPreviewTooltipProps> = ({
                 key={stat}
                 style={{
                   ...tooltipStyles.changeRow,
-                  ...(change > 0 ? tooltipStyles.improvementChange :
-                      change < 0 ? tooltipStyles.degradeChange :
-                      tooltipStyles.neutralChange)
+                  ...(change > 0
+                    ? tooltipStyles.improvementChange
+                    : change < 0
+                      ? tooltipStyles.degradeChange
+                      : tooltipStyles.neutralChange),
                 }}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -259,11 +254,10 @@ export const StatPreviewTooltip: React.FC<StatPreviewTooltipProps> = ({
                     animate={{ scale: 1 }}
                     transition={{ delay: 0.2, type: 'spring' }}
                   >
-                    {change > 0 ? '+' : ''}{change}
+                    {change > 0 ? '+' : ''}
+                    {change}
                   </motion.span>
-                  <span style={{ marginLeft: '0.25rem' }}>
-                    {change > 0 ? '↑' : '↓'}
-                  </span>
+                  <span style={{ marginLeft: '0.25rem' }}>{change > 0 ? '↑' : '↓'}</span>
                 </span>
               </motion.div>
             );
@@ -277,9 +271,11 @@ export const StatPreviewTooltip: React.FC<StatPreviewTooltipProps> = ({
               paddingTop: '0.25rem',
               marginTop: '0.25rem',
               fontWeight: 'bold',
-              ...(statComparison.totalStatChange > 0 ? tooltipStyles.improvementChange :
-                  statComparison.totalStatChange < 0 ? tooltipStyles.degradeChange :
-                  tooltipStyles.neutralChange)
+              ...(statComparison.totalStatChange > 0
+                ? tooltipStyles.improvementChange
+                : statComparison.totalStatChange < 0
+                  ? tooltipStyles.degradeChange
+                  : tooltipStyles.neutralChange),
             }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -287,17 +283,18 @@ export const StatPreviewTooltip: React.FC<StatPreviewTooltipProps> = ({
           >
             <span>Total Change:</span>
             <span>
-              {statComparison.totalStatChange > 0 ? '+' : ''}{statComparison.totalStatChange}
+              {statComparison.totalStatChange > 0 ? '+' : ''}
+              {statComparison.totalStatChange}
               <motion.span
                 style={{ marginLeft: '0.25rem' }}
                 animate={{
                   scale: [1, 1.2, 1],
-                  rotate: [0, 10, -10, 0]
+                  rotate: [0, 10, -10, 0],
                 }}
                 transition={{
                   duration: 1,
                   repeat: Infinity,
-                  repeatDelay: 2
+                  repeatDelay: 2,
                 }}
               >
                 {statComparison.isUpgrade ? '📈' : '📉'}

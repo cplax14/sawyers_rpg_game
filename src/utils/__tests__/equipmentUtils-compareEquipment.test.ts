@@ -19,7 +19,7 @@ describe('compareEquipment - Stat Difference Calculations', () => {
     magicAttack: 10,
     magicDefense: 10,
     speed: 10,
-    accuracy: 85
+    accuracy: 85,
   };
 
   // Helper function to create test items with specific stats
@@ -39,10 +39,13 @@ describe('compareEquipment - Stat Difference Calculations', () => {
     weight: 2,
     stackable: false,
     maxStack: 1,
-    statModifiers: Object.entries(stats).reduce((acc, [stat, value]) => ({
-      ...acc,
-      [stat]: { value, type: 'flat' }
-    }), {})
+    statModifiers: Object.entries(stats).reduce(
+      (acc, [stat, value]) => ({
+        ...acc,
+        [stat]: { value, type: 'flat' },
+      }),
+      {}
+    ),
   });
 
   describe('Basic stat increases (upgrades)', () => {
@@ -80,11 +83,11 @@ describe('compareEquipment - Stat Difference Calculations', () => {
     it('should handle multiple stat increases', () => {
       const currentItem = createTestItem('armor1', 'Leather Armor', {
         defense: 8,
-        speed: 2
+        speed: 2,
       });
       const newItem = createTestItem('armor2', 'Chain Mail', {
         defense: 12,
-        speed: 3
+        speed: 3,
       });
 
       const result = compareEquipment(currentItem, newItem, mockBaseStats);
@@ -132,11 +135,11 @@ describe('compareEquipment - Stat Difference Calculations', () => {
     it('should handle multiple stat decreases', () => {
       const currentItem = createTestItem('armor1', 'Plate Armor', {
         defense: 20,
-        magicDefense: 10
+        magicDefense: 10,
       });
       const newItem = createTestItem('armor2', 'Leather Armor', {
         defense: 15,
-        magicDefense: 5
+        magicDefense: 5,
       });
 
       const result = compareEquipment(currentItem, newItem, mockBaseStats);
@@ -153,11 +156,11 @@ describe('compareEquipment - Stat Difference Calculations', () => {
     it('should calculate mixed stat changes correctly', () => {
       const currentItem = createTestItem('item1', 'Balanced Item', {
         attack: 10,
-        defense: 5
+        defense: 5,
       });
       const newItem = createTestItem('item2', 'Offensive Item', {
         attack: 15,
-        defense: 3
+        defense: 3,
       });
 
       const result = compareEquipment(currentItem, newItem, mockBaseStats);
@@ -172,11 +175,11 @@ describe('compareEquipment - Stat Difference Calculations', () => {
     it('should recommend "no_change" for neutral net stats (within -2 to +2)', () => {
       const currentItem = createTestItem('item1', 'Item A', {
         attack: 10,
-        defense: 5
+        defense: 5,
       });
       const newItem = createTestItem('item2', 'Item B', {
         attack: 8,
-        defense: 7
+        defense: 7,
       });
 
       const result = compareEquipment(currentItem, newItem, mockBaseStats);
@@ -191,12 +194,12 @@ describe('compareEquipment - Stat Difference Calculations', () => {
       const currentItem = createTestItem('item1', 'Old Equipment', {
         attack: 10,
         defense: 8,
-        speed: 5
+        speed: 5,
       });
       const newItem = createTestItem('item2', 'New Equipment', {
         attack: 12,
         defense: 6,
-        speed: 8
+        speed: 8,
       });
 
       const result = compareEquipment(currentItem, newItem, mockBaseStats);
@@ -226,7 +229,7 @@ describe('compareEquipment - Stat Difference Calculations', () => {
       const newItem = createTestItem('armor1', 'Leather Armor', {
         defense: 8,
         speed: 2,
-        magicDefense: 4
+        magicDefense: 4,
       });
 
       const result = compareEquipment(undefined, newItem, mockBaseStats);
@@ -256,7 +259,7 @@ describe('compareEquipment - Stat Difference Calculations', () => {
     it('should handle unequipping item with multiple stats', () => {
       const currentItem = createTestItem('armor1', 'Plate Armor', {
         defense: 15,
-        magicDefense: 8
+        magicDefense: 8,
       });
       const emptyItem = createTestItem('empty', 'Empty Slot', {});
 
@@ -287,12 +290,12 @@ describe('compareEquipment - Stat Difference Calculations', () => {
       const currentItem = createTestItem('armor1', 'Leather Armor', {
         defense: 8,
         speed: 3,
-        magicDefense: 2
+        magicDefense: 2,
       });
       const newItem = createTestItem('armor2', 'Another Leather Armor', {
         defense: 8,
         speed: 3,
-        magicDefense: 2
+        magicDefense: 2,
       });
 
       const result = compareEquipment(currentItem, newItem, mockBaseStats);
@@ -309,11 +312,11 @@ describe('compareEquipment - Stat Difference Calculations', () => {
     it('should handle current item with negative stats (cursed item)', () => {
       const currentItem = createTestItem('cursed_sword', 'Cursed Blade', {
         attack: 15,
-        speed: -5
+        speed: -5,
       });
       const newItem = createTestItem('normal_sword', 'Normal Blade', {
         attack: 12,
-        speed: 0
+        speed: 0,
       });
 
       const result = compareEquipment(currentItem, newItem, mockBaseStats);
@@ -328,11 +331,11 @@ describe('compareEquipment - Stat Difference Calculations', () => {
     it('should handle new item with negative stats', () => {
       const currentItem = createTestItem('normal_armor', 'Normal Armor', {
         defense: 10,
-        speed: 5
+        speed: 5,
       });
       const newItem = createTestItem('heavy_armor', 'Heavy Armor', {
         defense: 15,
-        speed: -2
+        speed: -2,
       });
 
       const result = compareEquipment(currentItem, newItem, mockBaseStats);
@@ -347,11 +350,11 @@ describe('compareEquipment - Stat Difference Calculations', () => {
     it('should handle both items having negative stats', () => {
       const currentItem = createTestItem('heavy_armor1', 'Heavy Plate', {
         defense: 20,
-        speed: -5
+        speed: -5,
       });
       const newItem = createTestItem('heavy_armor2', 'Ultra Heavy Plate', {
         defense: 25,
-        speed: -3
+        speed: -3,
       });
 
       const result = compareEquipment(currentItem, newItem, mockBaseStats);
@@ -369,12 +372,12 @@ describe('compareEquipment - Stat Difference Calculations', () => {
       const currentItem = createTestItem('item1', 'Item A', {
         attack: 10,
         defense: 5,
-        speed: 3
+        speed: 3,
       });
       const newItem = createTestItem('item2', 'Item B', {
         attack: 15, // +5 (significant: >= 2 points AND >= 5% of base 10)
-        defense: 6,  // +1 (significant: >= 5% of base 10, which is 10%)
-        speed: 5     // +2 (significant: >= 2 points AND >= 5% of base 10)
+        defense: 6, // +1 (significant: >= 5% of base 10, which is 10%)
+        speed: 5, // +2 (significant: >= 2 points AND >= 5% of base 10)
       });
 
       const result = compareEquipment(currentItem, newItem, mockBaseStats);
@@ -422,11 +425,11 @@ describe('compareEquipment - Stat Difference Calculations', () => {
       // So a change of +1 accuracy is only 1.18% - not significant
       const currentItem = createTestItem('item1', 'Item A', {
         attack: 10,
-        accuracy: 5
+        accuracy: 5,
       });
       const newItem = createTestItem('item2', 'Item B', {
         attack: 10,
-        accuracy: 6 // +1 accuracy, which is < 2 points AND < 5% of base 85
+        accuracy: 6, // +1 accuracy, which is < 2 points AND < 5% of base 85
       });
 
       const result = compareEquipment(currentItem, newItem, mockBaseStats);
@@ -457,7 +460,7 @@ describe('compareEquipment - Stat Difference Calculations', () => {
         magicAttack: 10,
         magicDefense: 10,
         speed: 10,
-        accuracy: 10
+        accuracy: 10,
       });
       const newItem = createTestItem('item2', 'New Legendary', {
         attack: 12,
@@ -465,7 +468,7 @@ describe('compareEquipment - Stat Difference Calculations', () => {
         magicAttack: 12,
         magicDefense: 12,
         speed: 12,
-        accuracy: 12
+        accuracy: 12,
       });
 
       const result = compareEquipment(currentItem, newItem, mockBaseStats);
@@ -515,10 +518,10 @@ describe('compareEquipment - Stat Difference Calculations', () => {
   describe('Real-world equipment scenarios', () => {
     it('should handle warrior upgrading from starting sword to better sword', () => {
       const woodenSword = createTestItem('wooden_sword', 'Wooden Training Sword', {
-        attack: 5
+        attack: 5,
       });
       const ironSword = createTestItem('iron_sword', 'Iron Sword', {
-        attack: 12
+        attack: 12,
       });
 
       const result = compareEquipment(woodenSword, ironSword, mockBaseStats);
@@ -532,11 +535,11 @@ describe('compareEquipment - Stat Difference Calculations', () => {
     it('should handle mage choosing between different stat focuses', () => {
       const balancedStaff = createTestItem('balanced_staff', 'Balanced Staff', {
         magicAttack: 15,
-        magicDefense: 8
+        magicDefense: 8,
       });
       const offensiveStaff = createTestItem('offensive_staff', 'Offensive Staff', {
         magicAttack: 20,
-        magicDefense: 5
+        magicDefense: 5,
       });
 
       const result = compareEquipment(balancedStaff, offensiveStaff, mockBaseStats);
@@ -550,11 +553,11 @@ describe('compareEquipment - Stat Difference Calculations', () => {
     it('should handle tank choosing heavy armor with speed penalty', () => {
       const mediumArmor = createTestItem('medium_armor', 'Chain Mail', {
         defense: 15,
-        speed: 5
+        speed: 5,
       });
       const heavyArmor = createTestItem('heavy_armor', 'Full Plate', {
         defense: 25,
-        speed: 2
+        speed: 2,
       });
 
       const result = compareEquipment(mediumArmor, heavyArmor, mockBaseStats);

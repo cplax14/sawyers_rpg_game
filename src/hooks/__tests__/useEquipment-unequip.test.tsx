@@ -48,9 +48,9 @@ const createMockItem = (overrides: any = {}) => {
       magicAttack: 0,
       magicDefense: 0,
       speed: 0,
-      accuracy: 0
+      accuracy: 0,
     },
-    ...overrides
+    ...overrides,
   };
 };
 
@@ -77,7 +77,7 @@ describe('Task 9.5: unequipItem successfully unequips and returns items to inven
       name: 'Iron Sword',
       type: 'weapon',
       subtype: 'sword',
-      stats: { attack: 15, defense: 0, magicAttack: 0, magicDefense: 0, speed: 0, accuracy: 0 }
+      stats: { attack: 15, defense: 0, magicAttack: 0, magicDefense: 0, speed: 0, accuracy: 0 },
     });
 
     act(() => {
@@ -113,7 +113,7 @@ describe('Task 9.5: unequipItem successfully unequips and returns items to inven
       name: 'Leather Armor',
       type: 'armor',
       subtype: 'chestplate',
-      stats: { attack: 0, defense: 20, magicAttack: 0, magicDefense: 0, speed: 0, accuracy: 0 }
+      stats: { attack: 0, defense: 20, magicAttack: 0, magicDefense: 0, speed: 0, accuracy: 0 },
     });
 
     act(() => {
@@ -148,7 +148,7 @@ describe('Task 9.5: unequipItem successfully unequips and returns items to inven
       name: 'Ring of Power',
       type: 'accessory',
       subtype: 'ring',
-      stats: { attack: 8, defense: 0, magicAttack: 8, magicDefense: 0, speed: 0, accuracy: 0 }
+      stats: { attack: 8, defense: 0, magicAttack: 8, magicDefense: 0, speed: 0, accuracy: 0 },
     });
 
     act(() => {
@@ -183,7 +183,7 @@ describe('Task 9.5: unequipItem successfully unequips and returns items to inven
       name: 'Iron Helmet',
       type: 'armor',
       subtype: 'helmet',
-      stats: { attack: 0, defense: 10, magicAttack: 0, magicDefense: 0, speed: 0, accuracy: 0 }
+      stats: { attack: 0, defense: 10, magicAttack: 0, magicDefense: 0, speed: 0, accuracy: 0 },
     });
 
     act(() => {
@@ -200,7 +200,9 @@ describe('Task 9.5: unequipItem successfully unequips and returns items to inven
 
     // Assert - Helmet should be back in inventory
     expect(result.current.state.player?.equipment.helmet).toBeNull();
-    const helmetInInventory = result.current.state.inventory?.find(item => item.id === testHelmet.id);
+    const helmetInInventory = result.current.state.inventory?.find(
+      item => item.id === testHelmet.id
+    );
     expect(helmetInInventory).toBeDefined();
     expect(helmetInInventory?.name).toBe('Iron Helmet');
   });
@@ -218,7 +220,7 @@ describe('Task 9.5: unequipItem successfully unequips and returns items to inven
       name: 'Leather Boots',
       type: 'armor',
       subtype: 'boots',
-      stats: { attack: 0, defense: 0, magicAttack: 0, magicDefense: 0, speed: 5, accuracy: 0 }
+      stats: { attack: 0, defense: 0, magicAttack: 0, magicDefense: 0, speed: 5, accuracy: 0 },
     });
 
     act(() => {
@@ -250,7 +252,7 @@ describe('Task 9.5: unequipItem successfully unequips and returns items to inven
       name: 'Power Sword',
       type: 'weapon',
       subtype: 'sword',
-      stats: { attack: 25, defense: 0, magicAttack: 0, magicDefense: 0, speed: 0, accuracy: 0 }
+      stats: { attack: 25, defense: 0, magicAttack: 0, magicDefense: 0, speed: 0, accuracy: 0 },
     });
 
     act(() => {
@@ -286,7 +288,7 @@ describe('Task 9.5: unequipItem successfully unequips and returns items to inven
       name: 'Magic Gloves',
       type: 'armor',
       subtype: 'gloves',
-      stats: { attack: 5, defense: 3, magicAttack: 7, magicDefense: 0, speed: 0, accuracy: 4 }
+      stats: { attack: 5, defense: 3, magicAttack: 7, magicDefense: 0, speed: 0, accuracy: 4 },
     });
 
     act(() => {
@@ -342,7 +344,7 @@ describe('Task 9.5: unequipItem successfully unequips and returns items to inven
       name: 'Test Sword',
       type: 'weapon',
       subtype: 'sword',
-      stats: { attack: 10, defense: 0, magicAttack: 0, magicDefense: 0, speed: 0, accuracy: 0 }
+      stats: { attack: 10, defense: 0, magicAttack: 0, magicDefense: 0, speed: 0, accuracy: 0 },
     });
 
     const helmet = createMockItem({
@@ -350,7 +352,7 @@ describe('Task 9.5: unequipItem successfully unequips and returns items to inven
       name: 'Test Helmet',
       type: 'armor',
       subtype: 'helmet',
-      stats: { attack: 0, defense: 8, magicAttack: 0, magicDefense: 0, speed: 0, accuracy: 0 }
+      stats: { attack: 0, defense: 8, magicAttack: 0, magicDefense: 0, speed: 0, accuracy: 0 },
     });
 
     const boots = createMockItem({
@@ -358,7 +360,7 @@ describe('Task 9.5: unequipItem successfully unequips and returns items to inven
       name: 'Test Boots',
       type: 'armor',
       subtype: 'boots',
-      stats: { attack: 0, defense: 0, magicAttack: 0, magicDefense: 0, speed: 5, accuracy: 0 }
+      stats: { attack: 0, defense: 0, magicAttack: 0, magicDefense: 0, speed: 5, accuracy: 0 },
     });
 
     act(() => {
@@ -397,7 +399,7 @@ describe('Task 9.5: unequipItem successfully unequips and returns items to inven
       name: 'Silver Ring',
       type: 'accessory',
       subtype: 'ring',
-      stats: { attack: 5, defense: 0, magicAttack: 0, magicDefense: 0, speed: 0, accuracy: 0 }
+      stats: { attack: 5, defense: 0, magicAttack: 0, magicDefense: 0, speed: 0, accuracy: 0 },
     });
 
     act(() => {
@@ -436,7 +438,7 @@ describe('Task 9.5: unequipItem successfully unequips and returns items to inven
       name: 'Cursed Plate Armor',
       type: 'armor',
       subtype: 'chestplate',
-      stats: { attack: 0, defense: 30, magicAttack: 0, magicDefense: 0, speed: -10, accuracy: 0 }
+      stats: { attack: 0, defense: 30, magicAttack: 0, magicDefense: 0, speed: -10, accuracy: 0 },
     });
 
     act(() => {
@@ -472,7 +474,7 @@ describe('Task 9.5: unequipItem successfully unequips and returns items to inven
       name: 'Lucky Charm',
       type: 'accessory',
       subtype: 'charm',
-      stats: { attack: 0, defense: 0, magicAttack: 0, magicDefense: 0, speed: 0, accuracy: 10 }
+      stats: { attack: 0, defense: 0, magicAttack: 0, magicDefense: 0, speed: 0, accuracy: 10 },
     });
 
     act(() => {
@@ -503,21 +505,21 @@ describe('Task 9.5: unequipItem successfully unequips and returns items to inven
       id: 'weapon_1',
       name: 'Weapon',
       type: 'weapon',
-      stats: { attack: 10, defense: 0, magicAttack: 0, magicDefense: 0, speed: 0, accuracy: 0 }
+      stats: { attack: 10, defense: 0, magicAttack: 0, magicDefense: 0, speed: 0, accuracy: 0 },
     });
 
     const armor = createMockItem({
       id: 'armor_1',
       name: 'Armor',
       type: 'armor',
-      stats: { attack: 0, defense: 10, magicAttack: 0, magicDefense: 0, speed: 0, accuracy: 0 }
+      stats: { attack: 0, defense: 10, magicAttack: 0, magicDefense: 0, speed: 0, accuracy: 0 },
     });
 
     const accessory = createMockItem({
       id: 'accessory_1',
       name: 'Accessory',
       type: 'accessory',
-      stats: { attack: 3, defense: 3, magicAttack: 3, magicDefense: 3, speed: 0, accuracy: 0 }
+      stats: { attack: 3, defense: 3, magicAttack: 3, magicDefense: 3, speed: 0, accuracy: 0 },
     });
 
     act(() => {

@@ -14,65 +14,65 @@ jest.mock('../../hooks/useInventory');
 jest.mock('../../hooks/useEquipmentValidation');
 jest.mock('../../contexts/ReactGameContext');
 jest.mock('../../hooks', () => ({
-  useResponsive: jest.fn()
+  useResponsive: jest.fn(),
 }));
 jest.mock('../../utils/equipmentUtils');
 
 // Mock child components
 jest.mock('../atoms/Button', () => ({
   Button: ({ children, onClick, disabled, ...props }: any) => (
-    <button onClick={onClick} disabled={disabled} data-testid="button" {...props}>
+    <button onClick={onClick} disabled={disabled} data-testid='button' {...props}>
       {children}
     </button>
-  )
+  ),
 }));
 jest.mock('../atoms/Card', () => ({
   Card: ({ children, className, ...props }: any) => (
-    <div className={className} data-testid="card" {...props}>
+    <div className={className} data-testid='card' {...props}>
       {children}
     </div>
-  )
+  ),
 }));
 jest.mock('../atoms/LoadingSpinner', () => ({
-  LoadingSpinner: () => <div data-testid="loading-spinner">Loading...</div>
+  LoadingSpinner: () => <div data-testid='loading-spinner'>Loading...</div>,
 }));
 jest.mock('../atoms/Tooltip', () => ({
   Tooltip: ({ children, content }: any) => (
-    <div data-testid="tooltip" title={content}>
+    <div data-testid='tooltip' title={content}>
       {children}
     </div>
-  )
+  ),
 }));
 jest.mock('../molecules/ConfirmationDialog', () => ({
   ConfirmationDialog: ({ isOpen, onClose, onConfirm, title, message }: any) =>
     isOpen ? (
-      <div data-testid="confirmation-dialog">
+      <div data-testid='confirmation-dialog'>
         <h3>{title}</h3>
         <p>{message}</p>
         <button onClick={onConfirm}>Confirm</button>
         <button onClick={onClose}>Cancel</button>
       </div>
-    ) : null
+    ) : null,
 }));
 jest.mock('../molecules/EquipmentSelectionModal', () => ({
   EquipmentSelectionModal: ({ isOpen, onClose, onSelect, slot }: any) =>
     isOpen ? (
-      <div data-testid="equipment-selection-modal">
+      <div data-testid='equipment-selection-modal'>
         <h3>Select Equipment for {slot}</h3>
         <button onClick={() => onSelect({ id: 'test-item', name: 'Test Item' })}>
           Select Test Item
         </button>
         <button onClick={onClose}>Close</button>
       </div>
-    ) : null
+    ) : null,
 }));
 jest.mock('../molecules/StatComparison', () => ({
   StatComparison: ({ currentStats, newStats }: any) => (
-    <div data-testid="stat-comparison">
+    <div data-testid='stat-comparison'>
       <div>Current: {JSON.stringify(currentStats)}</div>
       <div>New: {JSON.stringify(newStats)}</div>
     </div>
-  )
+  ),
 }));
 
 // Import mocked modules
@@ -85,11 +85,15 @@ import { compareEquipment, checkEquipmentCompatibility } from '../../utils/equip
 
 const mockUseEquipment = useEquipment as jest.MockedFunction<typeof useEquipment>;
 const mockUseInventory = useInventory as jest.MockedFunction<typeof useInventory>;
-const mockUseEquipmentValidation = useEquipmentValidation as jest.MockedFunction<typeof useEquipmentValidation>;
+const mockUseEquipmentValidation = useEquipmentValidation as jest.MockedFunction<
+  typeof useEquipmentValidation
+>;
 const mockUseGameState = useGameState as jest.MockedFunction<typeof useGameState>;
 const mockUseResponsive = useResponsive as jest.MockedFunction<typeof useResponsive>;
 const mockCompareEquipment = compareEquipment as jest.MockedFunction<typeof compareEquipment>;
-const mockCheckEquipmentCompatibility = checkEquipmentCompatibility as jest.MockedFunction<typeof checkEquipmentCompatibility>;
+const mockCheckEquipmentCompatibility = checkEquipmentCompatibility as jest.MockedFunction<
+  typeof checkEquipmentCompatibility
+>;
 
 describe('EquipmentScreen Component', () => {
   const mockOnClose = jest.fn();
@@ -105,8 +109,8 @@ describe('EquipmentScreen Component', () => {
     equipmentSlot: 'weapon',
     statModifiers: {
       strength: 10,
-      defense: 2
-    }
+      defense: 2,
+    },
   };
 
   const defaultMocks = {
@@ -121,7 +125,7 @@ describe('EquipmentScreen Component', () => {
         boots: null,
         ring1: null,
         ring2: null,
-        charm: null
+        charm: null,
       },
       finalStats: {
         strength: 20,
@@ -129,7 +133,7 @@ describe('EquipmentScreen Component', () => {
         agility: 12,
         intelligence: 6,
         health: 100,
-        mana: 50
+        mana: 50,
       },
       equipmentBonuses: {
         strength: 10,
@@ -137,24 +141,24 @@ describe('EquipmentScreen Component', () => {
         agility: 0,
         intelligence: 0,
         health: 0,
-        mana: 0
+        mana: 0,
       },
       equipItem: jest.fn().mockResolvedValue({ success: true }),
       unequipItem: jest.fn().mockResolvedValue({ success: true }),
       canEquipItem: jest.fn().mockReturnValue(true),
       getEquipmentRecommendations: jest.fn().mockReturnValue([]),
       isLoading: false,
-      error: null
+      error: null,
     },
     inventory: {
-      getFilteredItems: jest.fn().mockImplementation((filter) => {
+      getFilteredItems: jest.fn().mockImplementation(filter => {
         if (filter?.category === 'equipment') {
           return [mockEquipmentItem];
         }
         return [];
       }),
       isLoading: false,
-      error: null
+      error: null,
     },
     validation: {
       validateEquipment: jest.fn().mockReturnValue({ isValid: true, errors: [] }),
@@ -167,11 +171,11 @@ describe('EquipmentScreen Component', () => {
           agility: 12,
           intelligence: 6,
           health: 100,
-          mana: 50
+          mana: 50,
         },
         level: 5,
-        class: 'warrior'
-      }
+        class: 'warrior',
+      },
     },
     gameState: {
       gameState: {
@@ -185,18 +189,18 @@ describe('EquipmentScreen Component', () => {
             agility: 12,
             intelligence: 6,
             health: 100,
-            mana: 50
-          }
-        }
+            mana: 50,
+          },
+        },
       },
-      updateGameState: jest.fn()
+      updateGameState: jest.fn(),
     },
     responsive: {
       isMobile: false,
       isTablet: false,
       isDesktop: true,
-      screenSize: 'desktop'
-    }
+      screenSize: 'desktop',
+    },
   };
 
   beforeEach(() => {
@@ -213,18 +217,18 @@ describe('EquipmentScreen Component', () => {
     mockCompareEquipment.mockReturnValue({
       statDifferences: { strength: 5, defense: 1 },
       improvement: true,
-      score: 1.2
+      score: 1.2,
     });
     mockCheckEquipmentCompatibility.mockReturnValue({
       compatible: true,
-      restrictions: []
+      restrictions: [],
     });
   });
 
   const renderEquipmentScreen = (props = {}) => {
     const defaultProps = {
       onClose: mockOnClose,
-      ...props
+      ...props,
     };
 
     return render(<EquipmentScreen {...defaultProps} />);
@@ -235,7 +239,9 @@ describe('EquipmentScreen Component', () => {
       renderEquipmentScreen();
 
       expect(screen.getByText('Equipment')).toBeInTheDocument();
-      expect(screen.getByText('Manage your equipment and view character stats')).toBeInTheDocument();
+      expect(
+        screen.getByText('Manage your equipment and view character stats')
+      ).toBeInTheDocument();
     });
 
     it('should render equipment slots', () => {
@@ -279,8 +285,8 @@ describe('EquipmentScreen Component', () => {
           boots: null,
           ring1: null,
           ring2: null,
-          charm: null
-        }
+          charm: null,
+        },
       } as any);
 
       renderEquipmentScreen();
@@ -321,7 +327,7 @@ describe('EquipmentScreen Component', () => {
       const mockEquipItem = jest.fn().mockResolvedValue({ success: true });
       mockUseEquipment.mockReturnValue({
         ...defaultMocks.equipment,
-        equipItem: mockEquipItem
+        equipItem: mockEquipItem,
       } as any);
 
       renderEquipmentScreen();
@@ -338,17 +344,14 @@ describe('EquipmentScreen Component', () => {
       const selectButton = screen.getByText('Select Test Item');
       fireEvent.click(selectButton);
 
-      expect(mockEquipItem).toHaveBeenCalledWith(
-        { id: 'test-item', name: 'Test Item' },
-        'weapon'
-      );
+      expect(mockEquipItem).toHaveBeenCalledWith({ id: 'test-item', name: 'Test Item' }, 'weapon');
     });
 
     it('should unequip item when unequip button is clicked', async () => {
       const mockUnequipItem = jest.fn().mockResolvedValue({ success: true });
       mockUseEquipment.mockReturnValue({
         ...defaultMocks.equipment,
-        unequipItem: mockUnequipItem
+        unequipItem: mockUnequipItem,
       } as any);
 
       renderEquipmentScreen();
@@ -387,7 +390,7 @@ describe('EquipmentScreen Component', () => {
       mockCompareEquipment.mockReturnValue({
         statDifferences: { strength: 5, defense: -2 },
         improvement: true,
-        score: 1.1
+        score: 1.1,
       });
 
       renderEquipmentScreen();
@@ -407,7 +410,7 @@ describe('EquipmentScreen Component', () => {
       mockUseEquipmentValidation.mockReturnValue({
         ...defaultMocks.validation,
         canEquipItem: jest.fn().mockReturnValue(false),
-        getRestrictionMessage: jest.fn().mockReturnValue('Level too low')
+        getRestrictionMessage: jest.fn().mockReturnValue('Level too low'),
       } as any);
 
       renderEquipmentScreen();
@@ -418,7 +421,7 @@ describe('EquipmentScreen Component', () => {
     it('should disable equip button for incompatible items', () => {
       mockUseEquipment.mockReturnValue({
         ...defaultMocks.equipment,
-        canEquipItem: jest.fn().mockReturnValue(false)
+        canEquipItem: jest.fn().mockReturnValue(false),
       } as any);
 
       renderEquipmentScreen();
@@ -435,7 +438,7 @@ describe('EquipmentScreen Component', () => {
         isMobile: true,
         isTablet: false,
         isDesktop: false,
-        screenSize: 'mobile'
+        screenSize: 'mobile',
       });
 
       renderEquipmentScreen();
@@ -448,7 +451,7 @@ describe('EquipmentScreen Component', () => {
         isMobile: false,
         isTablet: true,
         isDesktop: false,
-        screenSize: 'tablet'
+        screenSize: 'tablet',
       });
 
       renderEquipmentScreen();
@@ -467,7 +470,7 @@ describe('EquipmentScreen Component', () => {
     it('should show loading spinner when equipment is being loaded', () => {
       mockUseEquipment.mockReturnValue({
         ...defaultMocks.equipment,
-        isLoading: true
+        isLoading: true,
       } as any);
 
       renderEquipmentScreen();
@@ -487,7 +490,7 @@ describe('EquipmentScreen Component', () => {
       const mockEquipItem = jest.fn().mockRejectedValue(new Error('Equip failed'));
       mockUseEquipment.mockReturnValue({
         ...defaultMocks.equipment,
-        equipItem: mockEquipItem
+        equipItem: mockEquipItem,
       } as any);
 
       renderEquipmentScreen();
@@ -510,7 +513,7 @@ describe('EquipmentScreen Component', () => {
     it('should handle missing player data gracefully', () => {
       mockUseGameState.mockReturnValue({
         gameState: { player: null },
-        updateGameState: jest.fn()
+        updateGameState: jest.fn(),
       } as any);
 
       renderEquipmentScreen();

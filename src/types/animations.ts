@@ -30,7 +30,16 @@ export interface AnimationVariant {
 // ================================================
 
 export type AttackType = 'melee' | 'ranged' | 'spell' | 'special';
-export type SpellElement = 'fire' | 'ice' | 'lightning' | 'earth' | 'wind' | 'water' | 'holy' | 'dark' | 'neutral';
+export type SpellElement =
+  | 'fire'
+  | 'ice'
+  | 'lightning'
+  | 'earth'
+  | 'wind'
+  | 'water'
+  | 'holy'
+  | 'dark'
+  | 'neutral';
 export type DamageType = 'physical' | 'magical' | 'healing' | 'status';
 
 export interface AttackAnimationProps {

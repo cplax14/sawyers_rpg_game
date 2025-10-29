@@ -3,7 +3,11 @@
  * Tests Task 5.2 implementation
  */
 
-import { checkEquipmentCompatibility, formatClassList, clearCompatibilityCache } from '../equipmentUtils';
+import {
+  checkEquipmentCompatibility,
+  formatClassList,
+  clearCompatibilityCache,
+} from '../equipmentUtils';
 import { EnhancedItem, EquipmentSlot } from '../../types/inventory';
 import { PlayerStats } from '../../types/game';
 
@@ -18,7 +22,7 @@ describe('Equipment Class Requirement Validation (Task 5.2)', () => {
     magicAttack: 10,
     magicDefense: 8,
     speed: 10,
-    accuracy: 85
+    accuracy: 85,
   };
 
   describe('checkEquipmentCompatibility - Class Requirements', () => {
@@ -43,7 +47,7 @@ describe('Equipment Class Requirement Validation (Task 5.2)', () => {
         consumeOnUse: true,
         useInCombat: true,
         useOutOfCombat: true,
-        category: 'consumables'
+        category: 'consumables',
         // No classRequirement or requirements.classes
       };
 
@@ -56,9 +60,7 @@ describe('Equipment Class Requirement Validation (Task 5.2)', () => {
       );
 
       expect(result.canEquip).toBe(true);
-      expect(result.reasons).not.toContain(
-        expect.stringContaining('Only')
-      );
+      expect(result.reasons).not.toContain(expect.stringContaining('Only'));
     });
 
     it('should allow item when player class matches single class requirement', () => {
@@ -84,7 +86,7 @@ describe('Equipment Class Requirement Validation (Task 5.2)', () => {
         useOutOfCombat: false,
         category: 'equipment',
         equipmentSlot: 'weapon' as EquipmentSlot,
-        classRequirement: ['warrior'] // Legacy format
+        classRequirement: ['warrior'], // Legacy format
       };
 
       const result = checkEquipmentCompatibility(
@@ -122,7 +124,7 @@ describe('Equipment Class Requirement Validation (Task 5.2)', () => {
         useOutOfCombat: false,
         category: 'equipment',
         equipmentSlot: 'weapon' as EquipmentSlot,
-        classRequirement: ['warrior']
+        classRequirement: ['warrior'],
       };
 
       const result = checkEquipmentCompatibility(
@@ -134,9 +136,7 @@ describe('Equipment Class Requirement Validation (Task 5.2)', () => {
       );
 
       expect(result.canEquip).toBe(false);
-      expect(result.reasons).toContain(
-        'Only Warriors can use this equipment!'
-      );
+      expect(result.reasons).toContain('Only Warriors can use this equipment!');
     });
 
     it('should handle multiple allowed classes and allow any matching class', () => {
@@ -163,8 +163,8 @@ describe('Equipment Class Requirement Validation (Task 5.2)', () => {
         category: 'equipment',
         equipmentSlot: 'weapon' as EquipmentSlot,
         requirements: {
-          classes: ['mage', 'cleric', 'druid']
-        }
+          classes: ['mage', 'cleric', 'druid'],
+        },
       };
 
       // Test with Cleric - should be allowed
@@ -189,9 +189,7 @@ describe('Equipment Class Requirement Validation (Task 5.2)', () => {
       );
 
       expect(result2.canEquip).toBe(false);
-      expect(result2.reasons).toContain(
-        'Only Mages, Clerics, and Druids can use this equipment!'
-      );
+      expect(result2.reasons).toContain('Only Mages, Clerics, and Druids can use this equipment!');
     });
 
     it('should perform case-insensitive class comparison', () => {
@@ -217,7 +215,7 @@ describe('Equipment Class Requirement Validation (Task 5.2)', () => {
         useOutOfCombat: false,
         category: 'equipment',
         equipmentSlot: 'armor' as EquipmentSlot,
-        classRequirement: ['WARRIOR', 'Paladin'] // Mixed case
+        classRequirement: ['WARRIOR', 'Paladin'], // Mixed case
       };
 
       // Test with "warrior" (lowercase) - should match "WARRIOR"
@@ -268,8 +266,8 @@ describe('Equipment Class Requirement Validation (Task 5.2)', () => {
         equipmentSlot: 'weapon' as EquipmentSlot,
         classRequirement: ['warrior'], // Legacy - takes priority for backwards compatibility
         requirements: {
-          classes: ['mage'] // New format - ignored when classRequirement exists
-        }
+          classes: ['mage'], // New format - ignored when classRequirement exists
+        },
       };
 
       // Warrior should be allowed (from classRequirement)
@@ -309,9 +307,7 @@ describe('Equipment Class Requirement Validation (Task 5.2)', () => {
     });
 
     it('should format three or more classes with commas and "and"', () => {
-      expect(formatClassList(['warrior', 'mage', 'cleric'])).toBe(
-        'Warriors, Mages, and Clerics'
-      );
+      expect(formatClassList(['warrior', 'mage', 'cleric'])).toBe('Warriors, Mages, and Clerics');
       expect(formatClassList(['warrior', 'paladin', 'ranger', 'druid'])).toBe(
         'Warriors, Paladins, Rangers, and Druids'
       );
@@ -363,7 +359,7 @@ describe('Equipment Class Requirement Validation (Task 5.2)', () => {
         category: 'equipment',
         equipmentSlot: 'weapon' as EquipmentSlot,
         levelRequirement: 20,
-        classRequirement: ['warrior', 'paladin']
+        classRequirement: ['warrior', 'paladin'],
       };
 
       // Test with correct class but too low level
@@ -379,9 +375,7 @@ describe('Equipment Class Requirement Validation (Task 5.2)', () => {
       expect(result1.reasons).toContain(
         "You need to be level 20 to use this item! (You're level 10)"
       );
-      expect(result1.reasons).not.toContain(
-        expect.stringContaining('Only Warriors and Paladins')
-      );
+      expect(result1.reasons).not.toContain(expect.stringContaining('Only Warriors and Paladins'));
 
       // Test with wrong class but correct level
       const result2 = checkEquipmentCompatibility(
@@ -393,9 +387,7 @@ describe('Equipment Class Requirement Validation (Task 5.2)', () => {
       );
 
       expect(result2.canEquip).toBe(false);
-      expect(result2.reasons).toContain(
-        'Only Warriors and Paladins can use this equipment!'
-      );
+      expect(result2.reasons).toContain('Only Warriors and Paladins can use this equipment!');
 
       // Test with both correct
       const result3 = checkEquipmentCompatibility(

@@ -13,7 +13,7 @@ import {
   ANIMATION_EASINGS,
   ANIMATION_PRESETS,
   AnimationPerformanceConfig,
-  AnimationMetrics
+  AnimationMetrics,
 } from '../types/animations';
 
 // ================================================
@@ -26,7 +26,7 @@ import {
 export function createTransition(config: Partial<AnimationConfig>): Transition {
   return {
     duration: config.duration || ANIMATION_DURATIONS.normal,
-    ease: config.ease as any || ANIMATION_EASINGS.easeInOut, // Type assertion for easing
+    ease: (config.ease as any) || ANIMATION_EASINGS.easeInOut, // Type assertion for easing
     delay: config.delay || 0,
     repeat: config.repeat || 0,
     repeatType: config.repeatType || 'loop',
@@ -117,22 +117,22 @@ export function createAttackAnimation(weaponType: string): AnimationVariant {
       animate: {
         rotate: [0, 45, 0],
         scale: [1, 1.2, 1],
-        x: [0, 20, 0]
+        x: [0, 20, 0],
       },
       transition: createTransition({
         duration: ANIMATION_DURATIONS.combat.attack,
-        ease: ANIMATION_EASINGS.easeInOut
+        ease: ANIMATION_EASINGS.easeInOut,
       }),
     },
     bow: {
       initial: { x: -50, scale: 0.8 },
       animate: {
         x: [0, 30, 0],
-        scale: [1, 1.1, 1]
+        scale: [1, 1.1, 1],
       },
       transition: createTransition({
         duration: ANIMATION_DURATIONS.combat.attack,
-        ease: ANIMATION_EASINGS.easeOut
+        ease: ANIMATION_EASINGS.easeOut,
       }),
     },
     staff: {
@@ -140,11 +140,11 @@ export function createAttackAnimation(weaponType: string): AnimationVariant {
       animate: {
         rotate: [0, -10, 10, 0],
         scale: [1, 1.1, 1.1, 1],
-        y: [0, -5, 0]
+        y: [0, -5, 0],
       },
       transition: createTransition({
         duration: ANIMATION_DURATIONS.combat.spell,
-        ease: ANIMATION_EASINGS.easeInOut
+        ease: ANIMATION_EASINGS.easeInOut,
       }),
     },
   };
@@ -155,13 +155,17 @@ export function createAttackAnimation(weaponType: string): AnimationVariant {
 /**
  * Creates spell effect animation based on element
  */
-export function createSpellEffectAnimation(element: SpellElement, intensity: string): AnimationVariant {
-  const intensityMultiplier = {
-    low: 0.8,
-    medium: 1.0,
-    high: 1.3,
-    critical: 1.6,
-  }[intensity] || 1.0;
+export function createSpellEffectAnimation(
+  element: SpellElement,
+  intensity: string
+): AnimationVariant {
+  const intensityMultiplier =
+    {
+      low: 0.8,
+      medium: 1.0,
+      high: 1.3,
+      critical: 1.6,
+    }[intensity] || 1.0;
 
   const baseAnimations: Record<SpellElement, AnimationVariant> = {
     fire: {
@@ -169,7 +173,7 @@ export function createSpellEffectAnimation(element: SpellElement, intensity: str
       animate: {
         scale: [0, 1.2 * intensityMultiplier, 1],
         rotate: [0, 180, 360],
-        opacity: [0, 1, 0.8, 0]
+        opacity: [0, 1, 0.8, 0],
       },
     },
     ice: {
@@ -177,7 +181,7 @@ export function createSpellEffectAnimation(element: SpellElement, intensity: str
       animate: {
         scale: [0, 1.1 * intensityMultiplier, 1],
         y: [0, 0, 10],
-        opacity: [0, 1, 0.6, 0]
+        opacity: [0, 1, 0.6, 0],
       },
     },
     lightning: {
@@ -185,7 +189,7 @@ export function createSpellEffectAnimation(element: SpellElement, intensity: str
       animate: {
         scaleY: [0, 1.5 * intensityMultiplier, 0],
         scaleX: [1, 0.8, 1.2, 1],
-        opacity: [0, 1, 1, 0]
+        opacity: [0, 1, 1, 0],
       },
     },
     // Add more elements as needed
@@ -202,7 +206,7 @@ export function createSpellEffectAnimation(element: SpellElement, intensity: str
     ...animation,
     transition: createTransition({
       duration: ANIMATION_DURATIONS.combat.spell * intensityMultiplier,
-      ease: ANIMATION_EASINGS.easeInOut
+      ease: ANIMATION_EASINGS.easeInOut,
     }),
   };
 }
@@ -219,25 +223,34 @@ export function createScreenTransition(
   type: 'fade' | 'slide' | 'scale' = 'fade'
 ): AnimationVariant {
   const transitions = {
-    fade: direction === 'in' ? ANIMATION_PRESETS.fadeIn : {
-      initial: { opacity: 1 },
-      animate: { opacity: 0 },
-    },
-    slide: direction === 'in' ? ANIMATION_PRESETS.slideInLeft : {
-      initial: { x: 0, opacity: 1 },
-      animate: { x: -100, opacity: 0 },
-    },
-    scale: direction === 'in' ? ANIMATION_PRESETS.fadeInScale : {
-      initial: { scale: 1, opacity: 1 },
-      animate: { scale: 0.8, opacity: 0 },
-    },
+    fade:
+      direction === 'in'
+        ? ANIMATION_PRESETS.fadeIn
+        : {
+            initial: { opacity: 1 },
+            animate: { opacity: 0 },
+          },
+    slide:
+      direction === 'in'
+        ? ANIMATION_PRESETS.slideInLeft
+        : {
+            initial: { x: 0, opacity: 1 },
+            animate: { x: -100, opacity: 0 },
+          },
+    scale:
+      direction === 'in'
+        ? ANIMATION_PRESETS.fadeInScale
+        : {
+            initial: { scale: 1, opacity: 1 },
+            animate: { scale: 0.8, opacity: 0 },
+          },
   };
 
   return {
     ...transitions[type],
     transition: createTransition({
       duration: ANIMATION_DURATIONS.ui.transition,
-      ease: ANIMATION_EASINGS.easeInOut
+      ease: ANIMATION_EASINGS.easeInOut,
     }),
   };
 }
@@ -251,14 +264,14 @@ export function createButtonAnimations() {
       ...ANIMATION_PRESETS.buttonHover,
       transition: createTransition({
         duration: ANIMATION_DURATIONS.ui.hover,
-        ease: ANIMATION_EASINGS.easeOut
+        ease: ANIMATION_EASINGS.easeOut,
       }),
     },
     press: {
       ...ANIMATION_PRESETS.buttonPress,
       transition: createTransition({
         duration: ANIMATION_DURATIONS.ui.click,
-        ease: ANIMATION_EASINGS.easeInOut
+        ease: ANIMATION_EASINGS.easeInOut,
       }),
     },
   };
@@ -298,10 +311,12 @@ export function applyReducedMotion(variant: AnimationVariant): AnimationVariant 
       scale: variant.animate.scale || 1,
     },
     exit: variant.exit,
-    transition: variant.transition ? {
-      ...variant.transition,
-      duration: Math.min(variant.transition.duration || 0.3, 0.2),
-    } : undefined,
+    transition: variant.transition
+      ? {
+          ...variant.transition,
+          duration: Math.min(variant.transition.duration || 0.3, 0.2),
+        }
+      : undefined,
   };
 }
 

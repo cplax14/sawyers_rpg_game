@@ -8,7 +8,11 @@ import { DataCompressor } from '../../utils/compression';
 import { ReactGameState } from '../../types/game';
 import { User } from 'firebase/auth';
 import { CloudError, CloudErrorCode } from '../../utils/cloudErrors';
-import { validateDataIntegrity, generateChecksum, sanitizeGameStateForCloud } from '../../utils/dataIntegrity';
+import {
+  validateDataIntegrity,
+  generateChecksum,
+  sanitizeGameStateForCloud,
+} from '../../utils/dataIntegrity';
 
 // Mock Firebase modules
 jest.mock('firebase/firestore', () => ({
@@ -28,8 +32,8 @@ jest.mock('firebase/firestore', () => ({
     set: jest.fn(),
     update: jest.fn(),
     delete: jest.fn(),
-    commit: jest.fn()
-  }))
+    commit: jest.fn(),
+  })),
 }));
 
 jest.mock('firebase/storage', () => ({
@@ -38,33 +42,33 @@ jest.mock('firebase/storage', () => ({
   getDownloadURL: jest.fn(),
   deleteObject: jest.fn(),
   getMetadata: jest.fn(),
-  listAll: jest.fn()
+  listAll: jest.fn(),
 }));
 
 jest.mock('../../config/firebase', () => ({
   getFirebaseFirestore: jest.fn(() => ({ mockFirestore: true })),
-  getFirebaseStorage: jest.fn(() => ({ mockStorage: true }))
+  getFirebaseStorage: jest.fn(() => ({ mockStorage: true })),
 }));
 
 jest.mock('../../utils/compression');
 jest.mock('../../utils/retryManager', () => {
-  const retryFn = jest.fn((fn) => fn());
-  retryFn.critical = jest.fn((fn) => fn());
-  retryFn.standard = jest.fn((fn) => fn());
-  retryFn.light = jest.fn((fn) => fn());
-  retryFn.network = jest.fn((fn) => fn());
+  const retryFn = jest.fn(fn => fn());
+  retryFn.critical = jest.fn(fn => fn());
+  retryFn.standard = jest.fn(fn => fn());
+  retryFn.light = jest.fn(fn => fn());
+  retryFn.network = jest.fn(fn => fn());
 
   return {
     retry: retryFn,
     RETRY_CONFIGS: {
-      CLOUD_STORAGE: { maxAttempts: 3 }
-    }
+      CLOUD_STORAGE: { maxAttempts: 3 },
+    },
   };
 });
 jest.mock('../../utils/dataIntegrity', () => ({
   validateDataIntegrity: jest.fn(),
   generateChecksum: jest.fn(),
-  sanitizeGameStateForCloud: jest.fn((data) => data),
+  sanitizeGameStateForCloud: jest.fn(data => data),
 }));
 
 // Import mocked modules
@@ -81,7 +85,7 @@ import {
   where,
   updateDoc,
   serverTimestamp,
-  writeBatch
+  writeBatch,
 } from 'firebase/firestore';
 import {
   ref,
@@ -89,7 +93,7 @@ import {
   getDownloadURL,
   deleteObject,
   getMetadata,
-  listAll
+  listAll,
 } from 'firebase/storage';
 
 describe('CloudStorageService', () => {
@@ -105,7 +109,7 @@ describe('CloudStorageService', () => {
     // Mock user
     mockUser = {
       uid: 'test-user-123',
-      email: 'test@example.com'
+      email: 'test@example.com',
     } as User;
 
     // Mock compressor
@@ -115,7 +119,7 @@ describe('CloudStorageService', () => {
       compressGameState: jest.fn(),
       decompressGameState: jest.fn(),
       updateConfig: jest.fn(),
-      getStats: jest.fn()
+      getStats: jest.fn(),
     };
     (DataCompressor as jest.MockedClass<typeof DataCompressor>).mockImplementation(
       () => mockCompressor
@@ -127,12 +131,12 @@ describe('CloudStorageService', () => {
         name: 'TestPlayer',
         level: 10,
         experience: 1000,
-        currentArea: 'forest'
+        currentArea: 'forest',
       },
       inventory: { items: [] },
       gameFlags: {},
       story: { currentChapter: 1 },
-      version: '1.0.0'
+      version: '1.0.0',
     } as ReactGameState;
 
     cloudStorage = new CloudStorageService();
@@ -144,12 +148,12 @@ describe('CloudStorageService', () => {
       expect(DataCompressor).toHaveBeenCalledWith(
         expect.objectContaining({
           algorithm: 'lz-string',
-          level: 'balanced'
+          level: 'balanced',
         }),
         expect.objectContaining({
           includeMetadata: true,
           stripFunctions: true,
-          preserveUndefined: false
+          preserveUndefined: false,
         })
       );
     });
@@ -158,20 +162,20 @@ describe('CloudStorageService', () => {
       const customConfig = {
         compressionConfig: {
           algorithm: 'gzip' as const,
-          level: 'medium' as const
-        }
+          level: 'medium' as const,
+        },
       };
       new CloudStorageService(customConfig);
 
       expect(DataCompressor).toHaveBeenCalledWith(
         expect.objectContaining({
           algorithm: 'gzip',
-          level: 'medium'
+          level: 'medium',
         }),
         expect.objectContaining({
           includeMetadata: true,
           stripFunctions: true,
-          preserveUndefined: false
+          preserveUndefined: false,
         })
       );
     });
@@ -185,14 +189,14 @@ describe('CloudStorageService', () => {
         originalSize: 1000,
         compressedSize: 500,
         compressionRatio: 0.5,
-        metadata: { algorithm: 'lz-string' }
+        metadata: { algorithm: 'lz-string' },
       });
       mockCompressor.compressGameState.mockResolvedValue({
         compressedData: 'compressed-game-data',
         originalSize: 1000,
         compressedSize: 500,
         compressionRatio: 0.5,
-        metadata: { algorithm: 'lz-string' }
+        metadata: { algorithm: 'lz-string' },
       });
       mockCompressor.decompressGameState.mockResolvedValue(mockGameState);
 
@@ -202,10 +206,10 @@ describe('CloudStorageService', () => {
         checksum: 'mock-checksum-12345',
         errors: [],
         warnings: [],
-        corruptedFields: []
+        corruptedFields: [],
       });
       (generateChecksum as jest.Mock).mockResolvedValue('mock-checksum-12345');
-      (sanitizeGameStateForCloud as jest.Mock).mockImplementation((data) => data);
+      (sanitizeGameStateForCloud as jest.Mock).mockImplementation(data => data);
 
       // Mock Firestore operations
       (doc as jest.Mock).mockReturnValue({ id: 'mock-doc-ref' });
@@ -216,23 +220,18 @@ describe('CloudStorageService', () => {
         set: jest.fn(),
         update: jest.fn(),
         delete: jest.fn(),
-        commit: jest.fn().mockResolvedValue(undefined)
+        commit: jest.fn().mockResolvedValue(undefined),
       }));
     });
 
     it('should save game data successfully', async () => {
-      const result = await cloudStorage.saveToCloud(
-        mockUser,
-        1,
-        'Test Save',
-        mockGameState
-      );
+      const result = await cloudStorage.saveToCloud(mockUser, 1, 'Test Save', mockGameState);
 
       expect(result.success).toBe(true);
       expect(result.metadata).toMatchObject({
         operationId: expect.any(String),
         timestamp: expect.any(Number),
-        executionTime: expect.any(Number)
+        executionTime: expect.any(Number),
       });
 
       // Verify compression was called
@@ -252,17 +251,12 @@ describe('CloudStorageService', () => {
         checksum: '',
         errors: ['Invalid game state structure'],
         warnings: [],
-        corruptedFields: ['player']
+        corruptedFields: ['player'],
       });
 
       const invalidGameState = {} as ReactGameState;
 
-      const result = await cloudStorage.saveToCloud(
-        mockUser,
-        1,
-        'Invalid Save',
-        invalidGameState
-      );
+      const result = await cloudStorage.saveToCloud(mockUser, 1, 'Invalid Save', invalidGameState);
 
       expect(result.success).toBe(false);
       expect(result.error?.code).toBe('SAVE_FAILED');
@@ -271,12 +265,7 @@ describe('CloudStorageService', () => {
     it('should handle compression errors', async () => {
       mockCompressor.compress.mockRejectedValue(new Error('Compression failed'));
 
-      const result = await cloudStorage.saveToCloud(
-        mockUser,
-        1,
-        'Test Save',
-        mockGameState
-      );
+      const result = await cloudStorage.saveToCloud(mockUser, 1, 'Test Save', mockGameState);
 
       expect(result.success).toBe(false);
       expect(result.error?.code).toBe(CloudErrorCode.OPERATION_FAILED);
@@ -285,12 +274,7 @@ describe('CloudStorageService', () => {
     it('should handle Firestore errors', async () => {
       (setDoc as jest.Mock).mockRejectedValue(new Error('Firestore error'));
 
-      const result = await cloudStorage.saveToCloud(
-        mockUser,
-        1,
-        'Test Save',
-        mockGameState
-      );
+      const result = await cloudStorage.saveToCloud(mockUser, 1, 'Test Save', mockGameState);
 
       expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
@@ -299,12 +283,7 @@ describe('CloudStorageService', () => {
     it('should handle Storage upload errors', async () => {
       (uploadBytes as jest.Mock).mockRejectedValue(new Error('Upload failed'));
 
-      const result = await cloudStorage.saveToCloud(
-        mockUser,
-        1,
-        'Test Save',
-        mockGameState
-      );
+      const result = await cloudStorage.saveToCloud(mockUser, 1, 'Test Save', mockGameState);
 
       expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
@@ -317,7 +296,7 @@ describe('CloudStorageService', () => {
       mockCompressor.decompress.mockResolvedValue({
         decompressedData: JSON.stringify(mockGameState),
         originalSize: 1000,
-        metadata: { algorithm: 'lz-string' }
+        metadata: { algorithm: 'lz-string' },
       });
 
       // Mock Firestore document
@@ -331,15 +310,15 @@ describe('CloudStorageService', () => {
           dataSize: 1000,
           compressedSize: 500,
           createdAt: { toDate: () => new Date('2023-01-01') },
-          updatedAt: { toDate: () => new Date('2023-01-02') }
-        })
+          updatedAt: { toDate: () => new Date('2023-01-02') },
+        }),
       };
       (getDoc as jest.Mock).mockResolvedValue(mockDocSnapshot);
 
       // Mock Storage download
       global.fetch = jest.fn().mockResolvedValue({
         ok: true,
-        text: () => Promise.resolve('compressed-game-data')
+        text: () => Promise.resolve('compressed-game-data'),
       });
     });
 
@@ -356,7 +335,7 @@ describe('CloudStorageService', () => {
 
     it('should handle non-existent saves', async () => {
       const mockDocSnapshot = {
-        exists: () => false
+        exists: () => false,
       };
       (getDoc as jest.Mock).mockResolvedValue(mockDocSnapshot);
 
@@ -369,7 +348,7 @@ describe('CloudStorageService', () => {
     it('should handle download errors', async () => {
       global.fetch = jest.fn().mockResolvedValue({
         ok: false,
-        status: 404
+        status: 404,
       });
 
       const result = await cloudStorage.loadFromCloud(mockUser, 1);
@@ -391,7 +370,7 @@ describe('CloudStorageService', () => {
       mockCompressor.decompress.mockResolvedValue({
         decompressedData: 'invalid-json',
         originalSize: 100,
-        metadata: { algorithm: 'lz-string' }
+        metadata: { algorithm: 'lz-string' },
       });
 
       const result = await cloudStorage.loadFromCloud(mockUser, 1);
@@ -413,8 +392,8 @@ describe('CloudStorageService', () => {
               dataSize: 1000,
               compressedSize: 500,
               createdAt: { toDate: () => new Date('2023-01-01') },
-              updatedAt: { toDate: () => new Date('2023-01-02') }
-            })
+              updatedAt: { toDate: () => new Date('2023-01-02') },
+            }),
           },
           {
             id: 'save2',
@@ -424,10 +403,10 @@ describe('CloudStorageService', () => {
               dataSize: 800,
               compressedSize: 400,
               createdAt: { toDate: () => new Date('2023-01-03') },
-              updatedAt: { toDate: () => new Date('2023-01-04') }
-            })
-          }
-        ]
+              updatedAt: { toDate: () => new Date('2023-01-04') },
+            }),
+          },
+        ],
       };
       (getDocs as jest.Mock).mockResolvedValue(mockQuerySnapshot);
     });
@@ -472,8 +451,8 @@ describe('CloudStorageService', () => {
       const mockDocSnapshot = {
         exists: () => true,
         data: () => ({
-          storageUrl: 'https://storage.example.com/save1.json'
-        })
+          storageUrl: 'https://storage.example.com/save1.json',
+        }),
       };
       (getDoc as jest.Mock).mockResolvedValue(mockDocSnapshot);
       (deleteDoc as jest.Mock).mockResolvedValue(undefined);
@@ -492,7 +471,7 @@ describe('CloudStorageService', () => {
 
     it('should handle non-existent saves during deletion', async () => {
       const mockDocSnapshot = {
-        exists: () => false
+        exists: () => false,
       };
       (getDoc as jest.Mock).mockResolvedValue(mockDocSnapshot);
 
@@ -518,7 +497,7 @@ describe('CloudStorageService', () => {
         set: jest.fn(),
         update: jest.fn(),
         delete: jest.fn(),
-        commit: jest.fn().mockResolvedValue(undefined)
+        commit: jest.fn().mockResolvedValue(undefined),
       };
       (writeBatch as jest.Mock).mockReturnValue(mockBatch);
 
@@ -528,17 +507,19 @@ describe('CloudStorageService', () => {
         originalSize: 1000,
         compressedSize: 500,
         compressionRatio: 0.5,
-        metadata: { algorithm: 'lz-string' }
+        metadata: { algorithm: 'lz-string' },
       });
 
       (uploadBytes as jest.Mock).mockResolvedValue({ metadata: { size: 500 } });
-      (getDownloadURL as jest.Mock).mockResolvedValue('https://storage.example.com/batch-save.json');
+      (getDownloadURL as jest.Mock).mockResolvedValue(
+        'https://storage.example.com/batch-save.json'
+      );
     });
 
     it('should perform batch save operations', async () => {
       const saves = [
         { slotNumber: 1, saveName: 'Save 1', gameState: mockGameState },
-        { slotNumber: 2, saveName: 'Save 2', gameState: mockGameState }
+        { slotNumber: 2, saveName: 'Save 2', gameState: mockGameState },
       ];
 
       const result = await cloudStorage.batchSaveToCloud(mockUser, saves);
@@ -558,13 +539,13 @@ describe('CloudStorageService', () => {
           originalSize: 1000,
           compressedSize: 500,
           compressionRatio: 0.5,
-          metadata: { algorithm: 'lz-string' }
+          metadata: { algorithm: 'lz-string' },
         })
         .mockRejectedValueOnce(new Error('Compression failed'));
 
       const saves = [
         { slotNumber: 1, saveName: 'Save 1', gameState: mockGameState },
-        { slotNumber: 2, saveName: 'Save 2', gameState: mockGameState }
+        { slotNumber: 2, saveName: 'Save 2', gameState: mockGameState },
       ];
 
       const result = await cloudStorage.batchSaveToCloud(mockUser, saves);
@@ -582,7 +563,7 @@ describe('CloudStorageService', () => {
       const mockLocalSave = {
         gameState: mockGameState,
         saveName: 'Local Save',
-        timestamp: new Date('2023-01-05')
+        timestamp: new Date('2023-01-05'),
       };
 
       // Mock cloud save exists
@@ -590,8 +571,8 @@ describe('CloudStorageService', () => {
         exists: () => true,
         data: () => ({
           saveName: 'Cloud Save',
-          updatedAt: { toDate: () => new Date('2023-01-01') }
-        })
+          updatedAt: { toDate: () => new Date('2023-01-01') },
+        }),
       };
       (getDoc as jest.Mock).mockResolvedValue(mockDocSnapshot);
 
@@ -601,7 +582,7 @@ describe('CloudStorageService', () => {
         originalSize: 1000,
         compressedSize: 500,
         compressionRatio: 0.5,
-        metadata: { algorithm: 'lz-string' }
+        metadata: { algorithm: 'lz-string' },
       });
       (uploadBytes as jest.Mock).mockResolvedValue({ metadata: { size: 500 } });
       (getDownloadURL as jest.Mock).mockResolvedValue('https://storage.example.com/sync-save.json');
@@ -618,16 +599,11 @@ describe('CloudStorageService', () => {
     it('should convert Firebase errors to CloudErrors', async () => {
       const firebaseError = {
         code: 'permission-denied',
-        message: 'Permission denied'
+        message: 'Permission denied',
       };
       (setDoc as jest.Mock).mockRejectedValue(firebaseError);
 
-      const result = await cloudStorage.saveToCloud(
-        mockUser,
-        1,
-        'Test Save',
-        mockGameState
-      );
+      const result = await cloudStorage.saveToCloud(mockUser, 1, 'Test Save', mockGameState);
 
       expect(result.success).toBe(false);
       expect(result.error).toBeInstanceOf(Object);
@@ -639,12 +615,7 @@ describe('CloudStorageService', () => {
       timeoutError.name = 'TimeoutError';
       (setDoc as jest.Mock).mockRejectedValue(timeoutError);
 
-      const result = await cloudStorage.saveToCloud(
-        mockUser,
-        1,
-        'Test Save',
-        mockGameState
-      );
+      const result = await cloudStorage.saveToCloud(mockUser, 1, 'Test Save', mockGameState);
 
       expect(result.success).toBe(false);
       expect(result.error?.code).toBe(CloudErrorCode.OPERATION_TIMEOUT);
@@ -655,15 +626,10 @@ describe('CloudStorageService', () => {
     it('should validate game state structure', async () => {
       const invalidGameState = {
         // Missing required fields
-        someField: 'value'
+        someField: 'value',
       } as any;
 
-      const result = await cloudStorage.saveToCloud(
-        mockUser,
-        1,
-        'Invalid Save',
-        invalidGameState
-      );
+      const result = await cloudStorage.saveToCloud(mockUser, 1, 'Invalid Save', invalidGameState);
 
       expect(result.success).toBe(false);
       expect(result.error?.code).toBe(CloudErrorCode.DATA_INVALID);

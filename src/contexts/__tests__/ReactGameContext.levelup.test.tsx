@@ -22,10 +22,7 @@
 
 import React from 'react';
 import { renderHook, act } from '@testing-library/react';
-import {
-  ReactGameProvider,
-  useReactGame,
-} from '../ReactGameContext';
+import { ReactGameProvider, useReactGame } from '../ReactGameContext';
 import { ExperienceCalculator } from '../../utils/experienceUtils';
 
 // =============================================================================
@@ -280,8 +277,8 @@ describe('ReactGameContext - Multiple Level-Ups', () => {
     const finalLevel = result.current.state.player?.level || 1;
     const levelsGained = finalLevel - 1; // Started at level 1
 
-    const expectedMaxHp = initialMaxHp + (levelsGained * 10);
-    const expectedMaxMp = initialMaxMp + (levelsGained * 5);
+    const expectedMaxHp = initialMaxHp + levelsGained * 10;
+    const expectedMaxMp = initialMaxMp + levelsGained * 5;
 
     expect(result.current.state.player?.maxHp).toBe(expectedMaxHp);
     expect(result.current.state.player?.maxMp).toBe(expectedMaxMp);

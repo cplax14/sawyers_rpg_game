@@ -22,7 +22,7 @@ import {
   EQUIPMENT_COMPATIBILITY_RULES,
   ActiveEquipmentSets,
   EquipmentUpgrade,
-  ValidationResult
+  ValidationResult,
 } from '../types/inventory';
 import { PlayerStats } from '../contexts/ReactGameContext';
 
@@ -66,19 +66,22 @@ export const useEquipment = () => {
       ring1: null,
       ring2: null,
       necklace: null,
-      charm: null
+      charm: null,
     };
   }, [EQUIPMENT_CACHE_KEY]);
 
   // Save equipped items to cache
-  const saveEquippedItemsToCache = useCallback((equipped: EquipmentSet) => {
-    try {
-      localStorage.setItem(EQUIPMENT_CACHE_KEY, JSON.stringify(equipped));
-      console.log('💾 [useEquipment] Saved equipped items to cache');
-    } catch (error) {
-      console.error('❌ [useEquipment] Failed to save equipment cache:', error);
-    }
-  }, [EQUIPMENT_CACHE_KEY]);
+  const saveEquippedItemsToCache = useCallback(
+    (equipped: EquipmentSet) => {
+      try {
+        localStorage.setItem(EQUIPMENT_CACHE_KEY, JSON.stringify(equipped));
+        console.log('💾 [useEquipment] Saved equipped items to cache');
+      } catch (error) {
+        console.error('❌ [useEquipment] Failed to save equipment cache:', error);
+      }
+    },
+    [EQUIPMENT_CACHE_KEY]
+  );
 
   // Equipment state
   const [equipmentState, setEquipmentState] = useState<EquipmentState>(() => {
@@ -91,7 +94,7 @@ export const useEquipment = () => {
     // Sync with player equipment IDs from game state
     // This handles cases where equipment was changed outside this hook
     if (player && player.equipment) {
-      Object.keys(initialEquipped).forEach((slotKey) => {
+      Object.keys(initialEquipped).forEach(slotKey => {
         const slot = slotKey as EquipmentSlot;
         const itemIdFromState = player.equipment[slot];
 
@@ -122,7 +125,7 @@ export const useEquipment = () => {
       statCalculations: {} as CalculatedStats,
       activeModifiers: [],
       equipmentSets: {},
-      lastEquipTime: new Date()
+      lastEquipTime: new Date(),
     };
   });
 
@@ -138,7 +141,7 @@ export const useEquipment = () => {
     const syncedEquipment = loadEquippedItemsFromCache();
 
     // Sync with player equipment IDs
-    Object.keys(syncedEquipment).forEach((slotKey) => {
+    Object.keys(syncedEquipment).forEach(slotKey => {
       const slot = slotKey as EquipmentSlot;
       const itemId = player.equipment[slot];
 
@@ -159,9 +162,7 @@ export const useEquipment = () => {
         }
         // Last resort: look in inventory (for items being equipped from outside this hook)
         else {
-          const inventorySlot = mainInventory.items.find(
-            invSlot => invSlot.item?.id === itemId
-          );
+          const inventorySlot = mainInventory.items.find(invSlot => invSlot.item?.id === itemId);
           if (inventorySlot?.item) {
             syncedEquipment[slot] = inventorySlot.item;
           }
@@ -170,7 +171,7 @@ export const useEquipment = () => {
     });
 
     // Only update if equipment actually changed to prevent infinite loops
-    const hasChanges = Object.keys(syncedEquipment).some((slotKey) => {
+    const hasChanges = Object.keys(syncedEquipment).some(slotKey => {
       const slot = slotKey as EquipmentSlot;
       return syncedEquipment[slot]?.id !== equipmentState.equipped[slot]?.id;
     });
@@ -179,12 +180,19 @@ export const useEquipment = () => {
       console.log('🔄 [useEquipment] Syncing equipment state with game state');
       setEquipmentState(prev => ({
         ...prev,
-        equipped: syncedEquipment
+        equipped: syncedEquipment,
       }));
       // Save to cache after sync
       saveEquippedItemsToCache(syncedEquipment);
     }
-  }, [gameState.state.player?.id, gameState.state.player?.equipment, inventoryState.containers.main, equipmentState.equipped, loadEquippedItemsFromCache, saveEquippedItemsToCache]);
+  }, [
+    gameState.state.player?.id,
+    gameState.state.player?.equipment,
+    inventoryState.containers.main,
+    equipmentState.equipped,
+    loadEquippedItemsFromCache,
+    saveEquippedItemsToCache,
+  ]);
 
   // Calculate base stats from level and class
   const getBaseStats = useCallback((): PlayerStats => {
@@ -196,20 +204,49 @@ export const useEquipment = () => {
         magicAttack: 10,
         magicDefense: 10,
         speed: 10,
-        accuracy: 10
+        accuracy: 10,
       };
     }
 
     // Base stats calculation based on level and class
     const level = player.level;
     const classModifiers = {
-      warrior: { attack: 1.2, defense: 1.3, magicAttack: 0.8, magicDefense: 1.0, speed: 0.9, accuracy: 1.0 },
-      mage: { attack: 0.8, defense: 0.9, magicAttack: 1.4, magicDefense: 1.2, speed: 1.0, accuracy: 1.1 },
-      archer: { attack: 1.1, defense: 0.8, magicAttack: 0.9, magicDefense: 0.9, speed: 1.3, accuracy: 1.4 },
-      rogue: { attack: 1.0, defense: 0.9, magicAttack: 0.7, magicDefense: 0.8, speed: 1.4, accuracy: 1.2 }
+      warrior: {
+        attack: 1.2,
+        defense: 1.3,
+        magicAttack: 0.8,
+        magicDefense: 1.0,
+        speed: 0.9,
+        accuracy: 1.0,
+      },
+      mage: {
+        attack: 0.8,
+        defense: 0.9,
+        magicAttack: 1.4,
+        magicDefense: 1.2,
+        speed: 1.0,
+        accuracy: 1.1,
+      },
+      archer: {
+        attack: 1.1,
+        defense: 0.8,
+        magicAttack: 0.9,
+        magicDefense: 0.9,
+        speed: 1.3,
+        accuracy: 1.4,
+      },
+      rogue: {
+        attack: 1.0,
+        defense: 0.9,
+        magicAttack: 0.7,
+        magicDefense: 0.8,
+        speed: 1.4,
+        accuracy: 1.2,
+      },
     };
 
-    const modifier = classModifiers[player.class as keyof typeof classModifiers] || classModifiers.warrior;
+    const modifier =
+      classModifiers[player.class as keyof typeof classModifiers] || classModifiers.warrior;
 
     return {
       attack: Math.floor((10 + level * 2) * modifier.attack),
@@ -217,7 +254,7 @@ export const useEquipment = () => {
       magicAttack: Math.floor((10 + level * 2) * modifier.magicAttack),
       magicDefense: Math.floor((10 + level * 2) * modifier.magicDefense),
       speed: Math.floor((10 + level * 2) * modifier.speed),
-      accuracy: Math.floor((10 + level * 2) * modifier.accuracy)
+      accuracy: Math.floor((10 + level * 2) * modifier.accuracy),
     };
   }, [gameState.state.player?.id, gameState.state.player?.level, gameState.state.player?.class]);
 
@@ -235,7 +272,7 @@ export const useEquipment = () => {
       critical: 0,
       criticalDamage: 0,
       evasion: 0,
-      resistance: 0
+      resistance: 0,
     };
 
     Object.values(equipmentState.equipped).forEach(item => {
@@ -280,21 +317,23 @@ export const useEquipment = () => {
       const percentage = 100; // Percentage modifiers (to be implemented)
 
       // Final calculation: base + equipment + level bonus + temporary buffs
-      const finalValue = Math.floor((baseStat + equipmentBonus + levelBonus + temporaryBonus) * (percentage / 100));
+      const finalValue = Math.floor(
+        (baseStat + equipmentBonus + levelBonus + temporaryBonus) * (percentage / 100)
+      );
 
       const breakdown: any[] = [
         {
           source: 'Base',
           type: 'base' as const,
           value: baseStat,
-          description: 'Base character stats from level and class'
+          description: 'Base character stats from level and class',
         },
         {
           source: 'Equipment',
           type: 'equipment' as const,
           value: equipmentBonus,
-          description: 'Bonuses from equipped items'
-        }
+          description: 'Bonuses from equipped items',
+        },
       ];
 
       if (levelBonus > 0) {
@@ -302,7 +341,7 @@ export const useEquipment = () => {
           source: 'Level Bonus',
           type: 'level' as const,
           value: levelBonus,
-          description: 'Additional percentage bonus from level'
+          description: 'Additional percentage bonus from level',
         });
       }
 
@@ -313,7 +352,7 @@ export const useEquipment = () => {
         temporaryBonus,
         percentage,
         finalValue,
-        breakdown
+        breakdown,
       };
     };
 
@@ -329,315 +368,498 @@ export const useEquipment = () => {
       // Resource stats (health and mana)
       health: createStatCalculation(
         100 + playerLevel * 10, // Base: 100 + 10 per level
-        equipmentStats.hp || 0  // Equipment can provide HP bonuses
+        equipmentStats.hp || 0 // Equipment can provide HP bonuses
       ),
       mana: createStatCalculation(
-        50 + playerLevel * 5,   // Base: 50 + 5 per level
-        equipmentStats.mp || 0  // Equipment can provide MP bonuses
+        50 + playerLevel * 5, // Base: 50 + 5 per level
+        equipmentStats.mp || 0 // Equipment can provide MP bonuses
       ),
 
       // Derived combat stats
       criticalChance: createStatCalculation(
-        5,  // Base 5% critical chance
-        equipmentStats.critical || 0  // Equipment can provide critical chance
+        5, // Base 5% critical chance
+        equipmentStats.critical || 0 // Equipment can provide critical chance
       ),
       criticalDamage: createStatCalculation(
-        150,  // Base 150% critical damage multiplier
+        150, // Base 150% critical damage multiplier
         equipmentStats.criticalDamage || 0
       ),
       evasion: createStatCalculation(
-        Math.floor(baseStats.speed / 2),  // Evasion derived from speed
+        Math.floor(baseStats.speed / 2), // Evasion derived from speed
         equipmentStats.evasion || 0
       ),
       resistance: createStatCalculation(
-        Math.floor(baseStats.magicDefense / 2),  // Resistance derived from magic defense
+        Math.floor(baseStats.magicDefense / 2), // Resistance derived from magic defense
         equipmentStats.resistance || 0
-      )
+      ),
     };
   }, [getBaseStats, calculateEquipmentStats, gameState.state.player?.level]);
 
   // Check equipment compatibility
-  const checkCompatibility = useCallback((
-    item: EnhancedItem,
-    slot: EquipmentSlot
-  ): EquipmentCompatibility => {
-    const player = gameState.state.player;
-    const reasons: any[] = [];
-    const warnings: any[] = [];
-    const suggestions: string[] = [];
+  const checkCompatibility = useCallback(
+    (item: EnhancedItem, slot: EquipmentSlot): EquipmentCompatibility => {
+      const player = gameState.state.player;
+      const reasons: any[] = [];
+      const warnings: any[] = [];
+      const suggestions: string[] = [];
 
-    if (!player) {
-      reasons.push({
-        type: 'class_requirement',
-        satisfied: false,
-        current: 'none',
-        required: 'any',
-        description: 'No player character found'
-      });
-      return { canEquip: false, reasons, warnings, suggestions };
-    }
+      if (!player) {
+        reasons.push({
+          type: 'class_requirement',
+          satisfied: false,
+          current: 'none',
+          required: 'any',
+          description: 'No player character found',
+        });
+        return { canEquip: false, reasons, warnings, suggestions };
+      }
 
-    // Check level requirement
-    if (item.levelRequirement && player.level < item.levelRequirement) {
-      reasons.push({
-        type: 'level_requirement',
-        satisfied: false,
-        current: player.level,
-        required: item.levelRequirement,
-        description: `Requires level ${item.levelRequirement}`
-      });
-    }
+      // Check level requirement
+      if (item.levelRequirement && player.level < item.levelRequirement) {
+        reasons.push({
+          type: 'level_requirement',
+          satisfied: false,
+          current: player.level,
+          required: item.levelRequirement,
+          description: `Requires level ${item.levelRequirement}`,
+        });
+      }
 
-    // Check class requirement
-    if (item.classRequirement && !item.classRequirement.includes(player.class)) {
-      reasons.push({
-        type: 'class_requirement',
-        satisfied: false,
-        current: player.class,
-        required: item.classRequirement,
-        description: `Requires class: ${item.classRequirement.join(', ')}`
-      });
-    }
+      // Check class requirement
+      if (item.classRequirement && !item.classRequirement.includes(player.class)) {
+        reasons.push({
+          type: 'class_requirement',
+          satisfied: false,
+          current: player.class,
+          required: item.classRequirement,
+          description: `Requires class: ${item.classRequirement.join(', ')}`,
+        });
+      }
 
-    // Check stat requirements
-    const currentStats = calculateFinalStats();
-    const statRequirements = EQUIPMENT_COMPATIBILITY_RULES.statRequirements[item.equipmentSubtype as keyof typeof EQUIPMENT_COMPATIBILITY_RULES.statRequirements];
+      // Check stat requirements
+      const currentStats = calculateFinalStats();
+      const statRequirements =
+        EQUIPMENT_COMPATIBILITY_RULES.statRequirements[
+          item.equipmentSubtype as keyof typeof EQUIPMENT_COMPATIBILITY_RULES.statRequirements
+        ];
 
-    if (statRequirements) {
-      Object.entries(statRequirements).forEach(([stat, required]) => {
-        const current = currentStats[stat as keyof CalculatedStats]?.finalValue || 0;
-        if (current < required) {
-          reasons.push({
-            type: 'stat_requirement',
-            satisfied: false,
-            current,
-            required,
-            description: `Requires ${stat}: ${required} (have ${current})`
+      if (statRequirements) {
+        Object.entries(statRequirements).forEach(([stat, required]) => {
+          const current = currentStats[stat as keyof CalculatedStats]?.finalValue || 0;
+          if (current < required) {
+            reasons.push({
+              type: 'stat_requirement',
+              satisfied: false,
+              current,
+              required,
+              description: `Requires ${stat}: ${required} (have ${current})`,
+            });
+          }
+        });
+      }
+
+      // Check slot compatibility
+      if (item.equipmentSlot !== slot) {
+        reasons.push({
+          type: 'slot_conflict',
+          satisfied: false,
+          current: slot,
+          required: item.equipmentSlot,
+          description: `Item cannot be equipped in ${slot} slot`,
+        });
+      }
+
+      // Check for stat decreases
+      const currentItem = equipmentState.equipped[slot];
+      if (currentItem) {
+        const comparison = compareEquipment(currentItem, item);
+        if (comparison.netScore < 0) {
+          warnings.push({
+            type: 'stat_decrease',
+            severity: 'medium' as const,
+            description: 'This item may decrease overall stats',
+            affectedStats: comparison.downgrades,
           });
         }
-      });
-    }
-
-    // Check slot compatibility
-    if (item.equipmentSlot !== slot) {
-      reasons.push({
-        type: 'slot_conflict',
-        satisfied: false,
-        current: slot,
-        required: item.equipmentSlot,
-        description: `Item cannot be equipped in ${slot} slot`
-      });
-    }
-
-    // Check for stat decreases
-    const currentItem = equipmentState.equipped[slot];
-    if (currentItem) {
-      const comparison = compareEquipment(currentItem, item);
-      if (comparison.netScore < 0) {
-        warnings.push({
-          type: 'stat_decrease',
-          severity: 'medium' as const,
-          description: 'This item may decrease overall stats',
-          affectedStats: comparison.downgrades
-        });
       }
-    }
 
-    // Check two-handed weapon conflicts (FR-7)
-    // If equipping a two-handed weapon, warn if a shield is equipped
-    if ((item as any).twoHanded && slot === 'weapon') {
-      const equippedShield = equipmentState.equipped.shield;
-      if (equippedShield) {
-        warnings.push({
-          type: 'two_handed_conflict',
-          severity: 'high' as const,
-          description: 'Equipping this two-handed weapon will unequip your shield',
-          affectedSlots: ['shield']
-        });
-      }
-    }
-
-    // If equipping a shield, warn if a two-handed weapon is equipped
-    if (slot === 'shield') {
-      const equippedWeapon = equipmentState.equipped.weapon;
-      if (equippedWeapon && (equippedWeapon as any).twoHanded) {
-        warnings.push({
-          type: 'two_handed_conflict',
-          severity: 'high' as const,
-          description: 'Cannot equip shield while using a two-handed weapon',
-          affectedSlots: ['weapon']
-        });
-        // This should prevent equipping
-        reasons.push({
-          type: 'two_handed_conflict',
-          satisfied: false,
-          current: 'two-handed weapon equipped',
-          required: 'one-handed weapon or no weapon',
-          description: 'Cannot equip shield while using a two-handed weapon'
-        });
-      }
-    }
-
-    const canEquip = reasons.every(reason => reason.satisfied !== false);
-
-    // Add suggestions
-    if (!canEquip) {
-      if (reasons.some(r => r.type === 'level_requirement')) {
-        suggestions.push('Level up to meet requirements');
-      }
-      if (reasons.some(r => r.type === 'stat_requirement')) {
-        suggestions.push('Improve stats with other equipment or training');
-      }
-    }
-
-    return { canEquip, reasons, warnings, suggestions };
-  }, [gameState.state.player?.id, gameState.state.player?.level, gameState.state.player?.class, equipmentState.equipped, calculateFinalStats]);
-
-  // Compare two pieces of equipment
-  const compareEquipment = useCallback((
-    currentItem: EnhancedItem | null,
-    newItem: EnhancedItem
-  ): EquipmentComparison => {
-    const statChanges: Partial<PlayerStats> = {};
-    const improvements: string[] = [];
-    const downgrades: string[] = [];
-
-    // Compare stat modifiers
-    const currentStats = currentItem?.statModifiers || {};
-    const newStats = newItem.statModifiers || {};
-
-    const allStats = new Set([...Object.keys(currentStats), ...Object.keys(newStats)]);
-
-    allStats.forEach(stat => {
-      const currentValue = currentStats[stat as keyof PlayerStats] || 0;
-      const newValue = newStats[stat as keyof PlayerStats] || 0;
-      const change = newValue - currentValue;
-
-      if (change !== 0) {
-        statChanges[stat as keyof PlayerStats] = change;
-
-        if (change > 0) {
-          improvements.push(`+${change} ${stat}`);
-        } else {
-          downgrades.push(`${change} ${stat}`);
+      // Check two-handed weapon conflicts (FR-7)
+      // If equipping a two-handed weapon, warn if a shield is equipped
+      if ((item as any).twoHanded && slot === 'weapon') {
+        const equippedShield = equipmentState.equipped.shield;
+        if (equippedShield) {
+          warnings.push({
+            type: 'two_handed_conflict',
+            severity: 'high' as const,
+            description: 'Equipping this two-handed weapon will unequip your shield',
+            affectedSlots: ['shield'],
+          });
         }
       }
-    });
 
-    // Calculate net score (simple sum of stat changes)
-    const netScore = Object.values(statChanges).reduce((sum, change) => sum + (change || 0), 0);
+      // If equipping a shield, warn if a two-handed weapon is equipped
+      if (slot === 'shield') {
+        const equippedWeapon = equipmentState.equipped.weapon;
+        if (equippedWeapon && (equippedWeapon as any).twoHanded) {
+          warnings.push({
+            type: 'two_handed_conflict',
+            severity: 'high' as const,
+            description: 'Cannot equip shield while using a two-handed weapon',
+            affectedSlots: ['weapon'],
+          });
+          // This should prevent equipping
+          reasons.push({
+            type: 'two_handed_conflict',
+            satisfied: false,
+            current: 'two-handed weapon equipped',
+            required: 'one-handed weapon or no weapon',
+            description: 'Cannot equip shield while using a two-handed weapon',
+          });
+        }
+      }
 
-    return {
-      currentItem,
-      newItem,
-      statChanges,
-      improvements,
-      downgrades,
-      netScore
-    };
-  }, []);
+      const canEquip = reasons.every(reason => reason.satisfied !== false);
+
+      // Add suggestions
+      if (!canEquip) {
+        if (reasons.some(r => r.type === 'level_requirement')) {
+          suggestions.push('Level up to meet requirements');
+        }
+        if (reasons.some(r => r.type === 'stat_requirement')) {
+          suggestions.push('Improve stats with other equipment or training');
+        }
+      }
+
+      return { canEquip, reasons, warnings, suggestions };
+    },
+    [
+      gameState.state.player?.id,
+      gameState.state.player?.level,
+      gameState.state.player?.class,
+      equipmentState.equipped,
+      calculateFinalStats,
+    ]
+  );
+
+  // Compare two pieces of equipment
+  const compareEquipment = useCallback(
+    (currentItem: EnhancedItem | null, newItem: EnhancedItem): EquipmentComparison => {
+      const statChanges: Partial<PlayerStats> = {};
+      const improvements: string[] = [];
+      const downgrades: string[] = [];
+
+      // Compare stat modifiers
+      const currentStats = currentItem?.statModifiers || {};
+      const newStats = newItem.statModifiers || {};
+
+      const allStats = new Set([...Object.keys(currentStats), ...Object.keys(newStats)]);
+
+      allStats.forEach(stat => {
+        const currentValue = currentStats[stat as keyof PlayerStats] || 0;
+        const newValue = newStats[stat as keyof PlayerStats] || 0;
+        const change = newValue - currentValue;
+
+        if (change !== 0) {
+          statChanges[stat as keyof PlayerStats] = change;
+
+          if (change > 0) {
+            improvements.push(`+${change} ${stat}`);
+          } else {
+            downgrades.push(`${change} ${stat}`);
+          }
+        }
+      });
+
+      // Calculate net score (simple sum of stat changes)
+      const netScore = Object.values(statChanges).reduce((sum, change) => sum + (change || 0), 0);
+
+      return {
+        currentItem,
+        newItem,
+        statChanges,
+        improvements,
+        downgrades,
+        netScore,
+      };
+    },
+    []
+  );
 
   // Equip item
-  const equipItem = useCallback(async (
-    itemId: string,
-    slot: EquipmentSlot
-  ): Promise<EquipItemResult> => {
-    try {
-      // Look up the item by ID from inventory
-      const mainInventory = inventoryState.containers.main;
-      if (!mainInventory) {
+  const equipItem = useCallback(
+    async (itemId: string, slot: EquipmentSlot): Promise<EquipItemResult> => {
+      try {
+        // Look up the item by ID from inventory
+        const mainInventory = inventoryState.containers.main;
+        if (!mainInventory) {
+          return {
+            success: false,
+            equipped: null,
+            unequipped: null,
+            statChanges: {},
+            message: 'Inventory not available',
+            errors: ['Cannot access inventory'],
+          };
+        }
+
+        const inventorySlot = mainInventory.items.find(invSlot => invSlot.item?.id === itemId);
+        const item = inventorySlot?.item;
+
+        if (!item) {
+          return {
+            success: false,
+            equipped: null,
+            unequipped: null,
+            statChanges: {},
+            message: 'Item not found',
+            errors: ['Item not found in inventory'],
+          };
+        }
+
+        // Determine target slot
+        const targetSlot = slot;
+        if (!targetSlot) {
+          return {
+            success: false,
+            equipped: null,
+            unequipped: null,
+            statChanges: {},
+            message: 'Item cannot be equipped',
+            errors: ['Item has no valid equipment slot'],
+          };
+        }
+
+        // Check compatibility
+        const compatibility = checkCompatibility(item, targetSlot);
+        if (!compatibility.canEquip) {
+          return {
+            success: false,
+            equipped: null,
+            unequipped: null,
+            statChanges: {},
+            message: 'Cannot equip item',
+            errors: compatibility.reasons.map(r => r.description),
+          };
+        }
+
+        // Get currently equipped item in the target slot
+        const currentItem = equipmentState.equipped[targetSlot];
+
+        // Calculate stat changes from the equipment swap
+        const comparison = compareEquipment(currentItem, item);
+
+        /**
+         * AUTOMATIC SLOT MANAGEMENT (US-5)
+         * When equipping a new item to a slot that already has an item:
+         * 1. Validate inventory space for the swap (if replacing)
+         * 2. Remove the new item from inventory
+         * 3. Update equipment state (automatically replacing old item)
+         * 4. Add the old item back to inventory
+         *
+         * This order prevents issues if the new item and old item are the same,
+         * and ensures the swap is atomic from the player's perspective.
+         */
+
+        // Step 1: Validate inventory space if we're replacing an item
+        // TASK 4.6: Only count BAG items (non-equipped) toward capacity
+        // When replacing, we remove 1 item and add 1 item back, so net change is 0
+        // However, if inventory is at max capacity, we still need to ensure the swap can complete
+        if (currentItem) {
+          // Count only items in the bag (exclude equipped items)
+          const currentBagItemCount = mainInventory.items.reduce((total, slot) => {
+            if (!slot.item) return total;
+
+            // Check if this item is currently equipped
+            const equipment = gameState.state.player?.equipment;
+            const isEquipped =
+              equipment &&
+              [
+                equipment.weapon,
+                equipment.armor,
+                equipment.accessory,
+                equipment.helmet,
+                equipment.necklace,
+                equipment.shield,
+                equipment.gloves,
+                equipment.boots,
+                equipment.ring1,
+                equipment.ring2,
+                equipment.charm,
+              ].includes(slot.item.id);
+
+            // Skip equipped items when counting bag capacity
+            if (isEquipped) return total;
+
+            return total + slot.quantity;
+          }, 0);
+
+          const MAX_INVENTORY_CAPACITY = 10000;
+
+          // After removing the new item, we'll have currentBagItemCount - 1
+          // We need to be able to add the old item back, so check if we'd exceed capacity
+          // Since we're doing a swap (remove 1, add 1), this should always work
+          // But we check as a safety measure for edge cases
+          if (currentBagItemCount - 1 + 1 > MAX_INVENTORY_CAPACITY) {
+            return {
+              success: false,
+              equipped: null,
+              unequipped: null,
+              statChanges: {},
+              message: `Inventory is full (${MAX_INVENTORY_CAPACITY}/${MAX_INVENTORY_CAPACITY}). Cannot swap equipment.`,
+              errors: [`Inventory capacity reached. Free up space before swapping equipment.`],
+            };
+          }
+        }
+
+        // Step 2: Remove new item from inventory
+        const removeResult = await removeItem(item.id, 1);
+        if (!removeResult) {
+          return {
+            success: false,
+            equipped: null,
+            unequipped: null,
+            statChanges: {},
+            message: 'Failed to remove item from inventory',
+            errors: ['Could not remove item from inventory'],
+          };
+        }
+
+        // Step 2: Update equipment state (atomic swap)
+        const newEquipped = {
+          ...equipmentState.equipped,
+          [targetSlot]: item,
+        };
+
+        setEquipmentState(prev => ({
+          ...prev,
+          equipped: newEquipped,
+          lastEquipTime: new Date(),
+        }));
+
+        // Save to cache for persistence across remounts
+        saveEquippedItemsToCache(newEquipped);
+
+        // Step 3: If there was an old item, add it back to inventory
+        if (currentItem) {
+          const addResult = await addItem(currentItem, 1);
+          if (!addResult) {
+            // If we fail to add the old item back to inventory, we have a problem
+            // The equipment swap already happened, so we need to log this as an error
+            // but still report success for the equip operation
+            console.error('Failed to add unequipped item to inventory:', currentItem.name);
+            return {
+              success: true,
+              equipped: item,
+              unequipped: currentItem,
+              statChanges: comparison.statChanges,
+              message: `Equipped ${item.name}`,
+              errors: [
+                `Warning: Could not return ${currentItem.name} to inventory. Contact support if item is missing.`,
+              ],
+            };
+          }
+        }
+
+        // Update game state for backward compatibility
+        if (gameState.state.player) {
+          gameState.dispatch({
+            type: 'EQUIP_ITEM',
+            payload: { slot: targetSlot, itemId: item.id },
+          });
+        }
+
+        // Success with appropriate message
+        const message = currentItem
+          ? `Equipped ${item.name} (replaced ${currentItem.name})`
+          : `Equipped ${item.name}`;
+
+        return {
+          success: true,
+          equipped: item,
+          unequipped: currentItem,
+          statChanges: comparison.statChanges,
+          message,
+          errors: [],
+        };
+      } catch (error) {
         return {
           success: false,
           equipped: null,
           unequipped: null,
           statChanges: {},
-          message: 'Inventory not available',
-          errors: ['Cannot access inventory']
+          message: 'Failed to equip item',
+          errors: [error instanceof Error ? error.message : 'Unknown error'],
         };
       }
+    },
+    [
+      equipmentState.equipped,
+      checkCompatibility,
+      compareEquipment,
+      addItem,
+      removeItem,
+      gameState.dispatch,
+      gameState.state.player?.id,
+      inventoryState,
+    ]
+  );
 
-      const inventorySlot = mainInventory.items.find(invSlot => invSlot.item?.id === itemId);
-      const item = inventorySlot?.item;
+  // Unequip item
+  const unequipItem = useCallback(
+    async (slot: EquipmentSlot): Promise<EquipItemResult> => {
+      try {
+        const currentItem = equipmentState.equipped[slot];
+        if (!currentItem) {
+          return {
+            success: false,
+            equipped: null,
+            unequipped: null,
+            statChanges: {},
+            message: 'No item equipped in this slot',
+            errors: [],
+          };
+        }
 
-      if (!item) {
-        return {
-          success: false,
-          equipped: null,
-          unequipped: null,
-          statChanges: {},
-          message: 'Item not found',
-          errors: ['Item not found in inventory']
-        };
-      }
+        /**
+         * INVENTORY SPACE VALIDATION (US-7)
+         * Check if there is space in inventory before unequipping
+         * Maximum inventory capacity: 10,000 items
+         * With such a high limit, this is primarily a safety check
+         */
+        const mainInventory = inventoryState.containers.main;
+        if (!mainInventory) {
+          return {
+            success: false,
+            equipped: null,
+            unequipped: null,
+            statChanges: {},
+            message: 'Inventory not available',
+            errors: ['Cannot access inventory'],
+          };
+        }
 
-      // Determine target slot
-      const targetSlot = slot;
-      if (!targetSlot) {
-        return {
-          success: false,
-          equipped: null,
-          unequipped: null,
-          statChanges: {},
-          message: 'Item cannot be equipped',
-          errors: ['Item has no valid equipment slot']
-        };
-      }
-
-      // Check compatibility
-      const compatibility = checkCompatibility(item, targetSlot);
-      if (!compatibility.canEquip) {
-        return {
-          success: false,
-          equipped: null,
-          unequipped: null,
-          statChanges: {},
-          message: 'Cannot equip item',
-          errors: compatibility.reasons.map(r => r.description)
-        };
-      }
-
-      // Get currently equipped item in the target slot
-      const currentItem = equipmentState.equipped[targetSlot];
-
-      // Calculate stat changes from the equipment swap
-      const comparison = compareEquipment(currentItem, item);
-
-      /**
-       * AUTOMATIC SLOT MANAGEMENT (US-5)
-       * When equipping a new item to a slot that already has an item:
-       * 1. Validate inventory space for the swap (if replacing)
-       * 2. Remove the new item from inventory
-       * 3. Update equipment state (automatically replacing old item)
-       * 4. Add the old item back to inventory
-       *
-       * This order prevents issues if the new item and old item are the same,
-       * and ensures the swap is atomic from the player's perspective.
-       */
-
-      // Step 1: Validate inventory space if we're replacing an item
-      // TASK 4.6: Only count BAG items (non-equipped) toward capacity
-      // When replacing, we remove 1 item and add 1 item back, so net change is 0
-      // However, if inventory is at max capacity, we still need to ensure the swap can complete
-      if (currentItem) {
-        // Count only items in the bag (exclude equipped items)
+        // TASK 4.6: Calculate BAG size (exclude equipped items from capacity)
+        // Only count items in the bag, not items currently equipped
         const currentBagItemCount = mainInventory.items.reduce((total, slot) => {
           if (!slot.item) return total;
 
           // Check if this item is currently equipped
           const equipment = gameState.state.player?.equipment;
-          const isEquipped = equipment && [
-            equipment.weapon,
-            equipment.armor,
-            equipment.accessory,
-            equipment.helmet,
-            equipment.necklace,
-            equipment.shield,
-            equipment.gloves,
-            equipment.boots,
-            equipment.ring1,
-            equipment.ring2,
-            equipment.charm
-          ].includes(slot.item.id);
+          const isEquipped =
+            equipment &&
+            [
+              equipment.weapon,
+              equipment.armor,
+              equipment.accessory,
+              equipment.helmet,
+              equipment.necklace,
+              equipment.shield,
+              equipment.gloves,
+              equipment.boots,
+              equipment.ring1,
+              equipment.ring2,
+              equipment.charm,
+            ].includes(slot.item.id);
 
           // Skip equipped items when counting bag capacity
           if (isEquipped) return total;
@@ -645,265 +867,110 @@ export const useEquipment = () => {
           return total + slot.quantity;
         }, 0);
 
+        // Maximum inventory capacity (very high to not restrict players)
         const MAX_INVENTORY_CAPACITY = 10000;
 
-        // After removing the new item, we'll have currentBagItemCount - 1
-        // We need to be able to add the old item back, so check if we'd exceed capacity
-        // Since we're doing a swap (remove 1, add 1), this should always work
-        // But we check as a safety measure for edge cases
-        if (currentBagItemCount - 1 + 1 > MAX_INVENTORY_CAPACITY) {
+        // Check if adding the unequipped item would exceed bag capacity
+        if (currentBagItemCount >= MAX_INVENTORY_CAPACITY) {
           return {
             success: false,
             equipped: null,
             unequipped: null,
             statChanges: {},
-            message: `Inventory is full (${MAX_INVENTORY_CAPACITY}/${MAX_INVENTORY_CAPACITY}). Cannot swap equipment.`,
-            errors: [`Inventory capacity reached. Free up space before swapping equipment.`]
+            message: `Inventory is full (${MAX_INVENTORY_CAPACITY}/${MAX_INVENTORY_CAPACITY}). Cannot unequip item.`,
+            errors: [`Inventory capacity reached. Free up space before unequipping items.`],
           };
         }
-      }
 
-      // Step 2: Remove new item from inventory
-      const removeResult = await removeItem(item.id, 1);
-      if (!removeResult) {
-        return {
-          success: false,
-          equipped: null,
-          unequipped: null,
-          statChanges: {},
-          message: 'Failed to remove item from inventory',
-          errors: ['Could not remove item from inventory']
-        };
-      }
-
-      // Step 2: Update equipment state (atomic swap)
-      const newEquipped = {
-        ...equipmentState.equipped,
-        [targetSlot]: item
-      };
-
-      setEquipmentState(prev => ({
-        ...prev,
-        equipped: newEquipped,
-        lastEquipTime: new Date()
-      }));
-
-      // Save to cache for persistence across remounts
-      saveEquippedItemsToCache(newEquipped);
-
-      // Step 3: If there was an old item, add it back to inventory
-      if (currentItem) {
+        // Add item back to inventory
         const addResult = await addItem(currentItem, 1);
         if (!addResult) {
-          // If we fail to add the old item back to inventory, we have a problem
-          // The equipment swap already happened, so we need to log this as an error
-          // but still report success for the equip operation
-          console.error('Failed to add unequipped item to inventory:', currentItem.name);
           return {
-            success: true,
-            equipped: item,
-            unequipped: currentItem,
-            statChanges: comparison.statChanges,
-            message: `Equipped ${item.name}`,
-            errors: [`Warning: Could not return ${currentItem.name} to inventory. Contact support if item is missing.`]
+            success: false,
+            equipped: null,
+            unequipped: null,
+            statChanges: {},
+            message: 'Failed to add item to inventory',
+            errors: ['Could not add item to inventory'],
           };
         }
-      }
 
-      // Update game state for backward compatibility
-      if (gameState.state.player) {
-        gameState.dispatch({
-          type: 'EQUIP_ITEM',
-          payload: { slot: targetSlot, itemId: item.id }
-        });
-      }
+        // Update equipment state
+        const newEquipped = {
+          ...equipmentState.equipped,
+          [slot]: null,
+        };
 
-      // Success with appropriate message
-      const message = currentItem
-        ? `Equipped ${item.name} (replaced ${currentItem.name})`
-        : `Equipped ${item.name}`;
+        setEquipmentState(prev => ({
+          ...prev,
+          equipped: newEquipped,
+          lastEquipTime: new Date(),
+        }));
 
-      return {
-        success: true,
-        equipped: item,
-        unequipped: currentItem,
-        statChanges: comparison.statChanges,
-        message,
-        errors: []
-      };
+        // Save to cache for persistence across remounts
+        saveEquippedItemsToCache(newEquipped);
 
-    } catch (error) {
-      return {
-        success: false,
-        equipped: null,
-        unequipped: null,
-        statChanges: {},
-        message: 'Failed to equip item',
-        errors: [error instanceof Error ? error.message : 'Unknown error']
-      };
-    }
-  }, [equipmentState.equipped, checkCompatibility, compareEquipment, addItem, removeItem, gameState.dispatch, gameState.state.player?.id, inventoryState]);
+        // Update game state for backward compatibility
+        if (gameState.state.player) {
+          gameState.dispatch({
+            type: 'UNEQUIP_ITEM',
+            payload: { slot },
+          });
+        }
 
-  // Unequip item
-  const unequipItem = useCallback(async (slot: EquipmentSlot): Promise<EquipItemResult> => {
-    try {
-      const currentItem = equipmentState.equipped[slot];
-      if (!currentItem) {
+        // Calculate stat changes (loss of stats)
+        const statChanges: Partial<PlayerStats> = {};
+        if (currentItem.statModifiers) {
+          Object.entries(currentItem.statModifiers).forEach(([stat, value]) => {
+            if (value !== undefined) {
+              statChanges[stat as keyof PlayerStats] = -value;
+            }
+          });
+        }
+
+        return {
+          success: true,
+          equipped: null,
+          unequipped: currentItem,
+          statChanges,
+          message: `Unequipped ${currentItem.name}`,
+          errors: [],
+        };
+      } catch (error) {
         return {
           success: false,
           equipped: null,
           unequipped: null,
           statChanges: {},
-          message: 'No item equipped in this slot',
-          errors: []
+          message: 'Failed to unequip item',
+          errors: [error instanceof Error ? error.message : 'Unknown error'],
         };
       }
-
-      /**
-       * INVENTORY SPACE VALIDATION (US-7)
-       * Check if there is space in inventory before unequipping
-       * Maximum inventory capacity: 10,000 items
-       * With such a high limit, this is primarily a safety check
-       */
-      const mainInventory = inventoryState.containers.main;
-      if (!mainInventory) {
-        return {
-          success: false,
-          equipped: null,
-          unequipped: null,
-          statChanges: {},
-          message: 'Inventory not available',
-          errors: ['Cannot access inventory']
-        };
-      }
-
-      // TASK 4.6: Calculate BAG size (exclude equipped items from capacity)
-      // Only count items in the bag, not items currently equipped
-      const currentBagItemCount = mainInventory.items.reduce((total, slot) => {
-        if (!slot.item) return total;
-
-        // Check if this item is currently equipped
-        const equipment = gameState.state.player?.equipment;
-        const isEquipped = equipment && [
-          equipment.weapon,
-          equipment.armor,
-          equipment.accessory,
-          equipment.helmet,
-          equipment.necklace,
-          equipment.shield,
-          equipment.gloves,
-          equipment.boots,
-          equipment.ring1,
-          equipment.ring2,
-          equipment.charm
-        ].includes(slot.item.id);
-
-        // Skip equipped items when counting bag capacity
-        if (isEquipped) return total;
-
-        return total + slot.quantity;
-      }, 0);
-
-      // Maximum inventory capacity (very high to not restrict players)
-      const MAX_INVENTORY_CAPACITY = 10000;
-
-      // Check if adding the unequipped item would exceed bag capacity
-      if (currentBagItemCount >= MAX_INVENTORY_CAPACITY) {
-        return {
-          success: false,
-          equipped: null,
-          unequipped: null,
-          statChanges: {},
-          message: `Inventory is full (${MAX_INVENTORY_CAPACITY}/${MAX_INVENTORY_CAPACITY}). Cannot unequip item.`,
-          errors: [`Inventory capacity reached. Free up space before unequipping items.`]
-        };
-      }
-
-      // Add item back to inventory
-      const addResult = await addItem(currentItem, 1);
-      if (!addResult) {
-        return {
-          success: false,
-          equipped: null,
-          unequipped: null,
-          statChanges: {},
-          message: 'Failed to add item to inventory',
-          errors: ['Could not add item to inventory']
-        };
-      }
-
-      // Update equipment state
-      const newEquipped = {
-        ...equipmentState.equipped,
-        [slot]: null
-      };
-
-      setEquipmentState(prev => ({
-        ...prev,
-        equipped: newEquipped,
-        lastEquipTime: new Date()
-      }));
-
-      // Save to cache for persistence across remounts
-      saveEquippedItemsToCache(newEquipped);
-
-      // Update game state for backward compatibility
-      if (gameState.state.player) {
-        gameState.dispatch({
-          type: 'UNEQUIP_ITEM',
-          payload: { slot }
-        });
-      }
-
-      // Calculate stat changes (loss of stats)
-      const statChanges: Partial<PlayerStats> = {};
-      if (currentItem.statModifiers) {
-        Object.entries(currentItem.statModifiers).forEach(([stat, value]) => {
-          if (value !== undefined) {
-            statChanges[stat as keyof PlayerStats] = -value;
-          }
-        });
-      }
-
-      return {
-        success: true,
-        equipped: null,
-        unequipped: currentItem,
-        statChanges,
-        message: `Unequipped ${currentItem.name}`,
-        errors: []
-      };
-
-    } catch (error) {
-      return {
-        success: false,
-        equipped: null,
-        unequipped: null,
-        statChanges: {},
-        message: 'Failed to unequip item',
-        errors: [error instanceof Error ? error.message : 'Unknown error']
-      };
-    }
-  }, [equipmentState.equipped, addItem, inventoryState]);
+    },
+    [equipmentState.equipped, addItem, inventoryState]
+  );
 
   // Get available equipment for a slot
-  const getAvailableEquipment = useCallback((slot: EquipmentSlot): EnhancedItem[] => {
-    const mainInventory = inventoryState.containers.main;
-    if (!mainInventory) return [];
+  const getAvailableEquipment = useCallback(
+    (slot: EquipmentSlot): EnhancedItem[] => {
+      const mainInventory = inventoryState.containers.main;
+      if (!mainInventory) return [];
 
-    return mainInventory.items
-      .filter(invSlot =>
-        invSlot.item?.equipmentSlot === slot &&
-        checkCompatibility(invSlot.item, slot).canEquip
-      )
-      .map(invSlot => invSlot.item!)
-      .sort((a, b) => {
-        // Sort by overall stat improvement potential
-        const compA = compareEquipment(equipmentState.equipped[slot], a);
-        const compB = compareEquipment(equipmentState.equipped[slot], b);
-        return compB.netScore - compA.netScore;
-      });
-  }, [inventoryState, equipmentState.equipped, checkCompatibility, compareEquipment]);
+      return mainInventory.items
+        .filter(
+          invSlot =>
+            invSlot.item?.equipmentSlot === slot && checkCompatibility(invSlot.item, slot).canEquip
+        )
+        .map(invSlot => invSlot.item!)
+        .sort((a, b) => {
+          // Sort by overall stat improvement potential
+          const compA = compareEquipment(equipmentState.equipped[slot], a);
+          const compB = compareEquipment(equipmentState.equipped[slot], b);
+          return compB.netScore - compA.netScore;
+        });
+    },
+    [inventoryState, equipmentState.equipped, checkCompatibility, compareEquipment]
+  );
 
   // Get equipment recommendations
   const getRecommendations = useCallback((): Array<{
@@ -930,7 +997,7 @@ export const useEquipment = () => {
             currentItem,
             recommendedItem: bestItem,
             improvement: comparison.netScore,
-            reasons: comparison.improvements
+            reasons: comparison.improvements,
           });
         }
       }
@@ -940,26 +1007,29 @@ export const useEquipment = () => {
   }, [equipmentState.equipped, getAvailableEquipment, compareEquipment]);
 
   // Memoize equipped items to prevent infinite loops
-  const equippedItems = useMemo(() => equipmentState.equipped, [
-    equipmentState.equipped.weapon?.id,
-    equipmentState.equipped.armor?.id,
-    equipmentState.equipped.accessory?.id,
-    equipmentState.equipped.helmet?.id,
-    equipmentState.equipped.chestplate?.id,
-    equipmentState.equipped.boots?.id,
-    equipmentState.equipped.gloves?.id,
-    equipmentState.equipped.ring1?.id,
-    equipmentState.equipped.ring2?.id,
-    equipmentState.equipped.necklace?.id,
-    equipmentState.equipped.charm?.id
-  ]);
+  const equippedItems = useMemo(
+    () => equipmentState.equipped,
+    [
+      equipmentState.equipped.weapon?.id,
+      equipmentState.equipped.armor?.id,
+      equipmentState.equipped.accessory?.id,
+      equipmentState.equipped.helmet?.id,
+      equipmentState.equipped.chestplate?.id,
+      equipmentState.equipped.boots?.id,
+      equipmentState.equipped.gloves?.id,
+      equipmentState.equipped.ring1?.id,
+      equipmentState.equipped.ring2?.id,
+      equipmentState.equipped.necklace?.id,
+      equipmentState.equipped.charm?.id,
+    ]
+  );
 
   // Update calculated stats whenever equipment changes
   useEffect(() => {
     const newStats = calculateFinalStats();
     setEquipmentState(prev => ({
       ...prev,
-      statCalculations: newStats
+      statCalculations: newStats,
     }));
   }, [equippedItems, calculateFinalStats]);
 
@@ -972,12 +1042,12 @@ export const useEquipment = () => {
         magicAttack: equipmentState.statCalculations.magicAttack?.finalValue || 0,
         magicDefense: equipmentState.statCalculations.magicDefense?.finalValue || 0,
         speed: equipmentState.statCalculations.speed?.finalValue || 0,
-        accuracy: equipmentState.statCalculations.accuracy?.finalValue || 0
+        accuracy: equipmentState.statCalculations.accuracy?.finalValue || 0,
       };
 
       gameState.dispatch({
         type: 'UPDATE_PLAYER_STATS',
-        payload: { playerId: gameState.state.player.id, stats: finalStats }
+        payload: { playerId: gameState.state.player.id, stats: finalStats },
       });
     }
   }, [equipmentState.statCalculations, gameState.dispatch, gameState.state.player?.id]);
@@ -993,11 +1063,13 @@ export const useEquipment = () => {
       totalSlots: Object.keys(EXTENDED_EQUIPMENT_SLOTS).length,
       totalValue,
       totalWeight,
-      averageRarity: equipped.length > 0 ?
-        equipped.reduce((sum, item) => {
-          const rarityValues = { common: 1, rare: 2, epic: 3, legendary: 4 };
-          return sum + (rarityValues[item?.rarity as keyof typeof rarityValues] || 1);
-        }, 0) / equipped.length : 0
+      averageRarity:
+        equipped.length > 0
+          ? equipped.reduce((sum, item) => {
+              const rarityValues = { common: 1, rare: 2, epic: 3, legendary: 4 };
+              return sum + (rarityValues[item?.rarity as keyof typeof rarityValues] || 1);
+            }, 0) / equipped.length
+          : 0,
     };
   }, [equipmentState.equipped]);
 
@@ -1049,7 +1121,7 @@ export const useEquipment = () => {
     canEquip: (item: EnhancedItem, slot?: EquipmentSlot) => {
       const targetSlot = slot || item.equipmentSlot;
       return targetSlot ? checkCompatibility(item, targetSlot).canEquip : false;
-    }
+    },
   };
 };
 

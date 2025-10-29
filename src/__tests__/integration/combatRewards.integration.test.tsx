@@ -19,10 +19,7 @@
 import React from 'react';
 import { renderHook, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import {
-  ReactGameProvider,
-  useReactGame,
-} from '../../contexts/ReactGameContext';
+import { ReactGameProvider, useReactGame } from '../../contexts/ReactGameContext';
 import { ExperienceCalculator } from '../../utils/experienceUtils';
 
 // =============================================================================
@@ -114,7 +111,7 @@ describe('Combat Rewards Integration - No Level-Up', () => {
         quantity: 2,
         type: 'consumable' as const,
         rarity: 'common',
-        icon: '🧪'
+        icon: '🧪',
       },
     ];
 

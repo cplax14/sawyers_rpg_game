@@ -3,7 +3,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AreaCard } from '../molecules/AreaCard';
 import { Button } from '../atoms/Button';
 import { LoadingSpinner } from '../atoms/LoadingSpinner';
-import { useAreas, usePlayer, useWorld, useUI, useHorizontalSwipeNavigation, useIsMobile, useSaveSystem, useGameState } from '../../hooks';
+import {
+  useAreas,
+  usePlayer,
+  useWorld,
+  useUI,
+  useHorizontalSwipeNavigation,
+  useIsMobile,
+  useSaveSystem,
+  useGameState,
+} from '../../hooks';
 import { ReactArea } from '../../types/game';
 import { worldMapStyles } from '../../utils/temporaryStyles';
 // import styles from './WorldMap.module.css'; // Temporarily disabled due to PostCSS parsing issues
@@ -25,21 +34,18 @@ const AREA_FILTERS: AreaFilter[] = [
   { type: 'town', label: 'Towns' },
   { type: 'wilderness', label: 'Wilderness' },
   { type: 'dungeon', label: 'Dungeons' },
-  { type: 'special', label: 'Special' }
+  { type: 'special', label: 'Special' },
 ];
 
-export const WorldMap: React.FC<WorldMapProps> = ({
-  onAreaEnter,
-  className
-}) => {
+export const WorldMap: React.FC<WorldMapProps> = ({ onAreaEnter, className }) => {
   const { areas, isLoading, error, getAreaById, getConnectedAreas } = useAreas();
   const { player, playerLevel } = usePlayer();
-  const { currentAreaId, unlockedAreas, changeArea, hasStoryFlag, isAreaUnlocked, setStoryFlag } = useWorld();
+  const { currentAreaId, unlockedAreas, changeArea, hasStoryFlag, isAreaUnlocked, setStoryFlag } =
+    useWorld();
   const { navigateToScreen } = useUI();
   const { saveGame, loadGame, getFreshSlots, saveSlots, isLoading: saveLoading } = useSaveSystem();
   const { state: gameState } = useGameState();
   const isMobile = useIsMobile();
-
 
   const [selectedArea, setSelectedArea] = useState<ReactArea | null>(null);
   const [filterType, setFilterType] = useState<AreaFilter['type']>('all');
@@ -62,9 +68,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({
 
     // Filter by unlocked status
     if (showUnlockedOnly) {
-      filtered = filtered.filter(area =>
-        area.unlocked || isAreaUnlocked(area.id)
-      );
+      filtered = filtered.filter(area => area.unlocked || isAreaUnlocked(area.id));
     }
 
     // Sort by recommended level, then by name
@@ -92,27 +96,30 @@ export const WorldMap: React.FC<WorldMapProps> = ({
     setSelectedArea(area);
   }, []);
 
-  const handleAreaEnter = useCallback(async (area: ReactArea) => {
-    // Check if area is accessible
-    if (!area.unlocked && !isAreaUnlocked(area.id)) {
-      console.warn(`Area "${area.name}" is locked`);
-      return;
-    }
-
-    try {
-      // Change current area
-      changeArea(area.id);
-
-      // Trigger callback or navigate
-      if (onAreaEnter) {
-        onAreaEnter(area);
-      } else {
-        navigateToScreen('area');
+  const handleAreaEnter = useCallback(
+    async (area: ReactArea) => {
+      // Check if area is accessible
+      if (!area.unlocked && !isAreaUnlocked(area.id)) {
+        console.warn(`Area "${area.name}" is locked`);
+        return;
       }
-    } catch (error) {
-      console.error('Failed to enter area:', error);
-    }
-  }, [isAreaUnlocked, changeArea, onAreaEnter, navigateToScreen]);
+
+      try {
+        // Change current area
+        changeArea(area.id);
+
+        // Trigger callback or navigate
+        if (onAreaEnter) {
+          onAreaEnter(area);
+        } else {
+          navigateToScreen('area');
+        }
+      } catch (error) {
+        console.error('Failed to enter area:', error);
+      }
+    },
+    [isAreaUnlocked, changeArea, onAreaEnter, navigateToScreen]
+  );
 
   const handleFilterChange = useCallback((type: AreaFilter['type']) => {
     setFilterType(type);
@@ -136,14 +143,10 @@ export const WorldMap: React.FC<WorldMapProps> = ({
   }, [isMobile, filterType]);
 
   // Set up swipe gestures
-  const { swipeHandlers } = useHorizontalSwipeNavigation(
-    handleSwipeLeft,
-    handleSwipeRight,
-    {
-      minDistance: 60,
-      maxDuration: 400
-    }
-  );
+  const { swipeHandlers } = useHorizontalSwipeNavigation(handleSwipeLeft, handleSwipeRight, {
+    minDistance: 60,
+    maxDuration: 400,
+  });
 
   const toggleUnlockedFilter = useCallback(() => {
     setShowUnlockedOnly(prev => !prev);
@@ -186,7 +189,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({
       const success = await saveGame(gameState, {
         slotNumber: targetSlot,
         saveName: `Quick Save - ${currentArea?.name || 'Unknown Location'}`,
-        overwrite: true
+        overwrite: true,
       });
 
       if (success) {
@@ -201,46 +204,52 @@ export const WorldMap: React.FC<WorldMapProps> = ({
   }, [gameState, currentArea, saveGame, getFreshSlots]);
 
   // Manual save handler - saves to specified slot
-  const handleSaveGame = useCallback(async (slotId: number) => {
-    try {
-      if (!gameState || !gameState.player) {
-        console.error('Cannot save: No valid game state');
-        return;
+  const handleSaveGame = useCallback(
+    async (slotId: number) => {
+      try {
+        if (!gameState || !gameState.player) {
+          console.error('Cannot save: No valid game state');
+          return;
+        }
+
+        console.log(`💾 Attempting to save game to slot ${slotId}`);
+        const success = await saveGame(gameState, {
+          slotNumber: slotId,
+          saveName: `World Map - ${currentArea?.name || 'Unknown Location'}`,
+          overwrite: true,
+        });
+
+        if (success) {
+          console.log(`✅ Game saved successfully to slot ${slotId}`);
+          setShowGameMenu(false);
+        } else {
+          console.error('Save operation returned false');
+        }
+      } catch (error) {
+        console.error('Failed to save game:', error);
       }
+    },
+    [saveGame, currentArea, gameState]
+  );
 
-      console.log(`💾 Attempting to save game to slot ${slotId}`);
-      const success = await saveGame(gameState, {
-        slotNumber: slotId,
-        saveName: `World Map - ${currentArea?.name || 'Unknown Location'}`,
-        overwrite: true
-      });
+  const handleLoadGame = useCallback(
+    async (slotId: number) => {
+      try {
+        console.log(`📂 Attempting to load game from slot ${slotId}`);
+        const loadedState = await loadGame({ slotNumber: slotId });
 
-      if (success) {
-        console.log(`✅ Game saved successfully to slot ${slotId}`);
-        setShowGameMenu(false);
-      } else {
-        console.error('Save operation returned false');
+        if (loadedState) {
+          console.log(`✅ Game loaded successfully from slot ${slotId}`);
+          setShowGameMenu(false);
+        } else {
+          console.error('Load operation returned null');
+        }
+      } catch (error) {
+        console.error('Failed to load game:', error);
       }
-    } catch (error) {
-      console.error('Failed to save game:', error);
-    }
-  }, [saveGame, currentArea, gameState]);
-
-  const handleLoadGame = useCallback(async (slotId: number) => {
-    try {
-      console.log(`📂 Attempting to load game from slot ${slotId}`);
-      const loadedState = await loadGame({ slotNumber: slotId });
-
-      if (loadedState) {
-        console.log(`✅ Game loaded successfully from slot ${slotId}`);
-        setShowGameMenu(false);
-      } else {
-        console.error('Load operation returned null');
-      }
-    } catch (error) {
-      console.error('Failed to load game:', error);
-    }
-  }, [loadGame]);
+    },
+    [loadGame]
+  );
 
   // DEBUG: Temporary handler to manually fix tutorial_complete flag
   const handleForceUnlockTutorial = useCallback(() => {
@@ -249,49 +258,54 @@ export const WorldMap: React.FC<WorldMapProps> = ({
     alert('Tutorial flag has been set! The Forest Path should now be unlocked.');
   }, [setStoryFlag]);
 
-  const getAreaAccessibility = useCallback((area: ReactArea): {
-    accessible: boolean;
-    reason?: string;
-  } => {
-    // Always accessible if unlocked
-    if (area.unlocked || isAreaUnlocked(area.id)) {
+  const getAreaAccessibility = useCallback(
+    (
+      area: ReactArea
+    ): {
+      accessible: boolean;
+      reason?: string;
+    } => {
+      // Always accessible if unlocked
+      if (area.unlocked || isAreaUnlocked(area.id)) {
+        return { accessible: true };
+      }
+
+      // Check if connected to current area
+      const isConnected = currentArea?.connections.includes(area.id);
+      if (!isConnected) {
+        return {
+          accessible: false,
+          reason: 'Not connected to current area',
+        };
+      }
+
+      // Check unlock requirements
+      const requirements = area.unlockRequirements;
+
+      if (requirements.level && playerLevel < requirements.level) {
+        return {
+          accessible: false,
+          reason: `Requires level ${requirements.level}`,
+        };
+      }
+
+      if (requirements.story && !hasStoryFlag(requirements.story)) {
+        return {
+          accessible: false,
+          reason: 'Story requirements not met',
+        };
+      }
+
       return { accessible: true };
-    }
-
-    // Check if connected to current area
-    const isConnected = currentArea?.connections.includes(area.id);
-    if (!isConnected) {
-      return {
-        accessible: false,
-        reason: 'Not connected to current area'
-      };
-    }
-
-    // Check unlock requirements
-    const requirements = area.unlockRequirements;
-
-    if (requirements.level && playerLevel < requirements.level) {
-      return {
-        accessible: false,
-        reason: `Requires level ${requirements.level}`
-      };
-    }
-
-    if (requirements.story && !hasStoryFlag(requirements.story)) {
-      return {
-        accessible: false,
-        reason: 'Story requirements not met'
-      };
-    }
-
-    return { accessible: true };
-  }, [isAreaUnlocked, currentArea, playerLevel, hasStoryFlag]);
+    },
+    [isAreaUnlocked, currentArea, playerLevel, hasStoryFlag]
+  );
 
   if (isLoading) {
     return (
       <div className={`${styles.worldMap} ${className || ''}`}>
         <div className={styles.loadingContainer}>
-          <LoadingSpinner size="large" />
+          <LoadingSpinner size='large' />
           <p className={styles.loadingText}>Loading world map...</p>
         </div>
       </div>
@@ -304,10 +318,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({
         <div className={styles.errorContainer}>
           <h2>Failed to Load World Map</h2>
           <p className={styles.errorMessage}>{error}</p>
-          <Button
-            variant="primary"
-            onClick={() => window.location.reload()}
-          >
+          <Button variant='primary' onClick={() => window.location.reload()}>
             Reload Page
           </Button>
         </div>
@@ -325,7 +336,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({
         background: 'linear-gradient(135deg, #1a1a2e, #16213e, #0f3460)',
         color: '#f4f4f4',
         padding: '1rem',
-        boxSizing: 'border-box'
+        boxSizing: 'border-box',
       }}
       {...(isMobile ? swipeHandlers : {})}
     >
@@ -334,7 +345,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({
         style={{
           maxWidth: '1200px',
           margin: '0 auto',
-          padding: '0 1rem'
+          padding: '0 1rem',
         }}
       >
         {/* Header */}
@@ -345,7 +356,14 @@ export const WorldMap: React.FC<WorldMapProps> = ({
           transition={{ duration: 0.5 }}
         >
           <div className={styles.titleSection}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                width: '100%',
+              }}
+            >
               <div>
                 <h1 className={styles.title}>World Map</h1>
                 <p className={styles.subtitle}>
@@ -353,11 +371,11 @@ export const WorldMap: React.FC<WorldMapProps> = ({
                 </p>
               </div>
               <Button
-                variant="secondary"
+                variant='secondary'
                 onClick={toggleGameMenu}
                 style={{
                   marginLeft: '1rem',
-                  minWidth: '120px'
+                  minWidth: '120px',
                 }}
               >
                 Game Menu
@@ -381,12 +399,10 @@ export const WorldMap: React.FC<WorldMapProps> = ({
           transition={{ delay: 0.2, duration: 0.5 }}
         >
           <div className={styles.filterTabs}>
-            {AREA_FILTERS.map((filter) => (
+            {AREA_FILTERS.map(filter => (
               <button
                 key={filter.type}
-                className={`${styles.filterTab} ${
-                  filterType === filter.type ? styles.active : ''
-                }`}
+                className={`${styles.filterTab} ${filterType === filter.type ? styles.active : ''}`}
                 onClick={() => handleFilterChange(filter.type)}
               >
                 {filter.label}
@@ -397,7 +413,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({
           <div className={styles.filterOptions}>
             <label className={styles.checkboxLabel}>
               <input
-                type="checkbox"
+                type='checkbox'
                 checked={showUnlockedOnly}
                 onChange={toggleUnlockedFilter}
                 className={styles.checkbox}
@@ -416,7 +432,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '0.5rem'
+                  gap: '0.5rem',
                 }}
               >
                 <span>←</span>
@@ -452,7 +468,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({
                         exit={{ opacity: 0, y: -20 }}
                         transition={{
                           delay: index * 0.05,
-                          duration: 0.3
+                          duration: 0.3,
                         }}
                         className={styles.areaCardWrapper}
                       >
@@ -463,14 +479,12 @@ export const WorldMap: React.FC<WorldMapProps> = ({
                           onClick={handleAreaSelect}
                           onEnter={handleAreaEnter}
                           showDetails={true}
-                          size="md"
+                          size='md'
                           playerLevel={playerLevel}
                           className={isCurrentArea ? styles.currentAreaCard : ''}
                         />
                         {!accessibility.accessible && accessibility.reason && (
-                          <div className={styles.accessibilityWarning}>
-                            {accessibility.reason}
-                          </div>
+                          <div className={styles.accessibilityWarning}>{accessibility.reason}</div>
                         )}
                       </motion.div>
                     );
@@ -483,7 +497,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({
                   >
                     <p>No areas match the current filters</p>
                     <Button
-                      variant="secondary"
+                      variant='secondary'
                       onClick={() => {
                         setFilterType('all');
                         setShowUnlockedOnly(false);
@@ -511,16 +525,12 @@ export const WorldMap: React.FC<WorldMapProps> = ({
                   <h2 className={styles.sidebarTitle}>{selectedArea.name}</h2>
 
                   <div className={styles.areaDetails}>
-                    <p className={styles.areaDescription}>
-                      {selectedArea.description}
-                    </p>
+                    <p className={styles.areaDescription}>{selectedArea.description}</p>
 
                     <div className={styles.areaStats}>
                       <div className={styles.statItem}>
                         <span>Type:</span>
-                        <span className={styles.areaType}>
-                          {selectedArea.type}
-                        </span>
+                        <span className={styles.areaType}>{selectedArea.type}</span>
                       </div>
                       <div className={styles.statItem}>
                         <span>Recommended Level:</span>
@@ -563,6 +573,47 @@ export const WorldMap: React.FC<WorldMapProps> = ({
                       </div>
                     )}
 
+                    {selectedArea.shopIds && selectedArea.shopIds.length > 0 && (
+                      <div className={styles.areaServices}>
+                        <h4>Shops Available</h4>
+                        <div className={styles.serviceTags}>
+                          {selectedArea.shopIds.map(shopId => {
+                            // gameState.shops is PlayerShopState, not an array
+                            const shop = null; // TODO: Load shop data properly
+                            const isDiscovered = gameState.shops?.discoveredShops?.includes(shopId);
+                            const isUnlocked = gameState.shops?.unlockedShops?.includes(shopId);
+
+                            return (
+                              <span
+                                key={shopId}
+                                className={styles.serviceTag}
+                                style={{
+                                  opacity: isDiscovered ? 1 : 0.5,
+                                  background: isUnlocked
+                                    ? 'rgba(139, 92, 246, 0.2)'
+                                    : 'rgba(100, 116, 139, 0.2)',
+                                  borderColor: isUnlocked
+                                    ? 'rgba(139, 92, 246, 0.4)'
+                                    : 'rgba(100, 116, 139, 0.4)',
+                                }}
+                                title={
+                                  !isDiscovered
+                                    ? 'Undiscovered'
+                                    : !isUnlocked
+                                      ? 'Locked'
+                                      : shop?.name || shopId
+                                }
+                              >
+                                {shop?.theme?.icon || '🏪'}{' '}
+                                {isDiscovered ? shop?.name || shopId : '???'}
+                                {!isUnlocked && isDiscovered && ' 🔒'}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
                     {selectedArea.connections.length > 0 && (
                       <div className={styles.areaConnections}>
                         <h4>Connected Areas</h4>
@@ -586,13 +637,13 @@ export const WorldMap: React.FC<WorldMapProps> = ({
 
                   <div className={styles.sidebarActions}>
                     {selectedArea.id === currentAreaId ? (
-                      <Button variant="info" size="large" disabled>
+                      <Button variant='info' size='large' disabled>
                         Current Location
                       </Button>
                     ) : (
                       <Button
-                        variant="primary"
-                        size="large"
+                        variant='primary'
+                        size='large'
                         onClick={() => handleAreaEnter(selectedArea)}
                         disabled={!getAreaAccessibility(selectedArea).accessible}
                       >
@@ -624,7 +675,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                zIndex: 1000
+                zIndex: 1000,
               }}
               onClick={toggleGameMenu}
             >
@@ -640,23 +691,25 @@ export const WorldMap: React.FC<WorldMapProps> = ({
                   padding: '2rem',
                   minWidth: '320px',
                   maxWidth: '400px',
-                  boxShadow: '0 10px 25px rgba(0, 0, 0, 0.5)'
+                  boxShadow: '0 10px 25px rgba(0, 0, 0, 0.5)',
                 }}
-                onClick={(e) => e.stopPropagation()}
+                onClick={e => e.stopPropagation()}
               >
-                <h2 style={{
-                  margin: '0 0 1.5rem 0',
-                  color: '#f4f4f4',
-                  textAlign: 'center',
-                  fontSize: '1.5rem'
-                }}>
+                <h2
+                  style={{
+                    margin: '0 0 1.5rem 0',
+                    color: '#f4f4f4',
+                    textAlign: 'center',
+                    fontSize: '1.5rem',
+                  }}
+                >
                   Game Menu
                 </h2>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   <Button
-                    variant="secondary"
-                    size="large"
+                    variant='secondary'
+                    size='large'
                     onClick={() => {
                       navigateToScreen('inventory');
                       setShowGameMenu(false);
@@ -667,8 +720,8 @@ export const WorldMap: React.FC<WorldMapProps> = ({
                   </Button>
 
                   <Button
-                    variant="primary"
-                    size="large"
+                    variant='primary'
+                    size='large'
                     onClick={handleQuickSave}
                     disabled={saveLoading}
                     style={{ width: '100%' }}
@@ -677,8 +730,8 @@ export const WorldMap: React.FC<WorldMapProps> = ({
                   </Button>
 
                   <Button
-                    variant="secondary"
-                    size="large"
+                    variant='secondary'
+                    size='large'
                     onClick={() => navigateToScreen('menu')}
                     style={{ width: '100%' }}
                   >
@@ -686,8 +739,8 @@ export const WorldMap: React.FC<WorldMapProps> = ({
                   </Button>
 
                   <Button
-                    variant="secondary"
-                    size="large"
+                    variant='secondary'
+                    size='large'
                     onClick={() => navigateToScreen('settings')}
                     style={{ width: '100%' }}
                   >
@@ -695,8 +748,8 @@ export const WorldMap: React.FC<WorldMapProps> = ({
                   </Button>
 
                   <Button
-                    variant="secondary"
-                    size="large"
+                    variant='secondary'
+                    size='large'
                     onClick={() => navigateToScreen('main-menu')}
                     style={{ width: '100%' }}
                   >
@@ -704,8 +757,8 @@ export const WorldMap: React.FC<WorldMapProps> = ({
                   </Button>
 
                   <Button
-                    variant="outline"
-                    size="large"
+                    variant='outline'
+                    size='large'
                     onClick={toggleGameMenu}
                     style={{ width: '100%', marginTop: '0.5rem' }}
                   >
@@ -720,7 +773,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({
 
       {/* DEBUG: Temporary button to fix tutorial_complete flag */}
       <Button
-        variant="outline"
+        variant='outline'
         onClick={handleForceUnlockTutorial}
         style={{
           position: 'fixed',
@@ -733,7 +786,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({
           padding: '0.75rem 1rem',
           fontSize: '0.9rem',
           fontWeight: 'bold',
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.3)'
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.3)',
         }}
       >
         🔧 Fix Tutorial Flag

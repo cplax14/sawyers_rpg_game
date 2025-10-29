@@ -65,46 +65,46 @@ export const useInventoryAnimations = () => {
         scale: 1,
         y: 0,
         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-        transition: fastConfig
+        transition: fastConfig,
       },
       hover: {
         scale: 1.03,
         y: -2,
         boxShadow: '0 8px 25px rgba(79, 195, 247, 0.3)',
-        transition: fastConfig
-      }
+        transition: fastConfig,
+      },
     },
 
     cardTap: {
       rest: { scale: 1, transition: fastConfig },
-      tap: { scale: 0.97, transition: { duration: 0.1 } }
+      tap: { scale: 0.97, transition: { duration: 0.1 } },
     },
 
     cardSelect: {
       unselected: {
         borderColor: 'rgba(255, 255, 255, 0.1)',
         backgroundColor: 'rgba(255, 255, 255, 0.05)',
-        transition: normalConfig
+        transition: normalConfig,
       },
       selected: {
         borderColor: 'rgba(79, 195, 247, 0.6)',
         backgroundColor: 'rgba(79, 195, 247, 0.1)',
         boxShadow: '0 0 20px rgba(79, 195, 247, 0.3)',
-        transition: normalConfig
-      }
+        transition: normalConfig,
+      },
     },
 
     cardDeselect: {
       selected: {
         borderColor: 'rgba(79, 195, 247, 0.6)',
         backgroundColor: 'rgba(79, 195, 247, 0.1)',
-        transition: normalConfig
+        transition: normalConfig,
       },
       unselected: {
         borderColor: 'rgba(255, 255, 255, 0.1)',
         backgroundColor: 'rgba(255, 255, 255, 0.05)',
-        transition: normalConfig
-      }
+        transition: normalConfig,
+      },
     },
 
     cardDrop: {
@@ -113,13 +113,13 @@ export const useInventoryAnimations = () => {
         scale: 0.8,
         rotate: -10,
         opacity: 0.7,
-        transition: { duration: 0.4, ease: 'easeIn' }
+        transition: { duration: 0.4, ease: 'easeIn' },
       },
       dropped: {
         scale: 0,
         opacity: 0,
-        transition: { duration: 0.2 }
-      }
+        transition: { duration: 0.2 },
+      },
     },
 
     cardPickup: {
@@ -128,13 +128,13 @@ export const useInventoryAnimations = () => {
         scale: 1.1,
         opacity: 1,
         y: -5,
-        transition: { duration: 0.3, ease: 'easeOut' }
+        transition: { duration: 0.3, ease: 'easeOut' },
       },
       picked: {
         scale: 1,
         y: 0,
-        transition: { duration: 0.2 }
-      }
+        transition: { duration: 0.2 },
+      },
     },
 
     // List and container animations
@@ -142,18 +142,18 @@ export const useInventoryAnimations = () => {
       hidden: {
         opacity: 0,
         x: -20,
-        transition: fastConfig
+        transition: fastConfig,
       },
       visible: {
         opacity: 1,
         x: 0,
-        transition: fastConfig
+        transition: fastConfig,
       },
       exit: {
         opacity: 0,
         x: 20,
-        transition: fastConfig
-      }
+        transition: fastConfig,
+      },
     },
 
     staggerContainer: {
@@ -162,9 +162,9 @@ export const useInventoryAnimations = () => {
         opacity: 1,
         transition: {
           staggerChildren: 0.05,
-          delayChildren: 0.1
-        }
-      }
+          delayChildren: 0.1,
+        },
+      },
     },
 
     // Modal and popup animations
@@ -172,7 +172,7 @@ export const useInventoryAnimations = () => {
       hidden: {
         opacity: 0,
         scale: 0.9,
-        y: 20
+        y: 20,
       },
       visible: {
         opacity: 1,
@@ -181,9 +181,9 @@ export const useInventoryAnimations = () => {
         transition: {
           type: 'spring',
           damping: 25,
-          stiffness: 300
-        }
-      }
+          stiffness: 300,
+        },
+      },
     },
 
     modalExit: {
@@ -192,8 +192,8 @@ export const useInventoryAnimations = () => {
         opacity: 0,
         scale: 0.9,
         y: 20,
-        transition: normalConfig
-      }
+        transition: normalConfig,
+      },
     },
 
     slideIn: {
@@ -204,9 +204,9 @@ export const useInventoryAnimations = () => {
         transition: {
           type: 'spring',
           damping: 30,
-          stiffness: 300
-        }
-      }
+          stiffness: 300,
+        },
+      },
     },
 
     slideOut: {
@@ -214,8 +214,8 @@ export const useInventoryAnimations = () => {
       exit: {
         x: '-100%',
         opacity: 0,
-        transition: normalConfig
-      }
+        transition: normalConfig,
+      },
     },
 
     // Action feedback animations
@@ -224,8 +224,8 @@ export const useInventoryAnimations = () => {
       success: {
         scale: [1, 1.05, 1],
         backgroundColor: ['transparent', 'rgba(34, 197, 94, 0.2)', 'transparent'],
-        transition: { duration: 0.6 }
-      }
+        transition: { duration: 0.6 },
+      },
     },
 
     equipError: {
@@ -233,8 +233,8 @@ export const useInventoryAnimations = () => {
       error: {
         x: [0, -5, 5, -5, 5, 0],
         backgroundColor: ['transparent', 'rgba(239, 68, 68, 0.2)', 'transparent'],
-        transition: { duration: 0.5 }
-      }
+        transition: { duration: 0.5 },
+      },
     },
 
     useItem: {
@@ -242,13 +242,13 @@ export const useInventoryAnimations = () => {
       using: {
         scale: [1, 1.2, 0.8],
         opacity: [1, 0.8, 0],
-        transition: { duration: 0.8, ease: 'easeInOut' }
+        transition: { duration: 0.8, ease: 'easeInOut' },
       },
       used: {
         scale: 0,
         opacity: 0,
-        transition: { duration: 0.1 }
-      }
+        transition: { duration: 0.1 },
+      },
     },
 
     deleteItem: {
@@ -257,8 +257,8 @@ export const useInventoryAnimations = () => {
         scale: [1, 1.1, 0],
         opacity: [1, 0.5, 0],
         filter: ['brightness(1)', 'brightness(1.5)', 'brightness(0)'],
-        transition: { duration: 0.6 }
-      }
+        transition: { duration: 0.6 },
+      },
     },
 
     // Loading states
@@ -269,9 +269,9 @@ export const useInventoryAnimations = () => {
         transition: {
           duration: 1.5,
           repeat: Infinity,
-          ease: 'easeInOut'
-        }
-      }
+          ease: 'easeInOut',
+        },
+      },
     },
 
     pulse: {
@@ -282,9 +282,9 @@ export const useInventoryAnimations = () => {
         transition: {
           duration: 2,
           repeat: Infinity,
-          ease: 'easeInOut'
-        }
-      }
+          ease: 'easeInOut',
+        },
+      },
     },
 
     // Tab transitions
@@ -292,7 +292,7 @@ export const useInventoryAnimations = () => {
       hidden: {
         opacity: 0,
         x: 30,
-        scale: 0.95
+        scale: 0.95,
       },
       visible: {
         opacity: 1,
@@ -300,9 +300,9 @@ export const useInventoryAnimations = () => {
         scale: 1,
         transition: {
           duration: 0.4,
-          ease: 'easeOut'
-        }
-      }
+          ease: 'easeOut',
+        },
+      },
     },
 
     tabExit: {
@@ -313,30 +313,29 @@ export const useInventoryAnimations = () => {
         scale: 0.95,
         transition: {
           duration: 0.3,
-          ease: 'easeIn'
-        }
-      }
-    }
+          ease: 'easeIn',
+        },
+      },
+    },
   };
 
   // Feedback management
-  const showFeedback = useCallback((
-    type: FeedbackState['type'],
-    message: string,
-    duration: number = 3000
-  ) => {
-    const id = `feedback-${++feedbackIdCounter.current}`;
-    const feedback: FeedbackState = { type, message, duration, id };
+  const showFeedback = useCallback(
+    (type: FeedbackState['type'], message: string, duration: number = 3000) => {
+      const id = `feedback-${++feedbackIdCounter.current}`;
+      const feedback: FeedbackState = { type, message, duration, id };
 
-    setFeedbackQueue(prev => [...prev, feedback]);
+      setFeedbackQueue(prev => [...prev, feedback]);
 
-    // Auto-remove after duration
-    setTimeout(() => {
-      setFeedbackQueue(prev => prev.filter(f => f.id !== id));
-    }, duration);
+      // Auto-remove after duration
+      setTimeout(() => {
+        setFeedbackQueue(prev => prev.filter(f => f.id !== id));
+      }, duration);
 
-    return id;
-  }, []);
+      return id;
+    },
+    []
+  );
 
   const removeFeedback = useCallback((id: string) => {
     setFeedbackQueue(prev => prev.filter(f => f.id !== id));
@@ -351,17 +350,26 @@ export const useInventoryAnimations = () => {
     return showFeedback('success', 'Item equipped successfully!', 2000);
   }, [showFeedback]);
 
-  const triggerEquipError = useCallback((reason: string) => {
-    return showFeedback('error', `Cannot equip: ${reason}`, 3000);
-  }, [showFeedback]);
+  const triggerEquipError = useCallback(
+    (reason: string) => {
+      return showFeedback('error', `Cannot equip: ${reason}`, 3000);
+    },
+    [showFeedback]
+  );
 
-  const triggerUseItem = useCallback((itemName: string) => {
-    return showFeedback('success', `Used ${itemName}`, 2000);
-  }, [showFeedback]);
+  const triggerUseItem = useCallback(
+    (itemName: string) => {
+      return showFeedback('success', `Used ${itemName}`, 2000);
+    },
+    [showFeedback]
+  );
 
-  const triggerDeleteItem = useCallback((itemName: string) => {
-    return showFeedback('warning', `Deleted ${itemName}`, 2000);
-  }, [showFeedback]);
+  const triggerDeleteItem = useCallback(
+    (itemName: string) => {
+      return showFeedback('warning', `Deleted ${itemName}`, 2000);
+    },
+    [showFeedback]
+  );
 
   const triggerSaveLoadout = useCallback(() => {
     return showFeedback('info', 'Equipment loadout saved!', 2000);
@@ -387,7 +395,7 @@ export const useInventoryAnimations = () => {
     // Animation configs for custom use
     fastConfig,
     normalConfig,
-    slowConfig
+    slowConfig,
   };
 };
 

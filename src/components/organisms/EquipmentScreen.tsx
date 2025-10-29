@@ -15,7 +15,12 @@ import { useGameState } from '../../contexts/ReactGameContext';
 import { useResponsive } from '../../hooks';
 import { EquipmentSlot, EnhancedItem, StatModifier } from '../../types/inventory';
 import { PlayerStats } from '../../types/game';
-import { compareEquipment, checkEquipmentCompatibility, getEquipmentSlotIcon, formatStatValue } from '../../utils/equipmentUtils';
+import {
+  compareEquipment,
+  checkEquipmentCompatibility,
+  getEquipmentSlotIcon,
+  formatStatValue,
+} from '../../utils/equipmentUtils';
 
 interface EquipmentScreenProps {
   className?: string;
@@ -32,36 +37,36 @@ const equipmentStyles = {
     color: '#f4f4f4',
     padding: '1rem',
     boxSizing: 'border-box' as const,
-    overflow: 'auto'
+    overflow: 'auto',
   },
   header: {
     textAlign: 'center' as const,
-    marginBottom: '1.5rem'
+    marginBottom: '1.5rem',
   },
   title: {
     fontSize: '2rem',
     fontWeight: 'bold',
     margin: '0 0 0.5rem 0',
-    color: '#d4af37'
+    color: '#d4af37',
   },
   subtitle: {
     fontSize: '1rem',
     color: '#94a3b8',
-    margin: '0'
+    margin: '0',
   },
   content: {
     display: 'flex',
     gap: '2rem',
     flex: 1,
-    flexWrap: 'wrap' as const
+    flexWrap: 'wrap' as const,
   },
   paperDollSection: {
     flex: '1 1 400px',
-    minWidth: '400px'
+    minWidth: '400px',
   },
   statsSection: {
     flex: '1 1 300px',
-    minWidth: '300px'
+    minWidth: '300px',
   },
   paperDoll: {
     position: 'relative' as const,
@@ -72,7 +77,7 @@ const equipmentStyles = {
     background: 'rgba(255, 255, 255, 0.05)',
     borderRadius: '12px',
     border: '2px solid rgba(212, 175, 55, 0.3)',
-    padding: '1rem'
+    padding: '1rem',
   },
   characterSilhouette: {
     width: '60%',
@@ -80,7 +85,7 @@ const equipmentStyles = {
     background: 'rgba(255, 255, 255, 0.1)',
     borderRadius: '50% 50% 50% 50% / 60% 60% 40% 40%',
     margin: '10% auto',
-    position: 'relative' as const
+    position: 'relative' as const,
   },
   equipmentSlot: {
     position: 'absolute' as const,
@@ -96,29 +101,29 @@ const equipmentStyles = {
     transition: 'all 0.3s ease',
     fontSize: '0.8rem',
     fontWeight: 'bold',
-    textAlign: 'center' as const
+    textAlign: 'center' as const,
   },
   equipmentSlotFilled: {
     border: '2px solid #d4af37',
-    background: 'rgba(212, 175, 55, 0.2)'
+    background: 'rgba(212, 175, 55, 0.2)',
   },
   equipmentSlotHover: {
     transform: 'scale(1.05)',
     borderColor: '#d4af37',
-    background: 'rgba(212, 175, 55, 0.3)'
+    background: 'rgba(212, 175, 55, 0.3)',
   },
   statsCard: {
     background: 'rgba(255, 255, 255, 0.05)',
     borderRadius: '12px',
     border: '1px solid rgba(212, 175, 55, 0.3)',
     padding: '1.5rem',
-    marginBottom: '1rem'
+    marginBottom: '1rem',
   },
   statsTitle: {
     fontSize: '1.25rem',
     fontWeight: 'bold',
     marginBottom: '1rem',
-    color: '#d4af37'
+    color: '#d4af37',
   },
   statRow: {
     display: 'flex',
@@ -127,32 +132,32 @@ const equipmentStyles = {
     marginBottom: '0.75rem',
     padding: '0.5rem',
     borderRadius: '6px',
-    background: 'rgba(255, 255, 255, 0.02)'
+    background: 'rgba(255, 255, 255, 0.02)',
   },
   statLabel: {
     fontSize: '0.9rem',
-    color: '#94a3b8'
+    color: '#94a3b8',
   },
   statValue: {
     fontSize: '1rem',
     fontWeight: 'bold',
-    color: '#f4f4f4'
+    color: '#f4f4f4',
   },
   statBonus: {
     fontSize: '0.8rem',
-    color: '#10b981'
+    color: '#10b981',
   },
   comparisonCard: {
     background: 'rgba(255, 255, 255, 0.05)',
     borderRadius: '12px',
     border: '1px solid rgba(212, 175, 55, 0.3)',
-    padding: '1rem'
+    padding: '1rem',
   },
   comparisonTitle: {
     fontSize: '1rem',
     fontWeight: 'bold',
     marginBottom: '0.75rem',
-    color: '#d4af37'
+    color: '#d4af37',
   },
   itemSlot: {
     width: '50px',
@@ -166,7 +171,7 @@ const equipmentStyles = {
     fontSize: '0.7rem',
     fontWeight: 'bold',
     cursor: 'pointer',
-    transition: 'all 0.2s ease'
+    transition: 'all 0.2s ease',
   },
   rarityCommon: { borderColor: '#10b981' },
   rarityUncommon: { borderColor: '#3b82f6' },
@@ -178,17 +183,17 @@ const equipmentStyles = {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    height: '200px'
+    height: '200px',
   },
   errorContainer: {
     textAlign: 'center' as const,
-    padding: '2rem'
+    padding: '2rem',
   },
   closeButton: {
     position: 'absolute' as const,
     top: '1rem',
     right: '1rem',
-    zIndex: 10
+    zIndex: 10,
   },
   // Mobile/Tablet Grid Layout
   mobileGridContainer: {
@@ -198,10 +203,10 @@ const equipmentStyles = {
     padding: '1rem',
     width: '100%',
     maxWidth: '600px',
-    margin: '0 auto'
+    margin: '0 auto',
   },
   mobileGridContainerTablet: {
-    gridTemplateColumns: 'repeat(2, 1fr)'
+    gridTemplateColumns: 'repeat(2, 1fr)',
   },
   mobileSlotCard: {
     background: 'rgba(255, 255, 255, 0.05)',
@@ -213,39 +218,39 @@ const equipmentStyles = {
     gap: '0.75rem',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
-    minHeight: '120px'
+    minHeight: '120px',
   },
   mobileSlotCardFilled: {
     border: '2px solid rgba(212, 175, 55, 0.8)',
-    background: 'rgba(212, 175, 55, 0.1)'
+    background: 'rgba(212, 175, 55, 0.1)',
   },
   mobileSlotHeader: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: '0.75rem'
+    gap: '0.75rem',
   },
   mobileSlotIcon: {
     fontSize: '2rem',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    flexShrink: 0
+    flexShrink: 0,
   },
   mobileSlotInfo: {
     flex: 1,
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: '0.25rem'
+    gap: '0.25rem',
   },
   mobileSlotName: {
     fontSize: '1rem',
     fontWeight: 'bold',
-    color: '#d4af37'
+    color: '#d4af37',
   },
   mobileSlotStatus: {
     fontSize: '0.85rem',
-    color: '#94a3b8'
+    color: '#94a3b8',
   },
   mobileItemInfo: {
     background: 'rgba(0, 0, 0, 0.2)',
@@ -253,28 +258,28 @@ const equipmentStyles = {
     padding: '0.75rem',
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: '0.5rem'
+    gap: '0.5rem',
   },
   mobileItemName: {
     fontSize: '0.9rem',
     fontWeight: 'bold',
     color: '#f4f4f4',
-    marginBottom: '0.25rem'
+    marginBottom: '0.25rem',
   },
   mobileItemStats: {
     fontSize: '0.75rem',
     color: '#94a3b8',
-    lineHeight: '1.4'
+    lineHeight: '1.4',
   },
   mobileUnequipButton: {
-    marginTop: '0.5rem'
+    marginTop: '0.5rem',
   },
   mobileEmptyMessage: {
     fontSize: '0.85rem',
     color: '#10b981',
     fontStyle: 'italic' as const,
-    textAlign: 'center' as const
-  }
+    textAlign: 'center' as const,
+  },
 };
 
 // Equipment slot positions on the paper doll
@@ -288,7 +293,7 @@ const slotPositions: Record<EquipmentSlot, { top: string; left: string }> = {
   boots: { top: '75%', left: '50%' },
   ring1: { top: '55%', left: '15%' },
   ring2: { top: '55%', left: '85%' },
-  charm: { top: '85%', left: '50%' }
+  charm: { top: '85%', left: '50%' },
 };
 
 const slotNames: Record<EquipmentSlot, string> = {
@@ -301,13 +306,10 @@ const slotNames: Record<EquipmentSlot, string> = {
   boots: 'Boots',
   ring1: 'Ring 1',
   ring2: 'Ring 2',
-  charm: 'Charm'
+  charm: 'Charm',
 };
 
-export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
-  className,
-  onClose
-}) => {
+export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({ className, onClose }) => {
   const { gameState } = useGameState();
   const { isMobile, isTablet } = useResponsive();
 
@@ -317,7 +319,7 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
     equipmentStats,
     equipItem,
     unequipItem,
-    canEquip: canEquipItem
+    canEquip: canEquipItem,
   } = useEquipment();
 
   // Provide fallback values to prevent undefined errors
@@ -327,23 +329,16 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
   const equipmentLoading = false;
   const equipmentError = null;
 
-  const {
-    getFilteredItems,
-    isLoading: inventoryLoading,
-    error: inventoryError
-  } = useInventory();
+  const { getFilteredItems, isLoading: inventoryLoading, error: inventoryError } = useInventory();
 
   const {
     validateEquipment,
     canEquipItem: canEquipItemValidation,
     getRestrictionMessage,
-    playerInfo
+    playerInfo,
   } = useEquipmentValidation();
 
-  const {
-    showSuccess,
-    showError
-  } = useInventoryFeedback();
+  const { showSuccess, showError } = useInventoryFeedback();
 
   const [selectedSlot, setSelectedSlot] = useState<EquipmentSlot | null>(null);
   const [selectedItem, setSelectedItem] = useState<EnhancedItem | null>(null);
@@ -364,7 +359,7 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
       equipmentSlots: [],
       usableOnly: false,
       tradableOnly: false,
-      searchText: ''
+      searchText: '',
     });
   }, [getFilteredItems]);
 
@@ -376,47 +371,50 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
   }, []);
 
   // Handle item selection from modal
-  const handleItemSelected = useCallback((item: EnhancedItem) => {
-    if (!selectedSlot) return;
+  const handleItemSelected = useCallback(
+    (item: EnhancedItem) => {
+      if (!selectedSlot) return;
 
-    // Clear any previous errors
-    setErrorMessage(null);
-    setEquipmentWarnings([]);
+      // Clear any previous errors
+      setErrorMessage(null);
+      setEquipmentWarnings([]);
 
-    // Perform comprehensive compatibility check
-    const compatibility = checkEquipmentCompatibility(
-      item,
-      selectedSlot,
-      playerInfo.level,
-      playerInfo.class,
-      playerInfo.stats,
-      equipmentSet
-    );
+      // Perform comprehensive compatibility check
+      const compatibility = checkEquipmentCompatibility(
+        item,
+        selectedSlot,
+        playerInfo.level,
+        playerInfo.class,
+        playerInfo.stats,
+        equipmentSet
+      );
 
-    // Handle BLOCKING errors (canEquip === false)
-    if (!compatibility.canEquip) {
-      // Get the first blocking reason (most important)
-      const errorReason = compatibility.reasons[0] || 'This item cannot be equipped right now!';
+      // Handle BLOCKING errors (canEquip === false)
+      if (!compatibility.canEquip) {
+        // Get the first blocking reason (most important)
+        const errorReason = compatibility.reasons[0] || 'This item cannot be equipped right now!';
 
-      // Set error message for display
-      setErrorMessage(errorReason);
+        // Set error message for display
+        setErrorMessage(errorReason);
 
-      // Keep modal open so user can see the error and try another item
-      // Do NOT proceed to confirmation dialog
-      return;
-    }
+        // Keep modal open so user can see the error and try another item
+        // Do NOT proceed to confirmation dialog
+        return;
+      }
 
-    // Handle WARNINGS (canEquip === true but warnings exist)
-    if (compatibility.warnings.length > 0) {
-      // Store warnings to show in confirmation dialog
-      setEquipmentWarnings(compatibility.warnings);
-    }
+      // Handle WARNINGS (canEquip === true but warnings exist)
+      if (compatibility.warnings.length > 0) {
+        // Store warnings to show in confirmation dialog
+        setEquipmentWarnings(compatibility.warnings);
+      }
 
-    // Valid item - proceed to confirmation
-    setSelectedItem(item);
-    setShowSelectionModal(false);
-    setShowConfirmDialog(true);
-  }, [selectedSlot, playerInfo, equipmentSet]);
+      // Valid item - proceed to confirmation
+      setSelectedItem(item);
+      setShowSelectionModal(false);
+      setShowConfirmDialog(true);
+    },
+    [selectedSlot, playerInfo, equipmentSet]
+  );
 
   // Handle confirmed equip
   const handleConfirmEquip = useCallback(async () => {
@@ -442,10 +440,10 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
       console.error('Failed to equip item:', error);
 
       // Show error notification with helpful, non-scary message
-      showError(
-        'Oops! We couldn\'t equip that item right now. Try again in a moment!',
-        { operationType: 'equip item', itemName: selectedItem.name }
-      );
+      showError("Oops! We couldn't equip that item right now. Try again in a moment!", {
+        operationType: 'equip item',
+        itemName: selectedItem.name,
+      });
     } finally {
       setIsEquipping(false);
     }
@@ -481,10 +479,10 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
       console.error('Failed to unequip item:', error);
 
       // Show error notification with helpful, non-scary message
-      showError(
-        'Oops! We couldn\'t remove that item right now. Try again in a moment!',
-        { operationType: 'unequip item', itemName }
-      );
+      showError("Oops! We couldn't remove that item right now. Try again in a moment!", {
+        operationType: 'unequip item',
+        itemName,
+      });
     } finally {
       setIsUnequipping(false);
     }
@@ -504,8 +502,10 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
 
         // Special case: "ring" type items can go in ring1 OR ring2
         // Items with equipmentSlot="ring1" or "ring" should work in both ring slots
-        if ((targetSlot === 'ring1' || targetSlot === 'ring2') &&
-            (itemSlot === 'ring1' || itemSlot === 'ring2' || itemSlot === 'ring')) {
+        if (
+          (targetSlot === 'ring1' || targetSlot === 'ring2') &&
+          (itemSlot === 'ring1' || itemSlot === 'ring2' || itemSlot === 'ring')
+        ) {
           return true;
         }
 
@@ -522,10 +522,9 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
 
     return availableItems.map(item => ({
       item,
-      validation: validateEquipment(item, selectedSlot)
+      validation: validateEquipment(item, selectedSlot),
     }));
   }, [availableItems, selectedSlot, validateEquipment]);
-
 
   // Generate confirmation dialog content
   const confirmDialogContent = useMemo(() => {
@@ -549,7 +548,7 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
       message,
       isUpgrade: comparison.isUpgrade,
       statChange: comparison.totalStatChange,
-      hasWarnings: equipmentWarnings.length > 0
+      hasWarnings: equipmentWarnings.length > 0,
     };
   }, [selectedItem, selectedSlot, equipmentSet, playerInfo.stats, equipmentWarnings]);
 
@@ -563,7 +562,7 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
     return {
       title: 'Unequip Item?',
       message: `Remove ${currentItem.name} from your ${slotNames[selectedSlot]} slot?`,
-      itemName: currentItem.name
+      itemName: currentItem.name,
     };
   }, [selectedSlot, equipmentSet]);
 
@@ -590,61 +589,65 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
   }, []);
 
   // Get tooltip content for equipment slots
-  const getTooltipContent = useCallback((slot: EquipmentSlot, item?: EnhancedItem): JSX.Element => {
-    const slotIcon = getEquipmentSlotIcon(slot);
-    const slotName = slotNames[slot];
+  const getTooltipContent = useCallback(
+    (slot: EquipmentSlot, item?: EnhancedItem): JSX.Element => {
+      const slotIcon = getEquipmentSlotIcon(slot);
+      const slotName = slotNames[slot];
 
-    if (!item) {
-      // Empty slot tooltip
+      if (!item) {
+        // Empty slot tooltip
+        return (
+          <div style={{ textAlign: 'center', lineHeight: '1.5' }}>
+            <div style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>{slotIcon}</div>
+            <div style={{ fontWeight: 'bold', marginBottom: '0.25rem' }}>Empty {slotName}</div>
+            <div style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Click to find equipment!</div>
+          </div>
+        );
+      }
+
+      // Equipped item tooltip
       return (
-        <div style={{ textAlign: 'center', lineHeight: '1.5' }}>
-          <div style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>
-            {slotIcon}
+        <div style={{ textAlign: 'left', lineHeight: '1.5', minWidth: '200px' }}>
+          <div
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}
+          >
+            <span style={{ fontSize: '1.2rem' }}>{slotIcon}</span>
+            <div>
+              <div style={{ fontWeight: 'bold', color: '#d4af37' }}>{item.name}</div>
+              <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}
+              </div>
+            </div>
           </div>
-          <div style={{ fontWeight: 'bold', marginBottom: '0.25rem' }}>
-            Empty {slotName}
+          <div style={{ fontSize: '0.85rem', marginBottom: '0.5rem', color: '#e2e8f0' }}>
+            {formatItemStats(item)}
           </div>
-          <div style={{ fontSize: '0.85rem', color: '#94a3b8' }}>
-            Click to find equipment!
+          <div style={{ fontSize: '0.8rem', color: '#10b981', fontStyle: 'italic' }}>
+            Click to change equipment!
           </div>
         </div>
       );
-    }
-
-    // Equipped item tooltip
-    return (
-      <div style={{ textAlign: 'left', lineHeight: '1.5', minWidth: '200px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-          <span style={{ fontSize: '1.2rem' }}>{slotIcon}</span>
-          <div>
-            <div style={{ fontWeight: 'bold', color: '#d4af37' }}>
-              {item.name}
-            </div>
-            <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
-              {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}
-            </div>
-          </div>
-        </div>
-        <div style={{ fontSize: '0.85rem', marginBottom: '0.5rem', color: '#e2e8f0' }}>
-          {formatItemStats(item)}
-        </div>
-        <div style={{ fontSize: '0.8rem', color: '#10b981', fontStyle: 'italic' }}>
-          Click to change equipment!
-        </div>
-      </div>
-    );
-  }, [formatItemStats]);
+    },
+    [formatItemStats]
+  );
 
   // Get rarity style
   const getRarityBorderColor = useCallback((rarity: string): string => {
     switch (rarity) {
-      case 'common': return '#10b981';
-      case 'uncommon': return '#3b82f6';
-      case 'rare': return '#8b5cf6';
-      case 'epic': return '#f59e0b';
-      case 'legendary': return '#ef4444';
-      case 'mythical': return '#ec4899';
-      default: return '#d4af37';
+      case 'common':
+        return '#10b981';
+      case 'uncommon':
+        return '#3b82f6';
+      case 'rare':
+        return '#8b5cf6';
+      case 'epic':
+        return '#f59e0b';
+      case 'legendary':
+        return '#ef4444';
+      case 'mythical':
+        return '#ec4899';
+      default:
+        return '#d4af37';
     }
   }, []);
 
@@ -652,7 +655,7 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
     return (
       <div className={className} style={equipmentStyles.container}>
         <div style={equipmentStyles.loadingContainer}>
-          <LoadingSpinner size="large" />
+          <LoadingSpinner size='large' />
         </div>
       </div>
     );
@@ -664,7 +667,7 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
         <div style={equipmentStyles.errorContainer}>
           <h2>Equipment System Error</h2>
           <p>{equipmentError || inventoryError}</p>
-          <Button variant="primary" onClick={() => window.location.reload()}>
+          <Button variant='primary' onClick={() => window.location.reload()}>
             Reload
           </Button>
         </div>
@@ -675,12 +678,7 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
   return (
     <div className={className} style={equipmentStyles.container}>
       {onClose && (
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={onClose}
-          style={equipmentStyles.closeButton}
-        >
+        <Button variant='secondary' size='sm' onClick={onClose} style={equipmentStyles.closeButton}>
           ✕
         </Button>
       )}
@@ -692,22 +690,24 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <h1 style={{
-          ...equipmentStyles.title,
-          fontSize: isMobile ? '1.5rem' : '2rem'
-        }}>
+        <h1
+          style={{
+            ...equipmentStyles.title,
+            fontSize: isMobile ? '1.5rem' : '2rem',
+          }}
+        >
           Equipment
         </h1>
-        <p style={equipmentStyles.subtitle}>
-          Manage your equipment and view character stats
-        </p>
+        <p style={equipmentStyles.subtitle}>Manage your equipment and view character stats</p>
       </motion.div>
 
       {/* Main Content */}
-      <div style={{
-        ...equipmentStyles.content,
-        flexDirection: isMobile ? 'column' : 'row'
-      }}>
+      <div
+        style={{
+          ...equipmentStyles.content,
+          flexDirection: isMobile ? 'column' : 'row',
+        }}
+      >
         {/* Conditional Layout: Mobile/Tablet Grid OR Desktop Paper Doll */}
         <motion.div
           style={equipmentStyles.paperDollSection}
@@ -715,12 +715,14 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
         >
-          {(isMobile || isTablet) ? (
+          {isMobile || isTablet ? (
             // Mobile/Tablet Grid Layout
-            <div style={{
-              ...equipmentStyles.mobileGridContainer,
-              ...(isTablet ? equipmentStyles.mobileGridContainerTablet : {})
-            }}>
+            <div
+              style={{
+                ...equipmentStyles.mobileGridContainer,
+                ...(isTablet ? equipmentStyles.mobileGridContainerTablet : {}),
+              }}
+            >
               {Object.entries(slotPositions).map(([slot, _]) => {
                 const equipmentSlot = slot as EquipmentSlot;
                 const equippedItem = equipmentSet[equipmentSlot];
@@ -733,9 +735,11 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
                     style={{
                       ...equipmentStyles.mobileSlotCard,
                       ...(equippedItem ? equipmentStyles.mobileSlotCardFilled : {}),
-                      ...(equippedItem ? {
-                        borderColor: getRarityBorderColor(equippedItem.rarity)
-                      } : {})
+                      ...(equippedItem
+                        ? {
+                            borderColor: getRarityBorderColor(equippedItem.rarity),
+                          }
+                        : {}),
                     }}
                     onClick={() => handleSlotClick(equipmentSlot)}
                     whileTap={{ scale: 0.98 }}
@@ -743,15 +747,14 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
                   >
                     {/* Slot Header */}
                     <div style={equipmentStyles.mobileSlotHeader}>
-                      <span style={equipmentStyles.mobileSlotIcon}>
-                        {slotIcon}
-                      </span>
+                      <span style={equipmentStyles.mobileSlotIcon}>{slotIcon}</span>
                       <div style={equipmentStyles.mobileSlotInfo}>
-                        <div style={equipmentStyles.mobileSlotName}>
-                          {slotDisplayName}
-                        </div>
+                        <div style={equipmentStyles.mobileSlotName}>{slotDisplayName}</div>
                         <div style={equipmentStyles.mobileSlotStatus}>
-                          {equippedItem ? equippedItem.rarity.charAt(0).toUpperCase() + equippedItem.rarity.slice(1) : 'Empty'}
+                          {equippedItem
+                            ? equippedItem.rarity.charAt(0).toUpperCase() +
+                              equippedItem.rarity.slice(1)
+                            : 'Empty'}
                         </div>
                       </div>
                     </div>
@@ -759,16 +762,14 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
                     {/* Item Info or Empty Message */}
                     {equippedItem ? (
                       <div style={equipmentStyles.mobileItemInfo}>
-                        <div style={equipmentStyles.mobileItemName}>
-                          {equippedItem.name}
-                        </div>
+                        <div style={equipmentStyles.mobileItemName}>{equippedItem.name}</div>
                         <div style={equipmentStyles.mobileItemStats}>
                           {formatItemStats(equippedItem)}
                         </div>
                         <Button
-                          variant="danger"
-                          size="sm"
-                          onClick={(e) => {
+                          variant='danger'
+                          size='sm'
+                          onClick={e => {
                             e.stopPropagation();
                             handleUnequipClick(equipmentSlot);
                           }}
@@ -779,9 +780,7 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
                         </Button>
                       </div>
                     ) : (
-                      <div style={equipmentStyles.mobileEmptyMessage}>
-                        Tap to equip!
-                      </div>
+                      <div style={equipmentStyles.mobileEmptyMessage}>Tap to equip!</div>
                     )}
                   </motion.div>
                 );
@@ -789,7 +788,7 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
             </div>
           ) : (
             // Desktop Paper Doll Layout
-            <Card title="Character Equipment">
+            <Card title='Character Equipment'>
               <div style={equipmentStyles.paperDoll}>
                 {/* Character Silhouette */}
                 <div style={equipmentStyles.characterSilhouette} />
@@ -805,7 +804,7 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
                     <Tooltip
                       key={slot}
                       content={getTooltipContent(equipmentSlot, equippedItem)}
-                      placement="top"
+                      placement='top'
                     >
                       <motion.div
                         style={{
@@ -815,13 +814,13 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
                           border: isSelected
                             ? '2px solid #f59e0b'
                             : equippedItem
-                            ? `2px solid ${getRarityBorderColor(equippedItem.rarity)}`
-                            : equipmentStyles.equipmentSlot.border,
+                              ? `2px solid ${getRarityBorderColor(equippedItem.rarity)}`
+                              : equipmentStyles.equipmentSlot.border,
                           background: isSelected
                             ? 'rgba(245, 158, 11, 0.3)'
                             : equippedItem
-                            ? 'rgba(212, 175, 55, 0.2)'
-                            : equipmentStyles.equipmentSlot.background
+                              ? 'rgba(212, 175, 55, 0.2)'
+                              : equipmentStyles.equipmentSlot.background,
                         }}
                         onClick={() => handleSlotClick(equipmentSlot)}
                         animate={{ x: '-50%', y: '-50%', scale: 1 }}
@@ -829,24 +828,26 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
                         whileTap={{ x: '-50%', y: '-50%', scale: 0.95 }}
                       >
                         {/* Display emoji icon instead of text label */}
-                        <span style={{
-                          fontSize: equippedItem ? '1.5rem' : '1.8rem',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          width: '100%',
-                          height: '100%',
-                          filter: equippedItem ? 'none' : 'grayscale(0.5) opacity(0.6)'
-                        }}>
+                        <span
+                          style={{
+                            fontSize: equippedItem ? '1.5rem' : '1.8rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: '100%',
+                            height: '100%',
+                            filter: equippedItem ? 'none' : 'grayscale(0.5) opacity(0.6)',
+                          }}
+                        >
                           {slotIcon}
                         </span>
 
                         {/* Unequip button for equipped items */}
                         {equippedItem && (
                           <Button
-                            variant="danger"
-                            size="xs"
-                            onClick={(e) => {
+                            variant='danger'
+                            size='xs'
+                            onClick={e => {
                               e.stopPropagation();
                               handleUnequipClick(equipmentSlot);
                             }}
@@ -859,7 +860,7 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
                               borderRadius: '50%',
                               fontSize: '0.5rem',
                               padding: '0',
-                              minWidth: '12px'
+                              minWidth: '12px',
                             }}
                             disabled={isUnequipping}
                           >
@@ -879,8 +880,8 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
         <motion.div
           style={{
             ...equipmentStyles.statsSection,
-            flex: (isMobile || isTablet) ? '1 1 100%' : '1 1 300px',
-            minWidth: (isMobile || isTablet) ? '100%' : '300px'
+            flex: isMobile || isTablet ? '1 1 100%' : '1 1 300px',
+            minWidth: isMobile || isTablet ? '100%' : '300px',
           }}
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -896,37 +897,48 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
               const finalValue = statCalc.finalValue || 0;
 
               return (
-                <div key={stat} style={{
-                  ...equipmentStyles.statRow,
-                  flexDirection: (isMobile || isTablet) ? 'column' : 'row',
-                  alignItems: (isMobile || isTablet) ? 'flex-start' : 'center',
-                  gap: (isMobile || isTablet) ? '0.25rem' : '0'
-                }}>
+                <div
+                  key={stat}
+                  style={{
+                    ...equipmentStyles.statRow,
+                    flexDirection: isMobile || isTablet ? 'column' : 'row',
+                    alignItems: isMobile || isTablet ? 'flex-start' : 'center',
+                    gap: isMobile || isTablet ? '0.25rem' : '0',
+                  }}
+                >
                   <span style={equipmentStyles.statLabel}>
                     {stat.charAt(0).toUpperCase() + stat.slice(1)}:
                   </span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     {/* Base Stat (Gray) */}
-                    <span style={{ ...equipmentStyles.statValue, color: '#94a3b8', fontSize: '0.9rem' }}>
+                    <span
+                      style={{ ...equipmentStyles.statValue, color: '#94a3b8', fontSize: '0.9rem' }}
+                    >
                       {baseValue}
                     </span>
 
                     {/* Equipment Bonus (Green if positive) */}
                     {equipmentBonus > 0 && (
-                      <span style={{ ...equipmentStyles.statBonus, color: '#10b981', fontSize: '0.9rem' }}>
+                      <span
+                        style={{
+                          ...equipmentStyles.statBonus,
+                          color: '#10b981',
+                          fontSize: '0.9rem',
+                        }}
+                      >
                         (+{equipmentBonus})
                       </span>
                     )}
 
                     {/* Equals sign */}
                     {equipmentBonus > 0 && (
-                      <span style={{ color: '#64748b', fontSize: '0.85rem' }}>
-                        =
-                      </span>
+                      <span style={{ color: '#64748b', fontSize: '0.85rem' }}>=</span>
                     )}
 
                     {/* Final Stat (White/Bold) */}
-                    <span style={{ ...equipmentStyles.statValue, fontWeight: 'bold', fontSize: '1rem' }}>
+                    <span
+                      style={{ ...equipmentStyles.statValue, fontWeight: 'bold', fontSize: '1rem' }}
+                    >
                       {finalValue}
                     </span>
                   </div>
@@ -939,16 +951,18 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
           {getEquipmentRecommendations().length > 0 && (
             <div style={equipmentStyles.statsCard}>
               <h3 style={equipmentStyles.statsTitle}>Recommended Upgrades</h3>
-              {getEquipmentRecommendations().slice(0, 3).map((rec, index) => (
-                <div key={index} style={equipmentStyles.statRow}>
-                  <span style={equipmentStyles.statLabel}>
-                    {rec.slot}: {rec.item.name}
-                  </span>
-                  <span style={equipmentStyles.statBonus}>
-                    +{rec.statImprovement.total} stats
-                  </span>
-                </div>
-              ))}
+              {getEquipmentRecommendations()
+                .slice(0, 3)
+                .map((rec, index) => (
+                  <div key={index} style={equipmentStyles.statRow}>
+                    <span style={equipmentStyles.statLabel}>
+                      {rec.slot}: {rec.item.name}
+                    </span>
+                    <span style={equipmentStyles.statBonus}>
+                      +{rec.statImprovement.total} stats
+                    </span>
+                  </div>
+                ))}
             </div>
           )}
         </motion.div>
@@ -987,8 +1001,8 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
         onConfirm={handleConfirmEquip}
         title={confirmDialogContent?.title || 'Equip Item?'}
         message={confirmDialogContent?.message || ''}
-        confirmText="Equip"
-        cancelText="Cancel"
+        confirmText='Equip'
+        cancelText='Cancel'
         confirmVariant={confirmDialogContent?.isUpgrade ? 'primary' : 'secondary'}
         isLoading={isEquipping}
       >
@@ -1014,9 +1028,9 @@ export const EquipmentScreen: React.FC<EquipmentScreenProps> = ({
         onConfirm={handleConfirmUnequip}
         title={unequipDialogContent?.title || 'Unequip Item?'}
         message={unequipDialogContent?.message || ''}
-        confirmText="Unequip"
-        cancelText="Cancel"
-        confirmVariant="danger"
+        confirmText='Unequip'
+        cancelText='Cancel'
+        confirmVariant='danger'
         isLoading={isUnequipping}
       />
     </div>

@@ -29,7 +29,7 @@ import {
   CreatureType,
   CreatureElement,
   CreatureCombatRole,
-  SpeciesRequest
+  SpeciesRequest,
 } from '@/types/creatures';
 import { Monster, PlayerStats } from '@/types/game';
 
@@ -52,7 +52,10 @@ interface UseCreaturesReturn {
   reorderTeam: (fromIndex: number, toIndex: number) => Promise<CreatureOperationResult>;
 
   // Companion system
-  setAsCompanion: (creatureId: string, combatRole: CreatureCombatRole) => Promise<CreatureOperationResult>;
+  setAsCompanion: (
+    creatureId: string,
+    combatRole: CreatureCombatRole
+  ) => Promise<CreatureOperationResult>;
   trainCompanion: (creatureId: string, trainingType: string) => Promise<CreatureOperationResult>;
   feedCompanion: (creatureId: string, itemId: string) => Promise<CreatureOperationResult>;
 
@@ -63,13 +66,19 @@ interface UseCreaturesReturn {
   collectBreedingResult: (breedingId: string) => Promise<CreatureOperationResult>;
 
   // Trading system
-  createTrade: (offeredCreatures: string[], requestedSpecies: SpeciesRequest[]) => Promise<CreatureTrade>;
+  createTrade: (
+    offeredCreatures: string[],
+    requestedSpecies: SpeciesRequest[]
+  ) => Promise<CreatureTrade>;
   acceptTrade: (tradeId: string) => Promise<CreatureOperationResult>;
   declineTrade: (tradeId: string) => Promise<CreatureOperationResult>;
 
   // Discovery and bestiary
   discoverCreature: (monster: Monster, location: string) => Promise<BestiaryEntry>;
-  updateBestiaryEntry: (species: string, completionLevel: CreatureCompletionLevel) => Promise<BestiaryEntry>;
+  updateBestiaryEntry: (
+    species: string,
+    completionLevel: CreatureCompletionLevel
+  ) => Promise<BestiaryEntry>;
   getBestiaryProgress: () => { discovered: number; total: number; percentage: number };
 
   // Filtering and search
@@ -136,7 +145,7 @@ export function useCreatures(): UseCreaturesReturn {
       companions: false,
       breedable: false,
       searchText: '',
-    }
+    },
   });
 
   const [filteredCreatures, setFilteredCreatures] = useState<EnhancedCreature[]>([]);
@@ -149,140 +158,143 @@ export function useCreatures(): UseCreaturesReturn {
   const processedMonstersRef = useRef<Set<string>>(new Set());
 
   // Helper function to convert ReactMonster to EnhancedCreature (generate IVs once per monster)
-  const convertReactMonsterToEnhancedCreature = useCallback((monster: any, currentArea: string, playerName: string): EnhancedCreature => {
-    // Generate random individual stats (IVs) - only called once per unique monster
-    const generateIV = () => Math.floor(Math.random() * 32);
+  const convertReactMonsterToEnhancedCreature = useCallback(
+    (monster: any, currentArea: string, playerName: string): EnhancedCreature => {
+      // Generate random individual stats (IVs) - only called once per unique monster
+      const generateIV = () => Math.floor(Math.random() * 32);
 
-    // Create a properly structured EnhancedCreature
-    return {
-      // Core identity
-      id: monster.id,
-      creatureId: monster.id,
-      name: monster.name,
-      species: monster.species || monster.name.toLowerCase().replace(/\s+/g, '_'),
-      level: monster.level,
+      // Create a properly structured EnhancedCreature
+      return {
+        // Core identity
+        id: monster.id,
+        creatureId: monster.id,
+        name: monster.name,
+        species: monster.species || monster.name.toLowerCase().replace(/\s+/g, '_'),
+        level: monster.level,
 
-      // Health and energy
-      hp: monster.hp,
-      maxHp: monster.maxHp,
-      currentHealth: monster.hp,
-      maxHealth: monster.maxHp,
-      mp: monster.mp,
-      maxMp: monster.maxMp,
+        // Health and energy
+        hp: monster.hp,
+        maxHp: monster.maxHp,
+        currentHealth: monster.hp,
+        maxHealth: monster.maxHp,
+        mp: monster.mp,
+        maxMp: monster.maxMp,
 
-      // Stats - ReactMonster has baseStats/currentStats
-      baseStats: monster.baseStats,
-      currentStats: monster.currentStats,
-      // Also provide stats for Monster interface compatibility
-      stats: monster.currentStats,
+        // Stats - ReactMonster has baseStats/currentStats
+        baseStats: monster.baseStats,
+        currentStats: monster.currentStats,
+        // Also provide stats for Monster interface compatibility
+        stats: monster.currentStats,
 
-      // Type and classification
-      creatureType: (monster.types?.[0] as CreatureType) || 'beast',
-      types: monster.types || ['normal'],
-      element: (monster.types?.[0] as CreatureElement) || 'normal',
-      rarity: monster.rarity || 'common',
-      type: monster.types?.[0] || 'beast',
+        // Type and classification
+        creatureType: (monster.types?.[0] as CreatureType) || 'beast',
+        types: monster.types || ['normal'],
+        element: (monster.types?.[0] as CreatureElement) || 'normal',
+        rarity: monster.rarity || 'common',
+        type: monster.types?.[0] || 'beast',
 
-      // Capture information
-      captureDate: Date.now(),
-      captureLocation: currentArea || 'unknown',
-      capturedBy: playerName || 'Player',
-      capturedAt: new Date(),
-      discoveredAt: new Date(),
-      discoveryLocation: currentArea || 'unknown',
-      timesEncountered: 1,
+        // Capture information
+        captureDate: Date.now(),
+        captureLocation: currentArea || 'unknown',
+        capturedBy: playerName || 'Player',
+        capturedAt: new Date(),
+        discoveredAt: new Date(),
+        discoveryLocation: currentArea || 'unknown',
+        timesEncountered: 1,
 
-      // Physical attributes
-      size: 'medium' as const,
-      habitat: [currentArea || 'unknown'],
+        // Physical attributes
+        size: 'medium' as const,
+        habitat: [currentArea || 'unknown'],
 
-      // Abilities and items
-      abilities: monster.abilities || [],
-      captureRate: monster.captureRate || 0.3,
-      experience: monster.experience || 0,
-      gold: monster.gold || 0,
-      drops: monster.drops || [],
+        // Abilities and items
+        abilities: monster.abilities || [],
+        captureRate: monster.captureRate || 0.3,
+        experience: monster.experience || 0,
+        gold: monster.gold || 0,
+        drops: monster.drops || [],
 
-      // Areas and evolution
-      areas: monster.areas || [],
-      evolvesTo: monster.evolvesTo || [],
+        // Areas and evolution
+        areas: monster.areas || [],
+        evolvesTo: monster.evolvesTo || [],
 
-      // Status flags
-      isWild: monster.isWild !== undefined ? monster.isWild : true,
-      nickname: undefined,
-      isFavorite: false,
-      isCompanion: false,
+        // Status flags
+        isWild: monster.isWild !== undefined ? monster.isWild : true,
+        nickname: undefined,
+        isFavorite: false,
+        isCompanion: false,
 
-      // Personality
-      personality: {
-        traits: [],
-        mood: 'neutral',
-        loyalty: 50,
-        happiness: monster.friendship !== undefined ? monster.friendship : 100,
-        energy: 100,
-        sociability: 50
-      },
+        // Personality
+        personality: {
+          traits: [],
+          mood: 'neutral',
+          loyalty: 50,
+          happiness: monster.friendship !== undefined ? monster.friendship : 100,
+          energy: 100,
+          sociability: 50,
+        },
 
-      // Nature
-      nature: {
-        name: 'neutral',
-        statModifiers: {},
-        behaviorModifiers: {
-          aggression: 0,
-          defensiveness: 0,
-          cooperation: 0
-        }
-      },
+        // Nature
+        nature: {
+          name: 'neutral',
+          statModifiers: {},
+          behaviorModifiers: {
+            aggression: 0,
+            defensiveness: 0,
+            cooperation: 0,
+          },
+        },
 
-      // Individual stats (IVs/EVs) - generated once
-      individualStats: {
-        hpIV: generateIV(),
-        attackIV: generateIV(),
-        defenseIV: generateIV(),
-        magicAttackIV: generateIV(),
-        magicDefenseIV: generateIV(),
-        speedIV: generateIV(),
-        hpEV: 0,
-        attackEV: 0,
-        defenseEV: 0,
-        magicAttackEV: 0,
-        magicDefenseEV: 0,
-        speedEV: 0
-      },
+        // Individual stats (IVs/EVs) - generated once
+        individualStats: {
+          hpIV: generateIV(),
+          attackIV: generateIV(),
+          defenseIV: generateIV(),
+          magicAttackIV: generateIV(),
+          magicDefenseIV: generateIV(),
+          speedIV: generateIV(),
+          hpEV: 0,
+          attackEV: 0,
+          defenseEV: 0,
+          magicAttackEV: 0,
+          magicDefenseEV: 0,
+          speedEV: 0,
+        },
 
-      // Genetics and breeding
-      genetics: {
-        parentIds: [],
-        generation: 1,
-        inheritedTraits: [],
-        mutations: [],
-        breedingPotential: 100
-      },
-      breedingGroup: [monster.types?.[0] as CreatureType || 'beast'],
-      fertility: 100,
+        // Genetics and breeding
+        genetics: {
+          parentIds: [],
+          generation: 1,
+          inheritedTraits: [],
+          mutations: [],
+          breedingPotential: 100,
+        },
+        breedingGroup: [(monster.types?.[0] as CreatureType) || 'beast'],
+        fertility: 100,
 
-      // Collection status
-      collectionStatus: {
-        discovered: true,
-        captured: true,
-        timesCaptures: 1,
-        favorite: false,
-        tags: [],
-        notes: '',
-        completionLevel: 'captured',
-        firstSeenDate: Date.now(),
-        captureCount: 1,
-        releaseCount: 0,
-        breedCount: 0
-      },
+        // Collection status
+        collectionStatus: {
+          discovered: true,
+          captured: true,
+          timesCaptures: 1,
+          favorite: false,
+          tags: [],
+          notes: '',
+          completionLevel: 'captured',
+          firstSeenDate: Date.now(),
+          captureCount: 1,
+          releaseCount: 0,
+          breedCount: 0,
+        },
 
-      // Visual and descriptive
-      sprite: '',
-      model: undefined,
-      description: `A ${monster.types?.[0] || 'mysterious'} creature from ${currentArea || 'unknown lands'}.`,
-      loreText: `This ${monster.name} was captured in ${currentArea || 'unknown lands'}.`
-    };
-  }, []);
+        // Visual and descriptive
+        sprite: '',
+        model: undefined,
+        description: `A ${monster.types?.[0] || 'mysterious'} creature from ${currentArea || 'unknown lands'}.`,
+        loreText: `This ${monster.name} was captured in ${currentArea || 'unknown lands'}.`,
+      };
+    },
+    []
+  );
 
   // Initialize from game state - only process NEW captured monsters
   useEffect(() => {
@@ -318,7 +330,7 @@ export function useCreatures(): UseCreaturesReturn {
         ...prev,
         creatures: { ...prev.creatures, ...newCreaturesMap },
         totalCaptured: capturedMonsters.length,
-        lastUpdated: Date.now() // Update timestamp for sync detection
+        lastUpdated: Date.now(), // Update timestamp for sync detection
       };
 
       // ONLY sync to global if global state is empty or missing creatures
@@ -327,10 +339,13 @@ export function useCreatures(): UseCreaturesReturn {
       const localCreatureCount = Object.keys(newCollection.creatures).length;
 
       if (globalCreatureCount === 0) {
-        console.log('🔄 [useCreatures] Initial sync: Pushing captured creatures to empty global state', {
-          newCreatureIds: Object.keys(newCreaturesMap),
-          totalInCollection: localCreatureCount
-        });
+        console.log(
+          '🔄 [useCreatures] Initial sync: Pushing captured creatures to empty global state',
+          {
+            newCreatureIds: Object.keys(newCreaturesMap),
+            totalInCollection: localCreatureCount,
+          }
+        );
 
         // Use setTimeout to avoid "Cannot update component during render" warning
         setTimeout(() => {
@@ -340,13 +355,19 @@ export function useCreatures(): UseCreaturesReturn {
         console.log('⏭️ [useCreatures] Skipping sync: Global state already has creatures', {
           globalCount: globalCreatureCount,
           localCount: localCreatureCount,
-          reason: 'Preventing overwrite of existing creatures (possibly from breeding)'
+          reason: 'Preventing overwrite of existing creatures (possibly from breeding)',
         });
       }
 
       return newCollection;
     });
-  }, [gameState.capturedMonsters, gameState.currentArea, gameState.player?.name, convertReactMonsterToEnhancedCreature, updateGameState]);
+  }, [
+    gameState.capturedMonsters,
+    gameState.currentArea,
+    gameState.player?.name,
+    convertReactMonsterToEnhancedCreature,
+    updateGameState,
+  ]);
 
   // Initialize activeTeam and other collection data from global state
   useEffect(() => {
@@ -369,13 +390,14 @@ export function useCreatures(): UseCreaturesReturn {
         hasActiveTeam: !!gameState.creatures.activeTeam,
         activeTeamLength: gameState.creatures.activeTeam?.length || 0,
         activeTeamIds: gameState.creatures.activeTeam || [],
-        totalCreatures: globalCreatureCount
+        totalCreatures: globalCreatureCount,
       });
 
       // Only update if there's an actual change (use timestamp comparison instead of count)
-      if (lastGlobalUpdate !== lastLocalUpdate ||
-          JSON.stringify(gameState.creatures.activeTeam) !== JSON.stringify(collection.activeTeam)) {
-
+      if (
+        lastGlobalUpdate !== lastLocalUpdate ||
+        JSON.stringify(gameState.creatures.activeTeam) !== JSON.stringify(collection.activeTeam)
+      ) {
         console.log('📝 useCreatures: Updating local collection (change detected)');
 
         // Restore the entire collection from global state
@@ -386,7 +408,8 @@ export function useCreatures(): UseCreaturesReturn {
           bestiary: gameState.creatures?.bestiary || prev.bestiary,
           totalDiscovered: gameState.creatures?.totalDiscovered || prev.totalDiscovered,
           totalCaptured: gameState.creatures?.totalCaptured || prev.totalCaptured,
-          completionPercentage: gameState.creatures?.completionPercentage || prev.completionPercentage,
+          completionPercentage:
+            gameState.creatures?.completionPercentage || prev.completionPercentage,
           favoriteSpecies: gameState.creatures?.favoriteSpecies || prev.favoriteSpecies,
           activeBreeding: gameState.creatures?.activeBreeding || prev.activeBreeding,
           breedingHistory: gameState.creatures?.breedingHistory || prev.breedingHistory,
@@ -396,8 +419,8 @@ export function useCreatures(): UseCreaturesReturn {
           // Merge creatures (combine captured monsters with any saved creatures)
           creatures: {
             ...prev.creatures,
-            ...(gameState.creatures?.creatures || {})
-          }
+            ...(gameState.creatures?.creatures || {}),
+          },
         }));
 
         console.log('✅ useCreatures: Collection updated from global state');
@@ -423,13 +446,18 @@ export function useCreatures(): UseCreaturesReturn {
       }
 
       // Rarity filter
-      if (filter.rarities.length > 0 && !filter.rarities.includes(creature.rarity as CreatureRarity)) {
+      if (
+        filter.rarities.length > 0 &&
+        !filter.rarities.includes(creature.rarity as CreatureRarity)
+      ) {
         return false;
       }
 
       // Completion level filter
-      if (filter.completionLevels.length > 0 &&
-          !filter.completionLevels.includes(creature.collectionStatus.completionLevel)) {
+      if (
+        filter.completionLevels.length > 0 &&
+        !filter.completionLevels.includes(creature.collectionStatus.completionLevel)
+      ) {
         return false;
       }
 
@@ -465,8 +493,10 @@ export function useCreatures(): UseCreaturesReturn {
           creature.creatureType,
           creature.element,
           creature.description,
-          ...creature.collectionStatus.tags
-        ].join(' ').toLowerCase();
+          ...creature.collectionStatus.tags,
+        ]
+          .join(' ')
+          .toLowerCase();
 
         if (!searchableText.includes(searchTerm)) {
           return false;
@@ -492,8 +522,10 @@ export function useCreatures(): UseCreaturesReturn {
           entry.species,
           entry.type || '',
           entry.element || '',
-          entry.behavior || ''
-        ].join(' ').toLowerCase();
+          entry.behavior || '',
+        ]
+          .join(' ')
+          .toLowerCase();
 
         if (!searchableText.includes(searchTerm)) {
           return false;
@@ -508,23 +540,27 @@ export function useCreatures(): UseCreaturesReturn {
 
   // Get active team creatures - memoized to prevent unnecessary recalculations
   const activeTeam = useMemo(() => {
-    return collection.activeTeam
-      .map(id => collection.creatures[id])
-      .filter(Boolean);
+    return collection.activeTeam.map(id => collection.creatures[id]).filter(Boolean);
   }, [collection.activeTeam, collection.creatures]);
 
   // Emit event to listeners
-  const emitEvent = useCallback((event: CreatureEvent) => {
-    eventListeners.forEach(callback => callback(event));
-  }, [eventListeners]);
+  const emitEvent = useCallback(
+    (event: CreatureEvent) => {
+      eventListeners.forEach(callback => callback(event));
+    },
+    [eventListeners]
+  );
 
   // Save collection to game state
-  const saveCollection = useCallback(async (newCollection: CreatureCollection) => {
-    setCollection(newCollection);
-    await updateGameState({
-      creatures: newCollection
-    });
-  }, [updateGameState]);
+  const saveCollection = useCallback(
+    async (newCollection: CreatureCollection) => {
+      setCollection(newCollection);
+      await updateGameState({
+        creatures: newCollection,
+      });
+    },
+    [updateGameState]
+  );
 
   // Generate unique creature ID
   const generateCreatureId = useCallback(() => {
@@ -532,737 +568,834 @@ export function useCreatures(): UseCreaturesReturn {
   }, []);
 
   // Calculate capture rate based on various factors
-  const calculateCaptureRate = useCallback((monster: Monster, itemUsed?: string): number => {
-    let baseRate = 0.3; // 30% base capture rate
+  const calculateCaptureRate = useCallback(
+    (monster: Monster, itemUsed?: string): number => {
+      let baseRate = 0.3; // 30% base capture rate
 
-    // Adjust for creature level vs player level
-    const levelDifference = (gameState.player?.level || 1) - monster.level;
-    if (levelDifference > 0) {
-      baseRate += levelDifference * 0.05; // +5% per level advantage
-    } else {
-      baseRate += levelDifference * 0.1; // -10% per level disadvantage
-    }
-
-    // Adjust for creature health
-    const healthPercentage = monster.currentHealth / monster.maxHealth;
-    baseRate += (1 - healthPercentage) * 0.4; // Up to +40% for low health
-
-    // Item bonuses
-    if (itemUsed) {
-      switch (itemUsed) {
-        case 'basic_trap': baseRate += 0.1; break;
-        case 'advanced_trap': baseRate += 0.2; break;
-        case 'master_trap': baseRate += 0.3; break;
-        case 'legendary_trap': baseRate += 0.5; break;
+      // Adjust for creature level vs player level
+      const levelDifference = (gameState.player?.level || 1) - monster.level;
+      if (levelDifference > 0) {
+        baseRate += levelDifference * 0.05; // +5% per level advantage
+      } else {
+        baseRate += levelDifference * 0.1; // -10% per level disadvantage
       }
-    }
 
-    // Rarity penalty
-    switch (monster.rarity) {
-      case 'uncommon': baseRate -= 0.1; break;
-      case 'rare': baseRate -= 0.2; break;
-      case 'epic': baseRate -= 0.3; break;
-      case 'legendary': baseRate -= 0.4; break;
-      case 'mythical': baseRate -= 0.5; break;
-    }
+      // Adjust for creature health
+      const healthPercentage = monster.currentHealth / monster.maxHealth;
+      baseRate += (1 - healthPercentage) * 0.4; // Up to +40% for low health
 
-    return Math.max(0.01, Math.min(0.95, baseRate)); // Clamp between 1% and 95%
-  }, [gameState.player?.level]);
+      // Item bonuses
+      if (itemUsed) {
+        switch (itemUsed) {
+          case 'basic_trap':
+            baseRate += 0.1;
+            break;
+          case 'advanced_trap':
+            baseRate += 0.2;
+            break;
+          case 'master_trap':
+            baseRate += 0.3;
+            break;
+          case 'legendary_trap':
+            baseRate += 0.5;
+            break;
+        }
+      }
+
+      // Rarity penalty
+      switch (monster.rarity) {
+        case 'uncommon':
+          baseRate -= 0.1;
+          break;
+        case 'rare':
+          baseRate -= 0.2;
+          break;
+        case 'epic':
+          baseRate -= 0.3;
+          break;
+        case 'legendary':
+          baseRate -= 0.4;
+          break;
+        case 'mythical':
+          baseRate -= 0.5;
+          break;
+      }
+
+      return Math.max(0.01, Math.min(0.95, baseRate)); // Clamp between 1% and 95%
+    },
+    [gameState.player?.level]
+  );
 
   // Convert Monster to EnhancedCreature
-  const enhanceCreature = useCallback((monster: Monster, location: string): EnhancedCreature => {
-    const creatureId = generateCreatureId();
-    const now = new Date();
+  const enhanceCreature = useCallback(
+    (monster: Monster, location: string): EnhancedCreature => {
+      const creatureId = generateCreatureId();
+      const now = new Date();
 
-    // Generate random individual stats (IVs)
-    const generateIV = () => Math.floor(Math.random() * 32);
+      // Generate random individual stats (IVs)
+      const generateIV = () => Math.floor(Math.random() * 32);
 
-    // Determine creature type and element based on monster properties
-    const creatureType: CreatureType = monster.type as CreatureType || 'beast';
-    const element: CreatureElement = monster.element as CreatureElement || 'neutral';
+      // Determine creature type and element based on monster properties
+      const creatureType: CreatureType = (monster.type as CreatureType) || 'beast';
+      const element: CreatureElement = (monster.element as CreatureElement) || 'neutral';
 
-    return {
-      ...monster,
-      creatureId,
-      species: monster.name.toLowerCase().replace(/\s+/g, '_'),
-      discoveredAt: now,
-      capturedAt: now,
-      timesEncountered: 1,
-      element,
-      creatureType,
-      size: 'medium',
-      habitat: [location],
-      personality: {
-        traits: [],
-        mood: 'neutral',
-        loyalty: 50,
-        happiness: 50,
-        energy: 100,
-        sociability: 50
-      },
-      nature: {
-        name: 'neutral',
-        statModifiers: {},
-        behaviorModifiers: {
-          aggression: 0,
-          defensiveness: 0,
-          cooperation: 0
-        }
-      },
-      individualStats: {
-        hpIV: generateIV(),
-        attackIV: generateIV(),
-        defenseIV: generateIV(),
-        magicAttackIV: generateIV(),
-        magicDefenseIV: generateIV(),
-        speedIV: generateIV(),
-        hpEV: 0,
-        attackEV: 0,
-        defenseEV: 0,
-        magicAttackEV: 0,
-        magicDefenseEV: 0,
-        speedEV: 0
-      },
-      genetics: {
-        parentIds: [],
-        generation: 1,
-        inheritedTraits: [],
-        mutations: [],
-        breedingPotential: 100
-      },
-      breedingGroup: [creatureType],
-      fertility: 100,
-      collectionStatus: {
-        discovered: true,
-        captured: true,
-        timesCaptures: 1,
-        favorite: false,
-        tags: [],
-        notes: '',
-        completionLevel: 'captured'
-      },
-      sprite: monster.sprite || '',
-      model: monster.model,
-      description: monster.description || `A ${creatureType} creature discovered in ${location}.`,
-      loreText: `This ${monster.name} was first encountered in ${location}.`,
-      discoveryLocation: location
-    };
-  }, [generateCreatureId]);
+      return {
+        ...monster,
+        creatureId,
+        species: monster.name.toLowerCase().replace(/\s+/g, '_'),
+        discoveredAt: now,
+        capturedAt: now,
+        timesEncountered: 1,
+        element,
+        creatureType,
+        size: 'medium',
+        habitat: [location],
+        personality: {
+          traits: [],
+          mood: 'neutral',
+          loyalty: 50,
+          happiness: 50,
+          energy: 100,
+          sociability: 50,
+        },
+        nature: {
+          name: 'neutral',
+          statModifiers: {},
+          behaviorModifiers: {
+            aggression: 0,
+            defensiveness: 0,
+            cooperation: 0,
+          },
+        },
+        individualStats: {
+          hpIV: generateIV(),
+          attackIV: generateIV(),
+          defenseIV: generateIV(),
+          magicAttackIV: generateIV(),
+          magicDefenseIV: generateIV(),
+          speedIV: generateIV(),
+          hpEV: 0,
+          attackEV: 0,
+          defenseEV: 0,
+          magicAttackEV: 0,
+          magicDefenseEV: 0,
+          speedEV: 0,
+        },
+        genetics: {
+          parentIds: [],
+          generation: 1,
+          inheritedTraits: [],
+          mutations: [],
+          breedingPotential: 100,
+        },
+        breedingGroup: [creatureType],
+        fertility: 100,
+        collectionStatus: {
+          discovered: true,
+          captured: true,
+          timesCaptures: 1,
+          favorite: false,
+          tags: [],
+          notes: '',
+          completionLevel: 'captured',
+        },
+        sprite: monster.sprite || '',
+        model: monster.model,
+        description: monster.description || `A ${creatureType} creature discovered in ${location}.`,
+        loreText: `This ${monster.name} was first encountered in ${location}.`,
+        discoveryLocation: location,
+      };
+    },
+    [generateCreatureId]
+  );
 
   // Capture creature
-  const captureCreature = useCallback(async (monster: Monster, itemUsed?: string): Promise<CreatureCaptureAttempt> => {
-    try {
-      setIsLoading(true);
-      setError(null);
+  const captureCreature = useCallback(
+    async (monster: Monster, itemUsed?: string): Promise<CreatureCaptureAttempt> => {
+      try {
+        setIsLoading(true);
+        setError(null);
 
-      const captureRate = calculateCaptureRate(monster, itemUsed);
-      const success = Math.random() < captureRate;
+        const captureRate = calculateCaptureRate(monster, itemUsed);
+        const success = Math.random() < captureRate;
 
-      const attempt: CreatureCaptureAttempt = {
-        creature: monster,
-        captureRate,
-        playerLevel: gameState.player?.level || 1,
-        itemUsed,
-        success,
-        message: success ? `Successfully captured ${monster.name}!` : `${monster.name} broke free!`
-      };
+        const attempt: CreatureCaptureAttempt = {
+          creature: monster,
+          captureRate,
+          playerLevel: gameState.player?.level || 1,
+          itemUsed,
+          success,
+          message: success
+            ? `Successfully captured ${monster.name}!`
+            : `${monster.name} broke free!`,
+        };
 
-      if (success) {
-        const enhancedCreature = enhanceCreature(monster, gameState.currentLocation || 'unknown');
-        attempt.result = enhancedCreature;
+        if (success) {
+          const enhancedCreature = enhanceCreature(monster, gameState.currentLocation || 'unknown');
+          attempt.result = enhancedCreature;
+
+          const newCollection = {
+            ...collection,
+            creatures: {
+              ...collection.creatures,
+              [enhancedCreature.creatureId]: enhancedCreature,
+            },
+            totalCaptured: collection.totalCaptured + 1,
+          };
+
+          // Update bestiary
+          const species = enhancedCreature.species;
+          if (newCollection.bestiary[species]) {
+            newCollection.bestiary[species] = {
+              ...newCollection.bestiary[species],
+              totalCaptures: newCollection.bestiary[species].totalCaptures + 1,
+              specimens: [
+                ...newCollection.bestiary[species].specimens,
+                enhancedCreature.creatureId,
+              ],
+              firstCaptured: newCollection.bestiary[species].firstCaptured || new Date(),
+            };
+          }
+
+          await saveCollection(newCollection);
+
+          // Consume capture item if used
+          if (itemUsed) {
+            await removeItem(itemUsed, 1);
+          }
+
+          emitEvent({
+            type: 'creature_captured',
+            timestamp: new Date(),
+            creature: enhancedCreature,
+            important: true,
+            message: `Captured ${enhancedCreature.name}!`,
+          });
+        }
+
+        return attempt;
+      } catch (err) {
+        const error = err instanceof Error ? err.message : 'Failed to capture creature';
+        setError(error);
+        throw new CreatureException(CreatureError.CAPTURE_FAILED, error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [
+      calculateCaptureRate,
+      gameState.player?.level,
+      gameState.currentLocation,
+      collection,
+      enhanceCreature,
+      saveCollection,
+      removeItem,
+      emitEvent,
+    ]
+  );
+
+  // Release creature
+  const releaseCreature = useCallback(
+    async (creatureId: string): Promise<CreatureOperationResult> => {
+      try {
+        const creature = collection.creatures[creatureId];
+        if (!creature) {
+          throw new CreatureException(CreatureError.CREATURE_NOT_FOUND, 'Creature not found');
+        }
+
+        // Check if creature is in active team
+        if (collection.activeTeam.includes(creatureId)) {
+          throw new CreatureException(
+            CreatureError.CREATURE_IN_USE,
+            'Cannot release creature in active team'
+          );
+        }
+
+        const newCreatures = { ...collection.creatures };
+        delete newCreatures[creatureId];
+
+        const newCollection = {
+          ...collection,
+          creatures: newCreatures,
+          reserves: collection.reserves.filter(id => id !== creatureId),
+          totalCaptured: collection.totalCaptured - 1,
+        };
+
+        await saveCollection(newCollection);
+
+        emitEvent({
+          type: 'creature_released',
+          timestamp: new Date(),
+          creature,
+          important: false,
+          message: `Released ${creature.name} back to the wild.`,
+        });
+
+        return {
+          success: true,
+          operation: 'release',
+          creature,
+          message: `${creature.name} was released back to the wild.`,
+        };
+      } catch (err) {
+        const error = err instanceof Error ? err.message : 'Failed to release creature';
+        setError(error);
+        return {
+          success: false,
+          operation: 'release',
+          message: error,
+          error,
+        };
+      }
+    },
+    [collection, saveCollection, emitEvent]
+  );
+
+  // Rename creature
+  const renameCreature = useCallback(
+    async (creatureId: string, newName: string): Promise<CreatureOperationResult> => {
+      try {
+        const creature = collection.creatures[creatureId];
+        if (!creature) {
+          throw new CreatureException(CreatureError.CREATURE_NOT_FOUND, 'Creature not found');
+        }
+
+        const updatedCreature = { ...creature, name: newName };
+        const newCollection = {
+          ...collection,
+          creatures: {
+            ...collection.creatures,
+            [creatureId]: updatedCreature,
+          },
+        };
+
+        await saveCollection(newCollection);
+
+        return {
+          success: true,
+          operation: 'rename',
+          creature: updatedCreature,
+          message: `Renamed creature to ${newName}.`,
+        };
+      } catch (err) {
+        const error = err instanceof Error ? err.message : 'Failed to rename creature';
+        setError(error);
+        return {
+          success: false,
+          operation: 'rename',
+          message: error,
+          error,
+        };
+      }
+    },
+    [collection, saveCollection]
+  );
+
+  // Favorite creature
+  const favoriteCreature = useCallback(
+    async (creatureId: string, favorite: boolean): Promise<CreatureOperationResult> => {
+      try {
+        const creature = collection.creatures[creatureId];
+        if (!creature) {
+          throw new CreatureException(CreatureError.CREATURE_NOT_FOUND, 'Creature not found');
+        }
+
+        const updatedCreature = {
+          ...creature,
+          collectionStatus: {
+            ...creature.collectionStatus,
+            favorite,
+          },
+        };
 
         const newCollection = {
           ...collection,
           creatures: {
             ...collection.creatures,
-            [enhancedCreature.creatureId]: enhancedCreature
+            [creatureId]: updatedCreature,
           },
-          totalCaptured: collection.totalCaptured + 1
         };
-
-        // Update bestiary
-        const species = enhancedCreature.species;
-        if (newCollection.bestiary[species]) {
-          newCollection.bestiary[species] = {
-            ...newCollection.bestiary[species],
-            totalCaptures: newCollection.bestiary[species].totalCaptures + 1,
-            specimens: [...newCollection.bestiary[species].specimens, enhancedCreature.creatureId],
-            firstCaptured: newCollection.bestiary[species].firstCaptured || new Date()
-          };
-        }
 
         await saveCollection(newCollection);
 
-        // Consume capture item if used
-        if (itemUsed) {
-          await removeItem(itemUsed, 1);
-        }
-
-        emitEvent({
-          type: 'creature_captured',
-          timestamp: new Date(),
-          creature: enhancedCreature,
-          important: true,
-          message: `Captured ${enhancedCreature.name}!`
-        });
+        return {
+          success: true,
+          operation: 'favorite',
+          creature: updatedCreature,
+          message: favorite
+            ? `Added ${creature.name} to favorites.`
+            : `Removed ${creature.name} from favorites.`,
+        };
+      } catch (err) {
+        const error = err instanceof Error ? err.message : 'Failed to update favorite status';
+        setError(error);
+        return {
+          success: false,
+          operation: 'favorite',
+          message: error,
+          error,
+        };
       }
-
-      return attempt;
-    } catch (err) {
-      const error = err instanceof Error ? err.message : 'Failed to capture creature';
-      setError(error);
-      throw new CreatureException(CreatureError.CAPTURE_FAILED, error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [calculateCaptureRate, gameState.player?.level, gameState.currentLocation, collection, enhanceCreature, saveCollection, removeItem, emitEvent]);
-
-  // Release creature
-  const releaseCreature = useCallback(async (creatureId: string): Promise<CreatureOperationResult> => {
-    try {
-      const creature = collection.creatures[creatureId];
-      if (!creature) {
-        throw new CreatureException(CreatureError.CREATURE_NOT_FOUND, 'Creature not found');
-      }
-
-      // Check if creature is in active team
-      if (collection.activeTeam.includes(creatureId)) {
-        throw new CreatureException(CreatureError.CREATURE_IN_USE, 'Cannot release creature in active team');
-      }
-
-      const newCreatures = { ...collection.creatures };
-      delete newCreatures[creatureId];
-
-      const newCollection = {
-        ...collection,
-        creatures: newCreatures,
-        reserves: collection.reserves.filter(id => id !== creatureId),
-        totalCaptured: collection.totalCaptured - 1
-      };
-
-      await saveCollection(newCollection);
-
-      emitEvent({
-        type: 'creature_released',
-        timestamp: new Date(),
-        creature,
-        important: false,
-        message: `Released ${creature.name} back to the wild.`
-      });
-
-      return {
-        success: true,
-        operation: 'release',
-        creature,
-        message: `${creature.name} was released back to the wild.`
-      };
-    } catch (err) {
-      const error = err instanceof Error ? err.message : 'Failed to release creature';
-      setError(error);
-      return {
-        success: false,
-        operation: 'release',
-        message: error,
-        error
-      };
-    }
-  }, [collection, saveCollection, emitEvent]);
-
-  // Rename creature
-  const renameCreature = useCallback(async (creatureId: string, newName: string): Promise<CreatureOperationResult> => {
-    try {
-      const creature = collection.creatures[creatureId];
-      if (!creature) {
-        throw new CreatureException(CreatureError.CREATURE_NOT_FOUND, 'Creature not found');
-      }
-
-      const updatedCreature = { ...creature, name: newName };
-      const newCollection = {
-        ...collection,
-        creatures: {
-          ...collection.creatures,
-          [creatureId]: updatedCreature
-        }
-      };
-
-      await saveCollection(newCollection);
-
-      return {
-        success: true,
-        operation: 'rename',
-        creature: updatedCreature,
-        message: `Renamed creature to ${newName}.`
-      };
-    } catch (err) {
-      const error = err instanceof Error ? err.message : 'Failed to rename creature';
-      setError(error);
-      return {
-        success: false,
-        operation: 'rename',
-        message: error,
-        error
-      };
-    }
-  }, [collection, saveCollection]);
-
-  // Favorite creature
-  const favoriteCreature = useCallback(async (creatureId: string, favorite: boolean): Promise<CreatureOperationResult> => {
-    try {
-      const creature = collection.creatures[creatureId];
-      if (!creature) {
-        throw new CreatureException(CreatureError.CREATURE_NOT_FOUND, 'Creature not found');
-      }
-
-      const updatedCreature = {
-        ...creature,
-        collectionStatus: {
-          ...creature.collectionStatus,
-          favorite
-        }
-      };
-
-      const newCollection = {
-        ...collection,
-        creatures: {
-          ...collection.creatures,
-          [creatureId]: updatedCreature
-        }
-      };
-
-      await saveCollection(newCollection);
-
-      return {
-        success: true,
-        operation: 'favorite',
-        creature: updatedCreature,
-        message: favorite ? `Added ${creature.name} to favorites.` : `Removed ${creature.name} from favorites.`
-      };
-    } catch (err) {
-      const error = err instanceof Error ? err.message : 'Failed to update favorite status';
-      setError(error);
-      return {
-        success: false,
-        operation: 'favorite',
-        message: error,
-        error
-      };
-    }
-  }, [collection, saveCollection]);
+    },
+    [collection, saveCollection]
+  );
 
   // Add to team
-  const addToTeam = useCallback(async (creatureId: string): Promise<CreatureOperationResult> => {
-    try {
-      const creature = collection.creatures[creatureId];
-      if (!creature) {
-        throw new CreatureException(CreatureError.CREATURE_NOT_FOUND, 'Creature not found');
-      }
+  const addToTeam = useCallback(
+    async (creatureId: string): Promise<CreatureOperationResult> => {
+      try {
+        const creature = collection.creatures[creatureId];
+        if (!creature) {
+          throw new CreatureException(CreatureError.CREATURE_NOT_FOUND, 'Creature not found');
+        }
 
-      if (collection.activeTeam.length >= 6) {
-        throw new CreatureException(CreatureError.TEAM_FULL, 'Active team is full (maximum 6 creatures)');
-      }
+        if (collection.activeTeam.length >= 6) {
+          throw new CreatureException(
+            CreatureError.TEAM_FULL,
+            'Active team is full (maximum 6 creatures)'
+          );
+        }
 
-      if (collection.activeTeam.includes(creatureId)) {
+        if (collection.activeTeam.includes(creatureId)) {
+          return {
+            success: false,
+            operation: 'train',
+            message: 'Creature is already in the active team.',
+            error: 'Already in team',
+          };
+        }
+
+        const newCollection = {
+          ...collection,
+          activeTeam: [...collection.activeTeam, creatureId],
+          reserves: collection.reserves.filter(id => id !== creatureId),
+        };
+
+        console.log('💾 addToTeam: Saving new collection', {
+          creatureName: creature.name,
+          creatureId,
+          activeTeamSize: newCollection.activeTeam.length,
+          activeTeamIds: newCollection.activeTeam,
+        });
+
+        await saveCollection(newCollection);
+
+        console.log('✅ addToTeam: Collection saved successfully', {
+          creatureName: creature.name,
+          activeTeamSize: newCollection.activeTeam.length,
+        });
+
+        return {
+          success: true,
+          operation: 'train',
+          creature,
+          message: `Added ${creature.name} to active team.`,
+        };
+      } catch (err) {
+        const error = err instanceof Error ? err.message : 'Failed to add creature to team';
+        console.error('❌ addToTeam failed:', error, err);
+        setError(error);
         return {
           success: false,
           operation: 'train',
-          message: 'Creature is already in the active team.',
-          error: 'Already in team'
+          message: error,
+          error,
         };
       }
-
-      const newCollection = {
-        ...collection,
-        activeTeam: [...collection.activeTeam, creatureId],
-        reserves: collection.reserves.filter(id => id !== creatureId)
-      };
-
-      console.log('💾 addToTeam: Saving new collection', {
-        creatureName: creature.name,
-        creatureId,
-        activeTeamSize: newCollection.activeTeam.length,
-        activeTeamIds: newCollection.activeTeam
-      });
-
-      await saveCollection(newCollection);
-
-      console.log('✅ addToTeam: Collection saved successfully', {
-        creatureName: creature.name,
-        activeTeamSize: newCollection.activeTeam.length
-      });
-
-      return {
-        success: true,
-        operation: 'train',
-        creature,
-        message: `Added ${creature.name} to active team.`
-      };
-    } catch (err) {
-      const error = err instanceof Error ? err.message : 'Failed to add creature to team';
-      console.error('❌ addToTeam failed:', error, err);
-      setError(error);
-      return {
-        success: false,
-        operation: 'train',
-        message: error,
-        error
-      };
-    }
-  }, [collection, saveCollection]);
+    },
+    [collection, saveCollection]
+  );
 
   // Remove from team
-  const removeFromTeam = useCallback(async (creatureId: string): Promise<CreatureOperationResult> => {
-    try {
-      const creature = collection.creatures[creatureId];
-      if (!creature) {
-        throw new CreatureException(CreatureError.CREATURE_NOT_FOUND, 'Creature not found');
+  const removeFromTeam = useCallback(
+    async (creatureId: string): Promise<CreatureOperationResult> => {
+      try {
+        const creature = collection.creatures[creatureId];
+        if (!creature) {
+          throw new CreatureException(CreatureError.CREATURE_NOT_FOUND, 'Creature not found');
+        }
+
+        const newCollection = {
+          ...collection,
+          activeTeam: collection.activeTeam.filter(id => id !== creatureId),
+          reserves: collection.reserves.includes(creatureId)
+            ? collection.reserves
+            : [...collection.reserves, creatureId],
+        };
+
+        await saveCollection(newCollection);
+
+        return {
+          success: true,
+          operation: 'train',
+          creature,
+          message: `Removed ${creature.name} from active team.`,
+        };
+      } catch (err) {
+        const error = err instanceof Error ? err.message : 'Failed to remove creature from team';
+        setError(error);
+        return {
+          success: false,
+          operation: 'train',
+          message: error,
+          error,
+        };
       }
-
-      const newCollection = {
-        ...collection,
-        activeTeam: collection.activeTeam.filter(id => id !== creatureId),
-        reserves: collection.reserves.includes(creatureId) ? collection.reserves : [...collection.reserves, creatureId]
-      };
-
-      await saveCollection(newCollection);
-
-      return {
-        success: true,
-        operation: 'train',
-        creature,
-        message: `Removed ${creature.name} from active team.`
-      };
-    } catch (err) {
-      const error = err instanceof Error ? err.message : 'Failed to remove creature from team';
-      setError(error);
-      return {
-        success: false,
-        operation: 'train',
-        message: error,
-        error
-      };
-    }
-  }, [collection, saveCollection]);
+    },
+    [collection, saveCollection]
+  );
 
   // Reorder team
-  const reorderTeam = useCallback(async (fromIndex: number, toIndex: number): Promise<CreatureOperationResult> => {
-    try {
-      const newActiveTeam = [...collection.activeTeam];
-      const [moved] = newActiveTeam.splice(fromIndex, 1);
-      newActiveTeam.splice(toIndex, 0, moved);
+  const reorderTeam = useCallback(
+    async (fromIndex: number, toIndex: number): Promise<CreatureOperationResult> => {
+      try {
+        const newActiveTeam = [...collection.activeTeam];
+        const [moved] = newActiveTeam.splice(fromIndex, 1);
+        newActiveTeam.splice(toIndex, 0, moved);
 
-      const newCollection = {
-        ...collection,
-        activeTeam: newActiveTeam
-      };
+        const newCollection = {
+          ...collection,
+          activeTeam: newActiveTeam,
+        };
 
-      await saveCollection(newCollection);
+        await saveCollection(newCollection);
 
-      return {
-        success: true,
-        operation: 'train',
-        message: 'Team order updated.'
-      };
-    } catch (err) {
-      const error = err instanceof Error ? err.message : 'Failed to reorder team';
-      setError(error);
-      return {
-        success: false,
-        operation: 'train',
-        message: error,
-        error
-      };
-    }
-  }, [collection, saveCollection]);
+        return {
+          success: true,
+          operation: 'train',
+          message: 'Team order updated.',
+        };
+      } catch (err) {
+        const error = err instanceof Error ? err.message : 'Failed to reorder team';
+        setError(error);
+        return {
+          success: false,
+          operation: 'train',
+          message: error,
+          error,
+        };
+      }
+    },
+    [collection, saveCollection]
+  );
 
   // Set as companion
-  const setAsCompanion = useCallback(async (creatureId: string, combatRole: CreatureCombatRole): Promise<CreatureOperationResult> => {
-    try {
-      const creature = collection.creatures[creatureId];
-      if (!creature) {
-        throw new CreatureException(CreatureError.CREATURE_NOT_FOUND, 'Creature not found');
-      }
+  const setAsCompanion = useCallback(
+    async (
+      creatureId: string,
+      combatRole: CreatureCombatRole
+    ): Promise<CreatureOperationResult> => {
+      try {
+        const creature = collection.creatures[creatureId];
+        if (!creature) {
+          throw new CreatureException(CreatureError.CREATURE_NOT_FOUND, 'Creature not found');
+        }
 
-      if (creature.personality.loyalty < 50) {
-        throw new CreatureException(CreatureError.INSUFFICIENT_BOND, 'Creature loyalty too low to become companion');
-      }
+        if (creature.personality.loyalty < 50) {
+          throw new CreatureException(
+            CreatureError.INSUFFICIENT_BOND,
+            'Creature loyalty too low to become companion'
+          );
+        }
 
-      const updatedCreature = {
-        ...creature,
-        companionData: {
-          isCompanion: true,
-          companionLevel: 1,
-          experience: 0,
-          experienceToNext: 100,
-          combatRole,
-          aiPersonality: {
-            aggression: creature.personality.traits.includes('aggressive') ? 80 : 30,
-            caution: creature.personality.traits.includes('docile') ? 70 : 40,
-            supportiveness: creature.personality.traits.includes('protective') ? 80 : 50,
-            independence: creature.personality.traits.includes('independent') ? 90 : 30
+        const updatedCreature = {
+          ...creature,
+          companionData: {
+            isCompanion: true,
+            companionLevel: 1,
+            experience: 0,
+            experienceToNext: 100,
+            combatRole,
+            aiPersonality: {
+              aggression: creature.personality.traits.includes('aggressive') ? 80 : 30,
+              caution: creature.personality.traits.includes('docile') ? 70 : 40,
+              supportiveness: creature.personality.traits.includes('protective') ? 80 : 50,
+              independence: creature.personality.traits.includes('independent') ? 90 : 30,
+            },
+            learnedMoves: creature.abilities || [],
+            availableMoves: creature.abilities || [],
+            bondLevel: 1,
+            synergy: 60,
           },
-          learnedMoves: creature.abilities || [],
-          availableMoves: creature.abilities || [],
-          bondLevel: 1,
-          synergy: 60
-        }
-      };
+        };
 
-      const newCollection = {
-        ...collection,
-        creatures: {
-          ...collection.creatures,
-          [creatureId]: updatedCreature
-        }
-      };
+        const newCollection = {
+          ...collection,
+          creatures: {
+            ...collection.creatures,
+            [creatureId]: updatedCreature,
+          },
+        };
 
-      await saveCollection(newCollection);
+        await saveCollection(newCollection);
 
-      emitEvent({
-        type: 'companion_leveled',
-        timestamp: new Date(),
-        creature: updatedCreature,
-        important: true,
-        message: `${creature.name} became your ${combatRole} companion!`
-      });
-
-      return {
-        success: true,
-        operation: 'train',
-        creature: updatedCreature,
-        message: `${creature.name} is now your ${combatRole} companion!`
-      };
-    } catch (err) {
-      const error = err instanceof Error ? err.message : 'Failed to set companion';
-      setError(error);
-      return {
-        success: false,
-        operation: 'train',
-        message: error,
-        error
-      };
-    }
-  }, [collection, saveCollection, emitEvent]);
-
-  // Train companion
-  const trainCompanion = useCallback(async (creatureId: string, trainingType: string): Promise<CreatureOperationResult> => {
-    try {
-      const creature = collection.creatures[creatureId];
-      if (!creature?.companionData?.isCompanion) {
-        throw new Error('Creature is not a companion');
-      }
-
-      // Simple training implementation
-      const expGain = 25;
-      const newExp = creature.companionData.experience + expGain;
-      const levelUp = newExp >= creature.companionData.experienceToNext;
-
-      const updatedCompanionData = {
-        ...creature.companionData,
-        experience: levelUp ? newExp - creature.companionData.experienceToNext : newExp,
-        companionLevel: levelUp ? creature.companionData.companionLevel + 1 : creature.companionData.companionLevel,
-        experienceToNext: levelUp ? creature.companionData.experienceToNext + 50 : creature.companionData.experienceToNext
-      };
-
-      const updatedCreature = {
-        ...creature,
-        companionData: updatedCompanionData
-      };
-
-      const newCollection = {
-        ...collection,
-        creatures: {
-          ...collection.creatures,
-          [creatureId]: updatedCreature
-        }
-      };
-
-      await saveCollection(newCollection);
-
-      if (levelUp) {
         emitEvent({
           type: 'companion_leveled',
           timestamp: new Date(),
           creature: updatedCreature,
           important: true,
-          message: `${creature.name} reached companion level ${updatedCompanionData.companionLevel}!`
+          message: `${creature.name} became your ${combatRole} companion!`,
         });
-      }
 
-      return {
-        success: true,
-        operation: 'train',
-        creature: updatedCreature,
-        message: levelUp
-          ? `${creature.name} gained experience and leveled up!`
-          : `${creature.name} gained ${expGain} experience.`
-      };
-    } catch (err) {
-      const error = err instanceof Error ? err.message : 'Failed to train companion';
-      setError(error);
-      return {
-        success: false,
-        operation: 'train',
-        message: error,
-        error
-      };
-    }
-  }, [collection, saveCollection, emitEvent]);
+        return {
+          success: true,
+          operation: 'train',
+          creature: updatedCreature,
+          message: `${creature.name} is now your ${combatRole} companion!`,
+        };
+      } catch (err) {
+        const error = err instanceof Error ? err.message : 'Failed to set companion';
+        setError(error);
+        return {
+          success: false,
+          operation: 'train',
+          message: error,
+          error,
+        };
+      }
+    },
+    [collection, saveCollection, emitEvent]
+  );
+
+  // Train companion
+  const trainCompanion = useCallback(
+    async (creatureId: string, trainingType: string): Promise<CreatureOperationResult> => {
+      try {
+        const creature = collection.creatures[creatureId];
+        if (!creature?.companionData?.isCompanion) {
+          throw new Error('Creature is not a companion');
+        }
+
+        // Simple training implementation
+        const expGain = 25;
+        const newExp = creature.companionData.experience + expGain;
+        const levelUp = newExp >= creature.companionData.experienceToNext;
+
+        const updatedCompanionData = {
+          ...creature.companionData,
+          experience: levelUp ? newExp - creature.companionData.experienceToNext : newExp,
+          companionLevel: levelUp
+            ? creature.companionData.companionLevel + 1
+            : creature.companionData.companionLevel,
+          experienceToNext: levelUp
+            ? creature.companionData.experienceToNext + 50
+            : creature.companionData.experienceToNext,
+        };
+
+        const updatedCreature = {
+          ...creature,
+          companionData: updatedCompanionData,
+        };
+
+        const newCollection = {
+          ...collection,
+          creatures: {
+            ...collection.creatures,
+            [creatureId]: updatedCreature,
+          },
+        };
+
+        await saveCollection(newCollection);
+
+        if (levelUp) {
+          emitEvent({
+            type: 'companion_leveled',
+            timestamp: new Date(),
+            creature: updatedCreature,
+            important: true,
+            message: `${creature.name} reached companion level ${updatedCompanionData.companionLevel}!`,
+          });
+        }
+
+        return {
+          success: true,
+          operation: 'train',
+          creature: updatedCreature,
+          message: levelUp
+            ? `${creature.name} gained experience and leveled up!`
+            : `${creature.name} gained ${expGain} experience.`,
+        };
+      } catch (err) {
+        const error = err instanceof Error ? err.message : 'Failed to train companion';
+        setError(error);
+        return {
+          success: false,
+          operation: 'train',
+          message: error,
+          error,
+        };
+      }
+    },
+    [collection, saveCollection, emitEvent]
+  );
 
   // Feed companion
-  const feedCompanion = useCallback(async (creatureId: string, itemId: string): Promise<CreatureOperationResult> => {
-    try {
-      const creature = collection.creatures[creatureId];
-      if (!creature) {
-        throw new CreatureException(CreatureError.CREATURE_NOT_FOUND, 'Creature not found');
+  const feedCompanion = useCallback(
+    async (creatureId: string, itemId: string): Promise<CreatureOperationResult> => {
+      try {
+        const creature = collection.creatures[creatureId];
+        if (!creature) {
+          throw new CreatureException(CreatureError.CREATURE_NOT_FOUND, 'Creature not found');
+        }
+
+        // Remove item from inventory
+        await removeItem(itemId, 1);
+
+        // Increase happiness and loyalty
+        const updatedCreature = {
+          ...creature,
+          personality: {
+            ...creature.personality,
+            happiness: Math.min(100, creature.personality.happiness + 10),
+            loyalty: Math.min(100, creature.personality.loyalty + 5),
+          },
+        };
+
+        const newCollection = {
+          ...collection,
+          creatures: {
+            ...collection.creatures,
+            [creatureId]: updatedCreature,
+          },
+        };
+
+        await saveCollection(newCollection);
+
+        return {
+          success: true,
+          operation: 'feed',
+          creature: updatedCreature,
+          message: `Fed ${creature.name}. Happiness and loyalty increased!`,
+        };
+      } catch (err) {
+        const error = err instanceof Error ? err.message : 'Failed to feed companion';
+        setError(error);
+        return {
+          success: false,
+          operation: 'feed',
+          message: error,
+          error,
+        };
       }
-
-      // Remove item from inventory
-      await removeItem(itemId, 1);
-
-      // Increase happiness and loyalty
-      const updatedCreature = {
-        ...creature,
-        personality: {
-          ...creature.personality,
-          happiness: Math.min(100, creature.personality.happiness + 10),
-          loyalty: Math.min(100, creature.personality.loyalty + 5)
-        }
-      };
-
-      const newCollection = {
-        ...collection,
-        creatures: {
-          ...collection.creatures,
-          [creatureId]: updatedCreature
-        }
-      };
-
-      await saveCollection(newCollection);
-
-      return {
-        success: true,
-        operation: 'feed',
-        creature: updatedCreature,
-        message: `Fed ${creature.name}. Happiness and loyalty increased!`
-      };
-    } catch (err) {
-      const error = err instanceof Error ? err.message : 'Failed to feed companion';
-      setError(error);
-      return {
-        success: false,
-        operation: 'feed',
-        message: error,
-        error
-      };
-    }
-  }, [collection, saveCollection, removeItem]);
+    },
+    [collection, saveCollection, removeItem]
+  );
 
   // Check breeding compatibility
-  const checkBreedingCompatibility = useCallback((parent1Id: string, parent2Id: string): BreedingPair | null => {
-    const parent1 = collection.creatures[parent1Id];
-    const parent2 = collection.creatures[parent2Id];
+  const checkBreedingCompatibility = useCallback(
+    (parent1Id: string, parent2Id: string): BreedingPair | null => {
+      const parent1 = collection.creatures[parent1Id];
+      const parent2 = collection.creatures[parent2Id];
 
-    if (!parent1 || !parent2) return null;
+      if (!parent1 || !parent2) return null;
 
-    // Check if creatures share breeding groups
-    const sharedGroups = parent1.breedingGroup.filter(group =>
-      parent2.breedingGroup.includes(group)
-    );
+      // Check if creatures share breeding groups
+      const sharedGroups = parent1.breedingGroup.filter(group =>
+        parent2.breedingGroup.includes(group)
+      );
 
-    if (sharedGroups.length === 0) return null;
+      if (sharedGroups.length === 0) return null;
 
-    // Calculate compatibility based on various factors
-    let compatibility = 50; // Base compatibility
+      // Calculate compatibility based on various factors
+      let compatibility = 50; // Base compatibility
 
-    // Same species bonus
-    if (parent1.species === parent2.species) {
-      compatibility += 20;
-    }
-
-    // Level compatibility
-    const levelDiff = Math.abs(parent1.level - parent2.level);
-    compatibility -= levelDiff * 2;
-
-    // Fertility factor
-    const avgFertility = (parent1.fertility + parent2.fertility) / 2;
-    compatibility = (compatibility * avgFertility) / 100;
-
-    compatibility = Math.max(0, Math.min(100, compatibility));
-
-    const successRate = compatibility * 0.8; // 80% of compatibility
-    const timeRequired = Math.max(30, 120 - compatibility); // 30-120 minutes
-
-    return {
-      parent1,
-      parent2,
-      compatibility,
-      successRate,
-      timeRequired,
-      possibleOffspring: [
-        {
-          species: parent1.species,
-          probability: 0.6,
-          traits: [],
-          estimatedStats: {}
-        },
-        {
-          species: parent2.species,
-          probability: 0.4,
-          traits: [],
-          estimatedStats: {}
-        }
-      ]
-    };
-  }, [collection.creatures]);
-
-  // Start breeding
-  const startBreeding = useCallback(async (parent1Id: string, parent2Id: string): Promise<CreatureOperationResult> => {
-    try {
-      const breedingPair = checkBreedingCompatibility(parent1Id, parent2Id);
-      if (!breedingPair) {
-        throw new CreatureException(CreatureError.BREEDING_INCOMPATIBLE, 'Creatures are not compatible for breeding');
+      // Same species bonus
+      if (parent1.species === parent2.species) {
+        compatibility += 20;
       }
 
-      const breedingProcess: BreedingProcess = {
-        id: `breeding_${Date.now()}`,
-        pair: breedingPair,
-        startTime: new Date(),
-        duration: breedingPair.timeRequired * 60 * 1000, // Convert to milliseconds
-        progress: 0,
-        status: 'in_progress'
-      };
+      // Level compatibility
+      const levelDiff = Math.abs(parent1.level - parent2.level);
+      compatibility -= levelDiff * 2;
 
-      const newCollection = {
-        ...collection,
-        activeBreeding: [...collection.activeBreeding, breedingProcess]
-      };
+      // Fertility factor
+      const avgFertility = (parent1.fertility + parent2.fertility) / 2;
+      compatibility = (compatibility * avgFertility) / 100;
 
-      await saveCollection(newCollection);
+      compatibility = Math.max(0, Math.min(100, compatibility));
 
-      emitEvent({
-        type: 'breeding_started',
-        timestamp: new Date(),
-        data: { breedingId: breedingProcess.id },
-        important: false,
-        message: `Started breeding ${breedingPair.parent1.name} and ${breedingPair.parent2.name}.`
-      });
+      const successRate = compatibility * 0.8; // 80% of compatibility
+      const timeRequired = Math.max(30, 120 - compatibility); // 30-120 minutes
 
       return {
-        success: true,
-        operation: 'breed',
-        message: `Breeding started! Estimated time: ${breedingPair.timeRequired} minutes.`
+        parent1,
+        parent2,
+        compatibility,
+        successRate,
+        timeRequired,
+        possibleOffspring: [
+          {
+            species: parent1.species,
+            probability: 0.6,
+            traits: [],
+            estimatedStats: {},
+          },
+          {
+            species: parent2.species,
+            probability: 0.4,
+            traits: [],
+            estimatedStats: {},
+          },
+        ],
       };
-    } catch (err) {
-      const error = err instanceof Error ? err.message : 'Failed to start breeding';
-      setError(error);
-      return {
-        success: false,
-        operation: 'breed',
-        message: error,
-        error
-      };
-    }
-  }, [checkBreedingCompatibility, collection, saveCollection, emitEvent]);
+    },
+    [collection.creatures]
+  );
+
+  // Start breeding
+  const startBreeding = useCallback(
+    async (parent1Id: string, parent2Id: string): Promise<CreatureOperationResult> => {
+      try {
+        const breedingPair = checkBreedingCompatibility(parent1Id, parent2Id);
+        if (!breedingPair) {
+          throw new CreatureException(
+            CreatureError.BREEDING_INCOMPATIBLE,
+            'Creatures are not compatible for breeding'
+          );
+        }
+
+        const breedingProcess: BreedingProcess = {
+          id: `breeding_${Date.now()}`,
+          pair: breedingPair,
+          startTime: new Date(),
+          duration: breedingPair.timeRequired * 60 * 1000, // Convert to milliseconds
+          progress: 0,
+          status: 'in_progress',
+        };
+
+        const newCollection = {
+          ...collection,
+          activeBreeding: [...collection.activeBreeding, breedingProcess],
+        };
+
+        await saveCollection(newCollection);
+
+        emitEvent({
+          type: 'breeding_started',
+          timestamp: new Date(),
+          data: { breedingId: breedingProcess.id },
+          important: false,
+          message: `Started breeding ${breedingPair.parent1.name} and ${breedingPair.parent2.name}.`,
+        });
+
+        return {
+          success: true,
+          operation: 'breed',
+          message: `Breeding started! Estimated time: ${breedingPair.timeRequired} minutes.`,
+        };
+      } catch (err) {
+        const error = err instanceof Error ? err.message : 'Failed to start breeding';
+        setError(error);
+        return {
+          success: false,
+          operation: 'breed',
+          message: error,
+          error,
+        };
+      }
+    },
+    [checkBreedingCompatibility, collection, saveCollection, emitEvent]
+  );
 
   // Check breeding progress
   const checkBreedingProgress = useCallback((): BreedingProcess[] => {
@@ -1275,277 +1408,312 @@ export function useCreatures(): UseCreaturesReturn {
       return {
         ...breeding,
         progress,
-        status: progress >= 100 ? 'completed' : 'in_progress'
+        status: progress >= 100 ? 'completed' : 'in_progress',
       };
     });
   }, [collection.activeBreeding]);
 
   // Collect breeding result
-  const collectBreedingResult = useCallback(async (breedingId: string): Promise<CreatureOperationResult> => {
-    try {
-      const breeding = collection.activeBreeding.find(b => b.id === breedingId);
-      if (!breeding) {
-        throw new Error('Breeding process not found');
-      }
+  const collectBreedingResult = useCallback(
+    async (breedingId: string): Promise<CreatureOperationResult> => {
+      try {
+        const breeding = collection.activeBreeding.find(b => b.id === breedingId);
+        if (!breeding) {
+          throw new Error('Breeding process not found');
+        }
 
-      const progress = checkBreedingProgress().find(b => b.id === breedingId);
-      if (!progress || progress.status !== 'completed') {
-        throw new Error('Breeding not yet completed');
-      }
+        const progress = checkBreedingProgress().find(b => b.id === breedingId);
+        if (!progress || progress.status !== 'completed') {
+          throw new Error('Breeding not yet completed');
+        }
 
-      // Simple offspring generation
-      const success = Math.random() < (breeding.pair.successRate / 100);
+        // Simple offspring generation
+        const success = Math.random() < breeding.pair.successRate / 100;
 
-      if (success && breeding.pair.possibleOffspring.length > 0) {
-        const offspring = breeding.pair.possibleOffspring[0];
-        const parentCreature = Math.random() < 0.5 ? breeding.pair.parent1 : breeding.pair.parent2;
+        if (success && breeding.pair.possibleOffspring.length > 0) {
+          const offspring = breeding.pair.possibleOffspring[0];
+          const parentCreature =
+            Math.random() < 0.5 ? breeding.pair.parent1 : breeding.pair.parent2;
 
-        // Create offspring based on parent
-        const offspringCreature = enhanceCreature(parentCreature, 'breeding_grounds');
-        offspringCreature.name = `${parentCreature.name} Jr.`;
-        offspringCreature.genetics = {
-          parentIds: [breeding.pair.parent1.creatureId, breeding.pair.parent2.creatureId],
-          generation: Math.max(breeding.pair.parent1.genetics.generation, breeding.pair.parent2.genetics.generation) + 1,
-          inheritedTraits: [],
-          mutations: [],
-          breedingPotential: 90
-        };
+          // Create offspring based on parent
+          const offspringCreature = enhanceCreature(parentCreature, 'breeding_grounds');
+          offspringCreature.name = `${parentCreature.name} Jr.`;
+          offspringCreature.genetics = {
+            parentIds: [breeding.pair.parent1.creatureId, breeding.pair.parent2.creatureId],
+            generation:
+              Math.max(
+                breeding.pair.parent1.genetics.generation,
+                breeding.pair.parent2.genetics.generation
+              ) + 1,
+            inheritedTraits: [],
+            mutations: [],
+            breedingPotential: 90,
+          };
 
-        const newCollection = {
-          ...collection,
-          creatures: {
-            ...collection.creatures,
-            [offspringCreature.creatureId]: offspringCreature
-          },
-          activeBreeding: collection.activeBreeding.filter(b => b.id !== breedingId),
-          breedingHistory: [...collection.breedingHistory, { ...breeding, status: 'completed' as const, result: offspringCreature }],
-          totalCaptured: collection.totalCaptured + 1
-        };
+          const newCollection = {
+            ...collection,
+            creatures: {
+              ...collection.creatures,
+              [offspringCreature.creatureId]: offspringCreature,
+            },
+            activeBreeding: collection.activeBreeding.filter(b => b.id !== breedingId),
+            breedingHistory: [
+              ...collection.breedingHistory,
+              { ...breeding, status: 'completed' as const, result: offspringCreature },
+            ],
+            totalCaptured: collection.totalCaptured + 1,
+          };
 
-        await saveCollection(newCollection);
+          await saveCollection(newCollection);
 
-        emitEvent({
-          type: 'breeding_completed',
-          timestamp: new Date(),
-          creature: offspringCreature,
-          important: true,
-          message: `Breeding successful! Welcome ${offspringCreature.name}!`
-        });
+          emitEvent({
+            type: 'breeding_completed',
+            timestamp: new Date(),
+            creature: offspringCreature,
+            important: true,
+            message: `Breeding successful! Welcome ${offspringCreature.name}!`,
+          });
 
-        return {
-          success: true,
-          operation: 'breed',
-          creature: offspringCreature,
-          message: `Breeding successful! A new ${offspringCreature.species} was born!`
-        };
-      } else {
-        const newCollection = {
-          ...collection,
-          activeBreeding: collection.activeBreeding.filter(b => b.id !== breedingId),
-          breedingHistory: [...collection.breedingHistory, { ...breeding, status: 'failed' as const }]
-        };
+          return {
+            success: true,
+            operation: 'breed',
+            creature: offspringCreature,
+            message: `Breeding successful! A new ${offspringCreature.species} was born!`,
+          };
+        } else {
+          const newCollection = {
+            ...collection,
+            activeBreeding: collection.activeBreeding.filter(b => b.id !== breedingId),
+            breedingHistory: [
+              ...collection.breedingHistory,
+              { ...breeding, status: 'failed' as const },
+            ],
+          };
 
-        await saveCollection(newCollection);
+          await saveCollection(newCollection);
 
+          return {
+            success: false,
+            operation: 'breed',
+            message: 'Breeding was unsuccessful. The creatures were not compatible.',
+          };
+        }
+      } catch (err) {
+        const error = err instanceof Error ? err.message : 'Failed to collect breeding result';
+        setError(error);
         return {
           success: false,
           operation: 'breed',
-          message: 'Breeding was unsuccessful. The creatures were not compatible.'
+          message: error,
+          error,
         };
       }
-    } catch (err) {
-      const error = err instanceof Error ? err.message : 'Failed to collect breeding result';
-      setError(error);
-      return {
-        success: false,
-        operation: 'breed',
-        message: error,
-        error
-      };
-    }
-  }, [collection, checkBreedingProgress, enhanceCreature, saveCollection, emitEvent]);
+    },
+    [collection, checkBreedingProgress, enhanceCreature, saveCollection, emitEvent]
+  );
 
   // Create trade (simplified implementation)
-  const createTrade = useCallback(async (offeredCreatures: string[], requestedSpecies: SpeciesRequest[]): Promise<CreatureTrade> => {
-    const trade: CreatureTrade = {
-      id: `trade_${Date.now()}`,
-      trader: 'player',
-      traderId: 'player',
-      offered: {
-        creatures: offeredCreatures
-      },
-      requested: {
-        speciesRequests: requestedSpecies
-      },
-      status: 'pending',
-      createdAt: new Date(),
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
-    };
-
-    const newCollection = {
-      ...collection,
-      activeTrades: [...collection.activeTrades, trade]
-    };
-
-    await saveCollection(newCollection);
-
-    return trade;
-  }, [collection, saveCollection]);
-
-  // Accept trade
-  const acceptTrade = useCallback(async (tradeId: string): Promise<CreatureOperationResult> => {
-    try {
-      const trade = collection.activeTrades.find(t => t.id === tradeId);
-      if (!trade) {
-        throw new Error('Trade not found');
-      }
-
-      // For NPC trades, execute the trade
-      if (trade.trader === 'npc') {
-        // This would be connected to the NPC trading system
-        // For now, we'll mark it as completed
-        const newCollection = {
-          ...collection,
-          activeTrades: collection.activeTrades.filter(t => t.id !== tradeId),
-          tradeHistory: [...collection.tradeHistory, { ...trade, status: 'completed' as const, completedAt: new Date() }]
-        };
-
-        await saveCollection(newCollection);
-
-        emitEvent({
-          type: 'trade_completed',
-          timestamp: new Date(),
-          data: { tradeId },
-          important: true,
-          message: `Trade completed successfully!`
-        });
-
-        return {
-          success: true,
-          operation: 'trade',
-          message: 'Trade completed successfully!'
-        };
-      }
-
-      return {
-        success: false,
-        operation: 'trade',
-        message: 'Player-to-player trading not implemented yet.'
+  const createTrade = useCallback(
+    async (
+      offeredCreatures: string[],
+      requestedSpecies: SpeciesRequest[]
+    ): Promise<CreatureTrade> => {
+      const trade: CreatureTrade = {
+        id: `trade_${Date.now()}`,
+        trader: 'player',
+        traderId: 'player',
+        offered: {
+          creatures: offeredCreatures,
+        },
+        requested: {
+          speciesRequests: requestedSpecies,
+        },
+        status: 'pending',
+        createdAt: new Date(),
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
       };
-    } catch (err) {
-      const error = err instanceof Error ? err.message : 'Failed to accept trade';
-      setError(error);
-      return {
-        success: false,
-        operation: 'trade',
-        message: error,
-        error
-      };
-    }
-  }, [collection, saveCollection, emitEvent]);
 
-  // Decline trade
-  const declineTrade = useCallback(async (tradeId: string): Promise<CreatureOperationResult> => {
-    try {
       const newCollection = {
         ...collection,
-        activeTrades: collection.activeTrades.filter(t => t.id !== tradeId)
+        activeTrades: [...collection.activeTrades, trade],
       };
 
       await saveCollection(newCollection);
 
-      return {
-        success: true,
-        operation: 'trade',
-        message: 'Trade declined.'
-      };
-    } catch (err) {
-      const error = err instanceof Error ? err.message : 'Failed to decline trade';
-      setError(error);
-      return {
-        success: false,
-        operation: 'trade',
-        message: error,
-        error
-      };
-    }
-  }, [collection, saveCollection]);
+      return trade;
+    },
+    [collection, saveCollection]
+  );
+
+  // Accept trade
+  const acceptTrade = useCallback(
+    async (tradeId: string): Promise<CreatureOperationResult> => {
+      try {
+        const trade = collection.activeTrades.find(t => t.id === tradeId);
+        if (!trade) {
+          throw new Error('Trade not found');
+        }
+
+        // For NPC trades, execute the trade
+        if (trade.trader === 'npc') {
+          // This would be connected to the NPC trading system
+          // For now, we'll mark it as completed
+          const newCollection = {
+            ...collection,
+            activeTrades: collection.activeTrades.filter(t => t.id !== tradeId),
+            tradeHistory: [
+              ...collection.tradeHistory,
+              { ...trade, status: 'completed' as const, completedAt: new Date() },
+            ],
+          };
+
+          await saveCollection(newCollection);
+
+          emitEvent({
+            type: 'trade_completed',
+            timestamp: new Date(),
+            data: { tradeId },
+            important: true,
+            message: `Trade completed successfully!`,
+          });
+
+          return {
+            success: true,
+            operation: 'trade',
+            message: 'Trade completed successfully!',
+          };
+        }
+
+        return {
+          success: false,
+          operation: 'trade',
+          message: 'Player-to-player trading not implemented yet.',
+        };
+      } catch (err) {
+        const error = err instanceof Error ? err.message : 'Failed to accept trade';
+        setError(error);
+        return {
+          success: false,
+          operation: 'trade',
+          message: error,
+          error,
+        };
+      }
+    },
+    [collection, saveCollection, emitEvent]
+  );
+
+  // Decline trade
+  const declineTrade = useCallback(
+    async (tradeId: string): Promise<CreatureOperationResult> => {
+      try {
+        const newCollection = {
+          ...collection,
+          activeTrades: collection.activeTrades.filter(t => t.id !== tradeId),
+        };
+
+        await saveCollection(newCollection);
+
+        return {
+          success: true,
+          operation: 'trade',
+          message: 'Trade declined.',
+        };
+      } catch (err) {
+        const error = err instanceof Error ? err.message : 'Failed to decline trade';
+        setError(error);
+        return {
+          success: false,
+          operation: 'trade',
+          message: error,
+          error,
+        };
+      }
+    },
+    [collection, saveCollection]
+  );
 
   // Discover creature
-  const discoverCreature = useCallback(async (monster: Monster, location: string): Promise<BestiaryEntry> => {
-    const species = monster.name.toLowerCase().replace(/\s+/g, '_');
+  const discoverCreature = useCallback(
+    async (monster: Monster, location: string): Promise<BestiaryEntry> => {
+      const species = monster.name.toLowerCase().replace(/\s+/g, '_');
 
-    let entry = collection.bestiary[species];
-    if (!entry) {
-      entry = {
-        species,
-        discoveryStatus: 'spotted',
-        totalEncounters: 0,
-        totalCaptures: 0,
-        specimens: [],
-        loreEntries: []
+      let entry = collection.bestiary[species];
+      if (!entry) {
+        entry = {
+          species,
+          discoveryStatus: 'spotted',
+          totalEncounters: 0,
+          totalCaptures: 0,
+          specimens: [],
+          loreEntries: [],
+        };
+      }
+
+      const updatedEntry: BestiaryEntry = {
+        ...entry,
+        name: monster.name,
+        type: monster.type as CreatureType,
+        element: monster.element as CreatureElement,
+        rarity: monster.rarity as CreatureRarity,
+        firstSeen: entry.firstSeen || new Date(),
+        totalEncounters: entry.totalEncounters + 1,
+        discoveryStatus: entry.discoveryStatus === 'unknown' ? 'spotted' : entry.discoveryStatus,
       };
-    }
 
-    const updatedEntry: BestiaryEntry = {
-      ...entry,
-      name: monster.name,
-      type: monster.type as CreatureType,
-      element: monster.element as CreatureElement,
-      rarity: monster.rarity as CreatureRarity,
-      firstSeen: entry.firstSeen || new Date(),
-      totalEncounters: entry.totalEncounters + 1,
-      discoveryStatus: entry.discoveryStatus === 'unknown' ? 'spotted' : entry.discoveryStatus
-    };
+      const newCollection = {
+        ...collection,
+        bestiary: {
+          ...collection.bestiary,
+          [species]: updatedEntry,
+        },
+        totalDiscovered: collection.totalDiscovered + (entry.discoveryStatus === 'unknown' ? 1 : 0),
+      };
 
-    const newCollection = {
-      ...collection,
-      bestiary: {
-        ...collection.bestiary,
-        [species]: updatedEntry
-      },
-      totalDiscovered: collection.totalDiscovered + (entry.discoveryStatus === 'unknown' ? 1 : 0)
-    };
+      await saveCollection(newCollection);
 
-    await saveCollection(newCollection);
+      if (entry.discoveryStatus === 'unknown') {
+        emitEvent({
+          type: 'creature_discovered',
+          timestamp: new Date(),
+          data: { species, location },
+          important: false,
+          message: `Discovered new creature: ${monster.name}!`,
+        });
+      }
 
-    if (entry.discoveryStatus === 'unknown') {
-      emitEvent({
-        type: 'creature_discovered',
-        timestamp: new Date(),
-        data: { species, location },
-        important: false,
-        message: `Discovered new creature: ${monster.name}!`
-      });
-    }
-
-    return updatedEntry;
-  }, [collection, saveCollection, emitEvent]);
+      return updatedEntry;
+    },
+    [collection, saveCollection, emitEvent]
+  );
 
   // Update bestiary entry
-  const updateBestiaryEntry = useCallback(async (species: string, completionLevel: CreatureCompletionLevel): Promise<BestiaryEntry> => {
-    const entry = collection.bestiary[species];
-    if (!entry) {
-      throw new Error('Bestiary entry not found');
-    }
-
-    const updatedEntry = {
-      ...entry,
-      discoveryStatus: completionLevel
-    };
-
-    const newCollection = {
-      ...collection,
-      bestiary: {
-        ...collection.bestiary,
-        [species]: updatedEntry
+  const updateBestiaryEntry = useCallback(
+    async (species: string, completionLevel: CreatureCompletionLevel): Promise<BestiaryEntry> => {
+      const entry = collection.bestiary[species];
+      if (!entry) {
+        throw new Error('Bestiary entry not found');
       }
-    };
 
-    await saveCollection(newCollection);
+      const updatedEntry = {
+        ...entry,
+        discoveryStatus: completionLevel,
+      };
 
-    return updatedEntry;
-  }, [collection, saveCollection]);
+      const newCollection = {
+        ...collection,
+        bestiary: {
+          ...collection.bestiary,
+          [species]: updatedEntry,
+        },
+      };
+
+      await saveCollection(newCollection);
+
+      return updatedEntry;
+    },
+    [collection, saveCollection]
+  );
 
   // Get bestiary progress
   const getBestiaryProgress = useCallback(() => {
@@ -1557,64 +1725,87 @@ export function useCreatures(): UseCreaturesReturn {
   }, [collection.bestiary]);
 
   // Update filter
-  const updateFilter = useCallback((newFilter: Partial<CreatureFilter>) => {
-    const updatedCollection = {
-      ...collection,
-      filter: {
-        ...collection.filter,
-        ...newFilter
-      }
-    };
-    setCollection(updatedCollection);
-  }, [collection]);
+  const updateFilter = useCallback(
+    (newFilter: Partial<CreatureFilter>) => {
+      const updatedCollection = {
+        ...collection,
+        filter: {
+          ...collection.filter,
+          ...newFilter,
+        },
+      };
+      setCollection(updatedCollection);
+    },
+    [collection]
+  );
 
   // Search creatures
-  const searchCreatures = useCallback((query: string): EnhancedCreature[] => {
-    const searchTerm = query.toLowerCase();
-    return Object.values(collection.creatures).filter(creature => {
-      const searchableText = [
-        creature.name,
-        creature.species,
-        creature.creatureType,
-        creature.element,
-        creature.description,
-        ...creature.collectionStatus.tags
-      ].join(' ').toLowerCase();
+  const searchCreatures = useCallback(
+    (query: string): EnhancedCreature[] => {
+      const searchTerm = query.toLowerCase();
+      return Object.values(collection.creatures).filter(creature => {
+        const searchableText = [
+          creature.name,
+          creature.species,
+          creature.creatureType,
+          creature.element,
+          creature.description,
+          ...creature.collectionStatus.tags,
+        ]
+          .join(' ')
+          .toLowerCase();
 
-      return searchableText.includes(searchTerm);
-    });
-  }, [collection.creatures]);
+        return searchableText.includes(searchTerm);
+      });
+    },
+    [collection.creatures]
+  );
 
   // Get creatures by species
-  const getCreaturesBySpecies = useCallback((species: string): EnhancedCreature[] => {
-    return Object.values(collection.creatures).filter(creature => creature.species === species);
-  }, [collection.creatures]);
+  const getCreaturesBySpecies = useCallback(
+    (species: string): EnhancedCreature[] => {
+      return Object.values(collection.creatures).filter(creature => creature.species === species);
+    },
+    [collection.creatures]
+  );
 
   // Get creatures by type
-  const getCreaturesByType = useCallback((type: CreatureType): EnhancedCreature[] => {
-    return Object.values(collection.creatures).filter(creature => creature.creatureType === type);
-  }, [collection.creatures]);
+  const getCreaturesByType = useCallback(
+    (type: CreatureType): EnhancedCreature[] => {
+      return Object.values(collection.creatures).filter(creature => creature.creatureType === type);
+    },
+    [collection.creatures]
+  );
 
   // Get collection statistics
   const getCollectionStats = useCallback(() => {
     const creatures = Object.values(collection.creatures);
     const bestiaryEntries = Object.values(collection.bestiary);
 
-    const byRarity = creatures.reduce((acc, creature) => {
-      const rarity = creature.rarity as CreatureRarity;
-      acc[rarity] = (acc[rarity] || 0) + 1;
-      return acc;
-    }, {} as Record<CreatureRarity, number>);
+    const byRarity = creatures.reduce(
+      (acc, creature) => {
+        const rarity = creature.rarity as CreatureRarity;
+        acc[rarity] = (acc[rarity] || 0) + 1;
+        return acc;
+      },
+      {} as Record<CreatureRarity, number>
+    );
 
-    const byType = creatures.reduce((acc, creature) => {
-      acc[creature.creatureType] = (acc[creature.creatureType] || 0) + 1;
-      return acc;
-    }, {} as Record<CreatureType, number>);
+    const byType = creatures.reduce(
+      (acc, creature) => {
+        acc[creature.creatureType] = (acc[creature.creatureType] || 0) + 1;
+        return acc;
+      },
+      {} as Record<CreatureType, number>
+    );
 
-    const byElement = creatures.reduce((acc, creature) => {
-      acc[creature.element] = (acc[creature.element] || 0) + 1;
-      return acc;
-    }, {} as Record<CreatureElement, number>);
+    const byElement = creatures.reduce(
+      (acc, creature) => {
+        acc[creature.element] = (acc[creature.element] || 0) + 1;
+        return acc;
+      },
+      {} as Record<CreatureElement, number>
+    );
 
     // Calculate totals for CreatureScreen compatibility
     const discovered = bestiaryEntries.length;
@@ -1635,7 +1826,7 @@ export function useCreatures(): UseCreaturesReturn {
       discovered,
       captured,
       total,
-      completionPercentage
+      completionPercentage,
     };
   }, [collection.creatures, collection.bestiary, collection.activeBreeding]);
 
@@ -1649,13 +1840,19 @@ export function useCreatures(): UseCreaturesReturn {
   }, []);
 
   // Utility functions
-  const isCreatureCaptured = useCallback((species: string): boolean => {
-    return Object.values(collection.creatures).some(creature => creature.species === species);
-  }, [collection.creatures]);
+  const isCreatureCaptured = useCallback(
+    (species: string): boolean => {
+      return Object.values(collection.creatures).some(creature => creature.species === species);
+    },
+    [collection.creatures]
+  );
 
-  const getCreature = useCallback((creatureId: string): EnhancedCreature | null => {
-    return collection.creatures[creatureId] || null;
-  }, [collection.creatures]);
+  const getCreature = useCallback(
+    (creatureId: string): EnhancedCreature | null => {
+      return collection.creatures[creatureId] || null;
+    },
+    [collection.creatures]
+  );
 
   const canCaptureMore = useCallback((): boolean => {
     return Object.keys(collection.creatures).length < 1000; // Arbitrary limit
@@ -1719,6 +1916,6 @@ export function useCreatures(): UseCreaturesReturn {
 
     // Loading and error states
     isLoading,
-    error
+    error,
   };
 }

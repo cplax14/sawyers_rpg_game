@@ -4,7 +4,12 @@
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { createUserFriendlyError, errorTracker, ErrorContext, UserFriendlyError } from '../utils/inventoryErrorHandling';
+import {
+  createUserFriendlyError,
+  errorTracker,
+  ErrorContext,
+  UserFriendlyError,
+} from '../utils/inventoryErrorHandling';
 import { InventoryError, InventoryException } from '../types/inventory';
 
 export interface NotificationOptions {
@@ -54,31 +59,34 @@ export function useInventoryFeedback() {
   }, []);
 
   // Show notification
-  const showNotification = useCallback((options: NotificationOptions) => {
-    const id = options.id || generateId();
-    const notification: FeedbackNotification = {
-      ...options,
-      id,
-      timestamp: Date.now()
-    };
+  const showNotification = useCallback(
+    (options: NotificationOptions) => {
+      const id = options.id || generateId();
+      const notification: FeedbackNotification = {
+        ...options,
+        id,
+        timestamp: Date.now(),
+      };
 
-    setNotifications(prev => {
-      // Remove existing notification with same ID
-      const filtered = prev.filter(n => n.id !== id);
-      return [...filtered, notification];
-    });
+      setNotifications(prev => {
+        // Remove existing notification with same ID
+        const filtered = prev.filter(n => n.id !== id);
+        return [...filtered, notification];
+      });
 
-    // Auto-dismiss if duration is set
-    if (options.duration && options.duration > 0) {
-      const timer = setTimeout(() => {
-        dismissNotification(id);
-      }, options.duration);
+      // Auto-dismiss if duration is set
+      if (options.duration && options.duration > 0) {
+        const timer = setTimeout(() => {
+          dismissNotification(id);
+        }, options.duration);
 
-      dismissTimers.current.set(id, timer);
-    }
+        dismissTimers.current.set(id, timer);
+      }
 
-    return id;
-  }, [generateId]);
+      return id;
+    },
+    [generateId]
+  );
 
   // Dismiss notification
   const dismissNotification = useCallback((id: string) => {
@@ -102,290 +110,323 @@ export function useInventoryFeedback() {
   }, []);
 
   // Show success message
-  const showSuccess = useCallback((title: string, message: string, options: Partial<NotificationOptions> = {}) => {
-    return showNotification({
-      ...options,
-      title,
-      message,
-      type: 'success',
-      duration: options.duration ?? 4000,
-      icon: options.icon ?? '✅'
-    });
-  }, [showNotification]);
+  const showSuccess = useCallback(
+    (title: string, message: string, options: Partial<NotificationOptions> = {}) => {
+      return showNotification({
+        ...options,
+        title,
+        message,
+        type: 'success',
+        duration: options.duration ?? 4000,
+        icon: options.icon ?? '✅',
+      });
+    },
+    [showNotification]
+  );
 
   // Show error message
-  const showError = useCallback((
-    error: InventoryError | InventoryException | Error | string,
-    context: ErrorContext = {},
-    options: Partial<NotificationOptions> = {}
-  ) => {
-    let userFriendlyError: UserFriendlyError;
+  const showError = useCallback(
+    (
+      error: InventoryError | InventoryException | Error | string,
+      context: ErrorContext = {},
+      options: Partial<NotificationOptions> = {}
+    ) => {
+      let userFriendlyError: UserFriendlyError;
 
-    if (typeof error === 'string') {
-      userFriendlyError = {
-        title: 'Error',
-        message: error,
-        severity: 'error',
-        icon: '❌'
-      };
-    } else {
-      userFriendlyError = createUserFriendlyError(error, context);
+      if (typeof error === 'string') {
+        userFriendlyError = {
+          title: 'Error',
+          message: error,
+          severity: 'error',
+          icon: '❌',
+        };
+      } else {
+        userFriendlyError = createUserFriendlyError(error, context);
 
-      // Track error for analytics
-      if (error instanceof InventoryException) {
-        errorTracker.track(error.errorCode, context);
-      } else if (typeof error === 'string' && Object.values(InventoryError).includes(error as InventoryError)) {
-        errorTracker.track(error as InventoryError, context);
+        // Track error for analytics
+        if (error instanceof InventoryException) {
+          errorTracker.track(error.errorCode, context);
+        } else if (
+          typeof error === 'string' &&
+          Object.values(InventoryError).includes(error as InventoryError)
+        ) {
+          errorTracker.track(error as InventoryError, context);
+        }
       }
-    }
 
-    return showNotification({
-      ...options,
-      title: userFriendlyError.title,
-      message: userFriendlyError.message,
-      type: userFriendlyError.severity === 'warning' ? 'warning' : 'error',
-      duration: options.duration ?? (userFriendlyError.autoDismiss ? userFriendlyError.duration : 0),
-      icon: options.icon ?? userFriendlyError.icon,
-      actions: userFriendlyError.recoveryActions?.map(action => ({
-        label: action.label,
-        action: action.action,
-        style: action.type === 'primary' ? 'primary' : 'secondary'
-      }))
-    });
-  }, [showNotification]);
+      return showNotification({
+        ...options,
+        title: userFriendlyError.title,
+        message: userFriendlyError.message,
+        type: userFriendlyError.severity === 'warning' ? 'warning' : 'error',
+        duration:
+          options.duration ?? (userFriendlyError.autoDismiss ? userFriendlyError.duration : 0),
+        icon: options.icon ?? userFriendlyError.icon,
+        actions: userFriendlyError.recoveryActions?.map(action => ({
+          label: action.label,
+          action: action.action,
+          style: action.type === 'primary' ? 'primary' : 'secondary',
+        })),
+      });
+    },
+    [showNotification]
+  );
 
   // Show warning message
-  const showWarning = useCallback((title: string, message: string, options: Partial<NotificationOptions> = {}) => {
-    return showNotification({
-      ...options,
-      title,
-      message,
-      type: 'warning',
-      duration: options.duration ?? 5000,
-      icon: options.icon ?? '⚠️'
-    });
-  }, [showNotification]);
+  const showWarning = useCallback(
+    (title: string, message: string, options: Partial<NotificationOptions> = {}) => {
+      return showNotification({
+        ...options,
+        title,
+        message,
+        type: 'warning',
+        duration: options.duration ?? 5000,
+        icon: options.icon ?? '⚠️',
+      });
+    },
+    [showNotification]
+  );
 
   // Show info message
-  const showInfo = useCallback((title: string, message: string, options: Partial<NotificationOptions> = {}) => {
-    return showNotification({
-      ...options,
-      title,
-      message,
-      type: 'info',
-      duration: options.duration ?? 3000,
-      icon: options.icon ?? 'ℹ️'
-    });
-  }, [showNotification]);
+  const showInfo = useCallback(
+    (title: string, message: string, options: Partial<NotificationOptions> = {}) => {
+      return showNotification({
+        ...options,
+        title,
+        message,
+        type: 'info',
+        duration: options.duration ?? 3000,
+        icon: options.icon ?? 'ℹ️',
+      });
+    },
+    [showNotification]
+  );
 
   // Start operation progress
-  const startOperation = useCallback((id: string, label: string, total?: number) => {
-    const operation: OperationProgress = {
-      id,
-      label,
-      progress: 0,
-      stage: 'Starting...',
-      total,
-      completed: 0,
-      estimatedTimeRemaining: undefined
-    };
+  const startOperation = useCallback(
+    (id: string, label: string, total?: number) => {
+      const operation: OperationProgress = {
+        id,
+        label,
+        progress: 0,
+        stage: 'Starting...',
+        total,
+        completed: 0,
+        estimatedTimeRemaining: undefined,
+      };
 
-    setOperations(prev => new Map(prev).set(id, operation));
+      setOperations(prev => new Map(prev).set(id, operation));
 
-    // Show loading notification
-    showNotification({
-      id: `operation-${id}`,
-      title: label,
-      message: 'Starting operation...',
-      type: 'loading',
-      duration: 0, // Permanent until operation completes
-      progress: 0
-    });
+      // Show loading notification
+      showNotification({
+        id: `operation-${id}`,
+        title: label,
+        message: 'Starting operation...',
+        type: 'loading',
+        duration: 0, // Permanent until operation completes
+        progress: 0,
+      });
 
-    return id;
-  }, [showNotification]);
+      return id;
+    },
+    [showNotification]
+  );
 
   // Update operation progress
-  const updateOperation = useCallback((
-    id: string,
-    updates: Partial<Pick<OperationProgress, 'progress' | 'stage' | 'completed' | 'estimatedTimeRemaining'>>
-  ) => {
-    setOperations(prev => {
-      const operation = prev.get(id);
-      if (!operation) return prev;
+  const updateOperation = useCallback(
+    (
+      id: string,
+      updates: Partial<
+        Pick<OperationProgress, 'progress' | 'stage' | 'completed' | 'estimatedTimeRemaining'>
+      >
+    ) => {
+      setOperations(prev => {
+        const operation = prev.get(id);
+        if (!operation) return prev;
 
-      const updated = { ...operation, ...updates };
-      const newMap = new Map(prev);
-      newMap.set(id, updated);
+        const updated = { ...operation, ...updates };
+        const newMap = new Map(prev);
+        newMap.set(id, updated);
 
-      // Update loading notification
-      setNotifications(current =>
-        current.map(notification =>
-          notification.id === `operation-${id}`
-            ? {
-                ...notification,
-                message: updated.stage,
-                progress: updated.progress
-              }
-            : notification
-        )
-      );
+        // Update loading notification
+        setNotifications(current =>
+          current.map(notification =>
+            notification.id === `operation-${id}`
+              ? {
+                  ...notification,
+                  message: updated.stage,
+                  progress: updated.progress,
+                }
+              : notification
+          )
+        );
 
-      return newMap;
-    });
-  }, []);
+        return newMap;
+      });
+    },
+    []
+  );
 
   // Complete operation
-  const completeOperation = useCallback((
-    id: string,
-    result: { success: boolean; message?: string; data?: any }
-  ) => {
-    const operation = operations.get(id);
-    if (!operation) return;
+  const completeOperation = useCallback(
+    (id: string, result: { success: boolean; message?: string; data?: any }) => {
+      const operation = operations.get(id);
+      if (!operation) return;
 
-    // Remove operation
-    setOperations(prev => {
-      const newMap = new Map(prev);
-      newMap.delete(id);
-      return newMap;
-    });
+      // Remove operation
+      setOperations(prev => {
+        const newMap = new Map(prev);
+        newMap.delete(id);
+        return newMap;
+      });
 
-    // Dismiss loading notification
-    dismissNotification(`operation-${id}`);
+      // Dismiss loading notification
+      dismissNotification(`operation-${id}`);
 
-    // Show result notification
-    if (result.success) {
-      showSuccess(
-        `${operation.label} Complete`,
-        result.message || 'Operation completed successfully'
-      );
-    } else {
-      showError(
-        result.message || 'Operation failed',
-        { operationType: operation.label }
-      );
-    }
-  }, [operations, dismissNotification, showSuccess, showError]);
+      // Show result notification
+      if (result.success) {
+        showSuccess(
+          `${operation.label} Complete`,
+          result.message || 'Operation completed successfully'
+        );
+      } else {
+        showError(result.message || 'Operation failed', { operationType: operation.label });
+      }
+    },
+    [operations, dismissNotification, showSuccess, showError]
+  );
 
   // Batch operations for multiple items
-  const showBatchProgress = useCallback((
-    label: string,
-    items: string[],
-    processor: (item: string, index: number) => Promise<{ success: boolean; message?: string }>
-  ) => {
-    const operationId = `batch-${Date.now()}`;
-    const total = items.length;
+  const showBatchProgress = useCallback(
+    (
+      label: string,
+      items: string[],
+      processor: (item: string, index: number) => Promise<{ success: boolean; message?: string }>
+    ) => {
+      const operationId = `batch-${Date.now()}`;
+      const total = items.length;
 
-    startOperation(operationId, label, total);
+      startOperation(operationId, label, total);
 
-    const processBatch = async () => {
-      const results = { successful: 0, failed: 0, errors: [] as string[] };
+      const processBatch = async () => {
+        const results = { successful: 0, failed: 0, errors: [] as string[] };
 
-      for (let i = 0; i < items.length; i++) {
-        const item = items[i];
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i];
 
-        updateOperation(operationId, {
-          progress: (i / total) * 100,
-          stage: `Processing ${item}... (${i + 1}/${total})`,
-          completed: i,
-          estimatedTimeRemaining: total > i + 1 ? ((total - i - 1) * 1000) : 0
-        });
+          updateOperation(operationId, {
+            progress: (i / total) * 100,
+            stage: `Processing ${item}... (${i + 1}/${total})`,
+            completed: i,
+            estimatedTimeRemaining: total > i + 1 ? (total - i - 1) * 1000 : 0,
+          });
 
-        try {
-          const result = await processor(item, i);
-          if (result.success) {
-            results.successful++;
-          } else {
-            results.failed++;
-            if (result.message) {
-              results.errors.push(`${item}: ${result.message}`);
+          try {
+            const result = await processor(item, i);
+            if (result.success) {
+              results.successful++;
+            } else {
+              results.failed++;
+              if (result.message) {
+                results.errors.push(`${item}: ${result.message}`);
+              }
             }
+          } catch (error) {
+            results.failed++;
+            results.errors.push(
+              `${item}: ${error instanceof Error ? error.message : 'Unknown error'}`
+            );
           }
-        } catch (error) {
-          results.failed++;
-          results.errors.push(`${item}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+
+          // Small delay to prevent UI blocking
+          await new Promise(resolve => setTimeout(resolve, 50));
         }
 
-        // Small delay to prevent UI blocking
-        await new Promise(resolve => setTimeout(resolve, 50));
-      }
-
-      updateOperation(operationId, {
-        progress: 100,
-        stage: 'Completing...',
-        completed: total
-      });
-
-      // Complete with summary
-      const successMessage = `Processed ${total} items: ${results.successful} successful, ${results.failed} failed`;
-      completeOperation(operationId, {
-        success: results.failed === 0,
-        message: successMessage,
-        data: results
-      });
-
-      // Show detailed errors if any
-      if (results.errors.length > 0 && results.errors.length <= 3) {
-        results.errors.forEach(errorMsg => {
-          showError(errorMsg, { operationType: label });
+        updateOperation(operationId, {
+          progress: 100,
+          stage: 'Completing...',
+          completed: total,
         });
-      } else if (results.errors.length > 3) {
-        showError(
-          `Multiple errors occurred during ${label}`,
-          { operationType: label },
-          {
-            actions: [{
-              label: 'View Details',
-              action: () => console.log('Detailed errors:', results.errors),
-              style: 'secondary'
-            }]
-          }
-        );
-      }
 
-      return results;
-    };
+        // Complete with summary
+        const successMessage = `Processed ${total} items: ${results.successful} successful, ${results.failed} failed`;
+        completeOperation(operationId, {
+          success: results.failed === 0,
+          message: successMessage,
+          data: results,
+        });
 
-    return processBatch();
-  }, [startOperation, updateOperation, completeOperation, showError]);
+        // Show detailed errors if any
+        if (results.errors.length > 0 && results.errors.length <= 3) {
+          results.errors.forEach(errorMsg => {
+            showError(errorMsg, { operationType: label });
+          });
+        } else if (results.errors.length > 3) {
+          showError(
+            `Multiple errors occurred during ${label}`,
+            { operationType: label },
+            {
+              actions: [
+                {
+                  label: 'View Details',
+                  action: () => console.log('Detailed errors:', results.errors),
+                  style: 'secondary',
+                },
+              ],
+            }
+          );
+        }
+
+        return results;
+      };
+
+      return processBatch();
+    },
+    [startOperation, updateOperation, completeOperation, showError]
+  );
 
   // Quick feedback for common actions
-  const showItemAdded = useCallback((itemName: string, quantity: number = 1) => {
-    showSuccess(
-      'Item Added',
-      `${quantity > 1 ? `${quantity}x ` : ''}${itemName} added to inventory`,
-      { duration: 2000 }
-    );
-  }, [showSuccess]);
+  const showItemAdded = useCallback(
+    (itemName: string, quantity: number = 1) => {
+      showSuccess(
+        'Item Added',
+        `${quantity > 1 ? `${quantity}x ` : ''}${itemName} added to inventory`,
+        { duration: 2000 }
+      );
+    },
+    [showSuccess]
+  );
 
-  const showItemRemoved = useCallback((itemName: string, quantity: number = 1) => {
-    showInfo(
-      'Item Removed',
-      `${quantity > 1 ? `${quantity}x ` : ''}${itemName} removed from inventory`,
-      { duration: 2000 }
-    );
-  }, [showInfo]);
+  const showItemRemoved = useCallback(
+    (itemName: string, quantity: number = 1) => {
+      showInfo(
+        'Item Removed',
+        `${quantity > 1 ? `${quantity}x ` : ''}${itemName} removed from inventory`,
+        { duration: 2000 }
+      );
+    },
+    [showInfo]
+  );
 
-  const showItemUsed = useCallback((itemName: string, effect?: string) => {
-    showSuccess(
-      'Item Used',
-      effect ? `${itemName} used: ${effect}` : `${itemName} used`,
-      { duration: 3000 }
-    );
-  }, [showSuccess]);
+  const showItemUsed = useCallback(
+    (itemName: string, effect?: string) => {
+      showSuccess('Item Used', effect ? `${itemName} used: ${effect}` : `${itemName} used`, {
+        duration: 3000,
+      });
+    },
+    [showSuccess]
+  );
 
   const showInventoryFull = useCallback(() => {
-    showWarning(
-      'Inventory Full',
-      'Your inventory is full. Consider selling or dropping items.',
-      {
-        actions: [{
+    showWarning('Inventory Full', 'Your inventory is full. Consider selling or dropping items.', {
+      actions: [
+        {
           label: 'Manage',
           action: () => console.log('Opening inventory management'),
-          style: 'primary'
-        }]
-      }
-    );
+          style: 'primary',
+        },
+      ],
+    });
   }, [showWarning]);
 
   // Cleanup on unmount
@@ -420,6 +461,6 @@ export function useInventoryFeedback() {
     showItemAdded,
     showItemRemoved,
     showItemUsed,
-    showInventoryFull
+    showInventoryFull,
   };
 }

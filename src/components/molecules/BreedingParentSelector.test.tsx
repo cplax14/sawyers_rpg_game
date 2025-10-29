@@ -74,11 +74,7 @@ describe('BreedingParentSelector', () => {
   describe('Empty Slot Display', () => {
     it('should show empty slot with label', () => {
       renderWithGameContext(
-        <BreedingParentSelector
-          selectedCreature={null}
-          onSelect={mockOnSelect}
-          label="Parent 1"
-        />
+        <BreedingParentSelector selectedCreature={null} onSelect={mockOnSelect} label='Parent 1' />
       );
 
       expect(screen.getByText('Parent 1')).toBeInTheDocument();
@@ -87,11 +83,7 @@ describe('BreedingParentSelector', () => {
 
     it('should show placeholder icon in empty slot', () => {
       renderWithGameContext(
-        <BreedingParentSelector
-          selectedCreature={null}
-          onSelect={mockOnSelect}
-          label="Parent 1"
-        />
+        <BreedingParentSelector selectedCreature={null} onSelect={mockOnSelect} label='Parent 1' />
       );
 
       expect(screen.getByText('👤')).toBeInTheDocument();
@@ -99,11 +91,7 @@ describe('BreedingParentSelector', () => {
 
     it('should have pointer cursor on empty slot', () => {
       const { container } = renderWithGameContext(
-        <BreedingParentSelector
-          selectedCreature={null}
-          onSelect={mockOnSelect}
-          label="Parent 1"
-        />
+        <BreedingParentSelector selectedCreature={null} onSelect={mockOnSelect} label='Parent 1' />
       );
 
       const slot = container.querySelector('[style*="cursor: pointer"]');
@@ -121,7 +109,7 @@ describe('BreedingParentSelector', () => {
         <BreedingParentSelector
           selectedCreature={mockCreatures[0] as EnhancedCreature}
           onSelect={mockOnSelect}
-          label="Parent 1"
+          label='Parent 1'
         />,
         { contextValue: mockContext }
       );
@@ -138,7 +126,7 @@ describe('BreedingParentSelector', () => {
         <BreedingParentSelector
           selectedCreature={mockCreatures[0] as EnhancedCreature}
           onSelect={mockOnSelect}
-          label="Parent 1"
+          label='Parent 1'
         />,
         { contextValue: mockContext }
       );
@@ -155,11 +143,7 @@ describe('BreedingParentSelector', () => {
       });
 
       renderWithGameContext(
-        <BreedingParentSelector
-          selectedCreature={null}
-          onSelect={mockOnSelect}
-          label="Parent 1"
-        />,
+        <BreedingParentSelector selectedCreature={null} onSelect={mockOnSelect} label='Parent 1' />,
         { contextValue: mockContext }
       );
 
@@ -181,7 +165,7 @@ describe('BreedingParentSelector', () => {
         <BreedingParentSelector
           selectedCreature={mockCreatures[0] as EnhancedCreature}
           onSelect={mockOnSelect}
-          label="Parent 1"
+          label='Parent 1'
         />,
         { contextValue: mockContext }
       );
@@ -201,11 +185,7 @@ describe('BreedingParentSelector', () => {
       });
 
       renderWithGameContext(
-        <BreedingParentSelector
-          selectedCreature={null}
-          onSelect={mockOnSelect}
-          label="Parent 1"
-        />,
+        <BreedingParentSelector selectedCreature={null} onSelect={mockOnSelect} label='Parent 1' />,
         { contextValue: mockContext }
       );
 
@@ -230,11 +210,7 @@ describe('BreedingParentSelector', () => {
       });
 
       renderWithGameContext(
-        <BreedingParentSelector
-          selectedCreature={null}
-          onSelect={mockOnSelect}
-          label="Parent 1"
-        />,
+        <BreedingParentSelector selectedCreature={null} onSelect={mockOnSelect} label='Parent 1' />,
         { contextValue: mockContext }
       );
 
@@ -259,8 +235,8 @@ describe('BreedingParentSelector', () => {
         <BreedingParentSelector
           selectedCreature={null}
           onSelect={mockOnSelect}
-          label="Parent 2"
-          excludeCreatureId="slime_1"
+          label='Parent 2'
+          excludeCreatureId='slime_1'
         />,
         { contextValue: mockContext }
       );
@@ -281,11 +257,7 @@ describe('BreedingParentSelector', () => {
       });
 
       renderWithGameContext(
-        <BreedingParentSelector
-          selectedCreature={null}
-          onSelect={mockOnSelect}
-          label="Parent 1"
-        />,
+        <BreedingParentSelector selectedCreature={null} onSelect={mockOnSelect} label='Parent 1' />,
         { contextValue: mockContext }
       );
 
@@ -306,11 +278,7 @@ describe('BreedingParentSelector', () => {
       });
 
       renderWithGameContext(
-        <BreedingParentSelector
-          selectedCreature={null}
-          onSelect={mockOnSelect}
-          label="Parent 1"
-        />,
+        <BreedingParentSelector selectedCreature={null} onSelect={mockOnSelect} label='Parent 1' />,
         { contextValue: mockContext }
       );
 
@@ -329,11 +297,7 @@ describe('BreedingParentSelector', () => {
       });
 
       renderWithGameContext(
-        <BreedingParentSelector
-          selectedCreature={null}
-          onSelect={mockOnSelect}
-          label="Parent 1"
-        />,
+        <BreedingParentSelector selectedCreature={null} onSelect={mockOnSelect} label='Parent 1' />,
         { contextValue: mockContext }
       );
 
@@ -361,11 +325,7 @@ describe('BreedingParentSelector', () => {
       });
 
       renderWithGameContext(
-        <BreedingParentSelector
-          selectedCreature={null}
-          onSelect={mockOnSelect}
-          label="Parent 1"
-        />,
+        <BreedingParentSelector selectedCreature={null} onSelect={mockOnSelect} label='Parent 1' />,
         { contextValue: mockContext }
       );
 
@@ -392,11 +352,7 @@ describe('BreedingParentSelector', () => {
       });
 
       renderWithGameContext(
-        <BreedingParentSelector
-          selectedCreature={null}
-          onSelect={mockOnSelect}
-          label="Parent 1"
-        />,
+        <BreedingParentSelector selectedCreature={null} onSelect={mockOnSelect} label='Parent 1' />,
         { contextValue: mockContext }
       );
 
@@ -422,11 +378,7 @@ describe('BreedingParentSelector', () => {
       });
 
       renderWithGameContext(
-        <BreedingParentSelector
-          selectedCreature={null}
-          onSelect={mockOnSelect}
-          label="Parent 1"
-        />,
+        <BreedingParentSelector selectedCreature={null} onSelect={mockOnSelect} label='Parent 1' />,
         { contextValue: mockContext }
       );
 
@@ -454,11 +406,7 @@ describe('BreedingParentSelector', () => {
       });
 
       renderWithGameContext(
-        <BreedingParentSelector
-          selectedCreature={null}
-          onSelect={mockOnSelect}
-          label="Parent 1"
-        />,
+        <BreedingParentSelector selectedCreature={null} onSelect={mockOnSelect} label='Parent 1' />,
         { contextValue: mockContext }
       );
 
@@ -479,11 +427,7 @@ describe('BreedingParentSelector', () => {
       });
 
       renderWithGameContext(
-        <BreedingParentSelector
-          selectedCreature={null}
-          onSelect={mockOnSelect}
-          label="Parent 1"
-        />,
+        <BreedingParentSelector selectedCreature={null} onSelect={mockOnSelect} label='Parent 1' />,
         { contextValue: mockContext }
       );
 
@@ -510,11 +454,7 @@ describe('BreedingParentSelector', () => {
       });
 
       renderWithGameContext(
-        <BreedingParentSelector
-          selectedCreature={null}
-          onSelect={mockOnSelect}
-          label="Parent 1"
-        />,
+        <BreedingParentSelector selectedCreature={null} onSelect={mockOnSelect} label='Parent 1' />,
         { contextValue: mockContext }
       );
 
@@ -534,11 +474,7 @@ describe('BreedingParentSelector', () => {
       });
 
       renderWithGameContext(
-        <BreedingParentSelector
-          selectedCreature={null}
-          onSelect={mockOnSelect}
-          label="Parent 1"
-        />,
+        <BreedingParentSelector selectedCreature={null} onSelect={mockOnSelect} label='Parent 1' />,
         { contextValue: mockContext }
       );
 
@@ -572,11 +508,7 @@ describe('BreedingParentSelector', () => {
       });
 
       renderWithGameContext(
-        <BreedingParentSelector
-          selectedCreature={null}
-          onSelect={mockOnSelect}
-          label="Parent 1"
-        />,
+        <BreedingParentSelector selectedCreature={null} onSelect={mockOnSelect} label='Parent 1' />,
         { contextValue: mockContext }
       );
 
@@ -611,11 +543,7 @@ describe('BreedingParentSelector', () => {
       });
 
       renderWithGameContext(
-        <BreedingParentSelector
-          selectedCreature={null}
-          onSelect={mockOnSelect}
-          label="Parent 1"
-        />,
+        <BreedingParentSelector selectedCreature={null} onSelect={mockOnSelect} label='Parent 1' />,
         { contextValue: mockContext }
       );
 
@@ -638,11 +566,7 @@ describe('BreedingParentSelector', () => {
       });
 
       renderWithGameContext(
-        <BreedingParentSelector
-          selectedCreature={null}
-          onSelect={mockOnSelect}
-          label="Parent 1"
-        />,
+        <BreedingParentSelector selectedCreature={null} onSelect={mockOnSelect} label='Parent 1' />,
         { contextValue: mockContext }
       );
 
@@ -661,11 +585,7 @@ describe('BreedingParentSelector', () => {
   describe('Accessibility', () => {
     it('should have proper ARIA labels', () => {
       renderWithGameContext(
-        <BreedingParentSelector
-          selectedCreature={null}
-          onSelect={mockOnSelect}
-          label="Parent 1"
-        />
+        <BreedingParentSelector selectedCreature={null} onSelect={mockOnSelect} label='Parent 1' />
       );
 
       expect(screen.getByText('Parent 1')).toBeInTheDocument();
@@ -674,11 +594,7 @@ describe('BreedingParentSelector', () => {
     it('should support keyboard navigation', async () => {
       const user = userEvent.setup();
       renderWithGameContext(
-        <BreedingParentSelector
-          selectedCreature={null}
-          onSelect={mockOnSelect}
-          label="Parent 1"
-        />
+        <BreedingParentSelector selectedCreature={null} onSelect={mockOnSelect} label='Parent 1' />
       );
 
       const slot = screen.getByText('Click to select Parent 1').closest('div');
@@ -696,11 +612,7 @@ describe('BreedingParentSelector', () => {
       });
 
       renderWithGameContext(
-        <BreedingParentSelector
-          selectedCreature={null}
-          onSelect={mockOnSelect}
-          label="Parent 1"
-        />,
+        <BreedingParentSelector selectedCreature={null} onSelect={mockOnSelect} label='Parent 1' />,
         { contextValue: mockContext }
       );
 
@@ -715,11 +627,7 @@ describe('BreedingParentSelector', () => {
 
     it('should animate slot on hover', () => {
       renderWithGameContext(
-        <BreedingParentSelector
-          selectedCreature={null}
-          onSelect={mockOnSelect}
-          label="Parent 1"
-        />
+        <BreedingParentSelector selectedCreature={null} onSelect={mockOnSelect} label='Parent 1' />
       );
 
       // Hover animation would be tested with actual user interaction

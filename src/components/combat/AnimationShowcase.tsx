@@ -23,16 +23,86 @@ interface SpellDefinition {
 
 // All wizard spells with their metadata
 const SPELLS: SpellDefinition[] = [
-  { id: 'magic_bolt', name: 'Magic Bolt', type: 'Arcane Projectile', duration: 1400, category: 'offensive', element: 'arcane' },
-  { id: 'fire', name: 'Fireball', type: 'Fire Projectile', duration: 950, category: 'offensive', element: 'fire' },
-  { id: 'ice', name: 'Ice Shard', type: 'Ice Projectile', duration: 900, category: 'offensive', element: 'ice' },
-  { id: 'thunder', name: 'Lightning', type: 'Lightning Beam', duration: 900, category: 'offensive', element: 'lightning' },
-  { id: 'holy', name: 'Holy Beam', type: 'Holy Beam', duration: 1000, category: 'offensive', element: 'holy' },
-  { id: 'meteor', name: 'Meteor', type: 'Fire AOE', duration: 1500, category: 'offensive', element: 'fire' },
-  { id: 'heal', name: 'Heal', type: 'Restoration', duration: 1100, category: 'support', element: 'holy' },
-  { id: 'protect', name: 'Protect', type: 'Defense Buff', duration: 900, category: 'support', element: 'neutral' },
-  { id: 'shell', name: 'Shell', type: 'Magic Defense Buff', duration: 900, category: 'support', element: 'neutral' },
-  { id: 'haste', name: 'Haste', type: 'Speed Buff', duration: 700, category: 'support', element: 'neutral' }
+  {
+    id: 'magic_bolt',
+    name: 'Magic Bolt',
+    type: 'Arcane Projectile',
+    duration: 1400,
+    category: 'offensive',
+    element: 'arcane',
+  },
+  {
+    id: 'fire',
+    name: 'Fireball',
+    type: 'Fire Projectile',
+    duration: 950,
+    category: 'offensive',
+    element: 'fire',
+  },
+  {
+    id: 'ice',
+    name: 'Ice Shard',
+    type: 'Ice Projectile',
+    duration: 900,
+    category: 'offensive',
+    element: 'ice',
+  },
+  {
+    id: 'thunder',
+    name: 'Lightning',
+    type: 'Lightning Beam',
+    duration: 900,
+    category: 'offensive',
+    element: 'lightning',
+  },
+  {
+    id: 'holy',
+    name: 'Holy Beam',
+    type: 'Holy Beam',
+    duration: 1000,
+    category: 'offensive',
+    element: 'holy',
+  },
+  {
+    id: 'meteor',
+    name: 'Meteor',
+    type: 'Fire AOE',
+    duration: 1500,
+    category: 'offensive',
+    element: 'fire',
+  },
+  {
+    id: 'heal',
+    name: 'Heal',
+    type: 'Restoration',
+    duration: 1100,
+    category: 'support',
+    element: 'holy',
+  },
+  {
+    id: 'protect',
+    name: 'Protect',
+    type: 'Defense Buff',
+    duration: 900,
+    category: 'support',
+    element: 'neutral',
+  },
+  {
+    id: 'shell',
+    name: 'Shell',
+    type: 'Magic Defense Buff',
+    duration: 900,
+    category: 'support',
+    element: 'neutral',
+  },
+  {
+    id: 'haste',
+    name: 'Haste',
+    type: 'Speed Buff',
+    duration: 700,
+    category: 'support',
+    element: 'neutral',
+  },
 ];
 
 export const AnimationShowcase: React.FC = () => {
@@ -66,38 +136,41 @@ export const AnimationShowcase: React.FC = () => {
       casterX: wizardRect.left + wizardRect.width / 2 - stageRect.left,
       casterY: wizardRect.top + wizardRect.height / 2 - stageRect.top,
       targetX: enemyRect.left + enemyRect.width / 2 - stageRect.left,
-      targetY: enemyRect.top + enemyRect.height / 2 - stageRect.top
+      targetY: enemyRect.top + enemyRect.height / 2 - stageRect.top,
     };
   }, []);
 
   // Play animation
-  const playAnimation = useCallback((spell: SpellDefinition, critical: boolean = false) => {
-    if (isPlaying) return;
+  const playAnimation = useCallback(
+    (spell: SpellDefinition, critical: boolean = false) => {
+      if (isPlaying) return;
 
-    console.log(`🎬 Playing ${spell.name} (${critical ? 'CRITICAL' : 'NORMAL'})`);
+      console.log(`🎬 Playing ${spell.name} (${critical ? 'CRITICAL' : 'NORMAL'})`);
 
-    setCurrentSpell(spell);
-    setIsCritical(critical);
-    setIsPlaying(true);
-    setProgress(0);
-    setElapsedTime(0);
+      setCurrentSpell(spell);
+      setIsCritical(critical);
+      setIsPlaying(true);
+      setProgress(0);
+      setElapsedTime(0);
 
-    // Start progress tracking
-    const startTime = Date.now();
-    progressIntervalRef.current = setInterval(() => {
-      const elapsed = Date.now() - startTime;
-      const progressPercent = Math.min((elapsed / spell.duration) * 100, 100);
+      // Start progress tracking
+      const startTime = Date.now();
+      progressIntervalRef.current = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        const progressPercent = Math.min((elapsed / spell.duration) * 100, 100);
 
-      setElapsedTime(elapsed);
-      setProgress(progressPercent);
+        setElapsedTime(elapsed);
+        setProgress(progressPercent);
 
-      if (elapsed >= spell.duration) {
-        if (progressIntervalRef.current) {
-          clearInterval(progressIntervalRef.current);
+        if (elapsed >= spell.duration) {
+          if (progressIntervalRef.current) {
+            clearInterval(progressIntervalRef.current);
+          }
         }
-      }
-    }, 16); // ~60fps
-  }, [isPlaying]);
+      }, 16); // ~60fps
+    },
+    [isPlaying]
+  );
 
   // Handle animation completion
   const handleAnimationComplete = useCallback(() => {
@@ -136,10 +209,13 @@ export const AnimationShowcase: React.FC = () => {
   }, []);
 
   // Spell selection handler
-  const handleSpellClick = useCallback((spell: SpellDefinition) => {
-    if (isPlaying) return;
-    playAnimation(spell, isCritical);
-  }, [isPlaying, isCritical, playAnimation]);
+  const handleSpellClick = useCallback(
+    (spell: SpellDefinition) => {
+      if (isPlaying) return;
+      playAnimation(spell, isCritical);
+    },
+    [isPlaying, isCritical, playAnimation]
+  );
 
   // Navigation handlers
   const handleNext = useCallback(() => {
@@ -190,65 +266,46 @@ export const AnimationShowcase: React.FC = () => {
   const positions = getCharacterPositions();
 
   return (
-    <div className="animation-showcase">
-      <header className="showcase-header">
+    <div className='animation-showcase'>
+      <header className='showcase-header'>
         <h1>Wizard Animation Showcase</h1>
-        <p className="subtitle">Interactive demonstration of all wizard spell animations</p>
+        <p className='subtitle'>Interactive demonstration of all wizard spell animations</p>
       </header>
 
-      <div className="showcase-content">
+      <div className='showcase-content'>
         {/* Sidebar Controls */}
-        <aside className="showcase-sidebar">
+        <aside className='showcase-sidebar'>
           <h2>Controls</h2>
 
-          <div className="controls">
-            <div className="control-group">
-              <div className="btn-group">
-                <button
-                  className="btn btn-primary"
-                  onClick={handlePlay}
-                  disabled={isPlaying}
-                >
+          <div className='controls'>
+            <div className='control-group'>
+              <div className='btn-group'>
+                <button className='btn btn-primary' onClick={handlePlay} disabled={isPlaying}>
                   ▶ Play
                 </button>
-                <button
-                  className="btn btn-secondary"
-                  disabled
-                >
+                <button className='btn btn-secondary' disabled>
                   ⏸ Pause
                 </button>
               </div>
-              <div className="btn-group">
-                <button
-                  className="btn btn-secondary"
-                  onClick={handlePrevious}
-                  disabled={isPlaying}
-                >
+              <div className='btn-group'>
+                <button className='btn btn-secondary' onClick={handlePrevious} disabled={isPlaying}>
                   ◀ Previous
                 </button>
-                <button
-                  className="btn btn-secondary"
-                  onClick={handleNext}
-                  disabled={isPlaying}
-                >
+                <button className='btn btn-secondary' onClick={handleNext} disabled={isPlaying}>
                   Next ▶
                 </button>
               </div>
-              <button
-                className="btn btn-secondary"
-                onClick={handlePlayAll}
-                disabled={isPlaying}
-              >
+              <button className='btn btn-secondary' onClick={handlePlayAll} disabled={isPlaying}>
                 ▶️ Play All Spells
               </button>
             </div>
 
-            <div className="control-group">
-              <label className="toggle-switch">
+            <div className='control-group'>
+              <label className='toggle-switch'>
                 <input
-                  type="checkbox"
+                  type='checkbox'
                   checked={isCritical}
-                  onChange={(e) => setIsCritical(e.target.checked)}
+                  onChange={e => setIsCritical(e.target.checked)}
                   disabled={isPlaying}
                 />
                 <span>Critical Hit Mode ⭐</span>
@@ -256,8 +313,8 @@ export const AnimationShowcase: React.FC = () => {
             </div>
           </div>
 
-          <div className="spell-list">
-            <div className="spell-category">
+          <div className='spell-list'>
+            <div className='spell-category'>
               <h3>Offensive Spells</h3>
               {offensiveSpells.map(spell => (
                 <div
@@ -267,15 +324,15 @@ export const AnimationShowcase: React.FC = () => {
                   }`}
                   onClick={() => handleSpellClick(spell)}
                 >
-                  <div className="spell-info">
-                    <div className="spell-name">{spell.name}</div>
-                    <div className="spell-type">{spell.type}</div>
+                  <div className='spell-info'>
+                    <div className='spell-name'>{spell.name}</div>
+                    <div className='spell-type'>{spell.type}</div>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="spell-category">
+            <div className='spell-category'>
               <h3>Support Spells</h3>
               {supportSpells.map(spell => (
                 <div
@@ -285,16 +342,16 @@ export const AnimationShowcase: React.FC = () => {
                   }`}
                   onClick={() => handleSpellClick(spell)}
                 >
-                  <div className="spell-info">
-                    <div className="spell-name">{spell.name}</div>
-                    <div className="spell-type">{spell.type}</div>
+                  <div className='spell-info'>
+                    <div className='spell-name'>{spell.name}</div>
+                    <div className='spell-type'>{spell.type}</div>
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="instructions">
+          <div className='instructions'>
             <h4>How to Use</h4>
             <ul>
               <li>Click a spell to preview it</li>
@@ -306,38 +363,36 @@ export const AnimationShowcase: React.FC = () => {
         </aside>
 
         {/* Main Battle Stage */}
-        <main className="battle-stage">
-          <div className="stage-info">
+        <main className='battle-stage'>
+          <div className='stage-info'>
             <h3>
               {currentSpell
                 ? `${currentSpell.name} ${isCritical ? '⭐ CRITICAL HIT' : ''}`
                 : 'Select a spell to begin'}
             </h3>
-            <div className="animation-status">
+            <div className='animation-status'>
               <span className={`status-badge ${isPlaying ? 'status-playing' : 'status-idle'}`}>
                 {isPlaying ? 'Playing...' : progress === 100 ? 'Complete' : 'Idle'}
               </span>
-              {isCritical && (
-                <span className="status-badge status-critical">Critical Hit ⭐</span>
-              )}
-              <div className="progress-bar">
-                <div className="progress-fill" style={{ width: `${progress}%` }} />
+              {isCritical && <span className='status-badge status-critical'>Critical Hit ⭐</span>}
+              <div className='progress-bar'>
+                <div className='progress-fill' style={{ width: `${progress}%` }} />
               </div>
-              <span className="progress-text">
+              <span className='progress-text'>
                 {elapsedTime}ms / {currentSpell?.duration || 0}ms
               </span>
             </div>
           </div>
 
-          <div className="battle-arena" ref={stageRef}>
-            <div className="character wizard" ref={wizardRef}>
+          <div className='battle-arena' ref={stageRef}>
+            <div className='character wizard' ref={wizardRef}>
               🧙‍♂️
-              <span className="character-label">Wizard</span>
+              <span className='character-label'>Wizard</span>
             </div>
 
-            <div className="character enemy" ref={enemyRef}>
+            <div className='character enemy' ref={enemyRef}>
               👹
-              <span className="character-label">Enemy</span>
+              <span className='character-label'>Enemy</span>
             </div>
 
             {/* Animation Stage */}
@@ -351,7 +406,7 @@ export const AnimationShowcase: React.FC = () => {
                   targetY: positions.targetY,
                   damage: isCritical ? 999 : 100,
                   isCritical: isCritical,
-                  element: currentSpell.element
+                  element: currentSpell.element,
                 }}
                 onComplete={handleAnimationComplete}
                 isActive={isPlaying}
@@ -361,7 +416,7 @@ export const AnimationShowcase: React.FC = () => {
         </main>
       </div>
 
-      <footer className="showcase-footer">
+      <footer className='showcase-footer'>
         <p>Sawyer's RPG Game - Animation System Demo | Built with React + TypeScript</p>
       </footer>
     </div>

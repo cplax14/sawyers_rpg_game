@@ -29,10 +29,7 @@
 import React from 'react';
 import { renderHook, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import {
-  ReactGameProvider,
-  useReactGame,
-} from '../../contexts/ReactGameContext';
+import { ReactGameProvider, useReactGame } from '../../contexts/ReactGameContext';
 
 // =============================================================================
 // TEST SETUP
@@ -58,9 +55,9 @@ const createMockIronSword = () => ({
     magicAttack: 0,
     magicDefense: 0,
     speed: 0,
-    accuracy: 2
+    accuracy: 2,
   },
-  icon: '⚔️'
+  icon: '⚔️',
 });
 
 const createMockSteelSword = () => ({
@@ -78,9 +75,9 @@ const createMockSteelSword = () => ({
     magicAttack: 0,
     magicDefense: 0,
     speed: 0,
-    accuracy: 3
+    accuracy: 3,
   },
-  icon: '⚔️'
+  icon: '⚔️',
 });
 
 const createMockLeatherVest = () => ({
@@ -98,9 +95,9 @@ const createMockLeatherVest = () => ({
     magicAttack: 0,
     magicDefense: 5,
     speed: -2,
-    accuracy: 0
+    accuracy: 0,
   },
-  icon: '🛡️'
+  icon: '🛡️',
 });
 
 const createMockIronHelmet = () => ({
@@ -118,9 +115,9 @@ const createMockIronHelmet = () => ({
     magicAttack: 0,
     magicDefense: 3,
     speed: 0,
-    accuracy: 0
+    accuracy: 0,
   },
-  icon: '⛑️'
+  icon: '⛑️',
 });
 
 // =============================================================================
@@ -183,9 +180,7 @@ describe('Equipment System Integration', () => {
       });
 
       // Assert: Item still in inventory (context stores by reference)
-      const itemInInventory = result.current.state.inventory.find(
-        item => item.id === ironSword.id
-      );
+      const itemInInventory = result.current.state.inventory.find(item => item.id === ironSword.id);
       expect(itemInInventory).toBeDefined();
       expect(itemInInventory?.name).toBe('Iron Sword');
     });
@@ -273,9 +268,7 @@ describe('Equipment System Integration', () => {
       });
 
       // Assert: Both items remain in inventory
-      const ironInInventory = result.current.state.inventory.find(
-        item => item.id === ironSword.id
-      );
+      const ironInInventory = result.current.state.inventory.find(item => item.id === ironSword.id);
       const steelInInventory = result.current.state.inventory.find(
         item => item.id === steelSword.id
       );
@@ -362,9 +355,7 @@ describe('Equipment System Integration', () => {
       });
 
       // Assert: Item still in inventory
-      const itemInInventory = result.current.state.inventory.find(
-        item => item.id === ironSword.id
-      );
+      const itemInInventory = result.current.state.inventory.find(item => item.id === ironSword.id);
       expect(itemInInventory).toBeDefined();
     });
 
@@ -509,9 +500,7 @@ describe('Equipment System Integration', () => {
       expect(result.current.state.player?.equipment.weapon).toBe(ironSword.id);
 
       // Assert: Both items still in inventory
-      const ironInInventory = result.current.state.inventory.find(
-        item => item.id === ironSword.id
-      );
+      const ironInInventory = result.current.state.inventory.find(item => item.id === ironSword.id);
       const steelInInventory = result.current.state.inventory.find(
         item => item.id === steelSword.id
       );
@@ -531,9 +520,9 @@ describe('Equipment System Integration', () => {
       });
 
       const items = [
-        createMockIronSword(),      // weapon
-        createMockLeatherVest(),    // armor
-        createMockIronHelmet(),     // helmet
+        createMockIronSword(), // weapon
+        createMockLeatherVest(), // armor
+        createMockIronHelmet(), // helmet
       ];
 
       act(() => {
@@ -550,9 +539,7 @@ describe('Equipment System Integration', () => {
 
       // Verify all can be looked up from inventory
       items.forEach(item => {
-        const found = result.current.state.inventory.find(
-          invItem => invItem.id === item.id
-        );
+        const found = result.current.state.inventory.find(invItem => invItem.id === item.id);
         expect(found).toBeDefined();
       });
     });

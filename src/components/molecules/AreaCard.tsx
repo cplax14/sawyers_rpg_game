@@ -81,21 +81,29 @@ const AreaCard: React.FC<AreaCardProps> = ({
     }
   }, [isAccessible, onEnter, area]);
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      handleClick();
-    }
-  }, [handleClick]);
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        handleClick();
+      }
+    },
+    [handleClick]
+  );
 
   // Memoize area icon (rarely changes)
   const areaIcon = useMemo(() => {
     switch (area.type) {
-      case 'town': return '🏘️';
-      case 'wilderness': return '🌲';
-      case 'dungeon': return '🏰';
-      case 'special': return '✨';
-      default: return '📍';
+      case 'town':
+        return '🏘️';
+      case 'wilderness':
+        return '🌲';
+      case 'dungeon':
+        return '🏰';
+      case 'special':
+        return '✨';
+      default:
+        return '📍';
     }
   }, [area.type]);
 
@@ -104,11 +112,11 @@ const AreaCard: React.FC<AreaCardProps> = ({
     if (!area.recommendedLevel) return 'var(--text-secondary)';
 
     const levelDiff = area.recommendedLevel - playerLevel;
-    if (levelDiff <= -5) return 'var(--success-green)';  // Much easier
-    if (levelDiff <= -2) return 'var(--info-blue)';     // Easier
-    if (levelDiff <= 2) return 'var(--primary-gold)';   // Appropriate
+    if (levelDiff <= -5) return 'var(--success-green)'; // Much easier
+    if (levelDiff <= -2) return 'var(--info-blue)'; // Easier
+    if (levelDiff <= 2) return 'var(--primary-gold)'; // Appropriate
     if (levelDiff <= 5) return 'var(--warning-orange)'; // Harder
-    return 'var(--danger-red)';                          // Much harder
+    return 'var(--danger-red)'; // Much harder
   }, [area.recommendedLevel, playerLevel]);
 
   const getUnlockTooltip = () => {
@@ -138,7 +146,9 @@ const AreaCard: React.FC<AreaCardProps> = ({
     isLocked && styles.locked,
     !isAccessible && styles.inaccessible,
     className,
-  ].filter(Boolean).join(' ');
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <motion.div
@@ -146,7 +156,7 @@ const AreaCard: React.FC<AreaCardProps> = ({
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       tabIndex={isAccessible ? 0 : -1}
-      role="button"
+      role='button'
       aria-pressed={selected}
       aria-disabled={!isAccessible}
       aria-label={`${area.name} - ${isLocked ? 'Locked' : isAccessible ? 'Available' : 'Inaccessible'}`}
@@ -155,7 +165,7 @@ const AreaCard: React.FC<AreaCardProps> = ({
       transition={{ type: 'spring', stiffness: 400, damping: 25 }}
     >
       <Card
-        variant="area"
+        variant='area'
         size={size}
         interactive={isAccessible}
         selected={selected}
@@ -164,7 +174,7 @@ const AreaCard: React.FC<AreaCardProps> = ({
         {/* Lock overlay */}
         {isLocked && (
           <div className={styles.lockOverlay}>
-            <span className={styles.lockIcon} role="img" aria-label="Locked">
+            <span className={styles.lockIcon} role='img' aria-label='Locked'>
               🔒
             </span>
           </div>
@@ -173,14 +183,12 @@ const AreaCard: React.FC<AreaCardProps> = ({
         {/* Header */}
         <div className={styles.header}>
           <div className={styles.titleRow}>
-            <span className={styles.areaIcon} role="img" aria-label={area.type}>
+            <span className={styles.areaIcon} role='img' aria-label={area.type}>
               {areaIcon}
             </span>
             <h3 className={styles.areaName}>{area.name}</h3>
             {completionRate > 0 && (
-              <span className={styles.completionBadge}>
-                {Math.round(completionRate)}%
-              </span>
+              <span className={styles.completionBadge}>{Math.round(completionRate)}%</span>
             )}
           </div>
 
@@ -197,10 +205,7 @@ const AreaCard: React.FC<AreaCardProps> = ({
 
             <div className={styles.statRow}>
               <span className={styles.statLabel}>Level:</span>
-              <span
-                className={styles.statValue}
-                style={{ color: difficultyColor }}
-              >
+              <span className={styles.statValue} style={{ color: difficultyColor }}>
                 {area.recommendedLevel || 'Any'}
               </span>
             </div>
@@ -225,7 +230,7 @@ const AreaCard: React.FC<AreaCardProps> = ({
           <div className={styles.services}>
             <h4 className={styles.servicesTitle}>Services:</h4>
             <div className={styles.servicesList}>
-              {area.services.map((service) => (
+              {area.services.map(service => (
                 <span key={service} className={styles.serviceTag}>
                   {service.replace('_', ' ')}
                 </span>
@@ -237,19 +242,15 @@ const AreaCard: React.FC<AreaCardProps> = ({
         {/* Monsters */}
         {showDetails && area.monsters.length > 0 && (
           <div className={styles.monsters}>
-            <h4 className={styles.monstersTitle}>
-              Monsters ({area.monsters.length}):
-            </h4>
+            <h4 className={styles.monstersTitle}>Monsters ({area.monsters.length}):</h4>
             <div className={styles.monsterList}>
-              {area.monsters.slice(0, 3).map((monster) => (
+              {area.monsters.slice(0, 3).map(monster => (
                 <span key={monster} className={styles.monsterTag}>
                   {monster.replace('_', ' ')}
                 </span>
               ))}
               {area.monsters.length > 3 && (
-                <span className={styles.monsterMore}>
-                  +{area.monsters.length - 3} more
-                </span>
+                <span className={styles.monsterMore}>+{area.monsters.length - 3} more</span>
               )}
             </div>
           </div>
@@ -259,14 +260,9 @@ const AreaCard: React.FC<AreaCardProps> = ({
         {completionRate > 0 && (
           <div className={styles.progressSection}>
             <div className={styles.progressBar}>
-              <div
-                className={styles.progressFill}
-                style={{ width: `${completionRate}%` }}
-              />
+              <div className={styles.progressFill} style={{ width: `${completionRate}%` }} />
             </div>
-            <span className={styles.progressText}>
-              {Math.round(completionRate)}% explored
-            </span>
+            <span className={styles.progressText}>{Math.round(completionRate)}% explored</span>
           </div>
         )}
 
@@ -275,7 +271,7 @@ const AreaCard: React.FC<AreaCardProps> = ({
           {isLocked ? (
             <Tooltip content={getUnlockTooltip()}>
               <Button
-                variant="secondary"
+                variant='secondary'
                 fullWidth
                 disabled={true}
                 size={size === 'sm' ? 'sm' : 'md'}
@@ -289,7 +285,7 @@ const AreaCard: React.FC<AreaCardProps> = ({
               fullWidth
               disabled={!isAccessible}
               size={size === 'sm' ? 'sm' : 'md'}
-              onClick={(e) => {
+              onClick={e => {
                 e.stopPropagation();
                 if (onEnter && !selected) {
                   handleEnter(); // Use onEnter for entering areas
@@ -311,8 +307,11 @@ const AreaCard: React.FC<AreaCardProps> = ({
               {area.unlockRequirements.level && (
                 <div className={styles.requirement}>
                   <span className={styles.requirementIcon}>⭐</span>
-                  <span className={`${styles.requirementText} ${!meetsLevelRequirement ? styles.unmet : styles.met}`}>
-                    Level {area.unlockRequirements.level} {meetsLevelRequirement ? '✓' : `(Current: ${playerLevel})`}
+                  <span
+                    className={`${styles.requirementText} ${!meetsLevelRequirement ? styles.unmet : styles.met}`}
+                  >
+                    Level {area.unlockRequirements.level}{' '}
+                    {meetsLevelRequirement ? '✓' : `(Current: ${playerLevel})`}
                   </span>
                 </div>
               )}
@@ -348,7 +347,9 @@ const AreaCard: React.FC<AreaCardProps> = ({
         {!isLocked && !meetsLevelRequirement && (
           <div className={styles.levelWarning}>
             <span className={styles.warningIcon}>⚠️</span>
-            <span>Recommended level {area.unlockRequirements.level} (Current: {playerLevel})</span>
+            <span>
+              Recommended level {area.unlockRequirements.level} (Current: {playerLevel})
+            </span>
           </div>
         )}
       </Card>

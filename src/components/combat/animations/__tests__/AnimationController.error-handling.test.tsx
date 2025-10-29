@@ -47,17 +47,17 @@ describe('AnimationController - Error Handling (Tasks 5.1-5.5)', () => {
       jest.spyOn(animationRegistry, 'getAnimationMetadata').mockReturnValue({
         element: 'fire',
         type: 'projectile',
-        component: ThrowingComponent
+        component: ThrowingComponent,
       });
 
       render(
         <AnimationController
-          attackType="test-attack"
+          attackType='test-attack'
           attackData={{
             casterX: 100,
             casterY: 100,
             targetX: 200,
-            targetY: 200
+            targetY: 200,
           }}
           onComplete={onComplete}
           isActive={true}
@@ -94,18 +94,18 @@ describe('AnimationController - Error Handling (Tasks 5.1-5.5)', () => {
         return {
           element: 'fire',
           type: 'projectile',
-          component: callCount === 1 ? ThrowingComponent : NormalComponent
+          component: callCount === 1 ? ThrowingComponent : NormalComponent,
         };
       });
 
       const { rerender } = render(
         <AnimationController
-          attackType="test-attack-1"
+          attackType='test-attack-1'
           attackData={{
             casterX: 100,
             casterY: 100,
             targetX: 200,
-            targetY: 200
+            targetY: 200,
           }}
           onComplete={onComplete1}
           isActive={true}
@@ -120,12 +120,12 @@ describe('AnimationController - Error Handling (Tasks 5.1-5.5)', () => {
       // Trigger second animation while first is still processing
       rerender(
         <AnimationController
-          attackType="test-attack-2"
+          attackType='test-attack-2'
           attackData={{
             casterX: 150,
             casterY: 150,
             targetX: 250,
-            targetY: 250
+            targetY: 250,
           }}
           onComplete={onComplete2}
           isActive={true}
@@ -133,9 +133,12 @@ describe('AnimationController - Error Handling (Tasks 5.1-5.5)', () => {
       );
 
       // Second animation should eventually complete
-      await waitFor(() => {
-        expect(NormalComponent).toHaveBeenCalled();
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          expect(NormalComponent).toHaveBeenCalled();
+        },
+        { timeout: 3000 }
+      );
     });
   });
 
@@ -153,12 +156,12 @@ describe('AnimationController - Error Handling (Tasks 5.1-5.5)', () => {
 
       const { container } = render(
         <AnimationController
-          attackType="completely-unknown-spell-12345"
+          attackType='completely-unknown-spell-12345'
           attackData={{
             casterX: 100,
             casterY: 100,
             targetX: 200,
-            targetY: 200
+            targetY: 200,
           }}
           onComplete={onComplete}
           isActive={true}
@@ -171,10 +174,11 @@ describe('AnimationController - Error Handling (Tasks 5.1-5.5)', () => {
       // Should log warning about fallback
       const warnCalls = consoleWarn.mock.calls;
       const hasFallbackWarning = warnCalls.some(call =>
-        call.some(arg =>
-          typeof arg === 'string' &&
-          arg.includes('No animation found') &&
-          arg.includes('completely-unknown-spell-12345')
+        call.some(
+          arg =>
+            typeof arg === 'string' &&
+            arg.includes('No animation found') &&
+            arg.includes('completely-unknown-spell-12345')
         )
       );
       expect(hasFallbackWarning).toBe(true);
@@ -189,12 +193,12 @@ describe('AnimationController - Error Handling (Tasks 5.1-5.5)', () => {
       // First render - should warn
       const { rerender } = render(
         <AnimationController
-          attackType="repeated-unknown-spell-999"
+          attackType='repeated-unknown-spell-999'
           attackData={{
             casterX: 100,
             casterY: 100,
             targetX: 200,
-            targetY: 200
+            targetY: 200,
           }}
           onComplete={onComplete}
           isActive={true}
@@ -202,10 +206,7 @@ describe('AnimationController - Error Handling (Tasks 5.1-5.5)', () => {
       );
 
       const initialWarnCount = consoleWarn.mock.calls.filter(call =>
-        call.some(arg =>
-          typeof arg === 'string' &&
-          arg.includes('repeated-unknown-spell-999')
-        )
+        call.some(arg => typeof arg === 'string' && arg.includes('repeated-unknown-spell-999'))
       ).length;
 
       // Should have warned once
@@ -214,12 +215,12 @@ describe('AnimationController - Error Handling (Tasks 5.1-5.5)', () => {
       // Reset active to false, then trigger again with same attack type
       rerender(
         <AnimationController
-          attackType="repeated-unknown-spell-999"
+          attackType='repeated-unknown-spell-999'
           attackData={{
             casterX: 100,
             casterY: 100,
             targetX: 200,
-            targetY: 200
+            targetY: 200,
           }}
           onComplete={onComplete}
           isActive={false}
@@ -229,12 +230,12 @@ describe('AnimationController - Error Handling (Tasks 5.1-5.5)', () => {
       // Trigger same attack type again (same component instance - ref persists)
       rerender(
         <AnimationController
-          attackType="repeated-unknown-spell-999"
+          attackType='repeated-unknown-spell-999'
           attackData={{
             casterX: 150,
             casterY: 150,
             targetX: 250,
-            targetY: 250
+            targetY: 250,
           }}
           onComplete={onComplete}
           isActive={true}
@@ -242,10 +243,7 @@ describe('AnimationController - Error Handling (Tasks 5.1-5.5)', () => {
       );
 
       const finalWarnCount = consoleWarn.mock.calls.filter(call =>
-        call.some(arg =>
-          typeof arg === 'string' &&
-          arg.includes('repeated-unknown-spell-999')
-        )
+        call.some(arg => typeof arg === 'string' && arg.includes('repeated-unknown-spell-999'))
       ).length;
 
       // Should still be the same as initial (no new warning for same attack type in same instance)
@@ -258,33 +256,33 @@ describe('AnimationController - Error Handling (Tasks 5.1-5.5)', () => {
       {
         name: 'NaN casterX',
         data: { casterX: NaN, casterY: 100, targetX: 200, targetY: 200 },
-        expectWarning: 'Invalid position data'
+        expectWarning: 'Invalid position data',
       },
       {
         name: 'undefined casterY',
         data: { casterX: 100, casterY: undefined as any, targetX: 200, targetY: 200 },
-        expectWarning: 'Invalid position data'
+        expectWarning: 'Invalid position data',
       },
       {
         name: 'NaN targetX',
         data: { casterX: 100, casterY: 100, targetX: NaN, targetY: 200 },
-        expectWarning: 'Invalid position data'
+        expectWarning: 'Invalid position data',
       },
       {
         name: 'null targetY',
         data: { casterX: 100, casterY: 100, targetX: 200, targetY: null as any },
-        expectWarning: 'Invalid position data'
+        expectWarning: 'Invalid position data',
       },
       {
         name: 'out of bounds casterX (too high)',
         data: { casterX: 99999, casterY: 100, targetX: 200, targetY: 200 },
-        expectWarning: 'Position out of bounds'
+        expectWarning: 'Position out of bounds',
       },
       {
         name: 'out of bounds targetY (too low)',
         data: { casterX: 100, casterY: 100, targetX: 200, targetY: -5000 },
-        expectWarning: 'Position out of bounds'
-      }
+        expectWarning: 'Position out of bounds',
+      },
     ];
 
     testCases.forEach(({ name, data, expectWarning }) => {
@@ -294,7 +292,7 @@ describe('AnimationController - Error Handling (Tasks 5.1-5.5)', () => {
 
         render(
           <AnimationController
-            attackType="fireball"
+            attackType='fireball'
             attackData={data}
             onComplete={onComplete}
             isActive={true}
@@ -302,9 +300,12 @@ describe('AnimationController - Error Handling (Tasks 5.1-5.5)', () => {
         );
 
         // Should immediately call onComplete without rendering animation
-        await waitFor(() => {
-          expect(onComplete).toHaveBeenCalled();
-        }, { timeout: 100 });
+        await waitFor(
+          () => {
+            expect(onComplete).toHaveBeenCalled();
+          },
+          { timeout: 100 }
+        );
 
         // Should log the expected warning in development
         const warnCalls = consoleWarn.mock.calls;
@@ -316,18 +317,17 @@ describe('AnimationController - Error Handling (Tasks 5.1-5.5)', () => {
         }
 
         const hasExpectedWarning = warnCalls.some(call =>
-          call.some(arg =>
-            typeof arg === 'string' && arg.includes(expectWarning)
-          )
+          call.some(arg => typeof arg === 'string' && arg.includes(expectWarning))
         );
 
         if (!hasExpectedWarning && warnCalls.length > 0) {
           // If we didn't find the expected warning, at least verify SOME warning was logged
           // This handles cases where the message wording is slightly different
           const hasAnyPositionWarning = warnCalls.some(call =>
-            call.some(arg =>
-              typeof arg === 'string' &&
-              (arg.includes('position') || arg.includes('Skipping animation'))
+            call.some(
+              arg =>
+                typeof arg === 'string' &&
+                (arg.includes('position') || arg.includes('Skipping animation'))
             )
           );
           expect(hasAnyPositionWarning).toBe(true);
@@ -345,12 +345,12 @@ describe('AnimationController - Error Handling (Tasks 5.1-5.5)', () => {
 
       const { container } = render(
         <AnimationController
-          attackType="fireball"
+          attackType='fireball'
           attackData={{
             casterX: 100,
             casterY: 100,
             targetX: 200,
-            targetY: 200
+            targetY: 200,
           }}
           onComplete={onComplete}
           isActive={true}
@@ -362,9 +362,10 @@ describe('AnimationController - Error Handling (Tasks 5.1-5.5)', () => {
 
       // Should not log position warning
       const positionWarnings = consoleWarn.mock.calls.filter(call =>
-        call.some(arg =>
-          typeof arg === 'string' &&
-          (arg.includes('Invalid position data') || arg.includes('Position out of bounds'))
+        call.some(
+          arg =>
+            typeof arg === 'string' &&
+            (arg.includes('Invalid position data') || arg.includes('Position out of bounds'))
         )
       );
       expect(positionWarnings.length).toBe(0);
@@ -377,7 +378,7 @@ describe('AnimationController - Error Handling (Tasks 5.1-5.5)', () => {
       const edgeCases = [
         { casterX: 0, casterY: 0, targetX: 0, targetY: 0 }, // Zero positions
         { casterX: -500, casterY: 100, targetX: 200, targetY: 200 }, // Negative but within MIN_COORDINATE
-        { casterX: 9999, casterY: 9999, targetX: 200, targetY: 200 } // High but within MAX_COORDINATE
+        { casterX: 9999, casterY: 9999, targetX: 200, targetY: 200 }, // High but within MAX_COORDINATE
       ];
 
       for (const data of edgeCases) {
@@ -385,7 +386,7 @@ describe('AnimationController - Error Handling (Tasks 5.1-5.5)', () => {
 
         const { unmount } = render(
           <AnimationController
-            attackType="fireball"
+            attackType='fireball'
             attackData={data}
             onComplete={onComplete}
             isActive={true}
@@ -394,9 +395,10 @@ describe('AnimationController - Error Handling (Tasks 5.1-5.5)', () => {
 
         // Should not warn about position issues
         const positionWarnings = consoleWarn.mock.calls.filter(call =>
-          call.some(arg =>
-            typeof arg === 'string' &&
-            (arg.includes('Invalid position data') || arg.includes('Position out of bounds'))
+          call.some(
+            arg =>
+              typeof arg === 'string' &&
+              (arg.includes('Invalid position data') || arg.includes('Position out of bounds'))
           )
         );
         expect(positionWarnings.length).toBe(0);
@@ -412,7 +414,7 @@ describe('AnimationController - Error Handling (Tasks 5.1-5.5)', () => {
 
       render(
         <AnimationController
-          attackType="attack-1"
+          attackType='attack-1'
           attackData={{ casterX: NaN, casterY: 100, targetX: 200, targetY: 200 }} // Invalid
           onComplete={onComplete}
           isActive={true}
@@ -420,9 +422,12 @@ describe('AnimationController - Error Handling (Tasks 5.1-5.5)', () => {
       );
 
       // Should fail immediately due to invalid positions but still call onComplete
-      await waitFor(() => {
-        expect(onComplete).toHaveBeenCalled();
-      }, { timeout: 100 });
+      await waitFor(
+        () => {
+          expect(onComplete).toHaveBeenCalled();
+        },
+        { timeout: 100 }
+      );
     });
 
     it('should call onComplete even when animation component throws error', async () => {
@@ -436,12 +441,12 @@ describe('AnimationController - Error Handling (Tasks 5.1-5.5)', () => {
       jest.spyOn(animationRegistry, 'getAnimationMetadata').mockReturnValue({
         element: 'fire',
         type: 'projectile',
-        component: FailingComponent
+        component: FailingComponent,
       });
 
       render(
         <AnimationController
-          attackType="failing-attack"
+          attackType='failing-attack'
           attackData={{ casterX: 100, casterY: 100, targetX: 200, targetY: 200 }}
           onComplete={onComplete}
           isActive={true}
@@ -449,9 +454,12 @@ describe('AnimationController - Error Handling (Tasks 5.1-5.5)', () => {
       );
 
       // Should catch error and call onComplete
-      await waitFor(() => {
-        expect(onComplete).toHaveBeenCalled();
-      }, { timeout: 500 });
+      await waitFor(
+        () => {
+          expect(onComplete).toHaveBeenCalled();
+        },
+        { timeout: 500 }
+      );
     });
   });
 });

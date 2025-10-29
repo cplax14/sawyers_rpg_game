@@ -260,11 +260,7 @@ export const mockDungeon: ReactArea = {
   position: { x: 2, y: -1 },
 };
 
-export const mockAreas: ReactArea[] = [
-  mockStartingVillage,
-  mockForest,
-  mockDungeon,
-];
+export const mockAreas: ReactArea[] = [mockStartingVillage, mockForest, mockDungeon];
 
 // Mock Game Settings
 export const mockGameSettings: GameSettings = {
@@ -366,7 +362,10 @@ export function createMockArea(overrides?: Partial<ReactArea>): ReactArea {
   return {
     ...mockStartingVillage,
     ...overrides,
-    unlockRequirements: { ...mockStartingVillage.unlockRequirements, ...overrides?.unlockRequirements },
+    unlockRequirements: {
+      ...mockStartingVillage.unlockRequirements,
+      ...overrides?.unlockRequirements,
+    },
   };
 }
 

@@ -22,27 +22,27 @@ export const CrossNavigationButtons: React.FC<CrossNavigationButtonsProps> = ({
   actions,
   layout = 'horizontal',
   size = 'medium',
-  className = ''
+  className = '',
 }) => {
   const sizeConfig = {
     small: {
       padding: '0.5rem 0.75rem',
       fontSize: '0.8rem',
       iconSize: '1rem',
-      gap: '0.5rem'
+      gap: '0.5rem',
     },
     medium: {
       padding: '0.75rem 1rem',
       fontSize: '0.9rem',
       iconSize: '1.1rem',
-      gap: '0.75rem'
+      gap: '0.75rem',
     },
     large: {
       padding: '1rem 1.25rem',
       fontSize: '1rem',
       iconSize: '1.2rem',
-      gap: '1rem'
-    }
+      gap: '1rem',
+    },
   };
 
   const config = sizeConfig[size];
@@ -79,7 +79,7 @@ export const CrossNavigationButtons: React.FC<CrossNavigationButtonsProps> = ({
     fontWeight: '500',
     transition: 'all 0.2s ease',
     textAlign: 'left' as const,
-    width: layout === 'grid' ? '100%' : 'auto'
+    width: layout === 'grid' ? '100%' : 'auto',
   });
 
   const getLayoutStyles = () => {
@@ -88,28 +88,25 @@ export const CrossNavigationButtons: React.FC<CrossNavigationButtonsProps> = ({
         return {
           display: 'flex',
           flexDirection: 'column' as const,
-          gap: '0.75rem'
+          gap: '0.75rem',
         };
       case 'grid':
         return {
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: '0.75rem'
+          gap: '0.75rem',
         };
       default:
         return {
           display: 'flex',
           flexWrap: 'wrap' as const,
-          gap: '0.75rem'
+          gap: '0.75rem',
         };
     }
   };
 
   return (
-    <div
-      className={`cross-navigation-buttons ${className}`}
-      style={getLayoutStyles()}
-    >
+    <div className={`cross-navigation-buttons ${className}`} style={getLayoutStyles()}>
       {actions.map((action, index) => (
         <motion.button
           key={index}
@@ -119,18 +116,16 @@ export const CrossNavigationButtons: React.FC<CrossNavigationButtonsProps> = ({
           style={getButtonStyle(action.variant, action.disabled)}
           title={action.description}
         >
-          <span style={{ fontSize: config.iconSize }}>
-            {action.icon}
-          </span>
+          <span style={{ fontSize: config.iconSize }}>{action.icon}</span>
           <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: '600' }}>
-              {action.label}
-            </div>
-            <div style={{
-              fontSize: '0.8em',
-              opacity: 0.8,
-              marginTop: '0.25rem'
-            }}>
+            <div style={{ fontWeight: '600' }}>{action.label}</div>
+            <div
+              style={{
+                fontSize: '0.8em',
+                opacity: 0.8,
+                marginTop: '0.25rem',
+              }}
+            >
               {action.description}
             </div>
           </div>
@@ -143,7 +138,7 @@ export const CrossNavigationButtons: React.FC<CrossNavigationButtonsProps> = ({
 // Pre-built navigation button sets for common scenarios
 export const EquipmentNavigationButtons: React.FC<{ itemId?: string; slot?: string }> = ({
   itemId,
-  slot
+  slot,
 }) => {
   const { navigateToItems, navigateToStats } = useInventoryNavigation();
 
@@ -153,15 +148,15 @@ export const EquipmentNavigationButtons: React.FC<{ itemId?: string; slot?: stri
       icon: '🎒',
       description: 'Browse all available items',
       action: () => navigateToItems('equipment'),
-      variant: 'secondary'
+      variant: 'secondary',
     },
     {
       label: 'Check Stats',
       icon: '📊',
       description: 'View character progression',
       action: () => navigateToStats('overview'),
-      variant: 'accent'
-    }
+      variant: 'accent',
+    },
   ];
 
   return <CrossNavigationButtons actions={actions} />;
@@ -169,7 +164,7 @@ export const EquipmentNavigationButtons: React.FC<{ itemId?: string; slot?: stri
 
 export const ItemNavigationButtons: React.FC<{ itemId?: string; canEquip?: boolean }> = ({
   itemId,
-  canEquip = false
+  canEquip = false,
 }) => {
   const { navigateToEquipment, equipItem } = useInventoryNavigation();
 
@@ -179,8 +174,8 @@ export const ItemNavigationButtons: React.FC<{ itemId?: string; canEquip?: boole
       icon: '⚔️',
       description: 'Manage equipped items',
       action: () => navigateToEquipment(),
-      variant: 'secondary'
-    }
+      variant: 'secondary',
+    },
   ];
 
   if (canEquip && itemId) {
@@ -189,16 +184,14 @@ export const ItemNavigationButtons: React.FC<{ itemId?: string; canEquip?: boole
       icon: '✅',
       description: 'Equip this item immediately',
       action: () => equipItem(itemId),
-      variant: 'primary'
+      variant: 'primary',
     });
   }
 
   return <CrossNavigationButtons actions={actions} />;
 };
 
-export const CreatureNavigationButtons: React.FC<{ creatureId?: string }> = ({
-  creatureId
-}) => {
+export const CreatureNavigationButtons: React.FC<{ creatureId?: string }> = ({ creatureId }) => {
   const { navigateToStats, navigateToEquipment } = useInventoryNavigation();
 
   const actions: CrossNavigationAction[] = [
@@ -207,23 +200,21 @@ export const CreatureNavigationButtons: React.FC<{ creatureId?: string }> = ({
       icon: '⚔️',
       description: 'Manage gear for combat',
       action: () => navigateToEquipment(),
-      variant: 'secondary'
+      variant: 'secondary',
     },
     {
       label: 'Combat Stats',
       icon: '📊',
       description: 'View combat statistics',
       action: () => navigateToStats('overview'),
-      variant: 'accent'
-    }
+      variant: 'accent',
+    },
   ];
 
   return <CrossNavigationButtons actions={actions} />;
 };
 
-export const StatsNavigationButtons: React.FC<{ section?: string }> = ({
-  section
-}) => {
+export const StatsNavigationButtons: React.FC<{ section?: string }> = ({ section }) => {
   const { navigateToEquipment, navigateToCreatures } = useInventoryNavigation();
 
   const actions: CrossNavigationAction[] = [
@@ -232,15 +223,15 @@ export const StatsNavigationButtons: React.FC<{ section?: string }> = ({
       icon: '⚔️',
       description: 'Upgrade your gear',
       action: () => navigateToEquipment(),
-      variant: 'primary'
+      variant: 'primary',
     },
     {
       label: 'Creatures',
       icon: '🐉',
       description: 'Manage your team',
       action: () => navigateToCreatures(),
-      variant: 'secondary'
-    }
+      variant: 'secondary',
+    },
   ];
 
   return <CrossNavigationButtons actions={actions} />;
@@ -250,7 +241,8 @@ export const StatsNavigationButtons: React.FC<{ section?: string }> = ({
 export const SmartNavigationSuggestions: React.FC<{
   context: 'low_health' | 'new_level' | 'new_equipment' | 'no_creatures' | 'full_inventory';
 }> = ({ context }) => {
-  const { navigateToItems, navigateToEquipment, navigateToCreatures, navigateToStats } = useInventoryNavigation();
+  const { navigateToItems, navigateToEquipment, navigateToCreatures, navigateToStats } =
+    useInventoryNavigation();
 
   const getContextActions = (): CrossNavigationAction[] => {
     switch (context) {
@@ -261,8 +253,8 @@ export const SmartNavigationSuggestions: React.FC<{
             icon: '🧪',
             description: 'Restore health with potions',
             action: () => navigateToItems('consumables'),
-            variant: 'primary'
-          }
+            variant: 'primary',
+          },
         ];
 
       case 'new_level':
@@ -272,15 +264,15 @@ export const SmartNavigationSuggestions: React.FC<{
             icon: '📊',
             description: 'View your new stats',
             action: () => navigateToStats('overview'),
-            variant: 'primary'
+            variant: 'primary',
           },
           {
             label: 'Upgrade Equipment',
             icon: '⚔️',
             description: 'Find better gear',
             action: () => navigateToEquipment(),
-            variant: 'secondary'
-          }
+            variant: 'secondary',
+          },
         ];
 
       case 'new_equipment':
@@ -290,8 +282,8 @@ export const SmartNavigationSuggestions: React.FC<{
             icon: '⚔️',
             description: 'Upgrade your equipment',
             action: () => navigateToEquipment(),
-            variant: 'primary'
-          }
+            variant: 'primary',
+          },
         ];
 
       case 'no_creatures':
@@ -301,8 +293,8 @@ export const SmartNavigationSuggestions: React.FC<{
             icon: '🐉',
             description: 'Build your team',
             action: () => navigateToCreatures(),
-            variant: 'primary'
-          }
+            variant: 'primary',
+          },
         ];
 
       case 'full_inventory':
@@ -312,8 +304,8 @@ export const SmartNavigationSuggestions: React.FC<{
             icon: '🎒',
             description: 'Organize your inventory',
             action: () => navigateToItems(),
-            variant: 'primary'
-          }
+            variant: 'primary',
+          },
         ];
 
       default:
@@ -325,22 +317,26 @@ export const SmartNavigationSuggestions: React.FC<{
   if (actions.length === 0) return null;
 
   return (
-    <div style={{
-      background: 'rgba(79, 195, 247, 0.1)',
-      border: '1px solid rgba(79, 195, 247, 0.3)',
-      borderRadius: '8px',
-      padding: '1rem',
-      marginBottom: '1rem'
-    }}>
-      <div style={{
-        fontSize: '0.9rem',
-        fontWeight: '600',
-        color: '#4fc3f7',
-        marginBottom: '0.75rem'
-      }}>
+    <div
+      style={{
+        background: 'rgba(79, 195, 247, 0.1)',
+        border: '1px solid rgba(79, 195, 247, 0.3)',
+        borderRadius: '8px',
+        padding: '1rem',
+        marginBottom: '1rem',
+      }}
+    >
+      <div
+        style={{
+          fontSize: '0.9rem',
+          fontWeight: '600',
+          color: '#4fc3f7',
+          marginBottom: '0.75rem',
+        }}
+      >
         💡 Suggested Actions
       </div>
-      <CrossNavigationButtons actions={actions} layout="horizontal" size="small" />
+      <CrossNavigationButtons actions={actions} layout='horizontal' size='small' />
     </div>
   );
 };

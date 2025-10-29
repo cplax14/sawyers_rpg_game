@@ -9,7 +9,11 @@ import { useReactGame } from '../../contexts/ReactGameContext';
 import { useEquipment } from '../../hooks/useEquipment';
 import { useResponsive } from '../../hooks';
 import { ExperienceSource } from '../../types/experience';
-import { ExperienceCalculator, createExperienceCalculations, formatExperienceNumber } from '../../utils/experienceUtils';
+import {
+  ExperienceCalculator,
+  createExperienceCalculations,
+  formatExperienceNumber,
+} from '../../utils/experienceUtils';
 
 interface StatsScreenProps {
   className?: string;
@@ -27,7 +31,7 @@ const statsStyles = {
     height: '100%',
     background: 'linear-gradient(135deg, #1a1a2e, #16213e, #0f3460)',
     color: '#f4f4f4',
-    overflow: 'hidden'
+    overflow: 'hidden',
   },
   header: {
     display: 'flex',
@@ -36,7 +40,7 @@ const statsStyles = {
     padding: '1rem 2rem',
     background: 'rgba(0, 0, 0, 0.3)',
     borderBottom: '2px solid rgba(255, 255, 255, 0.1)',
-    backdropFilter: 'blur(10px)'
+    backdropFilter: 'blur(10px)',
   },
   navigation: {
     display: 'flex',
@@ -44,7 +48,7 @@ const statsStyles = {
     padding: '0.75rem 2rem',
     background: 'rgba(0, 0, 0, 0.2)',
     borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-    overflowX: 'auto' as const
+    overflowX: 'auto' as const,
   },
   navButton: {
     background: 'rgba(255, 255, 255, 0.1)',
@@ -60,12 +64,12 @@ const statsStyles = {
     alignItems: 'center',
     gap: '0.5rem',
     fontSize: '0.9rem',
-    fontWeight: '500'
+    fontWeight: '500',
   },
   navButtonActive: {
     background: 'rgba(100, 200, 255, 0.2)',
     borderColor: 'rgba(100, 200, 255, 0.5)',
-    color: '#4fc3f7'
+    color: '#4fc3f7',
   },
   content: {
     flex: 1,
@@ -73,14 +77,14 @@ const statsStyles = {
     overflowY: 'auto' as const,
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: '1rem'
+    gap: '1rem',
   },
   card: {
     background: 'rgba(255, 255, 255, 0.05)',
     borderRadius: '12px',
     padding: '1rem',
     border: '1px solid rgba(255, 255, 255, 0.1)',
-    backdropFilter: 'blur(8px)'
+    backdropFilter: 'blur(8px)',
   },
   cardHeader: {
     display: 'flex',
@@ -89,7 +93,7 @@ const statsStyles = {
     marginBottom: '1rem',
     fontSize: '1.2rem',
     fontWeight: 'bold',
-    color: '#4fc3f7'
+    color: '#4fc3f7',
   },
   progressBar: {
     width: '100%',
@@ -97,44 +101,44 @@ const statsStyles = {
     background: 'rgba(255, 255, 255, 0.1)',
     borderRadius: '4px',
     overflow: 'hidden' as const,
-    marginBottom: '0.5rem'
+    marginBottom: '0.5rem',
   },
   progressFill: {
     height: '100%',
     background: 'linear-gradient(90deg, #4fc3f7, #29b6f6)',
     borderRadius: '4px',
-    transition: 'width 0.3s ease'
+    transition: 'width 0.3s ease',
   },
   statsGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: '1rem'
+    gap: '1rem',
   },
   statCard: {
     background: 'rgba(255, 255, 255, 0.03)',
     borderRadius: '8px',
     padding: '1rem',
     border: '1px solid rgba(255, 255, 255, 0.08)',
-    textAlign: 'center' as const
+    textAlign: 'center' as const,
   },
   statValue: {
     fontSize: '2rem',
     fontWeight: 'bold',
     color: '#4fc3f7',
-    marginBottom: '0.5rem'
+    marginBottom: '0.5rem',
   },
   statLabel: {
     fontSize: '0.9rem',
-    opacity: 0.8
+    opacity: 0.8,
   },
   experienceCard: {
     background: 'linear-gradient(135deg, rgba(79, 195, 247, 0.1), rgba(41, 182, 246, 0.05))',
-    border: '1px solid rgba(79, 195, 247, 0.2)'
+    border: '1px solid rgba(79, 195, 247, 0.2)',
   },
   sourceBreakdown: {
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: '0.5rem'
+    gap: '0.5rem',
   },
   sourceItem: {
     display: 'flex',
@@ -142,7 +146,7 @@ const statsStyles = {
     justifyContent: 'space-between',
     padding: '0.5rem',
     background: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: '6px'
+    borderRadius: '6px',
   },
   closeButton: {
     position: 'fixed' as const,
@@ -159,21 +163,20 @@ const statsStyles = {
     justifyContent: 'center',
     color: '#f4f4f4',
     cursor: 'pointer',
-    backdropFilter: 'blur(10px)'
-  }
+    backdropFilter: 'blur(10px)',
+  },
 };
 
-export const StatsScreen: React.FC<StatsScreenProps> = ({
-  className,
-  onClose
-}) => {
+export const StatsScreen: React.FC<StatsScreenProps> = ({ className, onClose }) => {
   const { state } = useReactGame();
   const { isMobile } = useResponsive();
 
   // Use player data from ReactGameContext
   const player = state.player;
   // Calculate level from experience instead of using stored level
-  const playerLevel = player?.experience ? ExperienceCalculator.calculateLevel(player.experience) : 1;
+  const playerLevel = player?.experience
+    ? ExperienceCalculator.calculateLevel(player.experience)
+    : 1;
 
   // Debug: Check if values are NaN and log once
   React.useEffect(() => {
@@ -185,7 +188,7 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({
         experienceToNext: player.experienceToNext,
         gold: player.gold,
         experienceIsNaN: isNaN(player.experience),
-        goldIsNaN: isNaN(player.gold)
+        goldIsNaN: isNaN(player.gold),
       });
     }
   }, []); // Only run once
@@ -195,13 +198,13 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({
   const experienceState = {
     currentExperience: player?.experience || 0,
     experienceToNext: player?.experienceToNext || 100,
-    achievements: [] // Empty achievements to prevent crashes
+    achievements: [], // Empty achievements to prevent crashes
   };
 
   const levelInfo = {
     currentLevel: playerLevel,
     nextLevel: playerLevel + 1,
-    progress: player ? (player.experience / player.experienceToNext) * 100 : 0
+    progress: player ? (player.experience / player.experienceToNext) * 100 : 0,
   };
 
   // Mock experience breakdown to prevent crashes
@@ -209,7 +212,7 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({
     totalExperience: player?.experience || 0,
     sources: [], // Empty sources for now
     sourceTotals: {}, // Empty source totals for now
-    bySource: {} // Empty bySource to prevent crashes
+    bySource: {}, // Empty bySource to prevent crashes
   };
   const isLoading = false;
   const error = null;
@@ -227,25 +230,25 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({
         return {
           icon: '📊',
           name: 'Overview',
-          description: 'Character statistics and level info'
+          description: 'Character statistics and level info',
         };
       case 'experience':
         return {
           icon: '⭐',
           name: 'Experience',
-          description: 'XP breakdown and progression'
+          description: 'XP breakdown and progression',
         };
       case 'achievements':
         return {
           icon: '🏆',
           name: 'Achievements',
-          description: 'Unlocked achievements and milestones'
+          description: 'Unlocked achievements and milestones',
         };
       case 'history':
         return {
           icon: '📈',
           name: 'History',
-          description: 'Progression history and trends'
+          description: 'Progression history and trends',
         };
       default:
         return { icon: '❓', name: 'Unknown', description: '' };
@@ -262,13 +265,13 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({
     // Mock activity breakdown based on current XP until proper tracking is implemented
     const mockActivityBreakdown = {
       combat: Math.floor(currentXP * 0.35), // 35% from combat
-      quest: Math.floor(currentXP * 0.25),   // 25% from quests
+      quest: Math.floor(currentXP * 0.25), // 25% from quests
       exploration: Math.floor(currentXP * 0.15), // 15% from exploration
-      creature: Math.floor(currentXP * 0.10),    // 10% from creatures
-      crafting: Math.floor(currentXP * 0.08),    // 8% from crafting
-      trading: Math.floor(currentXP * 0.04),     // 4% from trading
-      discovery: Math.floor(currentXP * 0.02),   // 2% from discovery
-      achievement: Math.floor(currentXP * 0.01)  // 1% from achievements
+      creature: Math.floor(currentXP * 0.1), // 10% from creatures
+      crafting: Math.floor(currentXP * 0.08), // 8% from crafting
+      trading: Math.floor(currentXP * 0.04), // 4% from trading
+      discovery: Math.floor(currentXP * 0.02), // 2% from discovery
+      achievement: Math.floor(currentXP * 0.01), // 1% from achievements
     };
 
     // Use final stats from equipment calculations if available
@@ -278,8 +281,10 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({
       // Combat Stats
       totalAttack: calculatedStats.attack?.finalValue || player.baseStats?.attack || 10,
       totalDefense: calculatedStats.defense?.finalValue || player.baseStats?.defense || 10,
-      totalMagicAttack: calculatedStats.magicAttack?.finalValue || player.baseStats?.magicAttack || 10,
-      totalMagicDefense: calculatedStats.magicDefense?.finalValue || player.baseStats?.magicDefense || 10,
+      totalMagicAttack:
+        calculatedStats.magicAttack?.finalValue || player.baseStats?.magicAttack || 10,
+      totalMagicDefense:
+        calculatedStats.magicDefense?.finalValue || player.baseStats?.magicDefense || 10,
       totalSpeed: calculatedStats.speed?.finalValue || player.baseStats?.speed || 10,
       totalAccuracy: calculatedStats.accuracy?.finalValue || player.baseStats?.accuracy || 10,
 
@@ -290,8 +295,8 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({
       totalResistance: calculatedStats.resistance?.finalValue || 5,
 
       // Health & Mana
-      maxHealth: calculatedStats.health?.finalValue || (100 + (player.level || 1) * 10),
-      maxMana: calculatedStats.mana?.finalValue || (50 + (player.level || 1) * 5),
+      maxHealth: calculatedStats.health?.finalValue || 100 + (player.level || 1) * 10,
+      maxMana: calculatedStats.mana?.finalValue || 50 + (player.level || 1) * 5,
       healthPercentage: (player.hp / (calculatedStats.health?.finalValue || 100)) * 100,
       manaPercentage: (player.mp / (calculatedStats.mana?.finalValue || 50)) * 100,
 
@@ -305,7 +310,7 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({
         magicAttack: calculatedStats.magicAttack?.equipmentBonus || 0,
         magicDefense: calculatedStats.magicDefense?.equipmentBonus || 0,
         speed: calculatedStats.speed?.equipmentBonus || 0,
-        accuracy: calculatedStats.accuracy?.equipmentBonus || 0
+        accuracy: calculatedStats.accuracy?.equipmentBonus || 0,
       },
 
       // Level Progression Info
@@ -315,52 +320,73 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({
         magicAttack: calculatedStats.magicAttack?.levelBonus || 0,
         magicDefense: calculatedStats.magicDefense?.levelBonus || 0,
         speed: calculatedStats.speed?.levelBonus || 0,
-        accuracy: calculatedStats.accuracy?.levelBonus || 0
+        accuracy: calculatedStats.accuracy?.levelBonus || 0,
       },
 
       // XP and activity data
       xpCalculations: xpCalcs,
-      activityBreakdown: mockActivityBreakdown
+      activityBreakdown: mockActivityBreakdown,
     };
   }, [player, finalStats]);
 
   // Activity type icons (enhanced mapping for new system)
   const getActivityIcon = (activity: string): string => {
     switch (activity.toLowerCase()) {
-      case 'combat': return '⚔️';
-      case 'quest': return '📜';
-      case 'exploration': return '🗺️';
-      case 'creature': return '🐉';
-      case 'crafting': return '🔨';
-      case 'trading': return '💰';
-      case 'discovery': return '🔍';
-      case 'achievement': return '🏆';
-      default: return '✨';
+      case 'combat':
+        return '⚔️';
+      case 'quest':
+        return '📜';
+      case 'exploration':
+        return '🗺️';
+      case 'creature':
+        return '🐉';
+      case 'crafting':
+        return '🔨';
+      case 'trading':
+        return '💰';
+      case 'discovery':
+        return '🔍';
+      case 'achievement':
+        return '🏆';
+      default:
+        return '✨';
     }
   };
 
   // Experience source icons (legacy support)
   const getExperienceSourceIcon = (source: ExperienceSource): string => {
     switch (source) {
-      case 'combat': return '⚔️';
-      case 'quest_completion': return '📜';
-      case 'exploration': return '🗺️';
-      case 'creature_capture': return '🎯';
-      case 'crafting': return '🔨';
-      case 'trading': return '🏪';
-      case 'story_progression': return '📖';
-      case 'discovery': return '🔍';
-      case 'achievement': return '🏆';
-      case 'daily_bonus': return '🎁';
-      case 'special_event': return '🎊';
-      default: return '✨';
+      case 'combat':
+        return '⚔️';
+      case 'quest_completion':
+        return '📜';
+      case 'exploration':
+        return '🗺️';
+      case 'creature_capture':
+        return '🎯';
+      case 'crafting':
+        return '🔨';
+      case 'trading':
+        return '🏪';
+      case 'story_progression':
+        return '📖';
+      case 'discovery':
+        return '🔍';
+      case 'achievement':
+        return '🏆';
+      case 'daily_bonus':
+        return '🎁';
+      case 'special_event':
+        return '🎊';
+      default:
+        return '✨';
     }
   };
 
   if (isLoading) {
     return (
       <div style={{ ...statsStyles.container, alignItems: 'center', justifyContent: 'center' }}>
-        <LoadingSpinner size="large" />
+        <LoadingSpinner size='large' />
         <p style={{ marginTop: '1rem', fontSize: '1.1rem' }}>Loading character statistics...</p>
       </div>
     );
@@ -372,7 +398,7 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({
         <div style={{ textAlign: 'center', color: '#ff6b6b' }}>
           <h2>Error Loading Stats</h2>
           <p>{error}</p>
-          <Button variant="primary" onClick={() => window.location.reload()}>
+          <Button variant='primary' onClick={() => window.location.reload()}>
             Retry
           </Button>
         </div>
@@ -404,11 +430,10 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({
         transition={{ duration: 0.5 }}
       >
         <div>
-          <h1 style={{ margin: 0, fontSize: '2rem', color: '#4fc3f7' }}>
-            Character Statistics
-          </h1>
+          <h1 style={{ margin: 0, fontSize: '2rem', color: '#4fc3f7' }}>Character Statistics</h1>
           <p style={{ margin: '0.5rem 0 0', opacity: 0.8 }}>
-            {player?.name || 'Player'} - Level {derivedStats?.xpCalculations.currentLevel || playerLevel || 1}
+            {player?.name || 'Player'} - Level{' '}
+            {derivedStats?.xpCalculations.currentLevel || playerLevel || 1}
           </p>
         </div>
 
@@ -418,7 +443,8 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({
               {formatExperienceNumber(player?.experience || 0)} XP
             </div>
             <div style={{ fontSize: '0.9rem', opacity: 0.8 }}>
-              {formatExperienceNumber(derivedStats.xpCalculations.xpForNext)} to level {derivedStats.xpCalculations.nextLevel}
+              {formatExperienceNumber(derivedStats.xpCalculations.xpForNext)} to level{' '}
+              {derivedStats.xpCalculations.nextLevel}
             </div>
             <div style={{ fontSize: '0.8rem', opacity: 0.6, marginTop: '0.25rem' }}>
               {derivedStats.xpCalculations.progressPercent.toFixed(1)}% progress
@@ -434,27 +460,29 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1, duration: 0.5 }}
       >
-        {(['overview', 'experience', 'achievements', 'history'] as StatsViewMode[]).map((mode, index) => {
-          const modeInfo = getViewModeInfo(mode);
-          return (
-            <motion.button
-              key={mode}
-              style={{
-                ...statsStyles.navButton,
-                ...(viewMode === mode ? statsStyles.navButtonActive : {})
-              }}
-              onClick={() => setViewMode(mode)}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 + index * 0.05 }}
-            >
-              <span>{modeInfo.icon}</span>
-              <span>{modeInfo.name}</span>
-            </motion.button>
-          );
-        })}
+        {(['overview', 'experience', 'achievements', 'history'] as StatsViewMode[]).map(
+          (mode, index) => {
+            const modeInfo = getViewModeInfo(mode);
+            return (
+              <motion.button
+                key={mode}
+                style={{
+                  ...statsStyles.navButton,
+                  ...(viewMode === mode ? statsStyles.navButtonActive : {}),
+                }}
+                onClick={() => setViewMode(mode)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2 + index * 0.05 }}
+              >
+                <span>{modeInfo.icon}</span>
+                <span>{modeInfo.name}</span>
+              </motion.button>
+            );
+          }
+        )}
       </motion.div>
 
       {/* Content */}
@@ -476,8 +504,16 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({
               <div style={statsStyles.cardHeader}>
                 <span>⚔️ Character Stats</span>
                 <span style={{ fontSize: '0.9rem', opacity: 0.7 }}>
-                  {Object.values(derivedStats?.equipmentBonus || {}).reduce((sum, val) => sum + val, 0) > 0 &&
-                   '+' + Object.values(derivedStats?.equipmentBonus || {}).reduce((sum, val) => sum + val, 0) + ' from equipment'}
+                  {Object.values(derivedStats?.equipmentBonus || {}).reduce(
+                    (sum, val) => sum + val,
+                    0
+                  ) > 0 &&
+                    '+' +
+                      Object.values(derivedStats?.equipmentBonus || {}).reduce(
+                        (sum, val) => sum + val,
+                        0
+                      ) +
+                      ' from equipment'}
                 </span>
               </div>
 
@@ -542,12 +578,14 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({
 
                   {/* Advanced Combat Stats */}
                   <div style={{ marginTop: '1.5rem' }}>
-                    <div style={{
-                      fontSize: '1rem',
-                      fontWeight: '600',
-                      marginBottom: '1rem',
-                      color: '#4fc3f7'
-                    }}>
+                    <div
+                      style={{
+                        fontSize: '1rem',
+                        fontWeight: '600',
+                        marginBottom: '1rem',
+                        color: '#4fc3f7',
+                      }}
+                    >
                       🎯 Advanced Combat Stats
                     </div>
                     <div style={statsStyles.statsGrid}>
@@ -586,16 +624,24 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({
 
               <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
                 <div style={{ flex: 1, minWidth: '200px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      marginBottom: '0.5rem',
+                    }}
+                  >
                     <span>Health</span>
-                    <span>{player?.hp || 0}/{derivedStats?.maxHealth || 100}</span>
+                    <span>
+                      {player?.hp || 0}/{derivedStats?.maxHealth || 100}
+                    </span>
                   </div>
                   <div style={statsStyles.progressBar}>
                     <div
                       style={{
                         ...statsStyles.progressFill,
                         width: `${derivedStats?.healthPercentage || 0}%`,
-                        background: 'linear-gradient(90deg, #4caf50, #66bb6a)'
+                        background: 'linear-gradient(90deg, #4caf50, #66bb6a)',
                       }}
                     />
                   </div>
@@ -603,23 +649,32 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({
                     Max HP: {derivedStats?.maxHealth || 100}
                     {derivedStats?.maxHealth && derivedStats.maxHealth > 100 && (
                       <span style={{ color: '#4fc3f7' }}>
-                        {' '}(+{derivedStats.maxHealth - 100} from level)
+                        {' '}
+                        (+{derivedStats.maxHealth - 100} from level)
                       </span>
                     )}
                   </div>
                 </div>
 
                 <div style={{ flex: 1, minWidth: '200px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      marginBottom: '0.5rem',
+                    }}
+                  >
                     <span>Mana</span>
-                    <span>{player?.mp || 0}/{derivedStats?.maxMana || 50}</span>
+                    <span>
+                      {player?.mp || 0}/{derivedStats?.maxMana || 50}
+                    </span>
                   </div>
                   <div style={statsStyles.progressBar}>
                     <div
                       style={{
                         ...statsStyles.progressFill,
                         width: `${derivedStats?.manaPercentage || 0}%`,
-                        background: 'linear-gradient(90deg, #2196f3, #42a5f5)'
+                        background: 'linear-gradient(90deg, #2196f3, #42a5f5)',
                       }}
                     />
                   </div>
@@ -627,7 +682,8 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({
                     Max MP: {derivedStats?.maxMana || 50}
                     {derivedStats?.maxMana && derivedStats.maxMana > 50 && (
                       <span style={{ color: '#4fc3f7' }}>
-                        {' '}(+{derivedStats.maxMana - 50} from level)
+                        {' '}
+                        (+{derivedStats.maxMana - 50} from level)
                       </span>
                     )}
                   </div>
@@ -692,90 +748,119 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({
               >
                 <div style={statsStyles.cardHeader}>
                   <span>🔍 Stat Breakdown</span>
-                  <span style={{ fontSize: '0.9rem', opacity: 0.7 }}>
-                    Base + Equipment + Level
-                  </span>
+                  <span style={{ fontSize: '0.9rem', opacity: 0.7 }}>Base + Equipment + Level</span>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   {Object.entries(derivedStats.statBreakdowns)
-                    .filter(([stat, statCalc]) =>
-                      ['attack', 'defense', 'magicAttack', 'magicDefense', 'speed', 'accuracy'].includes(stat) &&
-                      statCalc && typeof statCalc === 'object' && 'finalValue' in statCalc
+                    .filter(
+                      ([stat, statCalc]) =>
+                        [
+                          'attack',
+                          'defense',
+                          'magicAttack',
+                          'magicDefense',
+                          'speed',
+                          'accuracy',
+                        ].includes(stat) &&
+                        statCalc &&
+                        typeof statCalc === 'object' &&
+                        'finalValue' in statCalc
                     )
                     .map(([statName, statCalc]) => (
-                      <div key={statName} style={{
-                        background: 'rgba(255, 255, 255, 0.03)',
-                        borderRadius: '8px',
-                        padding: '1rem',
-                        border: '1px solid rgba(255, 255, 255, 0.08)'
-                      }}>
-                        <div style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          marginBottom: '0.75rem'
-                        }}>
-                          <span style={{
-                            fontSize: '1.1rem',
-                            fontWeight: '600',
-                            textTransform: 'capitalize'
-                          }}>
+                      <div
+                        key={statName}
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.03)',
+                          borderRadius: '8px',
+                          padding: '1rem',
+                          border: '1px solid rgba(255, 255, 255, 0.08)',
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            marginBottom: '0.75rem',
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontSize: '1.1rem',
+                              fontWeight: '600',
+                              textTransform: 'capitalize',
+                            }}
+                          >
                             {statName.replace(/([A-Z])/g, ' $1').trim()}
                           </span>
-                          <span style={{
-                            fontSize: '1.5rem',
-                            fontWeight: 'bold',
-                            color: '#4fc3f7'
-                          }}>
+                          <span
+                            style={{
+                              fontSize: '1.5rem',
+                              fontWeight: 'bold',
+                              color: '#4fc3f7',
+                            }}
+                          >
                             {statCalc.finalValue}
                           </span>
                         </div>
 
-                        <div style={{
-                          display: 'grid',
-                          gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-                          gap: '0.75rem'
-                        }}>
+                        <div
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+                            gap: '0.75rem',
+                          }}
+                        >
                           <div style={{ textAlign: 'center' }}>
-                            <div style={{
-                              fontSize: '1.2rem',
-                              fontWeight: '600',
-                              color: '#f4f4f4'
-                            }}>
+                            <div
+                              style={{
+                                fontSize: '1.2rem',
+                                fontWeight: '600',
+                                color: '#f4f4f4',
+                              }}
+                            >
                               {statCalc.baseStat}
                             </div>
-                            <div style={{
-                              fontSize: '0.8rem',
-                              opacity: 0.7
-                            }}>
+                            <div
+                              style={{
+                                fontSize: '0.8rem',
+                                opacity: 0.7,
+                              }}
+                            >
                               Base
                             </div>
                           </div>
 
                           {statCalc.equipmentBonus > 0 && (
                             <>
-                              <div style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: '1.2rem',
-                                opacity: 0.6
-                              }}>
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: '1.2rem',
+                                  opacity: 0.6,
+                                }}
+                              >
                                 +
                               </div>
                               <div style={{ textAlign: 'center' }}>
-                                <div style={{
-                                  fontSize: '1.2rem',
-                                  fontWeight: '600',
-                                  color: '#4fc3f7'
-                                }}>
+                                <div
+                                  style={{
+                                    fontSize: '1.2rem',
+                                    fontWeight: '600',
+                                    color: '#4fc3f7',
+                                  }}
+                                >
                                   {statCalc.equipmentBonus}
                                 </div>
-                                <div style={{
-                                  fontSize: '0.8rem',
-                                  opacity: 0.7
-                                }}>
+                                <div
+                                  style={{
+                                    fontSize: '0.8rem',
+                                    opacity: 0.7,
+                                  }}
+                                >
                                   Equipment
                                 </div>
                               </div>
@@ -784,40 +869,48 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({
 
                           {statCalc.levelBonus > 0 && (
                             <>
-                              <div style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: '1.2rem',
-                                opacity: 0.6
-                              }}>
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: '1.2rem',
+                                  opacity: 0.6,
+                                }}
+                              >
                                 +
                               </div>
                               <div style={{ textAlign: 'center' }}>
-                                <div style={{
-                                  fontSize: '1.2rem',
-                                  fontWeight: '600',
-                                  color: '#ffd700'
-                                }}>
+                                <div
+                                  style={{
+                                    fontSize: '1.2rem',
+                                    fontWeight: '600',
+                                    color: '#ffd700',
+                                  }}
+                                >
                                   {statCalc.levelBonus}
                                 </div>
-                                <div style={{
-                                  fontSize: '0.8rem',
-                                  opacity: 0.7
-                                }}>
+                                <div
+                                  style={{
+                                    fontSize: '0.8rem',
+                                    opacity: 0.7,
+                                  }}
+                                >
                                   Level
                                 </div>
                               </div>
                             </>
                           )}
 
-                          <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '1.2rem',
-                            opacity: 0.6
-                          }}>
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '1.2rem',
+                              opacity: 0.6,
+                            }}
+                          >
                             =
                           </div>
                         </div>
@@ -842,45 +935,63 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({
                   </span>
                 </div>
 
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                  gap: '0.75rem'
-                }}>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                    gap: '0.75rem',
+                  }}
+                >
                   {Object.entries(equipped)
                     .filter(([, item]) => item !== null)
                     .map(([slot, item]) => (
-                      <div key={slot} style={{
-                        background: 'rgba(255, 255, 255, 0.03)',
-                        borderRadius: '6px',
-                        padding: '0.75rem',
-                        border: '1px solid rgba(255, 255, 255, 0.08)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem'
-                      }}>
+                      <div
+                        key={slot}
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.03)',
+                          borderRadius: '6px',
+                          padding: '0.75rem',
+                          border: '1px solid rgba(255, 255, 255, 0.08)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                        }}
+                      >
                         <span style={{ fontSize: '1.1rem' }}>
-                          {slot === 'weapon' ? '⚔️' :
-                           slot === 'armor' ? '🛡️' :
-                           slot === 'helmet' ? '⛑️' :
-                           slot === 'boots' ? '👢' :
-                           slot === 'gloves' ? '🧤' :
-                           slot === 'ring1' || slot === 'ring2' ? '💍' :
-                           slot === 'necklace' ? '📿' :
-                           slot === 'charm' ? '🔮' : '✨'}
+                          {slot === 'weapon'
+                            ? '⚔️'
+                            : slot === 'armor'
+                              ? '🛡️'
+                              : slot === 'helmet'
+                                ? '⛑️'
+                                : slot === 'boots'
+                                  ? '👢'
+                                  : slot === 'gloves'
+                                    ? '🧤'
+                                    : slot === 'ring1' || slot === 'ring2'
+                                      ? '💍'
+                                      : slot === 'necklace'
+                                        ? '📿'
+                                        : slot === 'charm'
+                                          ? '🔮'
+                                          : '✨'}
                         </span>
                         <div>
-                          <div style={{
-                            fontSize: '0.9rem',
-                            fontWeight: '500',
-                            textTransform: 'capitalize'
-                          }}>
+                          <div
+                            style={{
+                              fontSize: '0.9rem',
+                              fontWeight: '500',
+                              textTransform: 'capitalize',
+                            }}
+                          >
                             {slot.replace(/\d+$/, '')}
                           </div>
-                          <div style={{
-                            fontSize: '0.8rem',
-                            opacity: 0.7
-                          }}>
+                          <div
+                            style={{
+                              fontSize: '0.8rem',
+                              opacity: 0.7,
+                            }}
+                          >
                             {item?.name || 'Unknown Item'}
                           </div>
                         </div>
@@ -923,32 +1034,36 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({
                           </span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                          <div style={{
-                            minWidth: '60px',
-                            height: '6px',
-                            background: 'rgba(255, 255, 255, 0.1)',
-                            borderRadius: '3px',
-                            overflow: 'hidden'
-                          }}>
+                          <div
+                            style={{
+                              minWidth: '60px',
+                              height: '6px',
+                              background: 'rgba(255, 255, 255, 0.1)',
+                              borderRadius: '3px',
+                              overflow: 'hidden',
+                            }}
+                          >
                             <div
                               style={{
                                 height: '100%',
                                 width: `${percentage}%`,
                                 background: `linear-gradient(90deg, #4fc3f7, #29b6f6)`,
                                 borderRadius: '3px',
-                                transition: 'width 0.3s ease'
+                                transition: 'width 0.3s ease',
                               }}
                             />
                           </div>
                           <span style={{ minWidth: '80px', textAlign: 'right' }}>
                             {formatExperienceNumber(xp)} XP
                           </span>
-                          <span style={{
-                            fontSize: '0.8rem',
-                            opacity: 0.7,
-                            minWidth: '50px',
-                            textAlign: 'right'
-                          }}>
+                          <span
+                            style={{
+                              fontSize: '0.8rem',
+                              opacity: 0.7,
+                              minWidth: '50px',
+                              textAlign: 'right',
+                            }}
+                          >
                             {percentage.toFixed(1)}%
                           </span>
                         </div>
@@ -979,9 +1094,7 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({
                       <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>
                         {getActivityIcon(activity)}
                       </div>
-                      <div style={statsStyles.statValue}>
-                        {formatExperienceNumber(xp)}
-                      </div>
+                      <div style={statsStyles.statValue}>{formatExperienceNumber(xp)}</div>
                       <div style={statsStyles.statLabel}>
                         {activity.charAt(0).toUpperCase() + activity.slice(1)} XP
                       </div>
@@ -1013,10 +1126,12 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({
                       <div key={source} style={{ ...statsStyles.sourceItem, opacity: 0.8 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                           <span>{getExperienceSourceIcon(source as ExperienceSource)}</span>
-                          <span style={{
-                            textTransform: 'capitalize',
-                            fontSize: '0.9rem'
-                          }}>
+                          <span
+                            style={{
+                              textTransform: 'capitalize',
+                              fontSize: '0.9rem',
+                            }}
+                          >
                             {source.replace(/_/g, ' ')}
                           </span>
                         </div>
@@ -1045,7 +1160,9 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({
           >
             <div style={statsStyles.cardHeader}>
               <span>🏆 Achievements</span>
-              <span>{experienceState.achievements?.filter(a => a.completed).length || 0} Unlocked</span>
+              <span>
+                {experienceState.achievements?.filter(a => a.completed).length || 0} Unlocked
+              </span>
             </div>
 
             <div style={{ textAlign: 'center', padding: '2rem', opacity: 0.6 }}>
@@ -1076,63 +1193,67 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   {/* Level Timeline */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    {Array.from({ length: Math.min(10, derivedStats.xpCalculations.currentLevel) }, (_, i) => {
-                      const level = derivedStats.xpCalculations.currentLevel - i;
-                      const isCurrentLevel = level === derivedStats.xpCalculations.currentLevel;
-                      const requiredXP = ExperienceCalculator.calculateRequiredXP(level);
-                      const mockTimestamp = Date.now() - (i * 24 * 60 * 60 * 1000 * (Math.random() * 3 + 1));
+                    {Array.from(
+                      { length: Math.min(10, derivedStats.xpCalculations.currentLevel) },
+                      (_, i) => {
+                        const level = derivedStats.xpCalculations.currentLevel - i;
+                        const isCurrentLevel = level === derivedStats.xpCalculations.currentLevel;
+                        const requiredXP = ExperienceCalculator.calculateRequiredXP(level);
+                        const mockTimestamp =
+                          Date.now() - i * 24 * 60 * 60 * 1000 * (Math.random() * 3 + 1);
 
-                      return (
-                        <div
-                          key={level}
-                          style={{
-                            ...statsStyles.sourceItem,
-                            background: isCurrentLevel
-                              ? 'rgba(79, 195, 247, 0.15)'
-                              : 'rgba(255, 255, 255, 0.03)',
-                            border: isCurrentLevel
-                              ? '1px solid rgba(79, 195, 247, 0.3)'
-                              : '1px solid rgba(255, 255, 255, 0.08)'
-                          }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                            <div style={{
-                              width: '32px',
-                              height: '32px',
-                              borderRadius: '50%',
+                        return (
+                          <div
+                            key={level}
+                            style={{
+                              ...statsStyles.sourceItem,
                               background: isCurrentLevel
-                                ? 'linear-gradient(135deg, #4fc3f7, #29b6f6)'
-                                : 'rgba(255, 255, 255, 0.1)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              fontSize: '0.9rem',
-                              fontWeight: 'bold'
-                            }}>
-                              {level}
+                                ? 'rgba(79, 195, 247, 0.15)'
+                                : 'rgba(255, 255, 255, 0.03)',
+                              border: isCurrentLevel
+                                ? '1px solid rgba(79, 195, 247, 0.3)'
+                                : '1px solid rgba(255, 255, 255, 0.08)',
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                              <div
+                                style={{
+                                  width: '32px',
+                                  height: '32px',
+                                  borderRadius: '50%',
+                                  background: isCurrentLevel
+                                    ? 'linear-gradient(135deg, #4fc3f7, #29b6f6)'
+                                    : 'rgba(255, 255, 255, 0.1)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: '0.9rem',
+                                  fontWeight: 'bold',
+                                }}
+                              >
+                                {level}
+                              </div>
+                              <div>
+                                <div style={{ fontWeight: '500' }}>
+                                  Level {level} {isCurrentLevel && '(Current)'}
+                                </div>
+                                <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>
+                                  {new Date(mockTimestamp).toLocaleDateString()}
+                                </div>
+                              </div>
                             </div>
-                            <div>
+                            <div style={{ textAlign: 'right' }}>
                               <div style={{ fontWeight: '500' }}>
-                                Level {level} {isCurrentLevel && '(Current)'}
+                                {formatExperienceNumber(requiredXP)} XP
                               </div>
-                              <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>
-                                {new Date(mockTimestamp).toLocaleDateString()}
-                              </div>
+                              {!isCurrentLevel && (
+                                <div style={{ fontSize: '0.8rem', opacity: 0.6 }}>Achieved</div>
+                              )}
                             </div>
                           </div>
-                          <div style={{ textAlign: 'right' }}>
-                            <div style={{ fontWeight: '500' }}>
-                              {formatExperienceNumber(requiredXP)} XP
-                            </div>
-                            {!isCurrentLevel && (
-                              <div style={{ fontSize: '0.8rem', opacity: 0.6 }}>
-                                Achieved
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      }
+                    )}
                   </div>
                 </div>
               )}
@@ -1164,7 +1285,9 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({
                 </div>
                 <div style={statsStyles.statCard}>
                   <div style={statsStyles.statValue}>
-                    {Math.floor((player?.experience || 0) / (derivedStats?.xpCalculations.currentLevel || 1))}
+                    {Math.floor(
+                      (player?.experience || 0) / (derivedStats?.xpCalculations.currentLevel || 1)
+                    )}
                   </div>
                   <div style={statsStyles.statLabel}>Avg XP/Level</div>
                 </div>
@@ -1192,29 +1315,58 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {/* Mock recent activities */}
                 {[
-                  { activity: 'combat', xp: 245, time: '2 hours ago', detail: 'Defeated Shadow Beast' },
-                  { activity: 'quest', xp: 500, time: '5 hours ago', detail: 'Completed "The Ancient Relic"' },
-                  { activity: 'creature', xp: 180, time: '1 day ago', detail: 'Captured Fire Salamander' },
-                  { activity: 'exploration', xp: 125, time: '1 day ago', detail: 'Discovered Hidden Cave' },
-                  { activity: 'crafting', xp: 95, time: '2 days ago', detail: 'Crafted Steel Sword' },
-                  { activity: 'trading', xp: 45, time: '3 days ago', detail: 'Sold rare materials' }
+                  {
+                    activity: 'combat',
+                    xp: 245,
+                    time: '2 hours ago',
+                    detail: 'Defeated Shadow Beast',
+                  },
+                  {
+                    activity: 'quest',
+                    xp: 500,
+                    time: '5 hours ago',
+                    detail: 'Completed "The Ancient Relic"',
+                  },
+                  {
+                    activity: 'creature',
+                    xp: 180,
+                    time: '1 day ago',
+                    detail: 'Captured Fire Salamander',
+                  },
+                  {
+                    activity: 'exploration',
+                    xp: 125,
+                    time: '1 day ago',
+                    detail: 'Discovered Hidden Cave',
+                  },
+                  {
+                    activity: 'crafting',
+                    xp: 95,
+                    time: '2 days ago',
+                    detail: 'Crafted Steel Sword',
+                  },
+                  {
+                    activity: 'trading',
+                    xp: 45,
+                    time: '3 days ago',
+                    detail: 'Sold rare materials',
+                  },
                 ].map((entry, index) => (
-                  <div key={index} style={{
-                    ...statsStyles.sourceItem,
-                    background: 'rgba(255, 255, 255, 0.02)',
-                    padding: '0.75rem'
-                  }}>
+                  <div
+                    key={index}
+                    style={{
+                      ...statsStyles.sourceItem,
+                      background: 'rgba(255, 255, 255, 0.02)',
+                      padding: '0.75rem',
+                    }}
+                  >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      <span style={{ fontSize: '1.2rem' }}>
-                        {getActivityIcon(entry.activity)}
-                      </span>
+                      <span style={{ fontSize: '1.2rem' }}>{getActivityIcon(entry.activity)}</span>
                       <div>
                         <div style={{ fontWeight: '500', marginBottom: '0.25rem' }}>
                           +{entry.xp} XP
                         </div>
-                        <div style={{ fontSize: '0.85rem', opacity: 0.8 }}>
-                          {entry.detail}
-                        </div>
+                        <div style={{ fontSize: '0.85rem', opacity: 0.8 }}>{entry.detail}</div>
                       </div>
                     </div>
                     <div style={{ textAlign: 'right', fontSize: '0.8rem', opacity: 0.6 }}>
@@ -1236,26 +1388,34 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({
                 <span>📈 Progression Trends</span>
               </div>
 
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-                gap: '1rem'
-              }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                  gap: '1rem',
+                }}
+              >
                 {/* Daily XP Progress */}
-                <div style={{
-                  background: 'rgba(255, 255, 255, 0.03)',
-                  borderRadius: '8px',
-                  padding: '1rem'
-                }}>
-                  <div style={{
-                    fontSize: '0.9rem',
-                    fontWeight: '600',
-                    marginBottom: '0.75rem',
-                    color: '#4fc3f7'
-                  }}>
+                <div
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    borderRadius: '8px',
+                    padding: '1rem',
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: '0.9rem',
+                      fontWeight: '600',
+                      marginBottom: '0.75rem',
+                      color: '#4fc3f7',
+                    }}
+                  >
                     Daily XP (Last 7 Days)
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'end', gap: '0.25rem', height: '60px' }}>
+                  <div
+                    style={{ display: 'flex', alignItems: 'end', gap: '0.25rem', height: '60px' }}
+                  >
                     {[380, 420, 290, 510, 445, 385, 465].map((xp, index) => {
                       const height = Math.max(10, (xp / 600) * 100);
                       return (
@@ -1264,84 +1424,114 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({
                           style={{
                             flex: 1,
                             height: `${height}%`,
-                            background: index === 6
-                              ? 'linear-gradient(180deg, #4fc3f7, #29b6f6)'
-                              : 'rgba(79, 195, 247, 0.6)',
+                            background:
+                              index === 6
+                                ? 'linear-gradient(180deg, #4fc3f7, #29b6f6)'
+                                : 'rgba(79, 195, 247, 0.6)',
                             borderRadius: '2px',
-                            position: 'relative'
+                            position: 'relative',
                           }}
                           title={`${xp} XP`}
                         />
                       );
                     })}
                   </div>
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    fontSize: '0.7rem',
-                    opacity: 0.6,
-                    marginTop: '0.5rem'
-                  }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      fontSize: '0.7rem',
+                      opacity: 0.6,
+                      marginTop: '0.5rem',
+                    }}
+                  >
                     <span>7d ago</span>
                     <span>Today</span>
                   </div>
                 </div>
 
                 {/* Level Progress Timeline */}
-                <div style={{
-                  background: 'rgba(255, 255, 255, 0.03)',
-                  borderRadius: '8px',
-                  padding: '1rem'
-                }}>
-                  <div style={{
-                    fontSize: '0.9rem',
-                    fontWeight: '600',
-                    marginBottom: '0.75rem',
-                    color: '#4fc3f7'
-                  }}>
+                <div
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    borderRadius: '8px',
+                    padding: '1rem',
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: '0.9rem',
+                      fontWeight: '600',
+                      marginBottom: '0.75rem',
+                      color: '#4fc3f7',
+                    }}
+                  >
                     Level Milestones
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                     {[
-                      { level: derivedStats?.xpCalculations.currentLevel || 1, progress: derivedStats?.xpCalculations.progressPercent || 0, current: true },
-                      { level: (derivedStats?.xpCalculations.currentLevel || 1) + 1, progress: 0, current: false },
-                      { level: (derivedStats?.xpCalculations.currentLevel || 1) + 2, progress: 0, current: false }
+                      {
+                        level: derivedStats?.xpCalculations.currentLevel || 1,
+                        progress: derivedStats?.xpCalculations.progressPercent || 0,
+                        current: true,
+                      },
+                      {
+                        level: (derivedStats?.xpCalculations.currentLevel || 1) + 1,
+                        progress: 0,
+                        current: false,
+                      },
+                      {
+                        level: (derivedStats?.xpCalculations.currentLevel || 1) + 2,
+                        progress: 0,
+                        current: false,
+                      },
                     ].map((milestone, index) => (
-                      <div key={index} style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem'
-                      }}>
-                        <span style={{
-                          fontSize: '0.8rem',
-                          minWidth: '30px',
-                          opacity: milestone.current ? 1 : 0.6
-                        }}>
+                      <div
+                        key={index}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontSize: '0.8rem',
+                            minWidth: '30px',
+                            opacity: milestone.current ? 1 : 0.6,
+                          }}
+                        >
                           L{milestone.level}
                         </span>
-                        <div style={{
-                          flex: 1,
-                          height: '4px',
-                          background: 'rgba(255, 255, 255, 0.1)',
-                          borderRadius: '2px',
-                          overflow: 'hidden'
-                        }}>
-                          <div style={{
-                            height: '100%',
-                            width: `${milestone.progress}%`,
-                            background: milestone.current
-                              ? 'linear-gradient(90deg, #4fc3f7, #29b6f6)'
-                              : 'rgba(255, 255, 255, 0.2)',
+                        <div
+                          style={{
+                            flex: 1,
+                            height: '4px',
+                            background: 'rgba(255, 255, 255, 0.1)',
                             borderRadius: '2px',
-                            transition: 'width 0.3s ease'
-                          }} />
+                            overflow: 'hidden',
+                          }}
+                        >
+                          <div
+                            style={{
+                              height: '100%',
+                              width: `${milestone.progress}%`,
+                              background: milestone.current
+                                ? 'linear-gradient(90deg, #4fc3f7, #29b6f6)'
+                                : 'rgba(255, 255, 255, 0.2)',
+                              borderRadius: '2px',
+                              transition: 'width 0.3s ease',
+                            }}
+                          />
                         </div>
-                        <span style={{
-                          fontSize: '0.7rem',
-                          opacity: 0.6,
-                          minWidth: '35px',
-                          textAlign: 'right'
-                        }}>
+                        <span
+                          style={{
+                            fontSize: '0.7rem',
+                            opacity: 0.6,
+                            minWidth: '35px',
+                            textAlign: 'right',
+                          }}
+                        >
                           {milestone.progress.toFixed(0)}%
                         </span>
                       </div>

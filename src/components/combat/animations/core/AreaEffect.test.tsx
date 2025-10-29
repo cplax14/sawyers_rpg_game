@@ -10,7 +10,7 @@ describe('AreaEffect', () => {
     radius: 80,
     color: '#ff6b35',
     expandDuration: 600,
-    fadeDuration: 400
+    fadeDuration: 400,
   };
 
   describe('Rendering', () => {
@@ -38,31 +38,23 @@ describe('AreaEffect', () => {
   describe('Prop Validation', () => {
     it('should handle different radius values', () => {
       const radius = 120;
-      const { container } = render(
-        <AreaEffect {...defaultProps} radius={radius} />
-      );
+      const { container } = render(<AreaEffect {...defaultProps} radius={radius} />);
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('should handle different colors', () => {
       const color = '#4da6ff';
-      const { container } = render(
-        <AreaEffect {...defaultProps} color={color} />
-      );
+      const { container } = render(<AreaEffect {...defaultProps} color={color} />);
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('should handle different expand durations', () => {
-      const { container } = render(
-        <AreaEffect {...defaultProps} expandDuration={1000} />
-      );
+      const { container } = render(<AreaEffect {...defaultProps} expandDuration={1000} />);
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('should handle different fade durations', () => {
-      const { container } = render(
-        <AreaEffect {...defaultProps} fadeDuration={800} />
-      );
+      const { container } = render(<AreaEffect {...defaultProps} fadeDuration={800} />);
       expect(container.firstChild).toBeInTheDocument();
     });
 
@@ -75,9 +67,7 @@ describe('AreaEffect', () => {
 
     it('should handle custom particle count', () => {
       const particleCount = 10;
-      const { container } = render(
-        <AreaEffect {...defaultProps} particleCount={particleCount} />
-      );
+      const { container } = render(<AreaEffect {...defaultProps} particleCount={particleCount} />);
       const wrapper = container.firstChild as HTMLElement;
       // Should have 10 particles + 4 other layers
       expect(wrapper.children.length).toBeGreaterThanOrEqual(14);
@@ -103,11 +93,7 @@ describe('AreaEffect', () => {
       const totalDuration = expandDuration + fadeDuration; // 1000ms
 
       const { container } = render(
-        <AreaEffect
-          {...defaultProps}
-          expandDuration={expandDuration}
-          fadeDuration={fadeDuration}
-        />
+        <AreaEffect {...defaultProps} expandDuration={expandDuration} fadeDuration={fadeDuration} />
       );
       expect(container.firstChild).toBeInTheDocument();
       // Total duration is used internally for animation timing
@@ -117,51 +103,39 @@ describe('AreaEffect', () => {
   describe('Particle Generation', () => {
     it('should generate correct number of particles', () => {
       const particleCount = 15;
-      const { container } = render(
-        <AreaEffect {...defaultProps} particleCount={particleCount} />
-      );
+      const { container } = render(<AreaEffect {...defaultProps} particleCount={particleCount} />);
       const wrapper = container.firstChild as HTMLElement;
       // Count particle elements (they're in the wrapper)
-      const particleElements = Array.from(wrapper.children).filter(
-        child => {
-          const style = (child as HTMLElement).style;
-          return style.borderRadius === '50%' && style.width === '8px';
-        }
-      );
+      const particleElements = Array.from(wrapper.children).filter(child => {
+        const style = (child as HTMLElement).style;
+        return style.borderRadius === '50%' && style.width === '8px';
+      });
       expect(particleElements.length).toBe(particleCount);
     });
 
     it('should position particles in circular pattern', () => {
-      const { container } = render(
-        <AreaEffect {...defaultProps} particleCount={4} />
-      );
+      const { container } = render(<AreaEffect {...defaultProps} particleCount={4} />);
       // Particles should be evenly distributed around circle
       // This is validated by the particle generation logic
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('should stagger particle appearance', () => {
-      const { container } = render(
-        <AreaEffect {...defaultProps} particleCount={10} />
-      );
+      const { container } = render(<AreaEffect {...defaultProps} particleCount={10} />);
       // Each particle should have a staggered delay
       // Delay = (index / particleCount) * 0.2
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('should handle zero particles', () => {
-      const { container } = render(
-        <AreaEffect {...defaultProps} particleCount={0} />
-      );
+      const { container } = render(<AreaEffect {...defaultProps} particleCount={0} />);
       const wrapper = container.firstChild as HTMLElement;
       // Should have only the 4 base layers (no particles)
       expect(wrapper.children.length).toBe(4);
     });
 
     it('should handle large particle count', () => {
-      const { container } = render(
-        <AreaEffect {...defaultProps} particleCount={50} />
-      );
+      const { container } = render(<AreaEffect {...defaultProps} particleCount={50} />);
       const wrapper = container.firstChild as HTMLElement;
       // Should have 50 particles + 4 base layers
       expect(wrapper.children.length).toBeGreaterThanOrEqual(54);
@@ -171,9 +145,7 @@ describe('AreaEffect', () => {
   describe('Visual Layers', () => {
     it('should render main expanding circle with correct border', () => {
       const color = '#ff0000';
-      const { container } = render(
-        <AreaEffect {...defaultProps} color={color} />
-      );
+      const { container } = render(<AreaEffect {...defaultProps} color={color} />);
       const wrapper = container.firstChild as HTMLElement;
       const circles = Array.from(wrapper.children).filter(
         child => (child as HTMLElement).style.borderRadius === '50%'
@@ -191,8 +163,8 @@ describe('AreaEffect', () => {
       const { container } = render(<AreaEffect {...defaultProps} />);
       const wrapper = container.firstChild as HTMLElement;
       // Ground indicator has dashed border
-      const dashedElements = Array.from(wrapper.children).filter(
-        child => (child as HTMLElement).style.border?.includes('dashed')
+      const dashedElements = Array.from(wrapper.children).filter(child =>
+        (child as HTMLElement).style.border?.includes('dashed')
       );
       expect(dashedElements.length).toBeGreaterThan(0);
     });
@@ -219,70 +191,52 @@ describe('AreaEffect', () => {
   describe('Circle Dimensions', () => {
     it('should calculate circle diameter correctly', () => {
       const radius = 100;
-      const { container } = render(
-        <AreaEffect {...defaultProps} radius={radius} />
-      );
+      const { container } = render(<AreaEffect {...defaultProps} radius={radius} />);
       // Circles should have width and height of radius * 2
       const wrapper = container.firstChild as HTMLElement;
-      const circles = Array.from(wrapper.children).filter(
-        child => {
-          const style = (child as HTMLElement).style;
-          return style.width === `${radius * 2}px`;
-        }
-      );
+      const circles = Array.from(wrapper.children).filter(child => {
+        const style = (child as HTMLElement).style;
+        return style.width === `${radius * 2}px`;
+      });
       expect(circles.length).toBeGreaterThan(0);
     });
 
     it('should offset circles by negative radius', () => {
       const radius = 80;
-      const { container } = render(
-        <AreaEffect {...defaultProps} radius={radius} />
-      );
+      const { container } = render(<AreaEffect {...defaultProps} radius={radius} />);
       // Circles should be positioned at -radius to center them
       const wrapper = container.firstChild as HTMLElement;
-      const centeredCircles = Array.from(wrapper.children).filter(
-        child => {
-          const style = (child as HTMLElement).style;
-          return style.left === `-${radius}px` && style.top === `-${radius}px`;
-        }
-      );
+      const centeredCircles = Array.from(wrapper.children).filter(child => {
+        const style = (child as HTMLElement).style;
+        return style.left === `-${radius}px` && style.top === `-${radius}px`;
+      });
       expect(centeredCircles.length).toBeGreaterThan(0);
     });
   });
 
   describe('Edge Cases', () => {
     it('should handle zero radius', () => {
-      const { container } = render(
-        <AreaEffect {...defaultProps} radius={0} />
-      );
+      const { container } = render(<AreaEffect {...defaultProps} radius={0} />);
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('should handle very large radius', () => {
-      const { container } = render(
-        <AreaEffect {...defaultProps} radius={1000} />
-      );
+      const { container } = render(<AreaEffect {...defaultProps} radius={1000} />);
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('should handle zero expand duration', () => {
-      const { container } = render(
-        <AreaEffect {...defaultProps} expandDuration={0} />
-      );
+      const { container } = render(<AreaEffect {...defaultProps} expandDuration={0} />);
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('should handle zero fade duration', () => {
-      const { container } = render(
-        <AreaEffect {...defaultProps} fadeDuration={0} />
-      );
+      const { container } = render(<AreaEffect {...defaultProps} fadeDuration={0} />);
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('should handle negative center coordinates', () => {
-      const { container } = render(
-        <AreaEffect {...defaultProps} centerX={-100} centerY={-100} />
-      );
+      const { container } = render(<AreaEffect {...defaultProps} centerX={-100} centerY={-100} />);
       const element = container.firstChild as HTMLElement;
       expect(element.style.left).toBe('-100px');
       expect(element.style.top).toBe('-100px');
@@ -313,9 +267,7 @@ describe('AreaEffect', () => {
 
     it('should evenly distribute particles around circle', () => {
       const particleCount = 8;
-      const { container } = render(
-        <AreaEffect {...defaultProps} particleCount={particleCount} />
-      );
+      const { container } = render(<AreaEffect {...defaultProps} particleCount={particleCount} />);
       // Each particle should be at angle = (i / particleCount) * 2π
       // For 8 particles: 0°, 45°, 90°, 135°, 180°, 225°, 270°, 315°
       expect(container.firstChild).toBeInTheDocument();

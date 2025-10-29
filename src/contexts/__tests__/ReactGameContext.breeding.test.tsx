@@ -10,11 +10,7 @@
 
 import React from 'react';
 import { renderHook, act } from '@testing-library/react';
-import {
-  ReactGameProvider,
-  useReactGame,
-  ReactGameState,
-} from '../ReactGameContext';
+import { ReactGameProvider, useReactGame, ReactGameState } from '../ReactGameContext';
 import { EnhancedCreature } from '../../types/creatures';
 
 // =============================================================================
@@ -137,7 +133,7 @@ describe('ReactGameContext - Recipe Discovery', () => {
 
     const recipes = ['recipe_1', 'recipe_2', 'recipe_3', 'recipe_4'];
 
-    recipes.forEach((recipeId) => {
+    recipes.forEach(recipeId => {
       act(() => {
         result.current.discoverRecipe(recipeId);
       });
@@ -545,11 +541,7 @@ describe('ReactGameContext - Breeding Data Persistence', () => {
     });
 
     expect(result.current.state.breedingAttempts).toBe(7);
-    expect(result.current.state.discoveredRecipes).toEqual([
-      'recipe_1',
-      'recipe_2',
-      'recipe_3',
-    ]);
+    expect(result.current.state.discoveredRecipes).toEqual(['recipe_1', 'recipe_2', 'recipe_3']);
     expect(result.current.state.breedingMaterials).toEqual({
       slime_gel: 15,
       dragon_scale: 3,
@@ -635,7 +627,10 @@ describe('ReactGameContext - Breeding Data Persistence', () => {
 // =============================================================================
 
 describe('ReactGameContext - BREED_CREATURES Action', () => {
-  const createFullMockCreature = (id: string, overrides: Partial<EnhancedCreature> = {}): EnhancedCreature => ({
+  const createFullMockCreature = (
+    id: string,
+    overrides: Partial<EnhancedCreature> = {}
+  ): EnhancedCreature => ({
     creatureId: id,
     id,
     name: `Creature ${id}`,
@@ -651,7 +646,7 @@ describe('ReactGameContext - BREED_CREATURES Action', () => {
       magicAttack: 20,
       magicDefense: 20,
       speed: 20,
-      accuracy: 85
+      accuracy: 85,
     },
     currentStats: {
       attack: 20,
@@ -659,7 +654,7 @@ describe('ReactGameContext - BREED_CREATURES Action', () => {
       magicAttack: 20,
       magicDefense: 20,
       speed: 20,
-      accuracy: 85
+      accuracy: 85,
     },
     stats: {
       attack: 20,
@@ -667,7 +662,7 @@ describe('ReactGameContext - BREED_CREATURES Action', () => {
       magicAttack: 20,
       magicDefense: 20,
       speed: 20,
-      accuracy: 85
+      accuracy: 85,
     },
     types: ['beast'],
     rarity: 'common',
@@ -689,7 +684,7 @@ describe('ReactGameContext - BREED_CREATURES Action', () => {
       loyalty: 50,
       happiness: 50,
       energy: 50,
-      sociability: 50
+      sociability: 50,
     },
     nature: {
       name: 'Neutral',
@@ -697,8 +692,8 @@ describe('ReactGameContext - BREED_CREATURES Action', () => {
       behaviorModifiers: {
         aggression: 0,
         defensiveness: 0,
-        cooperation: 0
-      }
+        cooperation: 0,
+      },
     },
     individualStats: {
       hpIV: 15,
@@ -712,14 +707,14 @@ describe('ReactGameContext - BREED_CREATURES Action', () => {
       defenseEV: 0,
       magicAttackEV: 0,
       magicDefenseEV: 0,
-      speedEV: 0
+      speedEV: 0,
     },
     genetics: {
       parentIds: [],
       generation: 0,
       inheritedTraits: [],
       mutations: [],
-      breedingPotential: 1
+      breedingPotential: 1,
     },
     breedingGroup: ['test'],
     fertility: 1,
@@ -736,7 +731,7 @@ describe('ReactGameContext - BREED_CREATURES Action', () => {
       favorite: false,
       tags: [],
       notes: '',
-      completionLevel: 'captured'
+      completionLevel: 'captured',
     },
     sprite: 'test.png',
     description: 'Test creature',
@@ -746,7 +741,7 @@ describe('ReactGameContext - BREED_CREATURES Action', () => {
     timesEncountered: 1,
     attack: 20,
     defense: 20,
-    ...overrides
+    ...overrides,
   });
 
   // Note: Full integration testing of BREED_CREATURES is complex due to dependencies
@@ -795,8 +790,8 @@ describe('ReactGameContext - REMOVE_EXHAUSTION Action', () => {
         magicAttack: 100 * (1 - exhaustionLevel * 0.2),
         magicDefense: 100 * (1 - exhaustionLevel * 0.2),
         speed: 100 * (1 - exhaustionLevel * 0.2),
-        accuracy: 100 * (1 - exhaustionLevel * 0.2)
-      }
+        accuracy: 100 * (1 - exhaustionLevel * 0.2),
+      },
     };
 
     act(() => {
@@ -804,7 +799,7 @@ describe('ReactGameContext - REMOVE_EXHAUSTION Action', () => {
         type: 'UPDATE_CREATURE_COLLECTION',
         payload: {
           creatures: {
-            [creatureId]: mockCreature as EnhancedCreature
+            [creatureId]: mockCreature as EnhancedCreature,
           },
           bestiary: {},
           activeTeam: [],
@@ -828,9 +823,9 @@ describe('ReactGameContext - REMOVE_EXHAUSTION Action', () => {
             favorites: false,
             companions: false,
             breedable: false,
-            searchText: ''
-          }
-        }
+            searchText: '',
+          },
+        },
       });
     });
   };

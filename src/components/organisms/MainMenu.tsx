@@ -2,7 +2,15 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../atoms/Button';
 import { LoadingSpinner } from '../atoms/LoadingSpinner';
-import { usePlayer, useUI, useSaveLoad, useDataPreloader, useResponsive, useReducedMotion, useSaveSystem } from '../../hooks';
+import {
+  usePlayer,
+  useUI,
+  useSaveLoad,
+  useDataPreloader,
+  useResponsive,
+  useReducedMotion,
+  useSaveSystem,
+} from '../../hooks';
 import { useAuth } from '../../hooks/useAuth';
 import { useCloudSave } from '../../hooks/useCloudSave';
 import { SaveSlot } from '../../types/game';
@@ -27,7 +35,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
   onContinue,
   onLoadGame,
   onSettings,
-  className
+  className,
 }) => {
   const { player } = usePlayer();
   const { navigateToScreen } = useUI();
@@ -39,11 +47,12 @@ export const MainMenu: React.FC<MainMenuProps> = ({
     saveSlots: newSaveSlots,
     isInitialized: saveSystemInitialized,
     loadGame: loadGameNew,
-    refreshSlots
+    refreshSlots,
   } = useSaveSystem();
 
   // Check if there are any non-empty saves in the new system
-  const hasNewSaves = saveSystemInitialized && newSaveSlots.length > 0 && newSaveSlots.some(slot => !slot.isEmpty);
+  const hasNewSaves =
+    saveSystemInitialized && newSaveSlots.length > 0 && newSaveSlots.some(slot => !slot.isEmpty);
   const hasSavedGames = hasAnySaves || hasNewSaves;
 
   // Force refresh slots if initialized but empty (timing issue workaround)
@@ -62,7 +71,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
       hasNewSaves,
       hasAnySaves,
       hasSavedGames,
-      nonEmptySlots: newSaveSlots.filter(s => !s.isEmpty).map(s => s.slotNumber)
+      nonEmptySlots: newSaveSlots.filter(s => !s.isEmpty).map(s => s.slotNumber),
     });
   }, [saveSystemInitialized, newSaveSlots, hasNewSaves, hasAnySaves, hasSavedGames]);
 
@@ -116,15 +125,18 @@ export const MainMenu: React.FC<MainMenuProps> = ({
     }
   }, [player, onContinue, navigateToScreen]);
 
-  const handleLoadGame = useCallback((slotIndex: number) => {
-    if (onLoadGame) {
-      onLoadGame(slotIndex);
-    } else {
-      loadGame(slotIndex);
-      navigateToScreen('world-map');
-    }
-    setShowLoadMenu(false);
-  }, [onLoadGame, loadGame, navigateToScreen]);
+  const handleLoadGame = useCallback(
+    (slotIndex: number) => {
+      if (onLoadGame) {
+        onLoadGame(slotIndex);
+      } else {
+        loadGame(slotIndex);
+        navigateToScreen('world-map');
+      }
+      setShowLoadMenu(false);
+    },
+    [onLoadGame, loadGame, navigateToScreen]
+  );
 
   const handleSettings = useCallback(() => {
     if (onSettings) {
@@ -151,10 +163,13 @@ export const MainMenu: React.FC<MainMenuProps> = ({
     setShowSaveManager(false);
   }, []);
 
-  const handleLoadComplete = useCallback(async (slotNumber: number) => {
-    setShowSaveManager(false);
-    navigateToScreen('world-map');
-  }, [navigateToScreen]);
+  const handleLoadComplete = useCallback(
+    async (slotNumber: number) => {
+      setShowSaveManager(false);
+      navigateToScreen('world-map');
+    },
+    [navigateToScreen]
+  );
 
   // Authentication handlers
   const handleSignIn = useCallback(() => {
@@ -193,64 +208,65 @@ export const MainMenu: React.FC<MainMenuProps> = ({
 
   const formatSaveDate = useCallback((timestamp: number): string => {
     const date = new Date(timestamp);
-    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    return (
+      date.toLocaleDateString() +
+      ' ' +
+      date.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    );
   }, []);
 
-  const renderSaveSlot = useCallback((slot: SaveSlot, index: number) => {
-    const isSelected = selectedSaveSlot === index;
-    const isEmpty = !slot.data;
+  const renderSaveSlot = useCallback(
+    (slot: SaveSlot, index: number) => {
+      const isSelected = selectedSaveSlot === index;
+      const isEmpty = !slot.data;
 
-    return (
-      <motion.div
-        key={index}
-        className={`${styles.saveSlot} ${isEmpty ? styles.empty : ''} ${
-          isSelected ? styles.selected : ''
-        }`}
-        onClick={() => setSelectedSaveSlot(isEmpty ? null : index)}
-        onDoubleClick={() => !isEmpty && handleLoadGame(index)}
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: index * 0.1, duration: 0.3 }}
-        whileHover={{ scale: isEmpty ? 1 : 1.02 }}
-        whileTap={{ scale: isEmpty ? 1 : 0.98 }}
-      >
-        <div className={styles.saveSlotHeader}>
-          <span className={styles.slotNumber}>Slot {index + 1}</span>
-          {!isEmpty && (
-            <span className={styles.saveDate}>
-              {formatSaveDate(slot.timestamp)}
-            </span>
+      return (
+        <motion.div
+          key={index}
+          className={`${styles.saveSlot} ${isEmpty ? styles.empty : ''} ${
+            isSelected ? styles.selected : ''
+          }`}
+          onClick={() => setSelectedSaveSlot(isEmpty ? null : index)}
+          onDoubleClick={() => !isEmpty && handleLoadGame(index)}
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: index * 0.1, duration: 0.3 }}
+          whileHover={{ scale: isEmpty ? 1 : 1.02 }}
+          whileTap={{ scale: isEmpty ? 1 : 0.98 }}
+        >
+          <div className={styles.saveSlotHeader}>
+            <span className={styles.slotNumber}>Slot {index + 1}</span>
+            {!isEmpty && <span className={styles.saveDate}>{formatSaveDate(slot.timestamp)}</span>}
+          </div>
+
+          {isEmpty ? (
+            <div className={styles.emptySlot}>
+              <span>Empty Slot</span>
+            </div>
+          ) : (
+            <div className={styles.saveInfo}>
+              <div className={styles.playerInfo}>
+                <span className={styles.playerName}>{slot.data!.player!.name}</span>
+                <span className={styles.playerClass}>
+                  Level {slot.data!.player!.level} {slot.data!.player!.characterClass}
+                </span>
+              </div>
+              <div className={styles.gameInfo}>
+                <span className={styles.location}>
+                  {slot.data!.currentArea || 'Unknown Location'}
+                </span>
+                <span className={styles.playTime}>{formatPlayTime(slot.data!.totalPlayTime)}</span>
+              </div>
+            </div>
           )}
-        </div>
-
-        {isEmpty ? (
-          <div className={styles.emptySlot}>
-            <span>Empty Slot</span>
-          </div>
-        ) : (
-          <div className={styles.saveInfo}>
-            <div className={styles.playerInfo}>
-              <span className={styles.playerName}>{slot.data!.player!.name}</span>
-              <span className={styles.playerClass}>
-                Level {slot.data!.player!.level} {slot.data!.player!.characterClass}
-              </span>
-            </div>
-            <div className={styles.gameInfo}>
-              <span className={styles.location}>
-                {slot.data!.currentArea || 'Unknown Location'}
-              </span>
-              <span className={styles.playTime}>
-                {formatPlayTime(slot.data!.totalPlayTime)}
-              </span>
-            </div>
-          </div>
-        )}
-      </motion.div>
-    );
-  }, [selectedSaveSlot, handleLoadGame, formatSaveDate, formatPlayTime]);
+        </motion.div>
+      );
+    },
+    [selectedSaveSlot, handleLoadGame, formatSaveDate, formatPlayTime]
+  );
 
   if (isPreloading) {
     return (
@@ -264,7 +280,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
           >
             <h1>Sawyer's RPG</h1>
           </motion.div>
-          <LoadingSpinner size="large" />
+          <LoadingSpinner size='large' />
           <p className={styles.preloadingText}>Loading game data...</p>
         </div>
       </div>
@@ -282,24 +298,18 @@ export const MainMenu: React.FC<MainMenuProps> = ({
     background: 'linear-gradient(135deg, #1a1a2e, #16213e, #0f3460)',
     padding: isMobile ? '1rem' : isTablet ? '1.5rem' : '2rem',
     position: 'relative' as const,
-    overflow: isMobile ? 'auto' : 'hidden'
+    overflow: isMobile ? 'auto' : 'hidden',
   };
 
   const innerContainerStyle = {
     maxWidth: isMobile ? '100%' : isTablet ? '400px' : '500px',
     width: '100%',
-    textAlign: 'center' as const
+    textAlign: 'center' as const,
   };
 
   return (
-    <div
-      className={`${styles.mainMenu} ${className || ''}`}
-      style={containerStyle}
-    >
-      <div
-        className={styles.container}
-        style={innerContainerStyle}
-      >
+    <div className={`${styles.mainMenu} ${className || ''}`} style={containerStyle}>
+      <div className={styles.container} style={innerContainerStyle}>
         {/* Background Elements */}
         <div className={styles.backgroundPattern} />
 
@@ -317,7 +327,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
             padding: '8px 12px',
             borderRadius: '8px',
             backdropFilter: 'blur(10px)',
-            fontSize: '0.85rem'
+            fontSize: '0.85rem',
           }}
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -325,15 +335,15 @@ export const MainMenu: React.FC<MainMenuProps> = ({
         >
           {/* Network Status */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <div style={{
-              width: '6px',
-              height: '6px',
-              borderRadius: '50%',
-              background: isOnline ? '#4caf50' : '#f44336'
-            }} />
-            <span style={{ color: '#cccccc' }}>
-              {isOnline ? 'Online' : 'Offline'}
-            </span>
+            <div
+              style={{
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                background: isOnline ? '#4caf50' : '#f44336',
+              }}
+            />
+            <span style={{ color: '#cccccc' }}>{isOnline ? 'Online' : 'Offline'}</span>
           </div>
 
           {/* Sync Status */}
@@ -341,7 +351,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#2196f3' }}>
               <motion.div
                 animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
               >
                 🔄
               </motion.div>
@@ -366,8 +376,8 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                 </span>
               </div>
               <Button
-                variant="ghost"
-                size="small"
+                variant='ghost'
+                size='small'
                 onClick={handleSignOut}
                 style={{ fontSize: '0.7rem', padding: '4px 8px' }}
               >
@@ -376,8 +386,8 @@ export const MainMenu: React.FC<MainMenuProps> = ({
             </div>
           ) : (
             <Button
-              variant="ghost"
-              size="small"
+              variant='ghost'
+              size='small'
               onClick={handleSignIn}
               style={{ fontSize: '0.7rem', padding: '4px 8px', color: '#2196f3' }}
             >
@@ -387,21 +397,18 @@ export const MainMenu: React.FC<MainMenuProps> = ({
         </motion.div>
 
         {/* Main Menu Content */}
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode='wait'>
           {showCloudManager ? (
-            <CloudSaveManager
-              isModal={true}
-              onClose={handleCloseCloudManager}
-            />
+            <CloudSaveManager isModal={true} onClose={handleCloseCloudManager} />
           ) : showSaveManager ? (
             <SaveLoadManager
-              mode="load"
+              mode='load'
               onClose={handleCloseSaveManager}
               onLoadComplete={handleLoadComplete}
             />
           ) : !showLoadMenu ? (
             <motion.div
-              key="main-menu"
+              key='main-menu'
               className={styles.menuContent}
               style={{
                 display: 'flex',
@@ -411,14 +418,14 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                 maxWidth: isMobile ? '100%' : isTablet ? '400px' : '500px',
                 width: '100%',
                 zIndex: 1,
-                position: 'relative'
+                position: 'relative',
               }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{
                 duration: animationConfig.duration * 1.5,
-                ease: animationConfig.ease
+                ease: animationConfig.ease,
               }}
             >
               {/* Logo */}
@@ -433,12 +440,18 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                   className={styles.gameTitle}
                   style={{
                     fontFamily: 'var(--font-heading)',
-                    fontSize: isMobile ? (isLandscape ? '2rem' : '2.5rem') : isTablet ? '3rem' : '3.5rem',
+                    fontSize: isMobile
+                      ? isLandscape
+                        ? '2rem'
+                        : '2.5rem'
+                      : isTablet
+                        ? '3rem'
+                        : '3.5rem',
                     fontWeight: 'bold',
                     color: '#ffd700',
                     margin: 0,
                     letterSpacing: '0.05em',
-                    textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)'
+                    textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)',
                   }}
                 >
                   Sawyer's RPG
@@ -450,7 +463,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                     fontSize: '1.4rem',
                     color: '#cccccc',
                     margin: '0.5rem 0 0 0',
-                    fontStyle: 'italic'
+                    fontStyle: 'italic',
                   }}
                 >
                   Monster Taming Adventure
@@ -484,15 +497,15 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                   flexDirection: 'column',
                   gap: isMobile ? '0.75rem' : '1rem',
                   width: '100%',
-                  maxWidth: '300px'
+                  maxWidth: '300px',
                 }}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6, duration: 0.5 }}
               >
                 <Button
-                  variant="primary"
-                  size={isMobile ? "md" : "large"}
+                  variant='primary'
+                  size={isMobile ? 'md' : 'large'}
                   onClick={handleContinue}
                   disabled={!player && !hasSavedGames}
                   className={styles.menuButton}
@@ -502,8 +515,8 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                 </Button>
 
                 <Button
-                  variant="secondary"
-                  size={isMobile ? "md" : "large"}
+                  variant='secondary'
+                  size={isMobile ? 'md' : 'large'}
                   onClick={handleNewGame}
                   className={styles.menuButton}
                   touchFriendly={true}
@@ -512,8 +525,8 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                 </Button>
 
                 <Button
-                  variant="secondary"
-                  size={isMobile ? "md" : "large"}
+                  variant='secondary'
+                  size={isMobile ? 'md' : 'large'}
                   onClick={handleShowLoadMenu}
                   disabled={!hasSavedGames}
                   className={styles.menuButton}
@@ -523,8 +536,8 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                 </Button>
 
                 <Button
-                  variant="secondary"
-                  size={isMobile ? "md" : "large"}
+                  variant='secondary'
+                  size={isMobile ? 'md' : 'large'}
                   onClick={handleSettings}
                   className={styles.menuButton}
                   touchFriendly={true}
@@ -535,14 +548,14 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                 {/* Cloud Save Button */}
                 {isAuthenticated && (
                   <Button
-                    variant="accent"
-                    size={isMobile ? "md" : "large"}
+                    variant='accent'
+                    size={isMobile ? 'md' : 'large'}
                     onClick={handleCloudSaves}
                     className={styles.menuButton}
                     touchFriendly={true}
                     style={{
                       background: 'linear-gradient(135deg, #2196f3, #1976d2)',
-                      border: '1px solid rgba(33, 150, 243, 0.5)'
+                      border: '1px solid rgba(33, 150, 243, 0.5)',
                     }}
                   >
                     ☁️ Cloud Saves
@@ -562,7 +575,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
             </motion.div>
           ) : (
             <motion.div
-              key="load-menu"
+              key='load-menu'
               className={styles.loadMenuContent}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -572,8 +585,8 @@ export const MainMenu: React.FC<MainMenuProps> = ({
               <div className={styles.loadMenuHeader}>
                 <h2 className={styles.loadMenuTitle}>Load Game</h2>
                 <Button
-                  variant="ghost"
-                  size="small"
+                  variant='ghost'
+                  size='small'
                   onClick={handleHideLoadMenu}
                   className={styles.backButton}
                 >
@@ -589,8 +602,8 @@ export const MainMenu: React.FC<MainMenuProps> = ({
 
               <div className={styles.loadMenuActions}>
                 <Button
-                  variant="primary"
-                  size="large"
+                  variant='primary'
+                  size='large'
                   onClick={() => selectedSaveSlot !== null && handleLoadGame(selectedSaveSlot)}
                   disabled={selectedSaveSlot === null || !saveSlots[selectedSaveSlot || 0]?.data}
                 >

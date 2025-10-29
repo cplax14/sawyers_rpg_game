@@ -18,7 +18,7 @@ interface CharacterSelectionProps {
 
 export const CharacterSelection: React.FC<CharacterSelectionProps> = ({
   onCharacterCreated,
-  className
+  className,
 }) => {
   const { characterClasses, isLoading, error } = useCharacterClasses();
   const { createPlayer } = usePlayer();
@@ -64,20 +64,25 @@ export const CharacterSelection: React.FC<CharacterSelectionProps> = ({
     }
 
     if (!/^[a-zA-Z0-9\s-_]+$/.test(name.trim())) {
-      setNameError('Player name can only contain letters, numbers, spaces, hyphens, and underscores');
+      setNameError(
+        'Player name can only contain letters, numbers, spaces, hyphens, and underscores'
+      );
       return false;
     }
 
     return true;
   }, []);
 
-  const handleNameChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    setPlayerName(value);
-    if (nameError) {
-      validateName(value);
-    }
-  }, [nameError, validateName]);
+  const handleNameChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const value = event.target.value;
+      setPlayerName(value);
+      if (nameError) {
+        validateName(value);
+      }
+    },
+    [nameError, validateName]
+  );
 
   const handleClassSelect = useCallback((characterClass: ReactCharacterClass) => {
     setSelectedClass(characterClass);
@@ -114,17 +119,20 @@ export const CharacterSelection: React.FC<CharacterSelectionProps> = ({
   }, [playerName, validateName, createPlayer, onCharacterCreated, navigateToScreen]);
   // Note: selectedClass removed from deps since we use selectedClassRef.current
 
-  const handleKeyPress = useCallback((event: React.KeyboardEvent) => {
-    if (event.key === 'Enter' && !isCreating) {
-      handleCreateCharacter();
-    }
-  }, [handleCreateCharacter, isCreating]);
+  const handleKeyPress = useCallback(
+    (event: React.KeyboardEvent) => {
+      if (event.key === 'Enter' && !isCreating) {
+        handleCreateCharacter();
+      }
+    },
+    [handleCreateCharacter, isCreating]
+  );
 
   if (isLoading) {
     return (
       <div className={`${styles.characterSelection} ${className || ''}`}>
         <div className={styles.loadingContainer}>
-          <LoadingSpinner size="large" />
+          <LoadingSpinner size='large' />
           <p className={styles.loadingText}>Loading character classes...</p>
         </div>
       </div>
@@ -137,10 +145,7 @@ export const CharacterSelection: React.FC<CharacterSelectionProps> = ({
         <div className={styles.errorContainer}>
           <h2>Failed to Load Character Classes</h2>
           <p className={styles.errorMessage}>{error}</p>
-          <Button
-            variant="primary"
-            onClick={() => window.location.reload()}
-          >
+          <Button variant='primary' onClick={() => window.location.reload()}>
             Reload Page
           </Button>
         </div>
@@ -158,7 +163,7 @@ export const CharacterSelection: React.FC<CharacterSelectionProps> = ({
         background: 'linear-gradient(135deg, #1a1a2e, #16213e, #0f3460)',
         color: '#f4f4f4',
         padding: '1rem',
-        boxSizing: 'border-box'
+        boxSizing: 'border-box',
       }}
     >
       <motion.div
@@ -167,7 +172,7 @@ export const CharacterSelection: React.FC<CharacterSelectionProps> = ({
           maxWidth: '1200px',
           margin: '0 auto',
           padding: '0 1rem',
-          minHeight: 'fit-content'
+          minHeight: 'fit-content',
         }}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -183,9 +188,15 @@ export const CharacterSelection: React.FC<CharacterSelectionProps> = ({
           <h1
             className={styles.title}
             style={{
-              fontSize: isMobile ? (isLandscape ? '1.5rem' : '1.75rem') : isTablet ? '2rem' : '2.25rem',
+              fontSize: isMobile
+                ? isLandscape
+                  ? '1.5rem'
+                  : '1.75rem'
+                : isTablet
+                  ? '2rem'
+                  : '2.25rem',
               textAlign: 'center',
-              margin: '0 0 1rem 0'
+              margin: '0 0 1rem 0',
             }}
           >
             Create Your Character
@@ -196,7 +207,7 @@ export const CharacterSelection: React.FC<CharacterSelectionProps> = ({
               fontSize: isMobile ? '0.9rem' : '1rem',
               textAlign: 'center',
               margin: '0 0 1.5rem 0',
-              color: '#94a3b8'
+              color: '#94a3b8',
             }}
           >
             Choose your class and enter your name to begin your adventure
@@ -210,12 +221,12 @@ export const CharacterSelection: React.FC<CharacterSelectionProps> = ({
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.4, duration: 0.5 }}
         >
-          <label htmlFor="player-name" className={styles.nameLabel}>
+          <label htmlFor='player-name' className={styles.nameLabel}>
             Character Name
           </label>
           <Input
-            id="player-name"
-            type="text"
+            id='player-name'
+            type='text'
             value={playerName}
             onChange={handleNameChange}
             onKeyPress={handleKeyPress}
@@ -246,7 +257,7 @@ export const CharacterSelection: React.FC<CharacterSelectionProps> = ({
                   exit={{ opacity: 0, y: -20 }}
                   transition={{
                     delay: 0.8 + index * 0.1,
-                    duration: 0.4
+                    duration: 0.4,
                   }}
                   className={styles.classCardWrapper}
                 >
@@ -257,7 +268,7 @@ export const CharacterSelection: React.FC<CharacterSelectionProps> = ({
                     disabled={isCreating}
                     showDetailedStats={true}
                     showClassBonus={true}
-                    variant="default"
+                    variant='default'
                   />
                 </motion.div>
               ))}
@@ -275,9 +286,7 @@ export const CharacterSelection: React.FC<CharacterSelectionProps> = ({
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.4 }}
             >
-              <h3 className={styles.previewTitle}>
-                Selected Class: {selectedClass.name}
-              </h3>
+              <h3 className={styles.previewTitle}>Selected Class: {selectedClass.name}</h3>
               <div className={styles.previewContent}>
                 <div className={styles.previewStats}>
                   <h4>Starting Stats</h4>
@@ -326,17 +335,24 @@ export const CharacterSelection: React.FC<CharacterSelectionProps> = ({
           transition={{ delay: 1.0, duration: 0.5 }}
         >
           <Button
-            variant="primary"
-            size={isMobile ? "md" : "large"}
+            variant='primary'
+            size={isMobile ? 'md' : 'large'}
             onClick={handleCreateCharacter}
-            disabled={!selectedClass || !playerName || typeof playerName !== 'string' || !playerName.trim() || isCreating || !!nameError}
+            disabled={
+              !selectedClass ||
+              !playerName ||
+              typeof playerName !== 'string' ||
+              !playerName.trim() ||
+              isCreating ||
+              !!nameError
+            }
             loading={isCreating}
             className={styles.createButton}
             touchFriendly={true}
             style={{
               minHeight: '48px',
               width: '100%',
-              maxWidth: isMobile ? '100%' : '300px'
+              maxWidth: isMobile ? '100%' : '300px',
             }}
           >
             {isCreating ? 'Creating Character...' : 'Start Adventure'}

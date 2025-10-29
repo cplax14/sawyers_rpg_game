@@ -21,7 +21,10 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
   <ReactGameProvider>{children}</ReactGameProvider>
 );
 
-const createMockCreature = (id: string, overrides?: Partial<EnhancedCreature>): EnhancedCreature => {
+const createMockCreature = (
+  id: string,
+  overrides?: Partial<EnhancedCreature>
+): EnhancedCreature => {
   const baseStats: PlayerStats = {
     attack: 20,
     defense: 20,
@@ -211,7 +214,9 @@ describe('useCreatures - Breeding Integration (CRITICAL FIX)', () => {
 
     expect(globalCreatureCount).toBe(5);
     expect(gameStateResult.current.gameState.creatures?.creatures['creature_bred_1']).toBeDefined();
-    expect(gameStateResult.current.gameState.creatures?.creatures['creature_bred_1']?.name).toBe('Offspring');
+    expect(gameStateResult.current.gameState.creatures?.creatures['creature_bred_1']?.name).toBe(
+      'Offspring'
+    );
   });
 
   it('should sync to global state when global state is empty', async () => {
@@ -269,8 +274,22 @@ describe('useCreatures - Breeding Integration (CRITICAL FIX)', () => {
           maxHp: 30,
           mp: 10,
           maxMp: 10,
-          baseStats: { attack: 10, defense: 10, magicAttack: 5, magicDefense: 5, speed: 5, accuracy: 80 },
-          currentStats: { attack: 10, defense: 10, magicAttack: 5, magicDefense: 5, speed: 5, accuracy: 80 },
+          baseStats: {
+            attack: 10,
+            defense: 10,
+            magicAttack: 5,
+            magicDefense: 5,
+            speed: 5,
+            accuracy: 80,
+          },
+          currentStats: {
+            attack: 10,
+            defense: 10,
+            magicAttack: 5,
+            magicDefense: 5,
+            speed: 5,
+            accuracy: 80,
+          },
           types: ['slime'],
           rarity: 'common',
           abilities: [],
@@ -353,8 +372,22 @@ describe('useCreatures - Breeding Integration (CRITICAL FIX)', () => {
           maxHp: 30,
           mp: 10,
           maxMp: 10,
-          baseStats: { attack: 10, defense: 10, magicAttack: 5, magicDefense: 5, speed: 5, accuracy: 80 },
-          currentStats: { attack: 10, defense: 10, magicAttack: 5, magicDefense: 5, speed: 5, accuracy: 80 },
+          baseStats: {
+            attack: 10,
+            defense: 10,
+            magicAttack: 5,
+            magicDefense: 5,
+            speed: 5,
+            accuracy: 80,
+          },
+          currentStats: {
+            attack: 10,
+            defense: 10,
+            magicAttack: 5,
+            magicDefense: 5,
+            speed: 5,
+            accuracy: 80,
+          },
           types: ['slime'],
           rarity: 'common',
           abilities: [],
@@ -374,10 +407,14 @@ describe('useCreatures - Breeding Integration (CRITICAL FIX)', () => {
     // THEN: No React warnings should appear
     await waitFor(() => {
       const hasReactWarning = consoleWarnSpy.mock.calls.some(call =>
-        call.some(arg => typeof arg === 'string' && arg.includes('Cannot update component during render'))
+        call.some(
+          arg => typeof arg === 'string' && arg.includes('Cannot update component during render')
+        )
       );
       const hasReactError = consoleErrorSpy.mock.calls.some(call =>
-        call.some(arg => typeof arg === 'string' && arg.includes('Cannot update component during render'))
+        call.some(
+          arg => typeof arg === 'string' && arg.includes('Cannot update component during render')
+        )
       );
 
       expect(hasReactWarning).toBe(false);

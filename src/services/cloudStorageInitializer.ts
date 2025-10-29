@@ -3,7 +3,12 @@
  * Handles application startup initialization of cloud storage services
  */
 
-import { CloudStorageConfig, createCloudStorageConfig, ConfigUtils, ConfigValidationResult } from '../config/cloudStorage';
+import {
+  CloudStorageConfig,
+  createCloudStorageConfig,
+  ConfigUtils,
+  ConfigValidationResult,
+} from '../config/cloudStorage';
 import { CloudStorageService } from './cloudStorage';
 import { NetworkStatusManager } from '../utils/networkStatus';
 import { OfflineQueueManager } from '../utils/offlineQueue';
@@ -65,11 +70,11 @@ export class CloudStorageInitializer {
       features: {
         compression: false,
         offlineQueue: false,
-        networkMonitoring: false
+        networkMonitoring: false,
       },
       errors: [],
       warnings: [],
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     this.services = {
@@ -77,7 +82,7 @@ export class CloudStorageInitializer {
       storageService: null,
       networkManager: null,
       queueManager: null,
-      compressor: null
+      compressor: null,
     };
   }
 
@@ -94,7 +99,9 @@ export class CloudStorageInitializer {
     return this.initializationPromise;
   }
 
-  private async performInitialization(options: InitializationOptions): Promise<InitializationStatus> {
+  private async performInitialization(
+    options: InitializationOptions
+  ): Promise<InitializationStatus> {
     const startTime = Date.now();
 
     try {
@@ -107,11 +114,11 @@ export class CloudStorageInitializer {
         features: {
           compression: false,
           offlineQueue: false,
-          networkMonitoring: false
+          networkMonitoring: false,
         },
         errors: [],
         warnings: [],
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       options.onProgress?.('Loading configuration', 10);
@@ -145,7 +152,6 @@ export class CloudStorageInitializer {
       }
 
       return this.status;
-
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown initialization error';
       this.status.errors.push(errorMessage);
@@ -196,14 +202,11 @@ export class CloudStorageInitializer {
     try {
       // Initialize compression service if enabled
       if (config.features.compression) {
-        this.services.compressor = new DataCompressor(
-          config.compression,
-          {
-            includeMetadata: true,
-            stripFunctions: true,
-            preserveUndefined: false
-          }
-        );
+        this.services.compressor = new DataCompressor(config.compression, {
+          includeMetadata: true,
+          stripFunctions: true,
+          preserveUndefined: false,
+        });
         this.status.features.compression = true;
 
         if (options.enableDebugLogging) {
@@ -244,14 +247,13 @@ export class CloudStorageInitializer {
           maxSaveSize: config.settings.maxSaveSize,
           compressionEnabled: config.features.compression,
           checksumValidation: true,
-          compressionConfig: config.compression
+          compressionConfig: config.compression,
         });
 
         if (options.enableDebugLogging) {
           console.log('Cloud storage service initialized');
         }
       }
-
     } catch (error) {
       const errorMessage = `Service initialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
       this.status.errors.push(errorMessage);
@@ -275,7 +277,7 @@ export class CloudStorageInitializer {
         console.log('Firebase services initialized:', {
           auth: !!firebaseServices.auth,
           firestore: !!firebaseServices.firestore,
-          storage: !!firebaseServices.storage
+          storage: !!firebaseServices.storage,
         });
       }
 
@@ -289,7 +291,6 @@ export class CloudStorageInitializer {
           console.log('Firebase emulators configured:', emulatorConfig);
         }
       }
-
     } catch (error) {
       const errorMessage = `Firebase initialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
       this.status.errors.push(errorMessage);
@@ -318,7 +319,6 @@ export class CloudStorageInitializer {
       if (ConfigUtils.isCloudStorageEnabled(config)) {
         await this.testCloudStorageConnection(options);
       }
-
     } catch (error) {
       const errorMessage = `Connection test failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
       this.status.warnings.push(errorMessage);
@@ -338,9 +338,12 @@ export class CloudStorageInitializer {
         const connectionResult = await retry.network(() => checkFirebaseConnection(), {
           onRetry: (error, attempt, delay) => {
             if (options.enableDebugLogging) {
-              console.log(`Retrying Firebase connection test, attempt ${attempt}, delay ${delay}ms:`, error);
+              console.log(
+                `Retrying Firebase connection test, attempt ${attempt}, delay ${delay}ms:`,
+                error
+              );
             }
-          }
+          },
         });
 
         if (connectionResult.connected) {
@@ -357,7 +360,6 @@ export class CloudStorageInitializer {
             this.status.warnings.push(`Firebase error: ${connectionResult.error}`);
           }
         }
-
       } catch (error) {
         const errorMessage = `Firebase connection test error: ${error instanceof Error ? error.message : 'Unknown error'}`;
         this.status.warnings.push(errorMessage);
@@ -379,7 +381,7 @@ export class CloudStorageInitializer {
         provider: this.status.provider,
         features: this.status.features,
         errors: this.status.errors.length,
-        warnings: this.status.warnings.length
+        warnings: this.status.warnings.length,
       });
     }
 
@@ -414,9 +416,7 @@ export class CloudStorageInitializer {
    * Check if cloud storage is ready for use
    */
   isReady(): boolean {
-    return this.status.isInitialized &&
-           this.status.isConfigured &&
-           this.status.errors.length === 0;
+    return this.status.isInitialized && this.status.isConfigured && this.status.errors.length === 0;
   }
 
   /**
@@ -461,13 +461,16 @@ export class CloudStorageInitializer {
   } {
     return {
       provider: this.status.provider,
-      status: this.status.isInitialized ?
-        (this.status.isConnected ? 'ready' : 'offline') : 'not initialized',
+      status: this.status.isInitialized
+        ? this.status.isConnected
+          ? 'ready'
+          : 'offline'
+        : 'not initialized',
       features: Object.entries(this.status.features)
         .filter(([, enabled]) => enabled)
         .map(([feature]) => feature),
       errors: this.status.errors.length,
-      warnings: this.status.warnings.length
+      warnings: this.status.warnings.length,
     };
   }
 }
@@ -476,8 +479,9 @@ export class CloudStorageInitializer {
 export const cloudStorageInitializer = new CloudStorageInitializer();
 
 // Convenience functions
-export const initializeCloudStorage = (options?: InitializationOptions): Promise<InitializationStatus> =>
-  cloudStorageInitializer.initialize(options);
+export const initializeCloudStorage = (
+  options?: InitializationOptions
+): Promise<InitializationStatus> => cloudStorageInitializer.initialize(options);
 
 export const getCloudStorageStatus = (): InitializationStatus =>
   cloudStorageInitializer.getStatus();
@@ -485,5 +489,4 @@ export const getCloudStorageStatus = (): InitializationStatus =>
 export const getCloudStorageServices = (): CloudStorageServices =>
   cloudStorageInitializer.getServices();
 
-export const isCloudStorageReady = (): boolean =>
-  cloudStorageInitializer.isReady();
+export const isCloudStorageReady = (): boolean => cloudStorageInitializer.isReady();

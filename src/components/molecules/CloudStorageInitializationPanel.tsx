@@ -30,7 +30,7 @@ export const CloudStorageInitializationPanel: React.FC<CloudStorageInitializatio
   autoInitialize = false,
   className = '',
   onInitializationComplete,
-  onProgress
+  onProgress,
 }) => {
   const [initProgress, setInitProgress] = useState({ step: '', progress: 0 });
   const [showFullDetails, setShowFullDetails] = useState(false);
@@ -44,10 +44,10 @@ export const CloudStorageInitializationPanel: React.FC<CloudStorageInitializatio
     hasWarnings,
     initialize,
     reinitialize,
-    getConfigurationSummary
+    getConfigurationSummary,
   } = useCloudStorageInitialization({
     autoInitialize,
-    enableDebugLogging: true
+    enableDebugLogging: true,
   });
 
   const handleInitialize = useCallback(async () => {
@@ -62,7 +62,7 @@ export const CloudStorageInitializationPanel: React.FC<CloudStorageInitializatio
       },
       onError: (error: string) => {
         console.error('Initialization error:', error);
-      }
+      },
     };
 
     try {
@@ -83,7 +83,7 @@ export const CloudStorageInitializationPanel: React.FC<CloudStorageInitializatio
         onProgress: (step: string, progress: number) => {
           setInitProgress({ step, progress });
           onProgress?.(step, progress);
-        }
+        },
       });
       onInitializationComplete?.(result.isInitialized && result.errors.length === 0);
     } catch (error) {
@@ -128,14 +128,14 @@ export const CloudStorageInitializationPanel: React.FC<CloudStorageInitializatio
     background: 'linear-gradient(135deg, #2a2a3e, #1e1e2f)',
     borderRadius: '12px',
     border: `2px solid ${getStatusColor()}`,
-    maxWidth: '600px'
+    maxWidth: '600px',
   };
 
   const headerStyle: React.CSSProperties = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: '16px'
+    marginBottom: '16px',
   };
 
   const titleStyle: React.CSSProperties = {
@@ -145,13 +145,13 @@ export const CloudStorageInitializationPanel: React.FC<CloudStorageInitializatio
     margin: 0,
     display: 'flex',
     alignItems: 'center',
-    gap: '8px'
+    gap: '8px',
   };
 
   const statusStyle: React.CSSProperties = {
     color: getStatusColor(),
     fontSize: '0.9rem',
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   };
 
   return (
@@ -163,12 +163,8 @@ export const CloudStorageInitializationPanel: React.FC<CloudStorageInitializatio
       transition={{ duration: 0.3 }}
     >
       <div style={headerStyle}>
-        <h3 style={titleStyle}>
-          {getStatusIcon()} Cloud Storage
-        </h3>
-        <div style={statusStyle}>
-          {getStatusText()}
-        </div>
+        <h3 style={titleStyle}>{getStatusIcon()} Cloud Storage</h3>
+        <div style={statusStyle}>{getStatusText()}</div>
       </div>
 
       {/* Progress Bar */}
@@ -181,96 +177,116 @@ export const CloudStorageInitializationPanel: React.FC<CloudStorageInitializatio
             marginBottom: '16px',
             background: 'rgba(0, 0, 0, 0.3)',
             borderRadius: '4px',
-            overflow: 'hidden'
+            overflow: 'hidden',
           }}
         >
           <motion.div
             style={{
               height: '4px',
               background: 'linear-gradient(90deg, #51cf66, #69db7c)',
-              borderRadius: '4px'
+              borderRadius: '4px',
             }}
             animate={{ width: `${initProgress.progress}%` }}
             transition={{ duration: 0.3 }}
           />
-          <div style={{
-            padding: '8px',
-            color: '#cccccc',
-            fontSize: '0.8rem'
-          }}>
+          <div
+            style={{
+              padding: '8px',
+              color: '#cccccc',
+              fontSize: '0.8rem',
+            }}
+          >
             {initProgress.step} ({initProgress.progress}%)
           </div>
         </motion.div>
       )}
 
       {/* Quick Status */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(2, 1fr)',
-        gap: '12px',
-        marginBottom: '16px'
-      }}>
-        <div style={{
-          padding: '8px 12px',
-          background: 'rgba(0, 0, 0, 0.3)',
-          borderRadius: '6px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, 1fr)',
+          gap: '12px',
+          marginBottom: '16px',
+        }}
+      >
+        <div
+          style={{
+            padding: '8px 12px',
+            background: 'rgba(0, 0, 0, 0.3)',
+            borderRadius: '6px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
           <span style={{ color: '#999999', fontSize: '0.8rem' }}>Provider:</span>
           <span style={{ color: '#ffffff', fontWeight: 'bold', fontSize: '0.8rem' }}>
             {configSummary.provider}
           </span>
         </div>
 
-        <div style={{
-          padding: '8px 12px',
-          background: 'rgba(0, 0, 0, 0.3)',
-          borderRadius: '6px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}>
+        <div
+          style={{
+            padding: '8px 12px',
+            background: 'rgba(0, 0, 0, 0.3)',
+            borderRadius: '6px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
           <span style={{ color: '#999999', fontSize: '0.8rem' }}>Status:</span>
-          <span style={{
-            color: getStatusColor(),
-            fontWeight: 'bold',
-            fontSize: '0.8rem'
-          }}>
+          <span
+            style={{
+              color: getStatusColor(),
+              fontWeight: 'bold',
+              fontSize: '0.8rem',
+            }}
+          >
             {configSummary.status}
           </span>
         </div>
 
-        <div style={{
-          padding: '8px 12px',
-          background: 'rgba(0, 0, 0, 0.3)',
-          borderRadius: '6px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}>
+        <div
+          style={{
+            padding: '8px 12px',
+            background: 'rgba(0, 0, 0, 0.3)',
+            borderRadius: '6px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
           <span style={{ color: '#999999', fontSize: '0.8rem' }}>Features:</span>
           <span style={{ color: '#ffffff', fontSize: '0.8rem' }}>
             {configSummary.features.length || 'None'}
           </span>
         </div>
 
-        <div style={{
-          padding: '8px 12px',
-          background: 'rgba(0, 0, 0, 0.3)',
-          borderRadius: '6px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}>
+        <div
+          style={{
+            padding: '8px 12px',
+            background: 'rgba(0, 0, 0, 0.3)',
+            borderRadius: '6px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
           <span style={{ color: '#999999', fontSize: '0.8rem' }}>Issues:</span>
-          <span style={{
-            color: (configSummary.errors > 0) ? '#ff6b6b' :
-                  (configSummary.warnings > 0) ? '#ffd43b' : '#51cf66',
-            fontSize: '0.8rem',
-            fontWeight: 'bold'
-          }}>
+          <span
+            style={{
+              color:
+                configSummary.errors > 0
+                  ? '#ff6b6b'
+                  : configSummary.warnings > 0
+                    ? '#ffd43b'
+                    : '#51cf66',
+              fontSize: '0.8rem',
+              fontWeight: 'bold',
+            }}
+          >
             {configSummary.errors}E / {configSummary.warnings}W
           </span>
         </div>
@@ -278,15 +294,17 @@ export const CloudStorageInitializationPanel: React.FC<CloudStorageInitializatio
 
       {/* Controls */}
       {showControls && (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: status.isInitialized ? 'repeat(2, 1fr)' : '1fr',
-          gap: '8px',
-          marginBottom: showDetails ? '16px' : '0'
-        }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: status.isInitialized ? 'repeat(2, 1fr)' : '1fr',
+            gap: '8px',
+            marginBottom: showDetails ? '16px' : '0',
+          }}
+        >
           {!status.isInitialized ? (
             <Button
-              variant="primary"
+              variant='primary'
               onClick={handleInitialize}
               disabled={isInitializing}
               style={{ width: '100%' }}
@@ -295,11 +313,7 @@ export const CloudStorageInitializationPanel: React.FC<CloudStorageInitializatio
             </Button>
           ) : (
             <>
-              <Button
-                variant="secondary"
-                onClick={handleReinitialize}
-                disabled={isInitializing}
-              >
+              <Button variant='secondary' onClick={handleReinitialize} disabled={isInitializing}>
                 Reinitialize
               </Button>
               <Button
@@ -316,26 +330,26 @@ export const CloudStorageInitializationPanel: React.FC<CloudStorageInitializatio
       {/* Detailed Information */}
       {showDetails && (
         <div>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '8px',
-            paddingTop: '8px',
-            borderTop: '1px solid rgba(255, 255, 255, 0.1)'
-          }}>
-            <h4 style={{
-              color: '#cccccc',
-              fontSize: '0.9rem',
-              margin: 0
-            }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '8px',
+              paddingTop: '8px',
+              borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+            }}
+          >
+            <h4
+              style={{
+                color: '#cccccc',
+                fontSize: '0.9rem',
+                margin: 0,
+              }}
+            >
               Details
             </h4>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowFullDetails(!showFullDetails)}
-            >
+            <Button variant='ghost' size='sm' onClick={() => setShowFullDetails(!showFullDetails)}>
               {showFullDetails ? '▲' : '▼'}
             </Button>
           </div>
@@ -351,18 +365,22 @@ export const CloudStorageInitializationPanel: React.FC<CloudStorageInitializatio
                 {/* Features */}
                 {configSummary.features.length > 0 && (
                   <div style={{ marginBottom: '12px' }}>
-                    <h5 style={{
-                      color: '#999999',
-                      fontSize: '0.8rem',
-                      margin: '0 0 4px 0'
-                    }}>
+                    <h5
+                      style={{
+                        color: '#999999',
+                        fontSize: '0.8rem',
+                        margin: '0 0 4px 0',
+                      }}
+                    >
                       Enabled Features:
                     </h5>
-                    <div style={{
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      gap: '4px'
-                    }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: '4px',
+                      }}
+                    >
                       {configSummary.features.map(feature => (
                         <span
                           key={feature}
@@ -371,7 +389,7 @@ export const CloudStorageInitializationPanel: React.FC<CloudStorageInitializatio
                             background: 'rgba(81, 207, 102, 0.2)',
                             color: '#51cf66',
                             borderRadius: '3px',
-                            fontSize: '0.7rem'
+                            fontSize: '0.7rem',
                           }}
                         >
                           {feature}
@@ -384,11 +402,13 @@ export const CloudStorageInitializationPanel: React.FC<CloudStorageInitializatio
                 {/* Errors */}
                 {status.errors.length > 0 && (
                   <div style={{ marginBottom: '12px' }}>
-                    <h5 style={{
-                      color: '#ff6b6b',
-                      fontSize: '0.8rem',
-                      margin: '0 0 4px 0'
-                    }}>
+                    <h5
+                      style={{
+                        color: '#ff6b6b',
+                        fontSize: '0.8rem',
+                        margin: '0 0 4px 0',
+                      }}
+                    >
                       Errors:
                     </h5>
                     {status.errors.map((error, index) => (
@@ -401,7 +421,7 @@ export const CloudStorageInitializationPanel: React.FC<CloudStorageInitializatio
                           borderRadius: '4px',
                           color: '#ff9999',
                           fontSize: '0.7rem',
-                          marginBottom: '4px'
+                          marginBottom: '4px',
                         }}
                       >
                         {error}
@@ -413,11 +433,13 @@ export const CloudStorageInitializationPanel: React.FC<CloudStorageInitializatio
                 {/* Warnings */}
                 {status.warnings.length > 0 && (
                   <div style={{ marginBottom: '12px' }}>
-                    <h5 style={{
-                      color: '#ffd43b',
-                      fontSize: '0.8rem',
-                      margin: '0 0 4px 0'
-                    }}>
+                    <h5
+                      style={{
+                        color: '#ffd43b',
+                        fontSize: '0.8rem',
+                        margin: '0 0 4px 0',
+                      }}
+                    >
                       Warnings:
                     </h5>
                     {status.warnings.map((warning, index) => (
@@ -430,7 +452,7 @@ export const CloudStorageInitializationPanel: React.FC<CloudStorageInitializatio
                           borderRadius: '4px',
                           color: '#ffd43b',
                           fontSize: '0.7rem',
-                          marginBottom: '4px'
+                          marginBottom: '4px',
                         }}
                       >
                         {warning}
@@ -440,11 +462,13 @@ export const CloudStorageInitializationPanel: React.FC<CloudStorageInitializatio
                 )}
 
                 {/* Timestamp */}
-                <div style={{
-                  color: '#999999',
-                  fontSize: '0.7rem',
-                  textAlign: 'right'
-                }}>
+                <div
+                  style={{
+                    color: '#999999',
+                    fontSize: '0.7rem',
+                    textAlign: 'right',
+                  }}
+                >
                   Last updated: {status.timestamp.toLocaleTimeString()}
                 </div>
               </motion.div>

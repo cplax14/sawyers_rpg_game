@@ -45,7 +45,7 @@ export const AnimatedInventoryGrid: React.FC<AnimatedInventoryGridProps> = ({
   emptyState,
   loadingState,
   isLoading = false,
-  useResponsiveLayout = false
+  useResponsiveLayout = false,
 }) => {
   const { animations } = useInventoryAnimations();
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
@@ -57,9 +57,10 @@ export const AnimatedInventoryGrid: React.FC<AnimatedInventoryGridProps> = ({
 
     // Apply filter
     if (filterBy) {
-      filtered = filtered.filter(item =>
-        item.category?.toLowerCase().includes(filterBy.toLowerCase()) ||
-        item.id.toLowerCase().includes(filterBy.toLowerCase())
+      filtered = filtered.filter(
+        item =>
+          item.category?.toLowerCase().includes(filterBy.toLowerCase()) ||
+          item.id.toLowerCase().includes(filterBy.toLowerCase())
       );
     }
 
@@ -102,7 +103,7 @@ export const AnimatedInventoryGrid: React.FC<AnimatedInventoryGridProps> = ({
       display: 'grid',
       gap: useResponsiveLayout ? layoutConfig.gridGap : gap,
       width: '100%',
-      ...style
+      ...style,
     };
 
     if (useResponsiveLayout) {
@@ -110,25 +111,25 @@ export const AnimatedInventoryGrid: React.FC<AnimatedInventoryGridProps> = ({
       if (responsiveColumns === 'auto') {
         return {
           ...baseStyles,
-          gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))'
+          gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
         };
       }
       return {
         ...baseStyles,
-        gridTemplateColumns: `repeat(${responsiveColumns}, 1fr)`
+        gridTemplateColumns: `repeat(${responsiveColumns}, 1fr)`,
       };
     }
 
     if (columns === 'auto') {
       return {
         ...baseStyles,
-        gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))'
+        gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
       };
     }
 
     return {
       ...baseStyles,
-      gridTemplateColumns: `repeat(${columns}, 1fr)`
+      gridTemplateColumns: `repeat(${columns}, 1fr)`,
     };
   };
 
@@ -158,22 +159,21 @@ export const AnimatedInventoryGrid: React.FC<AnimatedInventoryGridProps> = ({
   if (isLoading) {
     return (
       <div className={`animated-inventory-grid loading ${className}`} style={getGridStyles()}>
-        {loadingState || (
+        {loadingState ||
           Array.from({ length: 12 }).map((_, index) => (
             <motion.div
               key={`loading-${index}`}
               variants={animations.shimmer}
-              initial="initial"
-              animate="shimmer"
+              initial='initial'
+              animate='shimmer'
               style={{
                 background: 'rgba(255, 255, 255, 0.1)',
                 borderRadius: '8px',
                 height: '120px',
-                border: '1px solid rgba(255, 255, 255, 0.1)'
+                border: '1px solid rgba(255, 255, 255, 0.1)',
               }}
             />
-          ))
-        )}
+          ))}
       </div>
     );
   }
@@ -193,7 +193,7 @@ export const AnimatedInventoryGrid: React.FC<AnimatedInventoryGridProps> = ({
           padding: '3rem',
           textAlign: 'center',
           color: 'rgba(244, 244, 244, 0.6)',
-          ...style
+          ...style,
         }}
       >
         {emptyState || (
@@ -227,7 +227,7 @@ export const AnimatedInventoryGrid: React.FC<AnimatedInventoryGridProps> = ({
         initial={showAnimation ? 'hidden' : undefined}
         animate={showAnimation ? 'visible' : undefined}
       >
-        <AnimatePresence mode="popLayout">
+        <AnimatePresence mode='popLayout'>
           {processedItems.map((item, index) => (
             <motion.div
               key={item.id}
@@ -239,7 +239,7 @@ export const AnimatedInventoryGrid: React.FC<AnimatedInventoryGridProps> = ({
               exit={showAnimation ? 'exit' : undefined}
               transition={{
                 layout: { duration: 0.3, ease: 'easeInOut' },
-                opacity: { duration: 0.2 }
+                opacity: { duration: 0.2 },
               }}
               drag={enableReordering}
               dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
@@ -249,12 +249,12 @@ export const AnimatedInventoryGrid: React.FC<AnimatedInventoryGridProps> = ({
               whileDrag={{
                 scale: 1.05,
                 zIndex: 1000,
-                boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)'
+                boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)',
               }}
               onDrop={() => handleDrop(item.id)}
               style={{
                 position: 'relative',
-                cursor: enableReordering ? 'grab' : 'default'
+                cursor: enableReordering ? 'grab' : 'default',
               }}
             >
               {/* New item indicator */}
@@ -277,7 +277,7 @@ export const AnimatedInventoryGrid: React.FC<AnimatedInventoryGridProps> = ({
                     fontSize: '0.8rem',
                     fontWeight: 'bold',
                     zIndex: 10,
-                    boxShadow: '0 2px 8px rgba(34, 197, 94, 0.4)'
+                    boxShadow: '0 2px 8px rgba(34, 197, 94, 0.4)',
                   }}
                 >
                   ✨
@@ -298,7 +298,7 @@ export const AnimatedInventoryGrid: React.FC<AnimatedInventoryGridProps> = ({
                     bottom: '-2px',
                     background: 'linear-gradient(45deg, #4fc3f7, transparent, #4fc3f7)',
                     borderRadius: '10px',
-                    zIndex: -1
+                    zIndex: -1,
                   }}
                 />
               )}
@@ -320,7 +320,7 @@ export const AnimatedInventoryGrid: React.FC<AnimatedInventoryGridProps> = ({
                     fontSize: '0.8rem',
                     fontWeight: '600',
                     zIndex: 1001,
-                    pointerEvents: 'none'
+                    pointerEvents: 'none',
                   }}
                 >
                   Dragging...
@@ -350,7 +350,7 @@ export const AnimatedInventoryGrid: React.FC<AnimatedInventoryGridProps> = ({
                   background: 'rgba(79, 195, 247, 0.2)',
                   border: '2px dashed rgba(79, 195, 247, 0.6)',
                   borderRadius: '8px',
-                  pointerEvents: draggedItem === item.id ? 'none' : 'auto'
+                  pointerEvents: draggedItem === item.id ? 'none' : 'auto',
                 }}
                 onMouseUp={() => handleDrop(item.id)}
               />
@@ -363,11 +363,9 @@ export const AnimatedInventoryGrid: React.FC<AnimatedInventoryGridProps> = ({
 };
 
 // Specialized grid components for different inventory types
-export const ItemGrid: React.FC<Omit<AnimatedInventoryGridProps, 'columns'> & { itemSize?: 'small' | 'medium' | 'large' }> = ({
-  itemSize = 'medium',
-  useResponsiveLayout = true,
-  ...props
-}) => {
+export const ItemGrid: React.FC<
+  Omit<AnimatedInventoryGridProps, 'columns'> & { itemSize?: 'small' | 'medium' | 'large' }
+> = ({ itemSize = 'medium', useResponsiveLayout = true, ...props }) => {
   const { layoutConfig, getGridItemSize } = useResponsiveInventory();
 
   if (useResponsiveLayout) {
@@ -377,7 +375,7 @@ export const ItemGrid: React.FC<Omit<AnimatedInventoryGridProps, 'columns'> & { 
         {...props}
         useResponsiveLayout={true}
         style={{
-          ...props.style
+          ...props.style,
         }}
       />
     );
@@ -386,7 +384,7 @@ export const ItemGrid: React.FC<Omit<AnimatedInventoryGridProps, 'columns'> & { 
   const columnSizes = {
     small: 'repeat(auto-fill, minmax(80px, 1fr))',
     medium: 'repeat(auto-fill, minmax(120px, 1fr))',
-    large: 'repeat(auto-fill, minmax(160px, 1fr))'
+    large: 'repeat(auto-fill, minmax(160px, 1fr))',
   };
 
   return (
@@ -395,13 +393,16 @@ export const ItemGrid: React.FC<Omit<AnimatedInventoryGridProps, 'columns'> & { 
       useResponsiveLayout={false}
       style={{
         gridTemplateColumns: columnSizes[itemSize],
-        ...props.style
+        ...props.style,
       }}
     />
   );
 };
 
-export const EquipmentSlotGrid: React.FC<Omit<AnimatedInventoryGridProps, 'columns'>> = ({ useResponsiveLayout = true, ...props }) => (
+export const EquipmentSlotGrid: React.FC<Omit<AnimatedInventoryGridProps, 'columns'>> = ({
+  useResponsiveLayout = true,
+  ...props
+}) => (
   <AnimatedInventoryGrid
     {...props}
     useResponsiveLayout={useResponsiveLayout}
@@ -409,18 +410,23 @@ export const EquipmentSlotGrid: React.FC<Omit<AnimatedInventoryGridProps, 'colum
     style={{
       maxWidth: useResponsiveLayout ? 'none' : '400px',
       margin: useResponsiveLayout ? '0' : '0 auto',
-      ...props.style
+      ...props.style,
     }}
   />
 );
 
-export const CreatureGrid: React.FC<Omit<AnimatedInventoryGridProps, 'columns'>> = ({ useResponsiveLayout = true, ...props }) => (
+export const CreatureGrid: React.FC<Omit<AnimatedInventoryGridProps, 'columns'>> = ({
+  useResponsiveLayout = true,
+  ...props
+}) => (
   <AnimatedInventoryGrid
     {...props}
     useResponsiveLayout={useResponsiveLayout}
     style={{
-      gridTemplateColumns: useResponsiveLayout ? undefined : 'repeat(auto-fill, minmax(180px, 1fr))',
-      ...props.style
+      gridTemplateColumns: useResponsiveLayout
+        ? undefined
+        : 'repeat(auto-fill, minmax(180px, 1fr))',
+      ...props.style,
     }}
   />
 );

@@ -3,7 +3,14 @@
  * Comprehensive utility functions for item operations, filtering, and stacking logic
  */
 
-import { EnhancedItem, ItemCategory, ItemType, ItemEffect, ItemStack, ItemFilter } from '../types/inventory';
+import {
+  EnhancedItem,
+  ItemCategory,
+  ItemType,
+  ItemEffect,
+  ItemStack,
+  ItemFilter,
+} from '../types/inventory';
 import { PlayerStats } from '../types/game';
 
 // ================================
@@ -13,10 +20,7 @@ import { PlayerStats } from '../types/game';
 /**
  * Filter items based on various criteria
  */
-export const filterItems = (
-  items: EnhancedItem[],
-  filter: ItemFilter
-): EnhancedItem[] => {
+export const filterItems = (items: EnhancedItem[], filter: ItemFilter): EnhancedItem[] => {
   return items.filter(item => {
     // Category filter
     if (filter.category && item.category !== filter.category) {
@@ -121,10 +125,7 @@ export const getItemsByCategory = (
 /**
  * Get items by type
  */
-export const getItemsByType = (
-  items: EnhancedItem[],
-  itemType: ItemType
-): EnhancedItem[] => {
+export const getItemsByType = (items: EnhancedItem[], itemType: ItemType): EnhancedItem[] => {
   return items.filter(item => item.itemType === itemType);
 };
 
@@ -250,7 +251,7 @@ export const stackItems = (items: EnhancedItem[]): EnhancedItem => {
 
   return {
     ...baseItem,
-    quantity: totalQuantity
+    quantity: totalQuantity,
   };
 };
 
@@ -270,7 +271,7 @@ export const splitStack = (
   if (splitQuantity >= currentQuantity) {
     return {
       remainingStack: null,
-      splitStack: item
+      splitStack: item,
     };
   }
 
@@ -279,12 +280,12 @@ export const splitStack = (
   return {
     remainingStack: {
       ...item,
-      quantity: remainingQuantity
+      quantity: remainingQuantity,
     },
     splitStack: {
       ...item,
-      quantity: splitQuantity
-    }
+      quantity: splitQuantity,
+    },
   };
 };
 
@@ -307,9 +308,7 @@ export const consolidateStacks = (items: EnhancedItem[]): EnhancedItem[] => {
     }
 
     // Find all identical stackable items
-    const identicalItems = items.filter(otherItem =>
-      canStackItems(item, otherItem)
-    );
+    const identicalItems = items.filter(otherItem => canStackItems(item, otherItem));
 
     if (identicalItems.length > 1) {
       const stackedItem = stackItems(identicalItems);
@@ -367,7 +366,7 @@ export const canUseItem = (
 
   return {
     canUse: reasons.length === 0,
-    reasons
+    reasons,
   };
 };
 
@@ -412,17 +411,14 @@ export const canDropItem = (item: EnhancedItem): { canDrop: boolean; reason?: st
 /**
  * Calculate the total effect of using an item
  */
-export const calculateItemEffects = (
-  item: EnhancedItem,
-  quantity: number = 1
-): ItemEffect[] => {
+export const calculateItemEffects = (item: EnhancedItem, quantity: number = 1): ItemEffect[] => {
   if (!item.effects) {
     return [];
   }
 
   return item.effects.map(effect => ({
     ...effect,
-    value: effect.value * quantity
+    value: effect.value * quantity,
   }));
 };
 
@@ -434,8 +430,8 @@ export const getHealingValue = (item: EnhancedItem): number => {
     return 0;
   }
 
-  const healingEffect = item.effects.find(effect =>
-    effect.type === 'heal' || effect.stat === 'health'
+  const healingEffect = item.effects.find(
+    effect => effect.type === 'heal' || effect.stat === 'health'
   );
 
   return healingEffect ? healingEffect.value : 0;
@@ -449,8 +445,8 @@ export const getManaValue = (item: EnhancedItem): number => {
     return 0;
   }
 
-  const manaEffect = item.effects.find(effect =>
-    effect.type === 'restore' && effect.stat === 'mana'
+  const manaEffect = item.effects.find(
+    effect => effect.type === 'restore' && effect.stat === 'mana'
   );
 
   return manaEffect ? manaEffect.value : 0;
@@ -467,7 +463,7 @@ export const calculateTotalValue = (items: EnhancedItem[]): number => {
   return items.reduce((total, item) => {
     const itemValue = item.value || 0;
     const quantity = item.quantity || 1;
-    return total + (itemValue * quantity);
+    return total + itemValue * quantity;
   }, 0);
 };
 
@@ -478,7 +474,7 @@ export const calculateTotalWeight = (items: EnhancedItem[]): number => {
   return items.reduce((total, item) => {
     const itemWeight = item.weight || 0;
     const quantity = item.quantity || 1;
-    return total + (itemWeight * quantity);
+    return total + itemWeight * quantity;
   }, 0);
 };
 
@@ -495,7 +491,7 @@ export const getInventoryStats = (items: EnhancedItem[]) => {
     consumables: 0,
     questItems: 0,
     tradeableItems: 0,
-    stackableItems: 0
+    stackableItems: 0,
   };
 
   items.forEach(item => {
@@ -533,10 +529,7 @@ export const getInventoryStats = (items: EnhancedItem[]) => {
 /**
  * Find items that can be consumed to restore health
  */
-export const findHealingItems = (
-  items: EnhancedItem[],
-  minHealing: number = 1
-): EnhancedItem[] => {
+export const findHealingItems = (items: EnhancedItem[], minHealing: number = 1): EnhancedItem[] => {
   return items.filter(item => {
     if (item.itemType !== 'consumable') return false;
     const healingValue = getHealingValue(item);
@@ -547,10 +540,7 @@ export const findHealingItems = (
 /**
  * Find items that can be consumed to restore mana
  */
-export const findManaItems = (
-  items: EnhancedItem[],
-  minMana: number = 1
-): EnhancedItem[] => {
+export const findManaItems = (items: EnhancedItem[], minMana: number = 1): EnhancedItem[] => {
   return items.filter(item => {
     if (item.itemType !== 'consumable') return false;
     const manaValue = getManaValue(item);
@@ -601,22 +591,26 @@ export const categorizeItem = (item: EnhancedItem): ItemCategory => {
   }
 
   // Check for material indicators
-  if (item.name.toLowerCase().includes('ore') ||
-      item.name.toLowerCase().includes('wood') ||
-      item.name.toLowerCase().includes('leather') ||
-      item.name.toLowerCase().includes('cloth') ||
-      item.name.toLowerCase().includes('gem') ||
-      item.name.toLowerCase().includes('crystal') ||
-      item.description?.toLowerCase().includes('crafting material')) {
+  if (
+    item.name.toLowerCase().includes('ore') ||
+    item.name.toLowerCase().includes('wood') ||
+    item.name.toLowerCase().includes('leather') ||
+    item.name.toLowerCase().includes('cloth') ||
+    item.name.toLowerCase().includes('gem') ||
+    item.name.toLowerCase().includes('crystal') ||
+    item.description?.toLowerCase().includes('crafting material')
+  ) {
     return 'materials';
   }
 
   // Check for consumable indicators
-  if (item.name.toLowerCase().includes('potion') ||
-      item.name.toLowerCase().includes('elixir') ||
-      item.name.toLowerCase().includes('scroll') ||
-      item.name.toLowerCase().includes('food') ||
-      item.effects && item.effects.length > 0) {
+  if (
+    item.name.toLowerCase().includes('potion') ||
+    item.name.toLowerCase().includes('elixir') ||
+    item.name.toLowerCase().includes('scroll') ||
+    item.name.toLowerCase().includes('food') ||
+    (item.effects && item.effects.length > 0)
+  ) {
     return 'consumables';
   }
 
@@ -638,32 +632,32 @@ export const getCategoryInfo = (category: ItemCategory) => {
       name: 'Consumables',
       icon: '🧪',
       description: 'Items that can be used and consumed',
-      color: '#a855f7'
+      color: '#a855f7',
     },
     equipment: {
       name: 'Equipment',
       icon: '⚔️',
       description: 'Weapons, armor, and accessories',
-      color: '#3b82f6'
+      color: '#3b82f6',
     },
     materials: {
       name: 'Materials',
       icon: '⚒️',
       description: 'Crafting materials and resources',
-      color: '#f59e0b'
+      color: '#f59e0b',
     },
     quest: {
       name: 'Quest Items',
       icon: '📜',
       description: 'Important story and quest items',
-      color: '#ef4444'
+      color: '#ef4444',
     },
     misc: {
       name: 'Miscellaneous',
       icon: '🎒',
       description: 'Various other items',
-      color: '#6b7280'
-    }
+      color: '#6b7280',
+    },
   };
 
   return categoryMap[category] || categoryMap.misc;
@@ -676,7 +670,7 @@ export const getAllCategories = () => {
   const categories: ItemCategory[] = ['consumables', 'equipment', 'materials', 'quest', 'misc'];
   return categories.map(category => ({
     id: category,
-    ...getCategoryInfo(category)
+    ...getCategoryInfo(category),
   }));
 };
 
@@ -706,7 +700,7 @@ export const groupByCategory = (items: EnhancedItem[]): Record<ItemCategory, Enh
     equipment: [],
     materials: [],
     quest: [],
-    misc: []
+    misc: [],
   };
 
   items.forEach(item => {
@@ -727,7 +721,7 @@ export const getCategoryStats = (items: EnhancedItem[]) => {
     equipment: { count: 0, totalValue: 0, totalWeight: 0 },
     materials: { count: 0, totalValue: 0, totalWeight: 0 },
     quest: { count: 0, totalValue: 0, totalWeight: 0 },
-    misc: { count: 0, totalValue: 0, totalWeight: 0 }
+    misc: { count: 0, totalValue: 0, totalWeight: 0 },
   };
 
   for (const [category, categoryItems] of Object.entries(groups)) {
@@ -875,13 +869,11 @@ export const cloneItem = (item: EnhancedItem): EnhancedItem => {
     // Deep clone effects if they exist
     effects: item.effects ? item.effects.map(effect => ({ ...effect })) : undefined,
     // Deep clone stat modifiers if they exist
-    statModifiers: item.statModifiers ?
-      Object.fromEntries(
-        Object.entries(item.statModifiers).map(([key, modifier]) => [
-          key,
-          { ...modifier }
-        ])
-      ) : undefined
+    statModifiers: item.statModifiers
+      ? Object.fromEntries(
+          Object.entries(item.statModifiers).map(([key, modifier]) => [key, { ...modifier }])
+        )
+      : undefined,
   };
 };
 
@@ -1008,5 +1000,5 @@ export default {
   isQuestItem,
   formatQuantity,
   formatValue,
-  formatWeight
+  formatWeight,
 };

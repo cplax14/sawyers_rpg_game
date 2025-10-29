@@ -8,7 +8,7 @@ interface PerformanceDashboardProps {
 
 const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
   visible = true,
-  position = 'top-right'
+  position = 'top-right',
 }) => {
   const { metrics, warnings, recommendations, isMonitoring } = usePerformanceMonitor();
 
@@ -20,7 +20,7 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
     'top-left': { top: '10px', left: '10px' },
     'top-right': { top: '10px', right: '10px' },
     'bottom-left': { bottom: '10px', left: '10px' },
-    'bottom-right': { bottom: '10px', right: '10px' }
+    'bottom-right': { bottom: '10px', right: '10px' },
   };
 
   const getFpsColor = (fps: number) => {
@@ -49,35 +49,33 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
         minWidth: '250px',
         zIndex: 9999,
         border: '1px solid rgba(255, 255, 255, 0.2)',
-        backdropFilter: 'blur(5px)'
+        backdropFilter: 'blur(5px)',
       }}
     >
-      <div style={{
-        marginBottom: '8px',
-        fontWeight: 'bold',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.3)',
-        paddingBottom: '4px'
-      }}>
+      <div
+        style={{
+          marginBottom: '8px',
+          fontWeight: 'bold',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.3)',
+          paddingBottom: '4px',
+        }}
+      >
         Performance Monitor
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
+      <div
+        style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}
+      >
         <div>
-          <div style={{ color: getFpsColor(metrics.fps) }}>
-            FPS: {metrics.fps}
-          </div>
-          <div style={{ fontSize: '10px', opacity: 0.7 }}>
-            Avg: {metrics.averageFps}
-          </div>
+          <div style={{ color: getFpsColor(metrics.fps) }}>FPS: {metrics.fps}</div>
+          <div style={{ fontSize: '10px', opacity: 0.7 }}>Avg: {metrics.averageFps}</div>
         </div>
 
         <div>
           <div style={{ color: getFrameTimeColor(metrics.frameTime) }}>
             Frame: {metrics.frameTime}ms
           </div>
-          <div style={{ fontSize: '10px', opacity: 0.7 }}>
-            Avg: {metrics.averageFrameTime}ms
-          </div>
+          <div style={{ fontSize: '10px', opacity: 0.7 }}>Avg: {metrics.averageFrameTime}ms</div>
         </div>
 
         <div>
@@ -92,14 +90,14 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
       </div>
 
       {warnings.length > 0 && (
-        <div style={{
-          marginBottom: '8px',
-          borderTop: '1px solid rgba(255, 255, 255, 0.3)',
-          paddingTop: '4px'
-        }}>
-          <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#FF9800' }}>
-            Warnings:
-          </div>
+        <div
+          style={{
+            marginBottom: '8px',
+            borderTop: '1px solid rgba(255, 255, 255, 0.3)',
+            paddingTop: '4px',
+          }}
+        >
+          <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#FF9800' }}>Warnings:</div>
           {warnings.slice(-2).map((warning, index) => (
             <div key={index} style={{ fontSize: '10px', color: '#FFCDD2' }}>
               {warning}
@@ -108,9 +106,7 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
         </div>
       )}
 
-      <div style={{ fontSize: '10px', opacity: 0.6 }}>
-        Target: 60fps | Min: 45fps
-      </div>
+      <div style={{ fontSize: '10px', opacity: 0.6 }}>Target: 60fps | Min: 45fps</div>
     </div>
   );
 };

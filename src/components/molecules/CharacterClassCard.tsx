@@ -75,7 +75,9 @@ const CharacterClassCard: React.FC<CharacterClassCardProps> = ({
     selected && styles.selected,
     disabled && styles.disabled,
     className,
-  ].filter(Boolean).join(' ');
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   // Calculate primary stats for display
   const primaryStats = [
@@ -98,7 +100,7 @@ const CharacterClassCard: React.FC<CharacterClassCardProps> = ({
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       tabIndex={disabled ? -1 : 0}
-      role="button"
+      role='button'
       aria-pressed={selected}
       aria-disabled={disabled}
       aria-label={`Select ${characterClass.name} class`}
@@ -107,8 +109,8 @@ const CharacterClassCard: React.FC<CharacterClassCardProps> = ({
       transition={{ type: 'spring', stiffness: 300, damping: 20 }}
     >
       <Card
-        variant="character"
-        size="md"
+        variant='character'
+        size='md'
         interactive={!disabled}
         selected={selected}
         className={styles.cardInner}
@@ -123,9 +125,9 @@ const CharacterClassCard: React.FC<CharacterClassCardProps> = ({
         <div className={styles.statsSection}>
           <h4 className={styles.sectionTitle}>Primary Stats</h4>
           <div className={styles.statGrid}>
-            {primaryStats.map((stat) => (
+            {primaryStats.map(stat => (
               <div key={stat.label} className={styles.statItem}>
-                <span className={styles.statIcon} role="img" aria-label={stat.label}>
+                <span className={styles.statIcon} role='img' aria-label={stat.label}>
                   {stat.icon}
                 </span>
                 <span className={styles.statLabel}>{stat.label}</span>
@@ -140,9 +142,9 @@ const CharacterClassCard: React.FC<CharacterClassCardProps> = ({
           <div className={styles.statsSection}>
             <h4 className={styles.sectionTitle}>Secondary Stats</h4>
             <div className={styles.statGrid}>
-              {secondaryStats.map((stat) => (
+              {secondaryStats.map(stat => (
                 <div key={stat.label} className={styles.statItem}>
-                  <span className={styles.statIcon} role="img" aria-label={stat.label}>
+                  <span className={styles.statIcon} role='img' aria-label={stat.label}>
                     {stat.icon}
                   </span>
                   <span className={styles.statLabel}>{stat.label}</span>
@@ -157,11 +159,9 @@ const CharacterClassCard: React.FC<CharacterClassCardProps> = ({
         <div className={styles.abilitiesSection}>
           <h4 className={styles.sectionTitle}>Starting Abilities</h4>
           <div className={styles.abilityList}>
-            {characterClass.startingSpells.map((spell) => (
+            {characterClass.startingSpells.map(spell => (
               <Tooltip key={spell} content={`Starting spell: ${spell}`}>
-                <span className={styles.abilityTag}>
-                  {spell.replace('_', ' ')}
-                </span>
+                <span className={styles.abilityTag}>{spell.replace('_', ' ')}</span>
               </Tooltip>
             ))}
           </div>
@@ -171,7 +171,7 @@ const CharacterClassCard: React.FC<CharacterClassCardProps> = ({
         <div className={styles.weaponsSection}>
           <h4 className={styles.sectionTitle}>Weapon Proficiency</h4>
           <div className={styles.weaponList}>
-            {characterClass.weaponTypes.map((weapon) => (
+            {characterClass.weaponTypes.map(weapon => (
               <span key={weapon} className={styles.weaponTag}>
                 {weapon.replace('_', ' ')}
               </span>
@@ -195,7 +195,7 @@ const CharacterClassCard: React.FC<CharacterClassCardProps> = ({
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
           >
-            <span className={styles.checkmark} role="img" aria-label="Selected">
+            <span className={styles.checkmark} role='img' aria-label='Selected'>
               ✓
             </span>
           </motion.div>
@@ -207,7 +207,7 @@ const CharacterClassCard: React.FC<CharacterClassCardProps> = ({
             variant={selected ? 'success' : 'primary'}
             fullWidth
             disabled={disabled}
-            onClick={(e) => {
+            onClick={e => {
               e.stopPropagation();
               handleClick();
             }}

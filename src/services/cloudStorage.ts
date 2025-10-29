@@ -16,7 +16,7 @@ import {
   where,
   updateDoc,
   serverTimestamp,
-  writeBatch
+  writeBatch,
 } from 'firebase/firestore';
 import {
   ref,
@@ -24,19 +24,26 @@ import {
   getDownloadURL,
   deleteObject,
   getMetadata,
-  listAll
+  listAll,
 } from 'firebase/storage';
 import { User } from 'firebase/auth';
 import { getFirebaseFirestore, getFirebaseStorage } from '../config/firebase';
 import { ReactGameState } from '../types/game';
 import { DataCompressor, CompressionResult, CompressionConfig } from '../utils/compression';
-import { convertFirebaseError, CloudError, logCloudError, createCloudError, CloudErrorCode, ErrorSeverity } from '../utils/cloudErrors';
+import {
+  convertFirebaseError,
+  CloudError,
+  logCloudError,
+  createCloudError,
+  CloudErrorCode,
+  ErrorSeverity,
+} from '../utils/cloudErrors';
 import { retry, RetryConfig, RETRY_CONFIGS } from '../utils/retryManager';
 import {
   validateDataIntegrity,
   generateChecksum,
   sanitizeGameStateForCloud,
-  DataIntegrityResult
+  DataIntegrityResult,
 } from '../utils/dataIntegrity';
 
 // Cloud save data types
@@ -154,16 +161,16 @@ export class CloudStorageService {
         level: 'balanced',
         enableBase64: true,
         chunkSize: 64 * 1024,
-        minimumCompressionRatio: 0.1
+        minimumCompressionRatio: 0.1,
       },
-      ...config
+      ...config,
     };
 
     // Initialize compressor with configuration
     this.compressor = new DataCompressor(this.config.compressionConfig, {
       includeMetadata: true,
       stripFunctions: true,
-      preserveUndefined: false
+      preserveUndefined: false,
     });
   }
 
@@ -189,14 +196,14 @@ export class CloudStorageService {
         checksum,
         errors: [],
         warnings: [],
-        corruptedFields: []
+        corruptedFields: [],
       };
     }
 
     return await validateDataIntegrity(gameState, expectedChecksum, undefined, {
       deepValidation: true,
       enableRecovery: this.config.enableDataRecovery,
-      strictMode: this.config.strictIntegrityMode
+      strictMode: this.config.strictIntegrityMode,
     });
   }
 
@@ -207,7 +214,7 @@ export class CloudStorageService {
     return {
       platform: navigator.platform || 'unknown',
       userAgent: navigator.userAgent || 'unknown',
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
   }
 
@@ -227,8 +234,8 @@ export class CloudStorageService {
         metadata: {
           timestamp: new Date(),
           checksum: await this.generateSecureChecksum(serialized),
-          version: '1.0.0'
-        }
+          version: '1.0.0',
+        },
       };
     }
 
@@ -248,8 +255,8 @@ export class CloudStorageService {
         metadata: {
           timestamp: new Date(),
           checksum: await this.generateSecureChecksum(serialized),
-          version: '1.0.0'
-        }
+          version: '1.0.0',
+        },
       };
     }
   }
@@ -257,9 +264,12 @@ export class CloudStorageService {
   /**
    * Decompress game state data using advanced decompression
    */
-  private async decompressGameStateData(compressionResult: CompressionResult | string): Promise<ReactGameState> {
+  private async decompressGameStateData(
+    compressionResult: CompressionResult | string
+  ): Promise<ReactGameState> {
     if (!this.config.compressionEnabled || typeof compressionResult === 'string') {
-      const data = typeof compressionResult === 'string' ? compressionResult : compressionResult.data;
+      const data =
+        typeof compressionResult === 'string' ? compressionResult : compressionResult.data;
       return JSON.parse(data);
     }
 
@@ -307,8 +317,8 @@ export class CloudStorageService {
             retryable: false,
             debugInfo: {
               errors: integrityResult.errors,
-              corruptedFields: integrityResult.corruptedFields
-            }
+              corruptedFields: integrityResult.corruptedFields,
+            },
           }
         );
       }
@@ -321,16 +331,16 @@ export class CloudStorageService {
 
       // Check size limits (use compressed size)
       if (compressionResult.compressedSize > this.config.maxSaveSize) {
-        throw new Error(`Save data too large: ${compressionResult.compressedSize} bytes (max: ${this.config.maxSaveSize})`);
+        throw new Error(
+          `Save data too large: ${compressionResult.compressedSize} bytes (max: ${this.config.maxSaveSize})`
+        );
       }
 
       // Create metadata with compression information
       const saveId = `${user.uid}_slot_${slotNumber}`;
 
       // Ensure saveName is always a string (defensive programming)
-      const safeSaveName = typeof saveName === 'string'
-        ? saveName
-        : `Save Slot ${slotNumber + 1}`;
+      const safeSaveName = typeof saveName === 'string' ? saveName : `Save Slot ${slotNumber + 1}`;
 
       const metadata: CloudSaveMetadata = {
         id: saveId,
@@ -355,7 +365,7 @@ export class CloudStorageService {
         syncStatus: 'pending',
         integrityValidated: integrityResult.isValid,
         dataIntegrityResult: integrityResult,
-        deviceInfo: this.createDeviceInfo()
+        deviceInfo: this.createDeviceInfo(),
       };
 
       // Use batch write for atomic operation
@@ -366,7 +376,7 @@ export class CloudStorageService {
       batch.set(metadataRef, {
         ...metadata,
         createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       });
 
       // Save game state data to Firestore with compression metadata
@@ -384,9 +394,9 @@ export class CloudStorageService {
           compressionRatio: compressionResult.compressionRatio,
           checksum: compressionResult.metadata.checksum,
           timestamp: compressionResult.metadata.timestamp,
-          version: compressionResult.metadata.version
+          version: compressionResult.metadata.version,
         },
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       };
 
       // Only include chunks if they exist (Firestore doesn't accept undefined)
@@ -403,7 +413,7 @@ export class CloudStorageService {
         },
         onMaxRetriesExceeded: (error, totalAttempts) => {
           console.error(`Save operation failed after ${totalAttempts} attempts:`, error);
-        }
+        },
       });
 
       // Upload screenshot to Storage if provided
@@ -414,8 +424,11 @@ export class CloudStorageService {
 
           await retry.network(() => uploadBytes(screenshotRef, screenshotBlob), {
             onRetry: (error, attempt, delay) => {
-              console.log(`Retrying screenshot upload, attempt ${attempt}, delay ${delay}ms:`, error);
-            }
+              console.log(
+                `Retrying screenshot upload, attempt ${attempt}, delay ${delay}ms:`,
+                error
+              );
+            },
           });
         } catch (error) {
           console.warn('Failed to upload screenshot after retries:', error);
@@ -433,10 +446,9 @@ export class CloudStorageService {
         metadata: {
           operationId,
           timestamp: Date.now(),
-          executionTime: Date.now() - startTime
-        }
+          executionTime: Date.now() - startTime,
+        },
       };
-
     } catch (error) {
       console.error('Cloud save failed:', error);
 
@@ -445,13 +457,13 @@ export class CloudStorageService {
         error: {
           code: 'SAVE_FAILED',
           message: error instanceof Error ? error.message : 'Unknown error occurred',
-          details: error
+          details: error,
         },
         metadata: {
           operationId,
           timestamp: Date.now(),
-          executionTime: Date.now() - startTime
-        }
+          executionTime: Date.now() - startTime,
+        },
       };
     }
   }
@@ -459,10 +471,7 @@ export class CloudStorageService {
   /**
    * Load game state from cloud
    */
-  async loadFromCloud(
-    user: User,
-    slotNumber: number
-  ): Promise<CloudStorageResult<CloudSaveData>> {
+  async loadFromCloud(user: User, slotNumber: number): Promise<CloudStorageResult<CloudSaveData>> {
     const operationId = `load_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const startTime = Date.now();
 
@@ -478,7 +487,7 @@ export class CloudStorageService {
       const metadataSnap = await retry.critical(() => getDoc(metadataRef), {
         onRetry: (error, attempt, delay) => {
           console.log(`Retrying metadata load, attempt ${attempt}, delay ${delay}ms:`, error);
-        }
+        },
       });
 
       if (!metadataSnap.exists()) {
@@ -490,7 +499,7 @@ export class CloudStorageService {
         ...rawMetadata,
         createdAt: rawMetadata.createdAt?.toDate() || new Date(),
         updatedAt: rawMetadata.updatedAt?.toDate() || new Date(),
-        lastPlayedAt: rawMetadata.lastPlayedAt?.toDate()
+        lastPlayedAt: rawMetadata.lastPlayedAt?.toDate(),
       } as CloudSaveMetadata;
 
       // Load game state data with retry
@@ -498,7 +507,7 @@ export class CloudStorageService {
       const gameStateSnap = await retry.critical(() => getDoc(gameStateRef), {
         onRetry: (error, attempt, delay) => {
           console.log(`Retrying game state load, attempt ${attempt}, delay ${delay}ms:`, error);
-        }
+        },
       });
 
       if (!gameStateSnap.exists()) {
@@ -522,10 +531,12 @@ export class CloudStorageService {
           isCompressed: compressionMetadata.isCompressed,
           chunks,
           metadata: {
-            timestamp: compressionMetadata.timestamp ? new Date(compressionMetadata.timestamp) : new Date(),
+            timestamp: compressionMetadata.timestamp
+              ? new Date(compressionMetadata.timestamp)
+              : new Date(),
             checksum: compressionMetadata.checksum,
-            version: compressionMetadata.version || '1.0.0'
-          }
+            version: compressionMetadata.version || '1.0.0',
+          },
         };
 
         gameState = await this.decompressGameStateData(compressionResult);
@@ -540,7 +551,7 @@ export class CloudStorageService {
           if (integrityResult.recoveredData) {
             console.warn('Data corruption detected, but recovery was successful', {
               errors: integrityResult.errors,
-              corruptedFields: integrityResult.corruptedFields
+              corruptedFields: integrityResult.corruptedFields,
             });
             gameState = integrityResult.recoveredData;
           } else {
@@ -553,8 +564,8 @@ export class CloudStorageService {
                 debugInfo: {
                   errors: integrityResult.errors,
                   corruptedFields: integrityResult.corruptedFields,
-                  checksumMismatch: !integrityResult.checksum
-                }
+                  checksumMismatch: !integrityResult.checksum,
+                },
               }
             );
           }
@@ -580,7 +591,7 @@ export class CloudStorageService {
           if (integrityResult.recoveredData) {
             console.warn('Legacy data corruption detected, but recovery was successful', {
               errors: integrityResult.errors,
-              corruptedFields: integrityResult.corruptedFields
+              corruptedFields: integrityResult.corruptedFields,
             });
             gameState = integrityResult.recoveredData;
           } else {
@@ -592,8 +603,8 @@ export class CloudStorageService {
                 retryable: false,
                 debugInfo: {
                   errors: integrityResult.errors,
-                  corruptedFields: integrityResult.corruptedFields
-                }
+                  corruptedFields: integrityResult.corruptedFields,
+                },
               }
             );
           }
@@ -613,7 +624,7 @@ export class CloudStorageService {
 
       // Update last played timestamp
       await updateDoc(metadataRef, {
-        lastPlayedAt: serverTimestamp()
+        lastPlayedAt: serverTimestamp(),
       });
 
       return {
@@ -621,15 +632,14 @@ export class CloudStorageService {
         data: {
           metadata,
           gameState,
-          screenshot
+          screenshot,
         },
         metadata: {
           operationId,
           timestamp: Date.now(),
-          executionTime: Date.now() - startTime
-        }
+          executionTime: Date.now() - startTime,
+        },
       };
-
     } catch (error) {
       console.error('Cloud load failed:', error);
 
@@ -638,13 +648,13 @@ export class CloudStorageService {
         error: {
           code: 'LOAD_FAILED',
           message: error instanceof Error ? error.message : 'Unknown error occurred',
-          details: error
+          details: error,
         },
         metadata: {
           operationId,
           timestamp: Date.now(),
-          executionTime: Date.now() - startTime
-        }
+          executionTime: Date.now() - startTime,
+        },
       };
     }
   }
@@ -666,7 +676,7 @@ export class CloudStorageService {
       const querySnapshot = await retry.network(() => getDocs(q), {
         onRetry: (error, attempt, delay) => {
           console.log(`Retrying saves list, attempt ${attempt}, delay ${delay}ms:`, error);
-        }
+        },
       });
 
       const saves: CloudSaveListItem[] = [];
@@ -695,7 +705,7 @@ export class CloudStorageService {
           compressionRatio: data.compressionRatio || 0,
           isCompressed: data.isCompressed || false,
           syncStatus: data.syncStatus || 'synced',
-          hasScreenshot
+          hasScreenshot,
         });
       }
 
@@ -705,10 +715,9 @@ export class CloudStorageService {
         metadata: {
           operationId,
           timestamp: Date.now(),
-          executionTime: Date.now() - startTime
-        }
+          executionTime: Date.now() - startTime,
+        },
       };
-
     } catch (error) {
       console.error('Failed to list cloud saves:', error);
 
@@ -717,13 +726,13 @@ export class CloudStorageService {
         error: {
           code: 'LIST_FAILED',
           message: error instanceof Error ? error.message : 'Unknown error occurred',
-          details: error
+          details: error,
         },
         metadata: {
           operationId,
           timestamp: Date.now(),
-          executionTime: Date.now() - startTime
-        }
+          executionTime: Date.now() - startTime,
+        },
       };
     }
   }
@@ -731,10 +740,7 @@ export class CloudStorageService {
   /**
    * Delete a cloud save
    */
-  async deleteCloudSave(
-    user: User,
-    slotNumber: number
-  ): Promise<CloudStorageResult<void>> {
+  async deleteCloudSave(user: User, slotNumber: number): Promise<CloudStorageResult<void>> {
     const operationId = `delete_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const startTime = Date.now();
 
@@ -763,7 +769,7 @@ export class CloudStorageService {
         },
         onMaxRetriesExceeded: (error, totalAttempts) => {
           console.error(`Delete operation failed after ${totalAttempts} attempts:`, error);
-        }
+        },
       });
 
       // Skip screenshot deletion to avoid CORS errors
@@ -782,10 +788,9 @@ export class CloudStorageService {
         metadata: {
           operationId,
           timestamp: Date.now(),
-          executionTime: Date.now() - startTime
-        }
+          executionTime: Date.now() - startTime,
+        },
       };
-
     } catch (error) {
       console.error('Failed to delete cloud save:', error);
 
@@ -794,13 +799,13 @@ export class CloudStorageService {
         error: {
           code: 'DELETE_FAILED',
           message: error instanceof Error ? error.message : 'Unknown error occurred',
-          details: error
+          details: error,
         },
         metadata: {
           operationId,
           timestamp: Date.now(),
-          executionTime: Date.now() - startTime
-        }
+          executionTime: Date.now() - startTime,
+        },
       };
     }
   }
@@ -808,14 +813,16 @@ export class CloudStorageService {
   /**
    * Get cloud storage usage statistics
    */
-  async getStorageStats(user: User): Promise<CloudStorageResult<{
-    totalSaves: number;
-    totalSize: number;
-    quota: number;
-    usagePercentage: number;
-    oldestSave?: Date;
-    newestSave?: Date;
-  }>> {
+  async getStorageStats(user: User): Promise<
+    CloudStorageResult<{
+      totalSaves: number;
+      totalSize: number;
+      quota: number;
+      usagePercentage: number;
+      oldestSave?: Date;
+      newestSave?: Date;
+    }>
+  > {
     const operationId = `stats_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const startTime = Date.now();
 
@@ -828,7 +835,7 @@ export class CloudStorageService {
       const querySnapshot = await retry.network(() => getDocs(savesRef), {
         onRetry: (error, attempt, delay) => {
           console.log(`Retrying storage stats, attempt ${attempt}, delay ${delay}ms:`, error);
-        }
+        },
       });
 
       let totalSize = 0;
@@ -861,15 +868,14 @@ export class CloudStorageService {
           quota,
           usagePercentage,
           oldestSave,
-          newestSave
+          newestSave,
         },
         metadata: {
           operationId,
           timestamp: Date.now(),
-          executionTime: Date.now() - startTime
-        }
+          executionTime: Date.now() - startTime,
+        },
       };
-
     } catch (error) {
       console.error('Failed to get storage stats:', error);
 
@@ -878,13 +884,13 @@ export class CloudStorageService {
         error: {
           code: 'STATS_FAILED',
           message: error instanceof Error ? error.message : 'Unknown error occurred',
-          details: error
+          details: error,
         },
         metadata: {
           operationId,
           timestamp: Date.now(),
-          executionTime: Date.now() - startTime
-        }
+          executionTime: Date.now() - startTime,
+        },
       };
     }
   }
@@ -895,12 +901,14 @@ export class CloudStorageService {
   async syncWithCloud(
     user: User,
     localSaves: { slotNumber: number; lastModified: Date; checksum: string }[]
-  ): Promise<CloudStorageResult<{
-    conflicts: number;
-    uploaded: number;
-    downloaded: number;
-    skipped: number;
-  }>> {
+  ): Promise<
+    CloudStorageResult<{
+      conflicts: number;
+      uploaded: number;
+      downloaded: number;
+      skipped: number;
+    }>
+  > {
     const operationId = `sync_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const startTime = Date.now();
 
@@ -930,7 +938,8 @@ export class CloudStorageService {
         } else {
           // Compare timestamps and checksums
           if (localSave.lastModified > cloudSave.updatedAt) {
-            if (localSave.checksum !== cloudSave.id) { // Using ID as placeholder for checksum
+            if (localSave.checksum !== cloudSave.id) {
+              // Using ID as placeholder for checksum
               // Local is newer and different - upload
               uploaded++;
             } else {
@@ -942,7 +951,8 @@ export class CloudStorageService {
             downloaded++;
           } else {
             // Same timestamp - check checksum
-            if (localSave.checksum !== cloudSave.id) { // Using ID as placeholder for checksum
+            if (localSave.checksum !== cloudSave.id) {
+              // Using ID as placeholder for checksum
               // Conflict: same timestamp but different data
               conflicts++;
             } else {
@@ -959,15 +969,14 @@ export class CloudStorageService {
           conflicts,
           uploaded,
           downloaded,
-          skipped
+          skipped,
         },
         metadata: {
           operationId,
           timestamp: Date.now(),
-          executionTime: Date.now() - startTime
-        }
+          executionTime: Date.now() - startTime,
+        },
       };
-
     } catch (error) {
       console.error('Sync failed:', error);
 
@@ -976,13 +985,13 @@ export class CloudStorageService {
         error: {
           code: 'SYNC_FAILED',
           message: error instanceof Error ? error.message : 'Unknown error occurred',
-          details: error
+          details: error,
         },
         metadata: {
           operationId,
           timestamp: Date.now(),
-          executionTime: Date.now() - startTime
-        }
+          executionTime: Date.now() - startTime,
+        },
       };
     }
   }
@@ -990,15 +999,17 @@ export class CloudStorageService {
   /**
    * Get compression statistics for user's saves
    */
-  async getCompressionStats(user: User): Promise<CloudStorageResult<{
-    totalSaves: number;
-    compressedSaves: number;
-    totalOriginalSize: number;
-    totalCompressedSize: number;
-    totalSpaceSaved: number;
-    averageCompressionRatio: number;
-    algorithmUsage: Record<string, number>;
-  }>> {
+  async getCompressionStats(user: User): Promise<
+    CloudStorageResult<{
+      totalSaves: number;
+      compressedSaves: number;
+      totalOriginalSize: number;
+      totalCompressedSize: number;
+      totalSpaceSaved: number;
+      averageCompressionRatio: number;
+      algorithmUsage: Record<string, number>;
+    }>
+  > {
     const operationId = `compression_stats_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const startTime = Date.now();
 
@@ -1050,15 +1061,14 @@ export class CloudStorageService {
           totalCompressedSize,
           totalSpaceSaved,
           averageCompressionRatio,
-          algorithmUsage
+          algorithmUsage,
         },
         metadata: {
           operationId,
           timestamp: Date.now(),
-          executionTime: Date.now() - startTime
-        }
+          executionTime: Date.now() - startTime,
+        },
       };
-
     } catch (error) {
       console.error('Failed to get compression stats:', error);
 
@@ -1067,13 +1077,13 @@ export class CloudStorageService {
         error: {
           code: 'COMPRESSION_STATS_FAILED',
           message: error instanceof Error ? error.message : 'Unknown error occurred',
-          details: error
+          details: error,
         },
         metadata: {
           operationId,
           timestamp: Date.now(),
-          executionTime: Date.now() - startTime
-        }
+          executionTime: Date.now() - startTime,
+        },
       };
     }
   }
@@ -1082,7 +1092,9 @@ export class CloudStorageService {
 /**
  * Create default cloud storage service instance
  */
-export const createCloudStorageService = (config?: Partial<CloudStorageConfig>): CloudStorageService => {
+export const createCloudStorageService = (
+  config?: Partial<CloudStorageConfig>
+): CloudStorageService => {
   return new CloudStorageService(config);
 };
 

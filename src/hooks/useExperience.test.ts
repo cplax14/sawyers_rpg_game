@@ -25,8 +25,8 @@ describe('useExperience Hook', () => {
     timestamp: new Date().toISOString(),
     metadata: {
       enemyLevel: 3,
-      combatType: 'wild'
-    }
+      combatType: 'wild',
+    },
   };
 
   const mockGameStateReturn = {
@@ -40,7 +40,7 @@ describe('useExperience Hook', () => {
         strength: 15,
         defense: 12,
         agility: 18,
-        intelligence: 14
+        intelligence: 14,
       },
       experience: {
         currentLevel: 5,
@@ -64,13 +64,13 @@ describe('useExperience Hook', () => {
             combat: { total: 800, count: 10, average: 80 },
             quests: { total: 300, count: 3, average: 100 },
             exploration: { total: 100, count: 5, average: 20 },
-            creatures: { total: 50, count: 2, average: 25 }
+            creatures: { total: 50, count: 2, average: 25 },
           },
           averagePerHour: 150,
           averagePerSession: 200,
           mostProductiveHour: 14,
           mostProductiveDay: 'Monday',
-          longestSession: 120
+          longestSession: 120,
         },
         levelingHistory: [
           {
@@ -78,8 +78,8 @@ describe('useExperience Hook', () => {
             timestamp: new Date().toISOString(),
             experienceRequired: 1000,
             skillPointsGained: 1,
-            unlockedFeatures: []
-          }
+            unlockedFeatures: [],
+          },
         ],
         activeSessions: [],
         completedMilestones: [],
@@ -91,19 +91,19 @@ describe('useExperience Hook', () => {
           availablePoints: 5,
           totalPointsEarned: 5,
           totalPointsSpent: 0,
-          categories: []
+          categories: [],
         },
         modifiers: [],
         settings: {
           showLevelUpNotifications: true,
           pauseOnLevelUp: true,
           experienceMultiplier: 1.0,
-          detailedTracking: true
-        }
+          detailedTracking: true,
+        },
       },
-      currentLocation: 'forest'
+      currentLocation: 'forest',
     },
-    updateGameState: jest.fn()
+    updateGameState: jest.fn(),
   };
 
   beforeEach(() => {
@@ -378,7 +378,7 @@ describe('useExperience Hook', () => {
         source: 'combat' as ExperienceSource,
         multiplier: 1.5,
         duration: 60000,
-        description: 'Test modifier'
+        description: 'Test modifier',
       };
 
       act(() => {
@@ -439,7 +439,7 @@ describe('useExperience Hook', () => {
       act(() => {
         result.current.updateSettings({
           showLevelUpNotifications: false,
-          experienceMultiplier: 1.5
+          experienceMultiplier: 1.5,
         });
       });
 

@@ -23,7 +23,9 @@ interface EquipmentValidationResult {
 interface UseEquipmentValidationReturn {
   // Validation functions
   validateEquipment: (item: EnhancedItem, slot: EquipmentSlot) => EquipmentValidationResult;
-  validateBulkEquipment: (items: Array<{ item: EnhancedItem; slot: EquipmentSlot }>) => EquipmentValidationResult[];
+  validateBulkEquipment: (
+    items: Array<{ item: EnhancedItem; slot: EquipmentSlot }>
+  ) => EquipmentValidationResult[];
 
   // Quick validation checks
   canEquipItem: (item: EnhancedItem, slot: EquipmentSlot) => boolean;
@@ -46,89 +48,93 @@ export function useEquipmentValidation(): UseEquipmentValidationReturn {
   const { gameState } = useGameState();
 
   // Extract player information for validation
-  const playerInfo = useMemo(() => ({
-    level: gameState?.player?.level || 1,
-    class: gameState?.player?.playerClass || 'adventurer',
-    stats: gameState?.player?.stats || {
-      attack: 10,
-      defense: 10,
-      magicAttack: 10,
-      magicDefense: 10,
-      speed: 10,
-      accuracy: 85
-    }
-  }), [gameState]);
+  const playerInfo = useMemo(
+    () => ({
+      level: gameState?.player?.level || 1,
+      class: gameState?.player?.playerClass || 'adventurer',
+      stats: gameState?.player?.stats || {
+        attack: 10,
+        defense: 10,
+        magicAttack: 10,
+        magicDefense: 10,
+        speed: 10,
+        accuracy: 85,
+      },
+    }),
+    [gameState]
+  );
 
   // Main validation function
-  const validateEquipment = useCallback((
-    item: EnhancedItem,
-    slot: EquipmentSlot
-  ): EquipmentValidationResult => {
-    const compatibility = checkEquipmentCompatibility(
-      item,
-      slot,
-      playerInfo.level,
-      playerInfo.class,
-      playerInfo.stats
-    );
+  const validateEquipment = useCallback(
+    (item: EnhancedItem, slot: EquipmentSlot): EquipmentValidationResult => {
+      const compatibility = checkEquipmentCompatibility(
+        item,
+        slot,
+        playerInfo.level,
+        playerInfo.class,
+        playerInfo.stats
+      );
 
-    const hasBlockers = !compatibility.canEquip;
-    const hasWarnings = compatibility.warnings.length > 0;
-    const canEquip = compatibility.canEquip;
+      const hasBlockers = !compatibility.canEquip;
+      const hasWarnings = compatibility.warnings.length > 0;
+      const canEquip = compatibility.canEquip;
 
-    // Generate validation message
-    let validationMessage = '';
-    let validationLevel: 'success' | 'warning' | 'error' = 'success';
+      // Generate validation message
+      let validationMessage = '';
+      let validationLevel: 'success' | 'warning' | 'error' = 'success';
 
-    if (hasBlockers && compatibility.reasons.length > 0) {
-      validationMessage = `Cannot equip: ${compatibility.reasons[0]}`;
-      if (compatibility.reasons.length > 1) {
-        validationMessage += ` (and ${compatibility.reasons.length - 1} more)`;
+      if (hasBlockers && compatibility.reasons.length > 0) {
+        validationMessage = `Cannot equip: ${compatibility.reasons[0]}`;
+        if (compatibility.reasons.length > 1) {
+          validationMessage += ` (and ${compatibility.reasons.length - 1} more)`;
+        }
+        validationLevel = 'error';
+      } else if (hasWarnings) {
+        validationMessage = `Can equip with warning: ${compatibility.warnings[0]}`;
+        if (compatibility.warnings.length > 1) {
+          validationMessage += ` (and ${compatibility.warnings.length - 1} more)`;
+        }
+        validationLevel = 'warning';
+      } else {
+        validationMessage = 'Item can be equipped without restrictions';
+        validationLevel = 'success';
       }
-      validationLevel = 'error';
-    } else if (hasWarnings) {
-      validationMessage = `Can equip with warning: ${compatibility.warnings[0]}`;
-      if (compatibility.warnings.length > 1) {
-        validationMessage += ` (and ${compatibility.warnings.length - 1} more)`;
-      }
-      validationLevel = 'warning';
-    } else {
-      validationMessage = 'Item can be equipped without restrictions';
-      validationLevel = 'success';
-    }
 
-    return {
-      canEquip,
-      compatibility,
-      hasWarnings,
-      hasBlockers,
-      validationMessage,
-      validationLevel
-    };
-  }, [playerInfo]);
+      return {
+        canEquip,
+        compatibility,
+        hasWarnings,
+        hasBlockers,
+        validationMessage,
+        validationLevel,
+      };
+    },
+    [playerInfo]
+  );
 
   // Validate multiple items at once
-  const validateBulkEquipment = useCallback((
-    items: Array<{ item: EnhancedItem; slot: EquipmentSlot }>
-  ): EquipmentValidationResult[] => {
-    return items.map(({ item, slot }) => validateEquipment(item, slot));
-  }, [validateEquipment]);
+  const validateBulkEquipment = useCallback(
+    (items: Array<{ item: EnhancedItem; slot: EquipmentSlot }>): EquipmentValidationResult[] => {
+      return items.map(({ item, slot }) => validateEquipment(item, slot));
+    },
+    [validateEquipment]
+  );
 
   // Quick compatibility check
-  const canEquipItem = useCallback((
-    item: EnhancedItem,
-    slot: EquipmentSlot
-  ): boolean => {
-    return validateEquipment(item, slot).canEquip;
-  }, [validateEquipment]);
+  const canEquipItem = useCallback(
+    (item: EnhancedItem, slot: EquipmentSlot): boolean => {
+      return validateEquipment(item, slot).canEquip;
+    },
+    [validateEquipment]
+  );
 
   // Get simple restriction message
-  const getRestrictionMessage = useCallback((
-    item: EnhancedItem,
-    slot: EquipmentSlot
-  ): string => {
-    return validateEquipment(item, slot).validationMessage;
-  }, [validateEquipment]);
+  const getRestrictionMessage = useCallback(
+    (item: EnhancedItem, slot: EquipmentSlot): string => {
+      return validateEquipment(item, slot).validationMessage;
+    },
+    [validateEquipment]
+  );
 
   // Format restriction list for display
   const formatRestrictionMessage = useCallback((restrictions: string[]): string => {
@@ -169,6 +175,6 @@ export function useEquipmentValidation(): UseEquipmentValidationReturn {
     // Utilities
     formatRestrictionMessage,
     getValidationIcon,
-    getValidationColor
+    getValidationColor,
   };
 }

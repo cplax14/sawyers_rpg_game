@@ -9,13 +9,10 @@ interface LevelUpNotificationProviderProps {
 
 export const LevelUpNotificationProvider: React.FC<LevelUpNotificationProviderProps> = ({
   children,
-  onViewStats
+  onViewStats,
 }) => {
-  const {
-    currentNotification,
-    dismissNotification,
-    hasPendingNotifications
-  } = useLevelUpNotifications();
+  const { currentNotification, dismissNotification, hasPendingNotifications } =
+    useLevelUpNotifications();
 
   const handleViewStats = () => {
     if (onViewStats) {

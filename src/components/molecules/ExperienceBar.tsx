@@ -22,7 +22,7 @@ const ACTIVITY_ICONS: ActivityIcon = {
   crafting: '🔨',
   trading: '💰',
   discovery: '🔍',
-  achievement: '🏆'
+  achievement: '🏆',
 };
 
 const ACTIVITY_COLORS: Record<string, string> = {
@@ -33,13 +33,13 @@ const ACTIVITY_COLORS: Record<string, string> = {
   crafting: '#06b6d4',
   trading: '#84cc16',
   discovery: '#ec4899',
-  achievement: '#f97316'
+  achievement: '#f97316',
 };
 
 export const ExperienceBar: React.FC<ExperienceBarProps> = ({
   showTooltip = true,
   className = '',
-  compact = false
+  compact = false,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const { player } = usePlayer();
@@ -60,7 +60,10 @@ export const ExperienceBar: React.FC<ExperienceBarProps> = ({
   const progressPercentage = Math.min((progressXP / neededXP) * 100, 100);
 
   const experienceBreakdown = breakdown.bySource || {};
-  const totalActivityXP = Object.values(experienceBreakdown).reduce((sum, sourceData: any) => sum + (sourceData.totalAmount || 0), 0);
+  const totalActivityXP = Object.values(experienceBreakdown).reduce(
+    (sum, sourceData: any) => sum + (sourceData.totalAmount || 0),
+    0
+  );
 
   const getActivityPercentage = (activityXP: number): number => {
     return totalActivityXP > 0 ? (activityXP / totalActivityXP) * 100 : 0;
@@ -75,16 +78,14 @@ export const ExperienceBar: React.FC<ExperienceBarProps> = ({
   return (
     <div className={`experience-bar-container ${className}`}>
       {!compact && (
-        <div className="experience-bar-header">
-          <div className="level-info">
-            <span className="current-level">Level {currentLevel}</span>
-            <span className="xp-info">
+        <div className='experience-bar-header'>
+          <div className='level-info'>
+            <span className='current-level'>Level {currentLevel}</span>
+            <span className='xp-info'>
               {formatNumber(progressXP)} / {formatNumber(neededXP)} XP to Level {nextLevel}
             </span>
           </div>
-          <div className="next-level">
-            Next: Level {nextLevel}
-          </div>
+          <div className='next-level'>Next: Level {nextLevel}</div>
         </div>
       )}
 
@@ -93,15 +94,15 @@ export const ExperienceBar: React.FC<ExperienceBarProps> = ({
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <div className="experience-bar-background">
+        <div className='experience-bar-background'>
           <motion.div
-            className="experience-bar-fill"
+            className='experience-bar-fill'
             initial={{ width: 0 }}
             animate={{ width: `${progressPercentage}%` }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
           />
 
-          <div className="experience-bar-segments">
+          <div className='experience-bar-segments'>
             {Object.entries(experienceBreakdown).map(([activity, sourceData]: [string, any]) => {
               const xp = sourceData.totalAmount || 0;
               if (xp === 0) return null;
@@ -111,11 +112,11 @@ export const ExperienceBar: React.FC<ExperienceBarProps> = ({
               return (
                 <motion.div
                   key={activity}
-                  className="experience-segment"
+                  className='experience-segment'
                   style={{
                     width: `${percentage}%`,
                     backgroundColor: color,
-                    opacity: 0.7
+                    opacity: 0.7,
                   }}
                   initial={{ scaleX: 0 }}
                   animate={{ scaleX: 1 }}
@@ -127,7 +128,7 @@ export const ExperienceBar: React.FC<ExperienceBarProps> = ({
         </div>
 
         {compact && (
-          <div className="compact-label">
+          <div className='compact-label'>
             Lv.{currentLevel} ({Math.round(progressPercentage)}%)
           </div>
         )}
@@ -135,35 +136,30 @@ export const ExperienceBar: React.FC<ExperienceBarProps> = ({
         <AnimatePresence>
           {showTooltip && isHovered && (
             <motion.div
-              className="experience-tooltip"
+              className='experience-tooltip'
               initial={{ opacity: 0, y: 10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.95 }}
               transition={{ duration: 0.2 }}
             >
-              <div className="tooltip-header">
+              <div className='tooltip-header'>
                 <h3>Experience Breakdown</h3>
-                <div className="total-xp">
-                  Total: {formatNumber(currentXP)} XP
-                </div>
+                <div className='total-xp'>Total: {formatNumber(currentXP)} XP</div>
               </div>
 
-              <div className="tooltip-progress">
-                <div className="progress-text">
+              <div className='tooltip-progress'>
+                <div className='progress-text'>
                   Level {currentLevel} → {nextLevel}
                 </div>
-                <div className="progress-bar-mini">
-                  <div
-                    className="progress-fill"
-                    style={{ width: `${progressPercentage}%` }}
-                  />
+                <div className='progress-bar-mini'>
+                  <div className='progress-fill' style={{ width: `${progressPercentage}%` }} />
                 </div>
-                <div className="progress-numbers">
+                <div className='progress-numbers'>
                   {formatNumber(progressXP)} / {formatNumber(neededXP)}
                 </div>
               </div>
 
-              <div className="activity-breakdown">
+              <div className='activity-breakdown'>
                 {Object.entries(experienceBreakdown)
                   .filter(([, sourceData]: [string, any]) => (sourceData.totalAmount || 0) > 0)
                   .sort(([, a], [, b]) => (b.totalAmount || 0) - (a.totalAmount || 0))
@@ -174,24 +170,24 @@ export const ExperienceBar: React.FC<ExperienceBarProps> = ({
                     const color = ACTIVITY_COLORS[activity] || '#64748b';
 
                     return (
-                      <div key={activity} className="activity-item">
-                        <div className="activity-info">
-                          <span className="activity-icon">{icon}</span>
-                          <span className="activity-name">
+                      <div key={activity} className='activity-item'>
+                        <div className='activity-info'>
+                          <span className='activity-icon'>{icon}</span>
+                          <span className='activity-name'>
                             {activity.charAt(0).toUpperCase() + activity.slice(1)}
                           </span>
                         </div>
-                        <div className="activity-stats">
-                          <div className="activity-bar">
+                        <div className='activity-stats'>
+                          <div className='activity-bar'>
                             <div
-                              className="activity-fill"
+                              className='activity-fill'
                               style={{
                                 width: `${percentage}%`,
-                                backgroundColor: color
+                                backgroundColor: color,
                               }}
                             />
                           </div>
-                          <span className="activity-xp">
+                          <span className='activity-xp'>
                             {formatNumber(xp)} ({percentage.toFixed(1)}%)
                           </span>
                         </div>
@@ -200,9 +196,11 @@ export const ExperienceBar: React.FC<ExperienceBarProps> = ({
                   })}
               </div>
 
-              {Object.keys(experienceBreakdown).filter(key => (experienceBreakdown[key].totalAmount || 0) > 0).length === 0 && (
-                <div className="no-activities">
-                  <span className="empty-icon">💫</span>
+              {Object.keys(experienceBreakdown).filter(
+                key => (experienceBreakdown[key].totalAmount || 0) > 0
+              ).length === 0 && (
+                <div className='no-activities'>
+                  <span className='empty-icon'>💫</span>
                   <p>Start your adventure to gain experience!</p>
                 </div>
               )}
@@ -210,7 +208,6 @@ export const ExperienceBar: React.FC<ExperienceBarProps> = ({
           )}
         </AnimatePresence>
       </div>
-
     </div>
   );
 };

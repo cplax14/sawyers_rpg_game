@@ -52,12 +52,11 @@ const defaultConfig: Required<SwipeGestureConfig> = {
 /**
  * Hook for detecting swipe gestures on touch devices
  */
-export const useSwipeGestures = (
-  handlers: SwipeHandlers,
-  config: SwipeGestureConfig = {}
-) => {
-  const mergedConfig = { ...defaultConfig, ...config,
-    enabledDirections: { ...defaultConfig.enabledDirections, ...config.enabledDirections }
+export const useSwipeGestures = (handlers: SwipeHandlers, config: SwipeGestureConfig = {}) => {
+  const mergedConfig = {
+    ...defaultConfig,
+    ...config,
+    enabledDirections: { ...defaultConfig.enabledDirections, ...config.enabledDirections },
   };
 
   const [swipeState, setSwipeState] = useState<SwipeState>({
@@ -141,8 +140,8 @@ export const useSwipeGestures = (
     const duration = Date.now() - touchStart.current.time;
 
     // Check if swipe meets minimum requirements
-    const isValidSwipe = distance >= mergedConfig.minDistance &&
-                        duration <= mergedConfig.maxDuration;
+    const isValidSwipe =
+      distance >= mergedConfig.minDistance && duration <= mergedConfig.maxDuration;
 
     if (isValidSwipe) {
       // Determine direction

@@ -8,7 +8,7 @@ import {
   InitializationStatus,
   InitializationOptions,
   CloudStorageServices,
-  cloudStorageInitializer
+  cloudStorageInitializer,
 } from '../services/cloudStorageInitializer';
 
 export interface UseCloudStorageInitializationOptions {
@@ -75,9 +75,11 @@ export function useCloudStorageInitialization(
 
       setServices(prev => {
         // Simple reference comparison for services
-        if (prev.storageService !== currentServices.storageService ||
-            prev.networkManager !== currentServices.networkManager ||
-            prev.queueManager !== currentServices.queueManager) {
+        if (
+          prev.storageService !== currentServices.storageService ||
+          prev.networkManager !== currentServices.networkManager ||
+          prev.queueManager !== currentServices.queueManager
+        ) {
           return currentServices;
         }
         return prev;
@@ -93,67 +95,73 @@ export function useCloudStorageInitialization(
   }, [options.statusPollingInterval]);
 
   // Initialize cloud storage
-  const initialize = useCallback(async (initOptions?: InitializationOptions): Promise<InitializationStatus> => {
-    setIsInitializing(true);
+  const initialize = useCallback(
+    async (initOptions?: InitializationOptions): Promise<InitializationStatus> => {
+      setIsInitializing(true);
 
-    try {
-      const combinedOptions: InitializationOptions = {
-        skipConnectionTest: options.skipConnectionTest,
-        enableDebugLogging: options.enableDebugLogging,
-        customConfig: options.customConfig,
-        ...initOptions,
-        onProgress: (step: string, progress: number) => {
-          if (options.enableDebugLogging) {
-            console.log(`Initialization progress: ${step} (${progress}%)`);
-          }
-          initOptions?.onProgress?.(step, progress);
-        },
-        onWarning: (warning: string) => {
-          if (options.enableDebugLogging) {
-            console.warn('Initialization warning:', warning);
-          }
-          initOptions?.onWarning?.(warning);
-        },
-        onError: (error: string) => {
-          if (options.enableDebugLogging) {
-            console.error('Initialization error:', error);
-          }
-          initOptions?.onError?.(error);
-        }
-      };
+      try {
+        const combinedOptions: InitializationOptions = {
+          skipConnectionTest: options.skipConnectionTest,
+          enableDebugLogging: options.enableDebugLogging,
+          customConfig: options.customConfig,
+          ...initOptions,
+          onProgress: (step: string, progress: number) => {
+            if (options.enableDebugLogging) {
+              console.log(`Initialization progress: ${step} (${progress}%)`);
+            }
+            initOptions?.onProgress?.(step, progress);
+          },
+          onWarning: (warning: string) => {
+            if (options.enableDebugLogging) {
+              console.warn('Initialization warning:', warning);
+            }
+            initOptions?.onWarning?.(warning);
+          },
+          onError: (error: string) => {
+            if (options.enableDebugLogging) {
+              console.error('Initialization error:', error);
+            }
+            initOptions?.onError?.(error);
+          },
+        };
 
-      const result = await cloudStorageInitializer.initialize(combinedOptions);
+        const result = await cloudStorageInitializer.initialize(combinedOptions);
 
-      // Update state immediately after initialization
-      setStatus(result);
-      setServices(cloudStorageInitializer.getServices());
+        // Update state immediately after initialization
+        setStatus(result);
+        setServices(cloudStorageInitializer.getServices());
 
-      return result;
-    } finally {
-      setIsInitializing(false);
-    }
-  }, [options.skipConnectionTest, options.enableDebugLogging, options.customConfig]);
+        return result;
+      } finally {
+        setIsInitializing(false);
+      }
+    },
+    [options.skipConnectionTest, options.enableDebugLogging, options.customConfig]
+  );
 
   // Reinitialize cloud storage
-  const reinitialize = useCallback(async (initOptions?: InitializationOptions): Promise<InitializationStatus> => {
-    setIsInitializing(true);
+  const reinitialize = useCallback(
+    async (initOptions?: InitializationOptions): Promise<InitializationStatus> => {
+      setIsInitializing(true);
 
-    try {
-      const result = await cloudStorageInitializer.reinitialize({
-        skipConnectionTest: options.skipConnectionTest,
-        enableDebugLogging: options.enableDebugLogging,
-        customConfig: options.customConfig,
-        ...initOptions
-      });
+      try {
+        const result = await cloudStorageInitializer.reinitialize({
+          skipConnectionTest: options.skipConnectionTest,
+          enableDebugLogging: options.enableDebugLogging,
+          customConfig: options.customConfig,
+          ...initOptions,
+        });
 
-      setStatus(result);
-      setServices(cloudStorageInitializer.getServices());
+        setStatus(result);
+        setServices(cloudStorageInitializer.getServices());
 
-      return result;
-    } finally {
-      setIsInitializing(false);
-    }
-  }, [options.skipConnectionTest, options.enableDebugLogging, options.customConfig]);
+        return result;
+      } finally {
+        setIsInitializing(false);
+      }
+    },
+    [options.skipConnectionTest, options.enableDebugLogging, options.customConfig]
+  );
 
   // Cleanup cloud storage
   const cleanup = useCallback(async (): Promise<void> => {
@@ -181,7 +189,13 @@ export function useCloudStorageInitialization(
         }
       });
     }
-  }, [options.autoInitialize, status.isInitialized, isInitializing, initialize, options.enableDebugLogging]);
+  }, [
+    options.autoInitialize,
+    status.isInitialized,
+    isInitializing,
+    initialize,
+    options.enableDebugLogging,
+  ]);
 
   // Computed values
   const isReady = useMemo(() => cloudStorageInitializer.isReady(), [status]);
@@ -199,7 +213,7 @@ export function useCloudStorageInitialization(
     reinitialize,
     cleanup,
     getConfigurationSummary,
-    retryInitialization
+    retryInitialization,
   };
 }
 
@@ -215,7 +229,7 @@ export function useCloudStorageStatus(): {
   provider: string;
 } {
   const { status, isReady } = useCloudStorageInitialization({
-    statusPollingInterval: 2000 // Less frequent polling for simple status
+    statusPollingInterval: 2000, // Less frequent polling for simple status
   });
 
   return {
@@ -224,7 +238,7 @@ export function useCloudStorageStatus(): {
     isConfigured: status.isConfigured,
     isConnected: status.isConnected,
     hasErrors: status.errors.length > 0,
-    provider: status.provider
+    provider: status.provider,
   };
 }
 
@@ -241,11 +255,11 @@ export function useCloudStorageServices(): {
 } {
   const { services, isReady } = useCloudStorageInitialization({
     autoInitialize: true,
-    statusPollingInterval: 5000 // Even less frequent for service access
+    statusPollingInterval: 5000, // Even less frequent for service access
   });
 
   return {
     ...services,
-    isReady
+    isReady,
   };
 }

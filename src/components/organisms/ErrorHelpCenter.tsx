@@ -37,8 +37,8 @@ const ERROR_CATEGORIES: ErrorCategoryInfo[] = [
     errorCodes: [
       CloudErrorCode.NETWORK_UNAVAILABLE,
       CloudErrorCode.NETWORK_ERROR,
-      CloudErrorCode.NETWORK_TIMEOUT
-    ]
+      CloudErrorCode.NETWORK_TIMEOUT,
+    ],
   },
   {
     id: 'auth',
@@ -49,8 +49,8 @@ const ERROR_CATEGORIES: ErrorCategoryInfo[] = [
     errorCodes: [
       CloudErrorCode.AUTH_REQUIRED,
       CloudErrorCode.AUTH_EXPIRED,
-      CloudErrorCode.AUTH_INVALID
-    ]
+      CloudErrorCode.AUTH_INVALID,
+    ],
   },
   {
     id: 'storage',
@@ -62,8 +62,8 @@ const ERROR_CATEGORIES: ErrorCategoryInfo[] = [
       CloudErrorCode.STORAGE_QUOTA_EXCEEDED,
       CloudErrorCode.STORAGE_PERMISSION_DENIED,
       CloudErrorCode.STORAGE_NOT_FOUND,
-      CloudErrorCode.STORAGE_CORRUPTED
-    ]
+      CloudErrorCode.STORAGE_CORRUPTED,
+    ],
   },
   {
     id: 'data',
@@ -76,8 +76,8 @@ const ERROR_CATEGORIES: ErrorCategoryInfo[] = [
       CloudErrorCode.DATA_INVALID,
       CloudErrorCode.DATA_CORRUPTED,
       CloudErrorCode.DATA_CHECKSUM_MISMATCH,
-      CloudErrorCode.DATA_VERSION_CONFLICT
-    ]
+      CloudErrorCode.DATA_VERSION_CONFLICT,
+    ],
   },
   {
     id: 'sync',
@@ -91,9 +91,9 @@ const ERROR_CATEGORIES: ErrorCategoryInfo[] = [
       CloudErrorCode.SYNC_PARTIAL_FAILURE,
       CloudErrorCode.OPERATION_CANCELLED,
       CloudErrorCode.OPERATION_TIMEOUT,
-      CloudErrorCode.OPERATION_FAILED
-    ]
-  }
+      CloudErrorCode.OPERATION_FAILED,
+    ],
+  },
 ];
 
 export const ErrorHelpCenter: React.FC<ErrorHelpCenterProps> = ({
@@ -101,7 +101,7 @@ export const ErrorHelpCenter: React.FC<ErrorHelpCenterProps> = ({
   onClose,
   onContactSupport,
   searchFilter = '',
-  categoryFilter = 'all'
+  categoryFilter = 'all',
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedError, setSelectedError] = useState<CloudErrorCode | null>(null);
@@ -111,7 +111,7 @@ export const ErrorHelpCenter: React.FC<ErrorHelpCenterProps> = ({
   const allErrors = useMemo(() => {
     return Object.values(CloudErrorCode).map(code => ({
       code,
-      info: getUserFriendlyErrorInfo({ code } as any)
+      info: getUserFriendlyErrorInfo({ code } as any),
     }));
   }, []);
 
@@ -130,30 +130,39 @@ export const ErrorHelpCenter: React.FC<ErrorHelpCenterProps> = ({
     // Filter by search term
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(error =>
-        error.info.title.toLowerCase().includes(term) ||
-        error.info.message.toLowerCase().includes(term) ||
-        error.code.toLowerCase().includes(term)
+      filtered = filtered.filter(
+        error =>
+          error.info.title.toLowerCase().includes(term) ||
+          error.info.message.toLowerCase().includes(term) ||
+          error.code.toLowerCase().includes(term)
       );
     }
 
     return filtered;
   }, [allErrors, categoryFilter, searchTerm]);
 
-  const handleCategorySelect = useCallback((categoryId: string) => {
-    setSelectedCategory(categoryId === selectedCategory ? null : categoryId);
-    setSelectedError(null);
-  }, [selectedCategory]);
+  const handleCategorySelect = useCallback(
+    (categoryId: string) => {
+      setSelectedCategory(categoryId === selectedCategory ? null : categoryId);
+      setSelectedError(null);
+    },
+    [selectedCategory]
+  );
 
-  const handleErrorSelect = useCallback((errorCode: CloudErrorCode) => {
-    setSelectedError(errorCode === selectedError ? null : errorCode);
-  }, [selectedError]);
+  const handleErrorSelect = useCallback(
+    (errorCode: CloudErrorCode) => {
+      setSelectedError(errorCode === selectedError ? null : errorCode);
+    },
+    [selectedError]
+  );
 
   if (!isOpen) {
     return null;
   }
 
-  const selectedErrorInfo = selectedError ? getUserFriendlyErrorInfo({ code: selectedError } as any) : null;
+  const selectedErrorInfo = selectedError
+    ? getUserFriendlyErrorInfo({ code: selectedError } as any)
+    : null;
 
   return (
     <AnimatePresence>
@@ -172,7 +181,7 @@ export const ErrorHelpCenter: React.FC<ErrorHelpCenterProps> = ({
           alignItems: 'center',
           justifyContent: 'center',
           zIndex: 10000,
-          padding: '1rem'
+          padding: '1rem',
         }}
         onClick={onClose}
       >
@@ -191,35 +200,41 @@ export const ErrorHelpCenter: React.FC<ErrorHelpCenterProps> = ({
             overflow: 'hidden',
             boxShadow: '0 25px 50px rgba(0, 0, 0, 0.5)',
             display: 'flex',
-            flexDirection: 'column'
+            flexDirection: 'column',
           }}
-          onClick={(e) => e.stopPropagation()}
+          onClick={e => e.stopPropagation()}
         >
           {/* Header */}
-          <div style={{
-            padding: '1.5rem',
-            borderBottom: '1px solid #374151',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between'
-          }}>
+          <div
+            style={{
+              padding: '1.5rem',
+              borderBottom: '1px solid #374151',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
             <div>
-              <h2 style={{
-                margin: '0 0 0.25rem 0',
-                color: '#f9fafb',
-                fontSize: '1.5rem',
-                fontWeight: 'bold',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}>
+              <h2
+                style={{
+                  margin: '0 0 0.25rem 0',
+                  color: '#f9fafb',
+                  fontSize: '1.5rem',
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                }}
+              >
                 🆘 Error Help Center
               </h2>
-              <p style={{
-                margin: 0,
-                color: '#9ca3af',
-                fontSize: '0.875rem'
-              }}>
+              <p
+                style={{
+                  margin: 0,
+                  color: '#9ca3af',
+                  fontSize: '0.875rem',
+                }}
+              >
                 Find solutions to common cloud save issues
               </p>
             </div>
@@ -233,7 +248,7 @@ export const ErrorHelpCenter: React.FC<ErrorHelpCenterProps> = ({
                 cursor: 'pointer',
                 padding: '0.5rem',
                 borderRadius: '6px',
-                fontSize: '1.25rem'
+                fontSize: '1.25rem',
               }}
             >
               ✕
@@ -241,15 +256,17 @@ export const ErrorHelpCenter: React.FC<ErrorHelpCenterProps> = ({
           </div>
 
           {/* Search */}
-          <div style={{
-            padding: '1rem 1.5rem',
-            borderBottom: '1px solid #374151'
-          }}>
+          <div
+            style={{
+              padding: '1rem 1.5rem',
+              borderBottom: '1px solid #374151',
+            }}
+          >
             <input
-              type="text"
-              placeholder="Search for error codes, messages, or keywords..."
+              type='text'
+              placeholder='Search for error codes, messages, or keywords...'
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={e => setSearchTerm(e.target.value)}
               style={{
                 width: '100%',
                 padding: '0.75rem 1rem',
@@ -257,34 +274,40 @@ export const ErrorHelpCenter: React.FC<ErrorHelpCenterProps> = ({
                 border: '1px solid #374151',
                 backgroundColor: '#111827',
                 color: '#f3f4f6',
-                fontSize: '0.875rem'
+                fontSize: '0.875rem',
               }}
             />
           </div>
 
           {/* Content */}
-          <div style={{
-            flex: 1,
-            display: 'flex',
-            overflow: 'hidden'
-          }}>
+          <div
+            style={{
+              flex: 1,
+              display: 'flex',
+              overflow: 'hidden',
+            }}
+          >
             {/* Sidebar - Categories */}
-            <div style={{
-              width: '300px',
-              borderRight: '1px solid #374151',
-              overflow: 'auto'
-            }}>
+            <div
+              style={{
+                width: '300px',
+                borderRight: '1px solid #374151',
+                overflow: 'auto',
+              }}
+            >
               <div style={{ padding: '1rem' }}>
-                <h3 style={{
-                  margin: '0 0 1rem 0',
-                  color: '#f9fafb',
-                  fontSize: '1rem',
-                  fontWeight: 'bold'
-                }}>
+                <h3
+                  style={{
+                    margin: '0 0 1rem 0',
+                    color: '#f9fafb',
+                    fontSize: '1rem',
+                    fontWeight: 'bold',
+                  }}
+                >
                   Error Categories
                 </h3>
 
-                {ERROR_CATEGORIES.map((category) => (
+                {ERROR_CATEGORIES.map(category => (
                   <div key={category.id} style={{ marginBottom: '0.5rem' }}>
                     <button
                       onClick={() => handleCategorySelect(category.id)}
@@ -300,28 +323,32 @@ export const ErrorHelpCenter: React.FC<ErrorHelpCenterProps> = ({
                         display: 'flex',
                         alignItems: 'center',
                         gap: '0.75rem',
-                        transition: 'all 0.2s ease'
+                        transition: 'all 0.2s ease',
                       }}
                     >
                       <span style={{ fontSize: '1.25rem' }}>{category.icon}</span>
                       <div style={{ flex: 1 }}>
                         <div style={{ fontWeight: 'semibold' }}>{category.name}</div>
-                        <div style={{
-                          fontSize: '0.75rem',
-                          color: '#9ca3af',
-                          marginTop: '0.25rem'
-                        }}>
+                        <div
+                          style={{
+                            fontSize: '0.75rem',
+                            color: '#9ca3af',
+                            marginTop: '0.25rem',
+                          }}
+                        >
                           {category.description}
                         </div>
                       </div>
-                      <div style={{
-                        backgroundColor: category.color,
-                        color: 'white',
-                        fontSize: '0.75rem',
-                        padding: '0.25rem 0.5rem',
-                        borderRadius: '12px',
-                        fontWeight: 'bold'
-                      }}>
+                      <div
+                        style={{
+                          backgroundColor: category.color,
+                          color: 'white',
+                          fontSize: '0.75rem',
+                          padding: '0.25rem 0.5rem',
+                          borderRadius: '12px',
+                          fontWeight: 'bold',
+                        }}
+                      >
                         {category.errorCodes.length}
                       </div>
                     </button>
@@ -348,12 +375,13 @@ export const ErrorHelpCenter: React.FC<ErrorHelpCenterProps> = ({
                                   marginBottom: '0.25rem',
                                   borderRadius: '6px',
                                   border: 'none',
-                                  backgroundColor: selectedError === errorCode ? category.color + '33' : '#0f172a',
+                                  backgroundColor:
+                                    selectedError === errorCode ? category.color + '33' : '#0f172a',
                                   color: '#d1d5db',
                                   textAlign: 'left',
                                   cursor: 'pointer',
                                   fontSize: '0.8rem',
-                                  marginLeft: '1rem'
+                                  marginLeft: '1rem',
                                 }}
                               >
                                 {errorInfo.title}
@@ -369,67 +397,81 @@ export const ErrorHelpCenter: React.FC<ErrorHelpCenterProps> = ({
             </div>
 
             {/* Main Content */}
-            <div style={{
-              flex: 1,
-              overflow: 'auto',
-              padding: '1.5rem'
-            }}>
+            <div
+              style={{
+                flex: 1,
+                overflow: 'auto',
+                padding: '1.5rem',
+              }}
+            >
               {selectedErrorInfo ? (
                 /* Detailed Error Info */
                 <div>
                   <div style={{ marginBottom: '1.5rem' }}>
-                    <h3 style={{
-                      margin: '0 0 0.5rem 0',
-                      color: '#f9fafb',
-                      fontSize: '1.25rem',
-                      fontWeight: 'bold'
-                    }}>
+                    <h3
+                      style={{
+                        margin: '0 0 0.5rem 0',
+                        color: '#f9fafb',
+                        fontSize: '1.25rem',
+                        fontWeight: 'bold',
+                      }}
+                    >
                       {selectedErrorInfo.title}
                     </h3>
-                    <div style={{
-                      fontSize: '0.875rem',
-                      color: '#9ca3af',
-                      fontFamily: 'monospace',
-                      marginBottom: '1rem'
-                    }}>
+                    <div
+                      style={{
+                        fontSize: '0.875rem',
+                        color: '#9ca3af',
+                        fontFamily: 'monospace',
+                        marginBottom: '1rem',
+                      }}
+                    >
                       Error Code: {selectedError}
                     </div>
-                    <p style={{
-                      margin: 0,
-                      color: '#d1d5db',
-                      lineHeight: '1.6'
-                    }}>
+                    <p
+                      style={{
+                        margin: 0,
+                        color: '#d1d5db',
+                        lineHeight: '1.6',
+                      }}
+                    >
                       {selectedErrorInfo.explanation}
                     </p>
                   </div>
 
                   {/* Quick Actions */}
-                  <div style={{
-                    backgroundColor: '#065f46',
-                    padding: '1rem',
-                    borderRadius: '8px',
-                    marginBottom: '1.5rem',
-                    border: '1px solid #10b981'
-                  }}>
-                    <h4 style={{
-                      margin: '0 0 0.75rem 0',
-                      color: '#d1fae5',
-                      fontSize: '1rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem'
-                    }}>
+                  <div
+                    style={{
+                      backgroundColor: '#065f46',
+                      padding: '1rem',
+                      borderRadius: '8px',
+                      marginBottom: '1.5rem',
+                      border: '1px solid #10b981',
+                    }}
+                  >
+                    <h4
+                      style={{
+                        margin: '0 0 0.75rem 0',
+                        color: '#d1fae5',
+                        fontSize: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                      }}
+                    >
                       🚀 Quick Fix
                       <HelpTooltip
-                        content="Try these steps first - they solve most issues quickly"
-                        position="top"
+                        content='Try these steps first - they solve most issues quickly'
+                        position='top'
                       />
                     </h4>
-                    <ul style={{
-                      margin: 0,
-                      paddingLeft: '1.25rem',
-                      color: '#d1fae5'
-                    }}>
+                    <ul
+                      style={{
+                        margin: 0,
+                        paddingLeft: '1.25rem',
+                        color: '#d1fae5',
+                      }}
+                    >
                       {selectedErrorInfo.immediate_actions.map((action, index) => (
                         <li key={index} style={{ marginBottom: '0.25rem' }}>
                           {action}
@@ -439,32 +481,38 @@ export const ErrorHelpCenter: React.FC<ErrorHelpCenterProps> = ({
                   </div>
 
                   {/* Detailed Steps */}
-                  <div style={{
-                    backgroundColor: '#1e3a8a',
-                    padding: '1rem',
-                    borderRadius: '8px',
-                    marginBottom: '1.5rem',
-                    border: '1px solid #3b82f6'
-                  }}>
-                    <h4 style={{
-                      margin: '0 0 0.75rem 0',
-                      color: '#dbeafe',
-                      fontSize: '1rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem'
-                    }}>
+                  <div
+                    style={{
+                      backgroundColor: '#1e3a8a',
+                      padding: '1rem',
+                      borderRadius: '8px',
+                      marginBottom: '1.5rem',
+                      border: '1px solid #3b82f6',
+                    }}
+                  >
+                    <h4
+                      style={{
+                        margin: '0 0 0.75rem 0',
+                        color: '#dbeafe',
+                        fontSize: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                      }}
+                    >
                       🔧 Detailed Solution
                       <HelpTooltip
                         content="Step-by-step instructions if quick fixes don't work"
-                        position="top"
+                        position='top'
                       />
                     </h4>
-                    <ol style={{
-                      margin: 0,
-                      paddingLeft: '1.25rem',
-                      color: '#dbeafe'
-                    }}>
+                    <ol
+                      style={{
+                        margin: 0,
+                        paddingLeft: '1.25rem',
+                        color: '#dbeafe',
+                      }}
+                    >
                       {selectedErrorInfo.detailed_steps.map((step, index) => (
                         <li key={index} style={{ marginBottom: '0.5rem' }}>
                           {step}
@@ -474,32 +522,38 @@ export const ErrorHelpCenter: React.FC<ErrorHelpCenterProps> = ({
                   </div>
 
                   {/* Prevention Tips */}
-                  <div style={{
-                    backgroundColor: '#7c2d12',
-                    padding: '1rem',
-                    borderRadius: '8px',
-                    marginBottom: '1.5rem',
-                    border: '1px solid #ea580c'
-                  }}>
-                    <h4 style={{
-                      margin: '0 0 0.75rem 0',
-                      color: '#fed7aa',
-                      fontSize: '1rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem'
-                    }}>
+                  <div
+                    style={{
+                      backgroundColor: '#7c2d12',
+                      padding: '1rem',
+                      borderRadius: '8px',
+                      marginBottom: '1.5rem',
+                      border: '1px solid #ea580c',
+                    }}
+                  >
+                    <h4
+                      style={{
+                        margin: '0 0 0.75rem 0',
+                        color: '#fed7aa',
+                        fontSize: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                      }}
+                    >
                       🛡️ Prevention Tips
                       <HelpTooltip
-                        content="Follow these tips to avoid this error in the future"
-                        position="top"
+                        content='Follow these tips to avoid this error in the future'
+                        position='top'
                       />
                     </h4>
-                    <ul style={{
-                      margin: 0,
-                      paddingLeft: '1.25rem',
-                      color: '#fed7aa'
-                    }}>
+                    <ul
+                      style={{
+                        margin: 0,
+                        paddingLeft: '1.25rem',
+                        color: '#fed7aa',
+                      }}
+                    >
                       {selectedErrorInfo.prevention_tips.map((tip, index) => (
                         <li key={index} style={{ marginBottom: '0.25rem' }}>
                           {tip}
@@ -509,33 +563,39 @@ export const ErrorHelpCenter: React.FC<ErrorHelpCenterProps> = ({
                   </div>
 
                   {/* Support Info */}
-                  <div style={{
-                    backgroundColor: '#374151',
-                    padding: '1rem',
-                    borderRadius: '8px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between'
-                  }}>
+                  <div
+                    style={{
+                      backgroundColor: '#374151',
+                      padding: '1rem',
+                      borderRadius: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                    }}
+                  >
                     <div>
-                      <h4 style={{
-                        margin: '0 0 0.25rem 0',
-                        color: '#f9fafb',
-                        fontSize: '1rem'
-                      }}>
+                      <h4
+                        style={{
+                          margin: '0 0 0.25rem 0',
+                          color: '#f9fafb',
+                          fontSize: '1rem',
+                        }}
+                      >
                         Need More Help?
                       </h4>
-                      <p style={{
-                        margin: 0,
-                        color: '#d1d5db',
-                        fontSize: '0.875rem'
-                      }}>
+                      <p
+                        style={{
+                          margin: 0,
+                          color: '#d1d5db',
+                          fontSize: '0.875rem',
+                        }}
+                      >
                         {selectedErrorInfo.when_to_contact_support}
                       </p>
                     </div>
                     {onContactSupport && (
                       <Button
-                        variant="primary"
+                        variant='primary'
                         onClick={onContactSupport}
                         style={{ marginLeft: '1rem' }}
                       >
@@ -547,20 +607,26 @@ export const ErrorHelpCenter: React.FC<ErrorHelpCenterProps> = ({
               ) : (
                 /* Error List or Welcome */
                 <div>
-                  <h3 style={{
-                    margin: '0 0 1rem 0',
-                    color: '#f9fafb',
-                    fontSize: '1.25rem',
-                    fontWeight: 'bold'
-                  }}>
-                    {searchTerm ? `Search Results (${filteredErrors.length})` : 'Common Cloud Save Issues'}
+                  <h3
+                    style={{
+                      margin: '0 0 1rem 0',
+                      color: '#f9fafb',
+                      fontSize: '1.25rem',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    {searchTerm
+                      ? `Search Results (${filteredErrors.length})`
+                      : 'Common Cloud Save Issues'}
                   </h3>
 
                   {filteredErrors.length > 0 ? (
-                    <div style={{
-                      display: 'grid',
-                      gap: '0.75rem'
-                    }}>
+                    <div
+                      style={{
+                        display: 'grid',
+                        gap: '0.75rem',
+                      }}
+                    >
                       {filteredErrors.map(({ code, info }) => (
                         <button
                           key={code}
@@ -573,38 +639,46 @@ export const ErrorHelpCenter: React.FC<ErrorHelpCenterProps> = ({
                             color: '#f3f4f6',
                             textAlign: 'left',
                             cursor: 'pointer',
-                            transition: 'all 0.2s ease'
+                            transition: 'all 0.2s ease',
                           }}
                         >
-                          <div style={{
-                            fontWeight: 'bold',
-                            marginBottom: '0.25rem'
-                          }}>
+                          <div
+                            style={{
+                              fontWeight: 'bold',
+                              marginBottom: '0.25rem',
+                            }}
+                          >
                             {info.title}
                           </div>
-                          <div style={{
-                            fontSize: '0.875rem',
-                            color: '#9ca3af',
-                            marginBottom: '0.5rem'
-                          }}>
+                          <div
+                            style={{
+                              fontSize: '0.875rem',
+                              color: '#9ca3af',
+                              marginBottom: '0.5rem',
+                            }}
+                          >
                             {info.message}
                           </div>
-                          <div style={{
-                            fontSize: '0.75rem',
-                            color: '#6b7280',
-                            fontFamily: 'monospace'
-                          }}>
+                          <div
+                            style={{
+                              fontSize: '0.75rem',
+                              color: '#6b7280',
+                              fontFamily: 'monospace',
+                            }}
+                          >
                             {code}
                           </div>
                         </button>
                       ))}
                     </div>
                   ) : (
-                    <div style={{
-                      textAlign: 'center',
-                      color: '#9ca3af',
-                      padding: '2rem'
-                    }}>
+                    <div
+                      style={{
+                        textAlign: 'center',
+                        color: '#9ca3af',
+                        padding: '2rem',
+                      }}
+                    >
                       <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔍</div>
                       <p>No errors found matching your search.</p>
                       <p>Try different keywords or browse by category.</p>

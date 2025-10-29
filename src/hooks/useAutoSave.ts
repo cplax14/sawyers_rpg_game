@@ -7,7 +7,12 @@ import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { useGameState } from './useGameState';
 import { useSaveSystem } from './useSaveSystem';
 import { useSaveRecovery } from './useSaveRecovery';
-import { AutoSaveManager, AutoSaveConfig, AutoSaveState, createDefaultAutoSaveConfig } from '../utils/autoSave';
+import {
+  AutoSaveManager,
+  AutoSaveConfig,
+  AutoSaveState,
+  createDefaultAutoSaveConfig,
+} from '../utils/autoSave';
 import { ReactGameState } from '../types/game';
 import { getHighestPriorityStoryMoment, StoryMoment } from '../utils/storyMoments';
 
@@ -26,7 +31,7 @@ const getShouldPauseAutoSave = (state: ReactGameState): PauseReason | null => {
     return {
       reason: 'Game is loading',
       priority: 1,
-      source: 'system'
+      source: 'system',
     };
   }
 
@@ -35,7 +40,7 @@ const getShouldPauseAutoSave = (state: ReactGameState): PauseReason | null => {
     return {
       reason: 'Combat in progress',
       priority: 2,
-      source: 'combat'
+      source: 'combat',
     };
   }
 
@@ -44,7 +49,7 @@ const getShouldPauseAutoSave = (state: ReactGameState): PauseReason | null => {
     return {
       reason: 'Character creation in progress',
       priority: 3,
-      source: 'system'
+      source: 'system',
     };
   }
 
@@ -55,7 +60,7 @@ const getShouldPauseAutoSave = (state: ReactGameState): PauseReason | null => {
     return {
       reason: activeStoryMoment.description,
       priority: 4,
-      source: 'story'
+      source: 'story',
     };
   }
 
@@ -64,7 +69,7 @@ const getShouldPauseAutoSave = (state: ReactGameState): PauseReason | null => {
     return {
       reason: 'Settings menu open',
       priority: 5,
-      source: 'user'
+      source: 'user',
     };
   }
 
@@ -110,12 +115,8 @@ interface UseAutoSaveResult {
 export const useAutoSave = (options: UseAutoSaveOptions = {}): UseAutoSaveResult => {
   const { state } = useGameState();
   const { saveGame: systemSaveGame, isInitialized } = useSaveSystem();
-  const {
-    startTrackingSave,
-    completeSaveTracking,
-    failSaveTracking,
-    checkForRecovery
-  } = useSaveRecovery({ autoCheck: true });
+  const { startTrackingSave, completeSaveTracking, failSaveTracking, checkForRecovery } =
+    useSaveRecovery({ autoCheck: true });
 
   const autoSaveManagerRef = useRef<AutoSaveManager | null>(null);
   const [autoSaveState, setAutoSaveState] = useState<AutoSaveState>({
@@ -124,30 +125,33 @@ export const useAutoSave = (options: UseAutoSaveOptions = {}): UseAutoSaveResult
     nextSaveTime: 0,
     consecutiveFailures: 0,
     lastSaveTime: 0,
-    lastSaveSuccess: true
+    lastSaveSuccess: true,
   });
   const [lastAutoSave, setLastAutoSave] = useState<Date | null>(null);
   const [pauseReason, setPauseReason] = useState<PauseReason | null>(null);
 
   const config = useMemo(() => {
     // Defensive validation of settings to prevent NaN/undefined
-    const safeAutoSaveInterval = typeof state.settings.autoSaveInterval === 'number' &&
-                                  !isNaN(state.settings.autoSaveInterval) &&
-                                  isFinite(state.settings.autoSaveInterval)
-      ? state.settings.autoSaveInterval
-      : 2.5; // Default 2.5 minutes
+    const safeAutoSaveInterval =
+      typeof state.settings.autoSaveInterval === 'number' &&
+      !isNaN(state.settings.autoSaveInterval) &&
+      isFinite(state.settings.autoSaveInterval)
+        ? state.settings.autoSaveInterval
+        : 2.5; // Default 2.5 minutes
 
-    const safeAutoSaveSlot = typeof options.autoSaveSlot === 'number' &&
-                             !isNaN(options.autoSaveSlot) &&
-                             isFinite(options.autoSaveSlot)
-      ? options.autoSaveSlot
-      : 0;
+    const safeAutoSaveSlot =
+      typeof options.autoSaveSlot === 'number' &&
+      !isNaN(options.autoSaveSlot) &&
+      isFinite(options.autoSaveSlot)
+        ? options.autoSaveSlot
+        : 0;
 
-    const safeMaxFailures = typeof state.settings.autoSaveMaxFailures === 'number' &&
-                            !isNaN(state.settings.autoSaveMaxFailures) &&
-                            isFinite(state.settings.autoSaveMaxFailures)
-      ? state.settings.autoSaveMaxFailures
-      : 3;
+    const safeMaxFailures =
+      typeof state.settings.autoSaveMaxFailures === 'number' &&
+      !isNaN(state.settings.autoSaveMaxFailures) &&
+      isFinite(state.settings.autoSaveMaxFailures)
+        ? state.settings.autoSaveMaxFailures
+        : 3;
 
     return {
       ...createDefaultAutoSaveConfig(),
@@ -155,7 +159,7 @@ export const useAutoSave = (options: UseAutoSaveOptions = {}): UseAutoSaveResult
       interval: safeAutoSaveInterval * 60 * 1000, // Convert minutes to milliseconds
       enabled: state.settings.autoSave ?? true,
       maxFailures: safeMaxFailures,
-      ...options.config
+      ...options.config,
     };
   }, [options.config, options.autoSaveSlot, state.settings]);
 
@@ -176,7 +180,7 @@ export const useAutoSave = (options: UseAutoSaveOptions = {}): UseAutoSaveResult
             slotNumber,
             saveName,
             includeScreenshot: false,
-            syncToCloud: false // Auto-saves are local only by default
+            syncToCloud: false, // Auto-saves are local only by default
           });
 
           if (success) {
@@ -205,7 +209,10 @@ export const useAutoSave = (options: UseAutoSaveOptions = {}): UseAutoSaveResult
       },
 
       onSaveError: (error: Error, consecutiveFailures: number) => {
-        console.warn(`Auto-save failed (${consecutiveFailures} consecutive failures):`, error.message);
+        console.warn(
+          `Auto-save failed (${consecutiveFailures} consecutive failures):`,
+          error.message
+        );
       },
 
       onAutoSaveDisabled: (reason: string) => {
@@ -215,7 +222,7 @@ export const useAutoSave = (options: UseAutoSaveOptions = {}): UseAutoSaveResult
       getGameState: (): ReactGameState | null => {
         // Only auto-save if there's a player created
         return state.player ? state : null;
-      }
+      },
     };
 
     autoSaveManagerRef.current = new AutoSaveManager(config, callbacks);
@@ -301,65 +308,71 @@ export const useAutoSave = (options: UseAutoSaveOptions = {}): UseAutoSaveResult
   }, []);
 
   // Enhanced save function that updates activity
-  const saveGame = useCallback(async (slotIndex: number, saveName?: string): Promise<boolean> => {
-    // Update auto-save activity to show user is active
-    if (autoSaveManagerRef.current) {
-      autoSaveManagerRef.current.updateActivity();
-    }
-
-    if (!state) return false;
-
-    const finalSaveName = saveName || `Save ${slotIndex + 1}`;
-    let operation;
-
-    try {
-      // Start tracking the save operation
-      operation = startTrackingSave(slotIndex, finalSaveName, state);
-
-      const success = await systemSaveGame(state, {
-        slotNumber: slotIndex,
-        saveName: finalSaveName,
-        includeScreenshot: true,
-        syncToCloud: false
-      });
-
-      if (success) {
-        completeSaveTracking(operation.id);
-      } else {
-        failSaveTracking(operation.id, 'Manual save operation returned false');
+  const saveGame = useCallback(
+    async (slotIndex: number, saveName?: string): Promise<boolean> => {
+      // Update auto-save activity to show user is active
+      if (autoSaveManagerRef.current) {
+        autoSaveManagerRef.current.updateActivity();
       }
 
-      return success;
-    } catch (error) {
-      console.error('Manual save failed:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      if (!state) return false;
 
-      if (operation) {
-        failSaveTracking(operation.id, errorMessage);
+      const finalSaveName = saveName || `Save ${slotIndex + 1}`;
+      let operation;
+
+      try {
+        // Start tracking the save operation
+        operation = startTrackingSave(slotIndex, finalSaveName, state);
+
+        const success = await systemSaveGame(state, {
+          slotNumber: slotIndex,
+          saveName: finalSaveName,
+          includeScreenshot: true,
+          syncToCloud: false,
+        });
+
+        if (success) {
+          completeSaveTracking(operation.id);
+        } else {
+          failSaveTracking(operation.id, 'Manual save operation returned false');
+        }
+
+        return success;
+      } catch (error) {
+        console.error('Manual save failed:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+        if (operation) {
+          failSaveTracking(operation.id, errorMessage);
+        }
+
+        return false;
       }
-
-      return false;
-    }
-  }, [systemSaveGame, state, startTrackingSave, completeSaveTracking, failSaveTracking]);
+    },
+    [systemSaveGame, state, startTrackingSave, completeSaveTracking, failSaveTracking]
+  );
 
   // Save function that doesn't interfere with auto-save
-  const saveGameWithoutAutoSave = useCallback(async (slotIndex: number, saveName?: string): Promise<boolean> => {
-    if (!state) return false;
+  const saveGameWithoutAutoSave = useCallback(
+    async (slotIndex: number, saveName?: string): Promise<boolean> => {
+      if (!state) return false;
 
-    try {
-      const success = await systemSaveGame(state, {
-        slotNumber: slotIndex,
-        saveName: saveName || `Save ${slotIndex + 1}`,
-        includeScreenshot: true,
-        syncToCloud: false
-      });
+      try {
+        const success = await systemSaveGame(state, {
+          slotNumber: slotIndex,
+          saveName: saveName || `Save ${slotIndex + 1}`,
+          includeScreenshot: true,
+          syncToCloud: false,
+        });
 
-      return success;
-    } catch (error) {
-      console.error('Manual save failed:', error);
-      return false;
-    }
-  }, [systemSaveGame, state]);
+        return success;
+      } catch (error) {
+        console.error('Manual save failed:', error);
+        return false;
+      }
+    },
+    [systemSaveGame, state]
+  );
 
   // Utility functions
   const getTimeUntilNextAutoSave = useCallback((): number => {
@@ -435,7 +448,16 @@ export const useAutoSave = (options: UseAutoSaveOptions = {}): UseAutoSaveResult
       // Clear pause reason if we're no longer paused but haven't resumed yet
       setPauseReason(null);
     }
-  }, [state.currentScreen, state.settings.autoSavePauseDuringCombat, state.storyFlags, state.isLoading, pauseAutoSave, resumeAutoSave, autoSaveState.isPaused, autoSaveState.isActive]);
+  }, [
+    state.currentScreen,
+    state.settings.autoSavePauseDuringCombat,
+    state.storyFlags,
+    state.isLoading,
+    pauseAutoSave,
+    resumeAutoSave,
+    autoSaveState.isPaused,
+    autoSaveState.isActive,
+  ]);
 
   // Update auto-save configuration when settings change
   useEffect(() => {
@@ -482,7 +504,7 @@ export const useAutoSave = (options: UseAutoSaveOptions = {}): UseAutoSaveResult
     getTimeUntilNextAutoSave,
     formatTimeUntilNext,
     getAutoSaveStatus,
-    getPauseReason
+    getPauseReason,
   };
 };
 

@@ -175,9 +175,9 @@ export const BreedingCostDisplay: React.FC<BreedingCostDisplayProps> = ({
       <div style={costStyles.title}>
         Breeding Cost
         <HelpTooltip
-          title="Breeding Costs"
-          content="Costs increase with parent level, rarity, generation, and breeding count. Both parents gain exhaustion (-20% stats per level) after breeding. Use Revitalization Potions to restore them!"
-          position="bottom"
+          title='Breeding Costs'
+          content='Costs increase with parent level, rarity, generation, and breeding count. Both parents gain exhaustion (-20% stats per level) after breeding. Use Revitalization Potions to restore them!'
+          position='bottom'
           maxWidth={280}
           style={{ marginLeft: '0.5rem' }}
         />
@@ -205,19 +205,27 @@ export const BreedingCostDisplay: React.FC<BreedingCostDisplayProps> = ({
           <div style={costStyles.breakdown}>
             <div style={costStyles.breakdownRow}>
               <span style={costStyles.breakdownLabel}>Base Cost:</span>
-              <span style={costStyles.breakdownValue}>{cost.costBreakdown.baseCost.toLocaleString()}</span>
+              <span style={costStyles.breakdownValue}>
+                {cost.costBreakdown.baseCost.toLocaleString()}
+              </span>
             </div>
             <div style={costStyles.breakdownRow}>
               <span style={costStyles.breakdownLabel}>Rarity Multiplier:</span>
-              <span style={costStyles.breakdownValue}>×{cost.costBreakdown.rarityMultiplier.toFixed(1)}</span>
+              <span style={costStyles.breakdownValue}>
+                ×{cost.costBreakdown.rarityMultiplier.toFixed(1)}
+              </span>
             </div>
             <div style={costStyles.breakdownRow}>
               <span style={costStyles.breakdownLabel}>Generation Tax:</span>
-              <span style={costStyles.breakdownValue}>×{cost.costBreakdown.generationMultiplier.toFixed(1)}</span>
+              <span style={costStyles.breakdownValue}>
+                ×{cost.costBreakdown.generationMultiplier.toFixed(1)}
+              </span>
             </div>
             <div style={costStyles.breakdownRow}>
               <span style={costStyles.breakdownLabel}>Breeding Count Tax:</span>
-              <span style={costStyles.breakdownValue}>×{cost.costBreakdown.breedingCountMultiplier.toFixed(2)}</span>
+              <span style={costStyles.breakdownValue}>
+                ×{cost.costBreakdown.breedingCountMultiplier.toFixed(2)}
+              </span>
             </div>
             <div style={{ ...costStyles.breakdownRow, ...costStyles.breakdownTotal }}>
               <span>Total Gold:</span>
@@ -275,9 +283,7 @@ export const BreedingCostDisplay: React.FC<BreedingCostDisplayProps> = ({
       )}
 
       {cost.materials.length === 0 && (
-        <div style={costStyles.noMaterials}>
-          No special materials required - gold only!
-        </div>
+        <div style={costStyles.noMaterials}>No special materials required - gold only!</div>
       )}
     </motion.div>
   );

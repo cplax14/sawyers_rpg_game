@@ -8,7 +8,7 @@ import {
   LazyWorldMap,
   preloadMainMenu,
   preloadCharacterSelection,
-  preloadWorldMap
+  preloadWorldMap,
 } from './components/lazy/LazyComponents';
 import { AreaExploration } from './components/organisms/AreaExploration';
 import { Combat } from './components/organisms/Combat';
@@ -49,19 +49,19 @@ const ReactApp: React.FC<ReactAppProps> = ({ className }) => {
             width: rect.width,
             height: rect.height,
             top: rect.top,
-            left: rect.left
+            left: rect.left,
           },
           computedStyle: {
             width: computed.width,
             height: computed.height,
             display: computed.display,
             position: computed.position,
-            overflow: computed.overflow
+            overflow: computed.overflow,
           },
           viewport: {
             innerWidth: window.innerWidth,
-            innerHeight: window.innerHeight
-          }
+            innerHeight: window.innerHeight,
+          },
         });
 
         // Also check the root element
@@ -74,14 +74,14 @@ const ReactApp: React.FC<ReactAppProps> = ({ className }) => {
               width: rootRect.width,
               height: rootRect.height,
               top: rootRect.top,
-              left: rootRect.left
+              left: rootRect.left,
             },
             computedStyle: {
               width: rootComputed.width,
               height: rootComputed.height,
               display: rootComputed.display,
-              position: rootComputed.position
-            }
+              position: rootComputed.position,
+            },
           });
         }
       }
@@ -93,7 +93,6 @@ const ReactApp: React.FC<ReactAppProps> = ({ className }) => {
 
     return () => window.removeEventListener('resize', debugSizing);
   }, []);
-
 
   // Initialize performance monitoring in development
   useEffect(() => {
@@ -126,7 +125,7 @@ const ReactApp: React.FC<ReactAppProps> = ({ className }) => {
           color: '#f4f4f4',
           margin: 0,
           padding: 0,
-          boxSizing: 'border-box'
+          boxSizing: 'border-box',
         }}
       >
         <GameShell />
@@ -146,7 +145,7 @@ const GameShell: React.FC = () => {
   // Initialize auto-save system (CRITICAL: enables window.gameAutoSaveManager)
   useAutoSave({
     autoStart: true,
-    autoSaveSlot: 0
+    autoSaveSlot: 0,
   });
 
   const [isInitializing, setIsInitializing] = useState(true);
@@ -213,16 +212,16 @@ const GameShell: React.FC = () => {
             width: rect.width,
             height: rect.height,
             top: rect.top,
-            left: rect.left
+            left: rect.left,
           },
           computedStyle: {
             width: computed.width,
             height: computed.height,
             display: computed.display,
-            position: computed.position
+            position: computed.position,
           },
           currentScreen: currentScreen,
-          isInitializing: isInitializing
+          isInitializing: isInitializing,
         });
       }
     };
@@ -242,10 +241,8 @@ const GameShell: React.FC = () => {
             <h1>Sawyer's RPG</h1>
             <p>Monster Taming Adventure</p>
           </div>
-          <LoadingSpinner size="large" />
-          <p className={styles.initializationText}>
-            Initializing game...
-          </p>
+          <LoadingSpinner size='lg' />
+          <p className={styles.initializationText}>Initializing game...</p>
         </div>
       </div>
     );
@@ -258,10 +255,7 @@ const GameShell: React.FC = () => {
         <div className={styles.errorContent}>
           <h2>Initialization Failed</h2>
           <p className={styles.errorMessage}>{initError}</p>
-          <button
-            className={styles.retryButton}
-            onClick={() => window.location.reload()}
-          >
+          <button className={styles.retryButton} onClick={() => window.location.reload()}>
             Reload Game
           </button>
         </div>
@@ -281,7 +275,7 @@ const GameShell: React.FC = () => {
         background: 'linear-gradient(135deg, #1a1a2e, #16213e, #0f3460)',
         margin: 0,
         padding: 0,
-        boxSizing: 'border-box'
+        boxSizing: 'border-box',
       }}
     >
       {/* Global Loading Overlay */}
@@ -298,10 +292,10 @@ const GameShell: React.FC = () => {
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            zIndex: 9999
+            zIndex: 9999,
           }}
         >
-          <LoadingSpinner size="large" />
+          <LoadingSpinner size='lg' />
         </div>
       )}
 
@@ -341,7 +335,7 @@ interface ScreenRouterProps {
   gameState: ReactGameState;
 }
 
-const ScreenRouter: React.FC<ScreenRouterProps> = ({ currentScreen, gameState }) => {
+const ScreenRouter: React.FC<ScreenRouterProps> = ({ currentScreen }) => {
   const { navigateToScreen } = useUI();
 
   const renderScreen = () => {
@@ -362,12 +356,7 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({ currentScreen, gameState })
         return <Combat />;
 
       case 'inventory':
-        return (
-          <InventoryManager
-            isOpen={true}
-            onClose={() => navigateToScreen('area')}
-          />
-        );
+        return <InventoryManager isOpen={true} onClose={() => navigateToScreen('area')} />;
 
       case 'breeding':
         return <BreedingInterface onClose={() => navigateToScreen('area')} />;
@@ -397,7 +386,7 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({ currentScreen, gameState })
         width: '100vw',
         height: '100vh',
         position: 'relative',
-        overflow: 'hidden'
+        overflow: 'hidden',
       }}
     >
       {renderScreen()}
@@ -454,7 +443,7 @@ const DevInfoPanel: React.FC = () => {
 };
 
 // Enhanced version with dev panel for development
-export const ReactAppWithDevtools: React.FC<ReactAppProps> = (props) => {
+export const ReactAppWithDevtools: React.FC<ReactAppProps> = () => {
   return (
     <ReactGameProvider>
       <div className={styles.appWithDevtools}>

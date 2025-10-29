@@ -30,7 +30,7 @@ const DEFAULT_CONFIG: NetworkStatusConfig = {
   pingInterval: 30000, // 30 seconds
   pingTimeout: 5000, // 5 seconds
   retryAttempts: 3,
-  enableDetailedInfo: true
+  enableDetailedInfo: true,
 };
 
 /**
@@ -56,7 +56,7 @@ export class NetworkStatusManager {
       rtt: 0,
       saveData: false,
       lastOnline: navigator.onLine ? new Date() : null,
-      lastOffline: navigator.onLine ? null : new Date()
+      lastOffline: navigator.onLine ? null : new Date(),
     };
 
     this.initialize();
@@ -108,9 +108,10 @@ export class NetworkStatusManager {
     if (!this.config.enableDetailedInfo) return;
 
     // Get network connection info if available
-    const connection = (navigator as any).connection ||
-                      (navigator as any).mozConnection ||
-                      (navigator as any).webkitConnection;
+    const connection =
+      (navigator as any).connection ||
+      (navigator as any).mozConnection ||
+      (navigator as any).webkitConnection;
 
     if (connection) {
       this.status.connectionType = connection.type || 'unknown';
@@ -166,12 +167,11 @@ export class NetworkStatusManager {
           method: 'HEAD',
           mode: 'no-cors',
           cache: 'no-cache',
-          signal: controller.signal
+          signal: controller.signal,
         });
 
         clearTimeout(timeoutId);
         return true; // If we get any response, we're online
-
       } catch (error) {
         if (attempt === this.config.retryAttempts) {
           return false;
@@ -321,7 +321,7 @@ export class NetworkStatusManager {
       totalOnlineTime,
       totalOfflineTime,
       currentSessionDuration,
-      connectionSwitches: 0 // Would need persistent storage to track this
+      connectionSwitches: 0, // Would need persistent storage to track this
     };
   }
 

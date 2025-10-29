@@ -5,7 +5,7 @@ import {
   ReactItem,
   ReactMonster,
   GameStats,
-  UnlockRequirement
+  UnlockRequirement,
 } from '../types/game';
 
 /**
@@ -38,7 +38,7 @@ abstract class BaseValidator<T> {
       strict: false,
       sanitize: true,
       logWarnings: true,
-      ...options
+      ...options,
     };
   }
 
@@ -75,10 +75,7 @@ abstract class BaseValidator<T> {
     return Math.max(min, Math.min(max, num));
   }
 
-  protected sanitizeArray<U>(
-    value: any,
-    itemValidator?: (item: any) => U | null
-  ): U[] {
+  protected sanitizeArray<U>(value: any, itemValidator?: (item: any) => U | null): U[] {
     if (!Array.isArray(value)) return [];
 
     if (itemValidator) {
@@ -113,7 +110,7 @@ export class PlayerValidator extends BaseValidator<ReactPlayer> {
         currentStats: this.validateStats(data.currentStats || data.baseStats, errors, warnings),
         equipment: data.equipment || {},
         statusEffects: this.sanitizeArray(data.statusEffects),
-        abilities: this.sanitizeArray(data.abilities)
+        abilities: this.sanitizeArray(data.abilities),
       };
 
       // Validate player name
@@ -148,7 +145,6 @@ export class PlayerValidator extends BaseValidator<ReactPlayer> {
       }
 
       return this.createResult(errors.length === 0, player, errors, warnings);
-
     } catch (error) {
       return this.createResult(false, undefined, [`Player validation failed: ${error}`]);
     }
@@ -163,7 +159,7 @@ export class PlayerValidator extends BaseValidator<ReactPlayer> {
       magicAttack: 20,
       magicDefense: 20,
       speed: 40,
-      accuracy: 75
+      accuracy: 75,
     };
 
     if (!stats || typeof stats !== 'object') {
@@ -179,7 +175,7 @@ export class PlayerValidator extends BaseValidator<ReactPlayer> {
       magicAttack: this.sanitizeNumber(stats.magicAttack, 1, 999, defaultStats.magicAttack),
       magicDefense: this.sanitizeNumber(stats.magicDefense, 1, 999, defaultStats.magicDefense),
       speed: this.sanitizeNumber(stats.speed, 1, 999, defaultStats.speed),
-      accuracy: this.sanitizeNumber(stats.accuracy, 1, 100, defaultStats.accuracy)
+      accuracy: this.sanitizeNumber(stats.accuracy, 1, 100, defaultStats.accuracy),
     };
   }
 
@@ -210,14 +206,22 @@ export class AreaValidator extends BaseValidator<ReactArea> {
         unlocked: Boolean(data.unlocked),
         unlockRequirements: this.validateUnlockRequirements(data.unlockRequirements),
         encounterRate: this.sanitizeNumber(data.encounterRate, 0, 100, 0),
-        monsters: this.sanitizeArray(data.monsters, item => typeof item === 'string' ? item : null),
-        connections: this.sanitizeArray(data.connections, item => typeof item === 'string' ? item : null),
-        services: this.sanitizeArray(data.services, item => typeof item === 'string' ? item : null),
-        storyEvents: this.sanitizeArray(data.storyEvents, item => typeof item === 'string' ? item : null),
+        monsters: this.sanitizeArray(data.monsters, item =>
+          typeof item === 'string' ? item : null
+        ),
+        connections: this.sanitizeArray(data.connections, item =>
+          typeof item === 'string' ? item : null
+        ),
+        services: this.sanitizeArray(data.services, item =>
+          typeof item === 'string' ? item : null
+        ),
+        storyEvents: this.sanitizeArray(data.storyEvents, item =>
+          typeof item === 'string' ? item : null
+        ),
         backgroundMusic: this.sanitizeString(data.backgroundMusic, 'default'),
         recommendedLevel: this.sanitizeNumber(data.recommendedLevel || data.difficulty, 1, 100, 1),
         boss: data.boss ? this.validateBoss(data.boss, errors, warnings) : undefined,
-        lootTable: data.lootTable || undefined
+        lootTable: data.lootTable || undefined,
       };
 
       // Validate required fields
@@ -240,7 +244,6 @@ export class AreaValidator extends BaseValidator<ReactArea> {
       }
 
       return this.createResult(errors.length === 0, area, errors, warnings);
-
     } catch (error) {
       return this.createResult(false, undefined, [`Area validation failed: ${error}`]);
     }
@@ -292,12 +295,17 @@ export class AreaValidator extends BaseValidator<ReactArea> {
       species: this.sanitizeString(boss.species, 'unknown'),
       level: this.sanitizeNumber(boss.level, 1, 100, 10),
       reward: {
-        experience: this.sanitizeNumber(boss.reward?.exp || boss.reward?.experience, 0, Infinity, 100),
+        experience: this.sanitizeNumber(
+          boss.reward?.exp || boss.reward?.experience,
+          0,
+          Infinity,
+          100
+        ),
         gold: this.sanitizeNumber(boss.reward?.gold, 0, Infinity, 50),
         items: this.sanitizeArray(boss.reward?.items, item =>
           typeof item === 'string' ? item : null
-        )
-      }
+        ),
+      },
     };
   }
 }
@@ -318,7 +326,9 @@ export class MonsterValidator extends BaseValidator<ReactMonster> {
       const statsValidator = new PlayerValidator(this.options);
       const baseStatsResult = statsValidator['validateStats'](data.baseStats, errors, warnings);
       const currentStatsResult = statsValidator['validateStats'](
-        data.currentStats || data.baseStats, errors, warnings
+        data.currentStats || data.baseStats,
+        errors,
+        warnings
       );
 
       const monster: ReactMonster = {
@@ -336,19 +346,18 @@ export class MonsterValidator extends BaseValidator<ReactMonster> {
         captureRate: this.sanitizeNumber(data.captureRate, 0, 100, 50),
         experience: this.sanitizeNumber(data.experience, 0, Infinity, 0),
         friendship: this.sanitizeNumber(data.friendship, 0, 100, 0),
-        evolutionLevel: data.evolutionLevel ? this.sanitizeNumber(data.evolutionLevel, 1, 100) : null,
+        evolutionLevel: data.evolutionLevel
+          ? this.sanitizeNumber(data.evolutionLevel, 1, 100)
+          : null,
         evolvesTo: this.sanitizeArray(data.evolvesTo, item =>
           typeof item === 'string' ? item : null
         ),
-        areas: this.sanitizeArray(data.areas, item =>
-          typeof item === 'string' ? item : null
-        ),
+        areas: this.sanitizeArray(data.areas, item => (typeof item === 'string' ? item : null)),
         isWild: Boolean(data.isWild !== false), // Default to wild
-        nickname: data.nickname ? this.sanitizeString(data.nickname) : null
+        nickname: data.nickname ? this.sanitizeString(data.nickname) : null,
       };
 
       return this.createResult(errors.length === 0, monster, errors, warnings);
-
     } catch (error) {
       return this.createResult(false, undefined, [`Monster validation failed: ${error}`]);
     }
@@ -405,16 +414,14 @@ export class ItemValidator extends BaseValidator<ReactItem> {
           level: this.sanitizeNumber(data.requirements?.level, 1, 100, 1),
           classes: this.sanitizeArray(data.requirements?.classes, item =>
             typeof item === 'string' ? item : null
-          )
+          ),
         },
         value: this.sanitizeNumber(data.value, 0, Infinity, 0),
         icon: this.sanitizeString(data.icon, '📦'),
-        effects: this.sanitizeArray(data.effects, item =>
-          typeof item === 'string' ? item : null
-        ),
+        effects: this.sanitizeArray(data.effects, item => (typeof item === 'string' ? item : null)),
         stackable: Boolean(data.stackable !== false),
         consumable: Boolean(data.consumable),
-        quantity: this.sanitizeNumber(data.quantity, 1, 999, 1)
+        quantity: this.sanitizeNumber(data.quantity, 1, 999, 1),
       };
 
       // Validate required fields
@@ -423,7 +430,6 @@ export class ItemValidator extends BaseValidator<ReactItem> {
       }
 
       return this.createResult(errors.length === 0, item, errors, warnings);
-
     } catch (error) {
       return this.createResult(false, undefined, [`Item validation failed: ${error}`]);
     }
@@ -476,22 +482,34 @@ export const validators = {
   player: new PlayerValidator(),
   area: new AreaValidator(),
   monster: new MonsterValidator(),
-  item: new ItemValidator()
+  item: new ItemValidator(),
 };
 
-export const validatePlayer = (data: any, options?: ValidationOptions): ValidationResult<ReactPlayer> => {
+export const validatePlayer = (
+  data: any,
+  options?: ValidationOptions
+): ValidationResult<ReactPlayer> => {
   return new PlayerValidator(options).validate(data);
 };
 
-export const validateArea = (data: any, options?: ValidationOptions): ValidationResult<ReactArea> => {
+export const validateArea = (
+  data: any,
+  options?: ValidationOptions
+): ValidationResult<ReactArea> => {
   return new AreaValidator(options).validate(data);
 };
 
-export const validateMonster = (data: any, options?: ValidationOptions): ValidationResult<ReactMonster> => {
+export const validateMonster = (
+  data: any,
+  options?: ValidationOptions
+): ValidationResult<ReactMonster> => {
   return new MonsterValidator(options).validate(data);
 };
 
-export const validateItem = (data: any, options?: ValidationOptions): ValidationResult<ReactItem> => {
+export const validateItem = (
+  data: any,
+  options?: ValidationOptions
+): ValidationResult<ReactItem> => {
   return new ItemValidator(options).validate(data);
 };
 

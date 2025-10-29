@@ -37,7 +37,8 @@ export const usePerformanceOptimization = () => {
       const now = performance.now();
       const delta = now - lastTimeRef.current;
 
-      if (delta >= 1000) { // Update every second
+      if (delta >= 1000) {
+        // Update every second
         const fps = Math.round((frameCountRef.current * 1000) / delta);
 
         // Get memory usage if available

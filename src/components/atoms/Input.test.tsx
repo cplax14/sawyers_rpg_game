@@ -5,14 +5,14 @@ import { Input } from './Input';
 
 describe('Input', () => {
   it('renders basic input correctly', () => {
-    render(<Input placeholder="Enter text" />);
+    render(<Input placeholder='Enter text' />);
     const input = screen.getByRole('textbox');
     expect(input).toBeInTheDocument();
     expect(input).toHaveAttribute('placeholder', 'Enter text');
   });
 
   it('renders with label', () => {
-    render(<Input label="Username" placeholder="Enter username" />);
+    render(<Input label='Username' placeholder='Enter username' />);
     const label = screen.getByText('Username');
     const input = screen.getByRole('textbox');
 
@@ -21,20 +21,20 @@ describe('Input', () => {
   });
 
   it('shows required asterisk when required', () => {
-    render(<Input label="Password" required />);
+    render(<Input label='Password' required />);
     const requiredIndicator = screen.getByLabelText('required');
     expect(requiredIndicator).toBeInTheDocument();
     expect(requiredIndicator).toHaveTextContent('*');
   });
 
   it('displays helper text', () => {
-    render(<Input label="Email" helperText="Enter a valid email address" />);
+    render(<Input label='Email' helperText='Enter a valid email address' />);
     const helperText = screen.getByText('Enter a valid email address');
     expect(helperText).toBeInTheDocument();
   });
 
   it('displays error message and sets aria-invalid', () => {
-    render(<Input label="Email" error="Invalid email format" />);
+    render(<Input label='Email' error='Invalid email format' />);
     const input = screen.getByRole('textbox');
     const errorMessage = screen.getByRole('alert');
 
@@ -44,49 +44,43 @@ describe('Input', () => {
   });
 
   it('prioritizes error message over helper text', () => {
-    render(
-      <Input
-        label="Email"
-        helperText="Enter your email"
-        error="Invalid format"
-      />
-    );
+    render(<Input label='Email' helperText='Enter your email' error='Invalid format' />);
 
     expect(screen.getByRole('alert')).toHaveTextContent('Invalid format');
     expect(screen.queryByText('Enter your email')).not.toBeInTheDocument();
   });
 
   it('handles size variants', () => {
-    const { rerender } = render(<Input size="sm" data-testid="input-sm" />);
+    const { rerender } = render(<Input size='sm' data-testid='input-sm' />);
     expect(screen.getByTestId('input-sm')).toHaveClass('sm');
 
-    rerender(<Input size="md" data-testid="input-md" />);
+    rerender(<Input size='md' data-testid='input-md' />);
     expect(screen.getByTestId('input-md')).toHaveClass('md');
 
-    rerender(<Input size="lg" data-testid="input-lg" />);
+    rerender(<Input size='lg' data-testid='input-lg' />);
     expect(screen.getByTestId('input-lg')).toHaveClass('lg');
   });
 
   it('handles style variants', () => {
-    const { rerender } = render(<Input variant="default" data-testid="input-default" />);
+    const { rerender } = render(<Input variant='default' data-testid='input-default' />);
     expect(screen.getByTestId('input-default')).toHaveClass('default');
 
-    rerender(<Input variant="search" data-testid="input-search" />);
+    rerender(<Input variant='search' data-testid='input-search' />);
     expect(screen.getByTestId('input-search')).toHaveClass('search');
 
-    rerender(<Input variant="password" data-testid="input-password" />);
+    rerender(<Input variant='password' data-testid='input-password' />);
     expect(screen.getByTestId('input-password')).toHaveClass('password');
   });
 
   it('renders password toggle button for password variant', () => {
-    render(<Input variant="password" label="Password" />);
+    render(<Input variant='password' label='Password' />);
     const toggleButton = screen.getByLabelText('Show password');
     expect(toggleButton).toBeInTheDocument();
   });
 
   it('toggles password visibility', async () => {
     const user = userEvent.setup();
-    render(<Input variant="password" label="Password" />);
+    render(<Input variant='password' label='Password' />);
 
     const input = screen.getByLabelText('Password');
     const toggleButton = screen.getByLabelText('Show password');
@@ -106,16 +100,10 @@ describe('Input', () => {
   });
 
   it('renders icons correctly', () => {
-    const iconBefore = <span data-testid="icon-before">🔍</span>;
-    const iconAfter = <span data-testid="icon-after">✓</span>;
+    const iconBefore = <span data-testid='icon-before'>🔍</span>;
+    const iconAfter = <span data-testid='icon-after'>✓</span>;
 
-    render(
-      <Input
-        iconBefore={iconBefore}
-        iconAfter={iconAfter}
-        data-testid="input-with-icons"
-      />
-    );
+    render(<Input iconBefore={iconBefore} iconAfter={iconAfter} data-testid='input-with-icons' />);
 
     expect(screen.getByTestId('icon-before')).toBeInTheDocument();
     expect(screen.getByTestId('icon-after')).toBeInTheDocument();
@@ -123,14 +111,9 @@ describe('Input', () => {
   });
 
   it('does not render iconAfter when variant is password', () => {
-    const iconAfter = <span data-testid="icon-after">✓</span>;
+    const iconAfter = <span data-testid='icon-after'>✓</span>;
 
-    render(
-      <Input
-        variant="password"
-        iconAfter={iconAfter}
-      />
-    );
+    render(<Input variant='password' iconAfter={iconAfter} />);
 
     expect(screen.queryByTestId('icon-after')).not.toBeInTheDocument();
     expect(screen.getByLabelText('Show password')).toBeInTheDocument();
@@ -138,7 +121,7 @@ describe('Input', () => {
 
   it('handles focus and blur events', async () => {
     const user = userEvent.setup();
-    render(<Input data-testid="focus-input" />);
+    render(<Input data-testid='focus-input' />);
 
     const input = screen.getByTestId('focus-input');
 
@@ -150,7 +133,7 @@ describe('Input', () => {
   });
 
   it('handles disabled state', () => {
-    render(<Input disabled data-testid="disabled-input" />);
+    render(<Input disabled data-testid='disabled-input' />);
     const input = screen.getByTestId('disabled-input');
 
     expect(input).toBeDisabled();
@@ -171,7 +154,7 @@ describe('Input', () => {
   });
 
   it('handles custom className', () => {
-    const { container } = render(<Input className="custom-class" />);
+    const { container } = render(<Input className='custom-class' />);
     const inputContainer = container.firstChild;
     expect(inputContainer).toHaveClass('custom-class');
   });
@@ -179,8 +162,8 @@ describe('Input', () => {
   it('generates unique IDs for accessibility', () => {
     render(
       <>
-        <Input label="First Input" />
-        <Input label="Second Input" />
+        <Input label='First Input' />
+        <Input label='Second Input' />
       </>
     );
 
@@ -191,7 +174,7 @@ describe('Input', () => {
   });
 
   it('uses provided ID when given', () => {
-    render(<Input id="custom-id" label="Custom Input" />);
+    render(<Input id='custom-id' label='Custom Input' />);
     const input = screen.getByRole('textbox');
     expect(input).toHaveAttribute('id', 'custom-id');
   });
@@ -213,7 +196,7 @@ describe('Input', () => {
       <Input
         whileFocus={{ scale: 1.02 }}
         transition={{ duration: 0.2 }}
-        data-testid="motion-input"
+        data-testid='motion-input'
       />
     );
 

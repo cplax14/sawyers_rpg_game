@@ -39,15 +39,15 @@ describe('useEquipment Hook', () => {
     equipmentSubtype: 'sword',
     statModifiers: {
       strength: 10,
-      defense: 2
+      defense: 2,
     },
     metadata: {
       addedAt: new Date().toISOString(),
       lastUsed: null,
       timesUsed: 0,
       source: 'shop',
-      tags: ['weapon', 'melee']
-    }
+      tags: ['weapon', 'melee'],
+    },
   };
 
   const mockArmor: EnhancedItem = {
@@ -69,15 +69,15 @@ describe('useEquipment Hook', () => {
     equipmentSubtype: 'light',
     statModifiers: {
       defense: 8,
-      agility: -1
+      agility: -1,
     },
     metadata: {
       addedAt: new Date().toISOString(),
       lastUsed: null,
       timesUsed: 0,
       source: 'crafting',
-      tags: ['armor', 'light']
-    }
+      tags: ['armor', 'light'],
+    },
   };
 
   const mockGameState = {
@@ -92,17 +92,17 @@ describe('useEquipment Hook', () => {
           agility: 12,
           intelligence: 6,
           health: 100,
-          mana: 50
+          mana: 50,
         },
         equipment: {
           weapon: null,
           armor: null,
-          accessory: null
-        }
-      }
+          accessory: null,
+        },
+      },
     },
     updateState: jest.fn(),
-    dispatch: jest.fn()
+    dispatch: jest.fn(),
   };
 
   const mockInventory = {
@@ -111,18 +111,18 @@ describe('useEquipment Hook', () => {
         main: {
           slots: [
             { id: 'slot-1', item: mockWeapon, quantity: 1 },
-            { id: 'slot-2', item: mockArmor, quantity: 1 }
+            { id: 'slot-2', item: mockArmor, quantity: 1 },
           ],
           items: [
             { id: 'slot-1', item: mockWeapon, quantity: 1 },
-            { id: 'slot-2', item: mockArmor, quantity: 1 }
-          ]
-        }
-      }
+            { id: 'slot-2', item: mockArmor, quantity: 1 },
+          ],
+        },
+      },
     },
     addItem: jest.fn(),
     removeItem: jest.fn(),
-    addEventListener: jest.fn()
+    addEventListener: jest.fn(),
   };
 
   beforeEach(() => {

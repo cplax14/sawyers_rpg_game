@@ -5,9 +5,21 @@ import { motion, HTMLMotionProps } from 'framer-motion';
 // Temporary fallback styles while CSS modules are disabled
 const createButtonStyles = () => {
   const buttonClasses = [
-    'button', 'primary', 'secondary', 'danger', 'success',
-    'sm', 'md', 'lg', 'loading', 'disabled', 'fullWidth',
-    'spinner', 'content', 'iconBefore', 'iconAfter'
+    'button',
+    'primary',
+    'secondary',
+    'danger',
+    'success',
+    'sm',
+    'md',
+    'lg',
+    'loading',
+    'disabled',
+    'fullWidth',
+    'spinner',
+    'content',
+    'iconBefore',
+    'iconAfter',
   ];
   const styles: Record<string, string> = {};
   buttonClasses.forEach(className => {
@@ -84,14 +96,17 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     );
 
     // Mobile-optimized touch target styles
-    const mobileStyles = touchFriendly && isTouchDevice ? {
-      minHeight: '48px',
-      minWidth: '48px',
-      padding: size === 'sm' ? '8px 16px' : size === 'lg' ? '16px 24px' : '12px 20px',
-      fontSize: size === 'sm' ? '14px' : size === 'lg' ? '18px' : '16px',
-      touchAction: 'manipulation', // Prevents zoom on double-tap
-      WebkitTapHighlightColor: 'transparent', // Remove iOS highlight
-    } : {};
+    const mobileStyles =
+      touchFriendly && isTouchDevice
+        ? {
+            minHeight: '48px',
+            minWidth: '48px',
+            padding: size === 'sm' ? '8px 16px' : size === 'lg' ? '16px 24px' : '12px 20px',
+            fontSize: size === 'sm' ? '14px' : size === 'lg' ? '18px' : '16px',
+            touchAction: 'manipulation', // Prevents zoom on double-tap
+            WebkitTapHighlightColor: 'transparent', // Remove iOS highlight
+          }
+        : {};
 
     return (
       <motion.button
@@ -99,11 +114,15 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         className={buttonClasses}
         disabled={disabled || loading}
         style={{ ...mobileStyles, ...style }}
-        whileHover={!isTouchDevice ? {
-          scale: 1.02,
-          y: -2,
-          boxShadow: '0 6px 12px rgba(0, 0, 0, 0.4)'
-        } : undefined} // Only hover on non-touch devices
+        whileHover={
+          !isTouchDevice
+            ? {
+                scale: 1.02,
+                y: -2,
+                boxShadow: '0 6px 12px rgba(0, 0, 0, 0.4)',
+              }
+            : undefined
+        } // Only hover on non-touch devices
         whileTap={{ scale: 0.98 }}
         transition={{ type: 'spring', stiffness: 400, damping: 25 }}
         {...props}

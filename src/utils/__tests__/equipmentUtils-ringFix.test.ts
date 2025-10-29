@@ -17,7 +17,7 @@ describe('equipmentUtils - Ring Slot Compatibility', () => {
     magicAttack: 10,
     magicDefense: 12,
     speed: 14,
-    accuracy: 85
+    accuracy: 85,
   };
 
   const playerLevel = 5;
@@ -27,7 +27,7 @@ describe('equipmentUtils - Ring Slot Compatibility', () => {
   const healthRing: EnhancedItem = {
     id: 'health_ring',
     name: 'Health Ring',
-    description: 'A ring that increases the wearer\'s vitality.',
+    description: "A ring that increases the wearer's vitality.",
     type: 'accessory',
     equipmentSlot: 'ring', // Generic ring slot
     equipmentSubtype: 'ring',
@@ -36,13 +36,13 @@ describe('equipmentUtils - Ring Slot Compatibility', () => {
       maxHp: {
         value: 20,
         type: 'flat',
-        displayName: 'Max HP'
-      }
+        displayName: 'Max HP',
+      },
     },
     value: 200,
     icon: '💍',
     quantity: 1,
-    stackable: false
+    stackable: false,
   };
 
   describe('Ring1 Slot Compatibility', () => {
@@ -153,7 +153,7 @@ describe('equipmentUtils - Ring Slot Compatibility', () => {
       // Item with uppercase equipmentSlot
       const ringWithUppercaseSlot: EnhancedItem = {
         ...healthRing,
-        equipmentSlot: 'RING' as EquipmentSlot
+        equipmentSlot: 'RING' as EquipmentSlot,
       };
 
       const result1 = checkEquipmentCompatibility(

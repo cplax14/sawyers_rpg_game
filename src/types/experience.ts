@@ -12,9 +12,17 @@ import { PlayerStats } from './game';
 // =============================================================================
 
 export type ExperienceSource =
-  | 'combat' | 'quest_completion' | 'exploration' | 'creature_capture'
-  | 'crafting' | 'trading' | 'story_progression' | 'discovery'
-  | 'achievement' | 'daily_bonus' | 'special_event';
+  | 'combat'
+  | 'quest_completion'
+  | 'exploration'
+  | 'creature_capture'
+  | 'crafting'
+  | 'trading'
+  | 'story_progression'
+  | 'discovery'
+  | 'achievement'
+  | 'daily_bonus'
+  | 'special_event';
 
 export interface ExperienceGain {
   id: string;
@@ -380,11 +388,22 @@ export interface Achievement {
 }
 
 export type AchievementCategory =
-  | 'combat' | 'exploration' | 'collection' | 'progression'
-  | 'social' | 'creativity' | 'challenge' | 'secret';
+  | 'combat'
+  | 'exploration'
+  | 'collection'
+  | 'progression'
+  | 'social'
+  | 'creativity'
+  | 'challenge'
+  | 'secret';
 
 export interface AchievementRequirement {
-  type: 'reach_level' | 'gain_experience' | 'defeat_enemies' | 'discover_areas' | 'collect_creatures';
+  type:
+    | 'reach_level'
+    | 'gain_experience'
+    | 'defeat_enemies'
+    | 'discover_areas'
+    | 'collect_creatures';
   target: number;
   current: number;
   description: string;
@@ -439,8 +458,13 @@ export interface ExperienceSettings {
 // =============================================================================
 
 export type ExperienceOperation =
-  | 'gain_experience' | 'level_up' | 'complete_milestone'
-  | 'unlock_achievement' | 'learn_skill' | 'start_session' | 'end_session';
+  | 'gain_experience'
+  | 'level_up'
+  | 'complete_milestone'
+  | 'unlock_achievement'
+  | 'learn_skill'
+  | 'start_session'
+  | 'end_session';
 
 export interface ExperienceOperationResult {
   success: boolean;
@@ -484,7 +508,7 @@ export enum ExperienceError {
   ACHIEVEMENT_ALREADY_COMPLETED = 'ACHIEVEMENT_ALREADY_COMPLETED',
   INVALID_EXPERIENCE_SOURCE = 'INVALID_EXPERIENCE_SOURCE',
   SESSION_ALREADY_ACTIVE = 'SESSION_ALREADY_ACTIVE',
-  NO_ACTIVE_SESSION = 'NO_ACTIVE_SESSION'
+  NO_ACTIVE_SESSION = 'NO_ACTIVE_SESSION',
 }
 
 export class ExperienceException extends Error {

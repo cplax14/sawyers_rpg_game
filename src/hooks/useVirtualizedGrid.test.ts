@@ -6,16 +6,16 @@ jest.mock('./index', () => ({
   useResponsive: () => ({
     isMobile: false,
     isTablet: false,
-    screenWidth: 1024
-  })
+    screenWidth: 1024,
+  }),
 }));
 
 // Mock performance.now for consistent testing
 const mockPerformanceNow = jest.fn();
 Object.defineProperty(global, 'performance', {
   value: {
-    now: mockPerformanceNow
-  }
+    now: mockPerformanceNow,
+  },
 });
 
 describe('useVirtualizedGrid', () => {
@@ -25,7 +25,7 @@ describe('useVirtualizedGrid', () => {
     minItemWidth: 280,
     itemHeight: 240,
     gap: 16,
-    threshold: 50
+    threshold: 50,
   };
 
   beforeEach(() => {
@@ -45,7 +45,7 @@ describe('useVirtualizedGrid', () => {
           shouldVirtualize: true, // 100 items > 50 threshold
           containerHeight: defaultProps.containerHeight,
           overscan: expect.any(Number),
-          estimatedTotalHeight: expect.any(Number)
+          estimatedTotalHeight: expect.any(Number),
         })
       );
 
@@ -71,7 +71,7 @@ describe('useVirtualizedGrid', () => {
         ...defaultProps,
         itemCount: 10,
         itemHeight: 100,
-        gap: 10
+        gap: 10,
       };
 
       const { result } = renderHook(() => useVirtualizedGrid(props));
@@ -91,8 +91,8 @@ describe('useVirtualizedGrid', () => {
         useResponsive: () => ({
           isMobile: true,
           isTablet: false,
-          screenWidth: 375
-        })
+          screenWidth: 375,
+        }),
       }));
 
       const { useVirtualizedGrid: MobileUseVirtualizedGrid } = require('./useVirtualizedGrid');
@@ -111,8 +111,8 @@ describe('useVirtualizedGrid', () => {
         useResponsive: () => ({
           isMobile: false,
           isTablet: false,
-          screenWidth
-        })
+          screenWidth,
+        }),
       }));
 
       const { useVirtualizedGrid: ResponsiveUseVirtualizedGrid } = require('./useVirtualizedGrid');
@@ -164,7 +164,7 @@ describe('useVirtualizedGrid', () => {
     it('should calculate correct items per row based on width', () => {
       const props = {
         ...defaultProps,
-        minItemWidth: 200
+        minItemWidth: 200,
       };
 
       // Mock specific screen width
@@ -172,8 +172,8 @@ describe('useVirtualizedGrid', () => {
         useResponsive: () => ({
           isMobile: false,
           isTablet: false,
-          screenWidth: 1000
-        })
+          screenWidth: 1000,
+        }),
       }));
 
       const { useVirtualizedGrid: WidthAwareUseVirtualizedGrid } = require('./useVirtualizedGrid');
@@ -186,7 +186,7 @@ describe('useVirtualizedGrid', () => {
     it('should ensure at least 1 item per row', () => {
       const props = {
         ...defaultProps,
-        minItemWidth: 2000 // Very large min width
+        minItemWidth: 2000, // Very large min width
       };
 
       const { result } = renderHook(() => useVirtualizedGrid(props));
@@ -216,7 +216,7 @@ describe('useVirtualizedGridPerformance', () => {
         renderTime: 16,
         visibleItems: 10,
         totalItems: 100,
-        memoryUsage: 1 // 10 items * 0.1 KB
+        memoryUsage: 1, // 10 items * 0.1 KB
       });
     });
 
@@ -236,7 +236,7 @@ describe('useVirtualizedGridPerformance', () => {
       expect(consoleSpy).toHaveBeenCalledWith(
         expect.stringContaining('Slow render detected'),
         expect.objectContaining({
-          renderTime: 50
+          renderTime: 50,
         })
       );
 
@@ -282,7 +282,7 @@ describe('useVirtualizedGridPerformance', () => {
         totalItems: 100,
         memoryUsage: 2.5,
         efficiency: '25.0%',
-        fps: 100 // 1000/10
+        fps: 100, // 1000/10
       });
     });
 
@@ -298,7 +298,7 @@ describe('useVirtualizedGridPerformance', () => {
         totalItems: 0,
         memoryUsage: 0,
         efficiency: '0%',
-        fps: 0
+        fps: 0,
       });
     });
 

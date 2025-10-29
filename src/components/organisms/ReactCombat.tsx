@@ -54,10 +54,10 @@ const ReactCombat: React.FC<ReactCombatProps> = ({ className }) => {
           magicAttack: level * 2 + 8,
           magicDefense: level * 2 + 8,
           speed: level + 5,
-          accuracy: 85 + Math.min(level, 15)
+          accuracy: 85 + Math.min(level, 15),
         },
         type: species,
-        abilities: ['basic_attack']
+        abilities: ['basic_attack'],
       };
 
       setEnemy(newEnemy);
@@ -86,7 +86,7 @@ const ReactCombat: React.FC<ReactCombatProps> = ({ className }) => {
     const playerDamage = calculateDamage(state.player, enemy);
     const newEnemyHp = Math.max(0, enemy.hp - playerDamage);
 
-    setEnemy(prev => prev ? { ...prev, hp: newEnemyHp } : null);
+    setEnemy(prev => (prev ? { ...prev, hp: newEnemyHp } : null));
     setCombatLog(prev => [...prev, `You attack ${enemy.name} for ${playerDamage} damage!`]);
 
     // Check if enemy is defeated
@@ -133,7 +133,7 @@ const ReactCombat: React.FC<ReactCombatProps> = ({ className }) => {
     const magicDamage = calculateDamage(state.player, enemy, false);
     const newEnemyHp = Math.max(0, enemy.hp - magicDamage);
 
-    setEnemy(prev => prev ? { ...prev, hp: newEnemyHp } : null);
+    setEnemy(prev => (prev ? { ...prev, hp: newEnemyHp } : null));
     setCombatLog(prev => [...prev, `You cast a spell on ${enemy.name} for ${magicDamage} damage!`]);
 
     // Check if enemy is defeated
@@ -168,14 +168,17 @@ const ReactCombat: React.FC<ReactCombatProps> = ({ className }) => {
 
   if (!state.player || !state.currentEncounter || !enemy) {
     return (
-      <div className={className} style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: '100vh',
-        background: 'linear-gradient(135deg, #1a1a2e, #16213e, #0f3460)',
-        color: '#f4f4f4'
-      }}>
+      <div
+        className={className}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+          background: 'linear-gradient(135deg, #1a1a2e, #16213e, #0f3460)',
+          color: '#f4f4f4',
+        }}
+      >
         <div>No combat encounter found...</div>
       </div>
     );
@@ -187,13 +190,13 @@ const ReactCombat: React.FC<ReactCombatProps> = ({ className }) => {
     height: '100vh',
     background: 'linear-gradient(135deg, #2d1b69, #1a0e33, #0f051c)',
     color: '#f4f4f4',
-    overflow: 'hidden'
+    overflow: 'hidden',
   };
 
   const battlefieldStyle: React.CSSProperties = {
     display: 'flex',
     height: '60%',
-    position: 'relative'
+    position: 'relative',
   };
 
   const playerSideStyle: React.CSSProperties = {
@@ -206,7 +209,7 @@ const ReactCombat: React.FC<ReactCombatProps> = ({ className }) => {
     border: '2px solid rgba(16, 185, 129, 0.5)',
     margin: '1rem',
     borderRadius: '12px',
-    padding: '1rem'
+    padding: '1rem',
   };
 
   const enemySideStyle: React.CSSProperties = {
@@ -219,14 +222,14 @@ const ReactCombat: React.FC<ReactCombatProps> = ({ className }) => {
     border: '2px solid rgba(239, 68, 68, 0.5)',
     margin: '1rem',
     borderRadius: '12px',
-    padding: '1rem'
+    padding: '1rem',
   };
 
   const characterStyle: React.CSSProperties = {
     fontSize: '4rem',
     marginBottom: '1rem',
     filter: isAttacking ? 'brightness(1.5)' : 'none',
-    transition: 'filter 0.3s ease'
+    transition: 'filter 0.3s ease',
   };
 
   const healthBarStyle: React.CSSProperties = {
@@ -235,14 +238,14 @@ const ReactCombat: React.FC<ReactCombatProps> = ({ className }) => {
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
     borderRadius: '10px',
     overflow: 'hidden',
-    marginBottom: '0.5rem'
+    marginBottom: '0.5rem',
   };
 
   const healthFillStyle = (current: number, max: number): React.CSSProperties => ({
     width: `${(current / max) * 100}%`,
     height: '100%',
     backgroundColor: current > max * 0.6 ? '#10b981' : current > max * 0.3 ? '#f59e0b' : '#ef4444',
-    transition: 'width 0.5s ease'
+    transition: 'width 0.5s ease',
   });
 
   const combatLogStyle: React.CSSProperties = {
@@ -253,7 +256,7 @@ const ReactCombat: React.FC<ReactCombatProps> = ({ className }) => {
     padding: '1rem',
     overflowY: 'auto',
     fontSize: '0.9rem',
-    lineHeight: '1.4'
+    lineHeight: '1.4',
   };
 
   const actionsStyle: React.CSSProperties = {
@@ -262,7 +265,7 @@ const ReactCombat: React.FC<ReactCombatProps> = ({ className }) => {
     alignItems: 'center',
     justifyContent: 'center',
     gap: '1rem',
-    padding: '0 1rem'
+    padding: '0 1rem',
   };
 
   return (
@@ -313,8 +316,8 @@ const ReactCombat: React.FC<ReactCombatProps> = ({ className }) => {
       {/* Action Buttons */}
       <div style={actionsStyle}>
         <Button
-          variant="primary"
-          size="lg"
+          variant='primary'
+          size='lg'
           onClick={performAttack}
           disabled={!playerTurn || isAttacking}
           style={{ minWidth: '120px' }}
@@ -323,8 +326,8 @@ const ReactCombat: React.FC<ReactCombatProps> = ({ className }) => {
         </Button>
 
         <Button
-          variant="secondary"
-          size="lg"
+          variant='secondary'
+          size='lg'
           onClick={performMagicAttack}
           disabled={!playerTurn || isAttacking || state.player.mp < 10}
           style={{ minWidth: '120px' }}
@@ -333,8 +336,8 @@ const ReactCombat: React.FC<ReactCombatProps> = ({ className }) => {
         </Button>
 
         <Button
-          variant="danger"
-          size="lg"
+          variant='danger'
+          size='lg'
           onClick={flee}
           disabled={isAttacking}
           style={{ minWidth: '120px' }}
@@ -344,10 +347,7 @@ const ReactCombat: React.FC<ReactCombatProps> = ({ className }) => {
       </div>
 
       {/* Victory Modal */}
-      <VictoryModal
-        isVisible={state.showVictoryModal}
-        onClose={() => {}}
-      />
+      <VictoryModal isVisible={state.showVictoryModal} onClose={() => {}} />
     </div>
   );
 };

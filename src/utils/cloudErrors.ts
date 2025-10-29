@@ -47,7 +47,7 @@ export enum CloudErrorCode {
 
   // Generic errors
   UNKNOWN = 'unknown',
-  INTERNAL = 'internal'
+  INTERNAL = 'internal',
 }
 
 // Error severity levels
@@ -55,7 +55,7 @@ export enum ErrorSeverity {
   LOW = 'low',
   MEDIUM = 'medium',
   HIGH = 'high',
-  CRITICAL = 'critical'
+  CRITICAL = 'critical',
 }
 
 // Cloud error interface
@@ -89,7 +89,7 @@ export function convertFirebaseError(error: FirebaseError | Error | any): CloudE
           severity: ErrorSeverity.MEDIUM,
           retryable: false,
           userMessage: 'Authentication failed. Please check your credentials.',
-          timestamp
+          timestamp,
         };
 
       case 'auth/network-request-failed':
@@ -99,7 +99,7 @@ export function convertFirebaseError(error: FirebaseError | Error | any): CloudE
           severity: ErrorSeverity.HIGH,
           retryable: true,
           userMessage: 'Network error. Please check your connection and try again.',
-          timestamp
+          timestamp,
         };
 
       // Firestore errors
@@ -110,7 +110,7 @@ export function convertFirebaseError(error: FirebaseError | Error | any): CloudE
           severity: ErrorSeverity.HIGH,
           retryable: false,
           userMessage: 'Permission denied. Please sign in and try again.',
-          timestamp
+          timestamp,
         };
 
       case 'unavailable':
@@ -120,7 +120,7 @@ export function convertFirebaseError(error: FirebaseError | Error | any): CloudE
           severity: ErrorSeverity.HIGH,
           retryable: true,
           userMessage: 'Service temporarily unavailable. Please try again later.',
-          timestamp
+          timestamp,
         };
 
       case 'quota-exceeded':
@@ -130,7 +130,7 @@ export function convertFirebaseError(error: FirebaseError | Error | any): CloudE
           severity: ErrorSeverity.CRITICAL,
           retryable: false,
           userMessage: 'Storage quota exceeded. Please delete some saves to free up space.',
-          timestamp
+          timestamp,
         };
 
       // Storage errors
@@ -141,7 +141,7 @@ export function convertFirebaseError(error: FirebaseError | Error | any): CloudE
           severity: ErrorSeverity.MEDIUM,
           retryable: false,
           userMessage: 'Save file not found in cloud storage.',
-          timestamp
+          timestamp,
         };
 
       case 'storage/quota-exceeded':
@@ -151,7 +151,7 @@ export function convertFirebaseError(error: FirebaseError | Error | any): CloudE
           severity: ErrorSeverity.CRITICAL,
           retryable: false,
           userMessage: 'Cloud storage quota exceeded. Please delete some saves.',
-          timestamp
+          timestamp,
         };
     }
   }
@@ -164,7 +164,7 @@ export function convertFirebaseError(error: FirebaseError | Error | any): CloudE
       severity: ErrorSeverity.HIGH,
       retryable: true,
       userMessage: 'Network error. Please check your connection.',
-      timestamp
+      timestamp,
     };
   }
 
@@ -176,7 +176,7 @@ export function convertFirebaseError(error: FirebaseError | Error | any): CloudE
       severity: ErrorSeverity.MEDIUM,
       retryable: true,
       userMessage: 'Operation timed out. Please try again.',
-      timestamp
+      timestamp,
     };
   }
 
@@ -188,7 +188,7 @@ export function convertFirebaseError(error: FirebaseError | Error | any): CloudE
     retryable: true,
     userMessage: 'An unexpected error occurred. Please try again.',
     debugInfo: error,
-    timestamp
+    timestamp,
   };
 }
 
@@ -217,7 +217,7 @@ export function logCloudError(error: CloudError, context?: string): void {
     [ErrorSeverity.LOW]: 'debug',
     [ErrorSeverity.MEDIUM]: 'warn',
     [ErrorSeverity.HIGH]: 'error',
-    [ErrorSeverity.CRITICAL]: 'error'
+    [ErrorSeverity.CRITICAL]: 'error',
   }[error.severity];
 
   const logData = {
@@ -228,7 +228,7 @@ export function logCloudError(error: CloudError, context?: string): void {
     timestamp: error.timestamp,
     context,
     operationId: error.operationId,
-    debugInfo: error.debugInfo
+    debugInfo: error.debugInfo,
   };
 
   (console[logLevel as keyof Console] as any)('Cloud operation error:', logData);
@@ -291,7 +291,7 @@ export function createCloudError(
     userMessage: options.userMessage || message,
     debugInfo: options.debugInfo,
     timestamp: new Date(),
-    operationId: options.operationId
+    operationId: options.operationId,
   };
 }
 
@@ -376,6 +376,6 @@ export function processBatchErrors(errors: (CloudError | null)[]): {
     failed,
     retryable,
     criticalErrors,
-    summary
+    summary,
   };
 }

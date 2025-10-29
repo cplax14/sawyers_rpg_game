@@ -12,13 +12,13 @@ const mockNavigator = {
     effectiveType: '4g',
     downlink: 10,
     rtt: 50,
-    saveData: false
-  }
+    saveData: false,
+  },
 } as any;
 
 Object.defineProperty(global, 'navigator', {
   writable: true,
-  value: mockNavigator
+  value: mockNavigator,
 });
 
 // Mock window.addEventListener
@@ -45,7 +45,7 @@ const mockEventListeners: { [key: string]: EventListener[] } = {};
   }),
   clearInterval: jest.fn((id: number) => {
     clearTimeout(id);
-  })
+  }),
 };
 
 // Mock fetch
@@ -59,7 +59,7 @@ describe('NetworkStatusManager', () => {
     (global.fetch as jest.Mock).mockClear();
     networkManager = new NetworkStatusManager({
       pingInterval: 0, // Disable automatic pings for tests
-      enableDetailedInfo: true
+      enableDetailedInfo: true,
     });
   });
 
@@ -119,9 +119,7 @@ describe('NetworkStatusManager', () => {
 
   describe('connectivity checks', () => {
     test('should perform connectivity check successfully', async () => {
-      (global.fetch as jest.Mock).mockResolvedValue(
-        new Response('OK', { status: 200 })
-      );
+      (global.fetch as jest.Mock).mockResolvedValue(new Response('OK', { status: 200 }));
 
       const result = await networkManager.checkConnectivity();
       expect(result).toBe(true);
@@ -129,7 +127,7 @@ describe('NetworkStatusManager', () => {
         expect.stringContaining('google.com'),
         expect.objectContaining({
           method: 'HEAD',
-          mode: 'no-cors'
+          mode: 'no-cors',
         })
       );
     });
@@ -149,7 +147,7 @@ describe('NetworkStatusManager', () => {
 
       const manager = new NetworkStatusManager({
         pingInterval: 0,
-        retryAttempts: 3
+        retryAttempts: 3,
       });
 
       const result = await manager.checkConnectivity();
@@ -206,7 +204,7 @@ describe('NetworkStatusManager', () => {
       // Should be called immediately with current status
       expect(listener).toHaveBeenCalledWith(
         expect.objectContaining({
-          isOnline: true
+          isOnline: true,
         })
       );
 
@@ -248,7 +246,7 @@ describe('NetworkStatusManager', () => {
         totalOnlineTime: expect.any(Number),
         totalOfflineTime: expect.any(Number),
         currentSessionDuration: expect.any(Number),
-        connectionSwitches: 0
+        connectionSwitches: 0,
       });
     });
   });
