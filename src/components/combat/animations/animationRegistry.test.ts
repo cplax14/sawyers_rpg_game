@@ -330,7 +330,7 @@ describe('animationRegistry', () => {
         'buff',
         'heal',
         'debuff',
-        'physical'
+        'physical',
       ];
 
       Object.entries(ATTACK_ANIMATION_MAP).forEach(([spellId, metadata]) => {
@@ -347,7 +347,7 @@ describe('animationRegistry', () => {
         'arcane',
         'nature',
         'neutral',
-        'poison'
+        'poison',
       ];
 
       Object.entries(ATTACK_ANIMATION_MAP).forEach(([spellId, metadata]) => {
@@ -428,7 +428,7 @@ describe('animationRegistry', () => {
         'buff',
         'heal',
         'debuff',
-        'physical'
+        'physical',
       ];
 
       allSpells.forEach(spellId => {

@@ -60,7 +60,7 @@ const GameCanvas: React.FC = () => {
   }, []);
 
   return (
-    <div className="game-canvas-container">
+    <div className='game-canvas-container'>
       <canvas
         ref={canvasRef}
         width={800}

@@ -11,7 +11,7 @@ const STORAGE_KEYS = {
   SESSION_DATA: 'session_data',
   LAST_ACTIVITY: 'last_activity',
   REMEMBER_ME: 'remember_me',
-  USER_PREFERENCES: 'user_preferences'
+  USER_PREFERENCES: 'user_preferences',
 } as const;
 
 // Types for persistent data
@@ -65,24 +65,24 @@ const DEFAULT_AUTH_PREFERENCES: AuthPreferences = {
   keepMeSignedIn: true,
   lastSignInMethod: null,
   preferredTheme: 'system',
-  language: 'en'
+  language: 'en',
 };
 
 const DEFAULT_USER_PREFERENCES: UserPreferences = {
   notifications: {
     email: true,
     push: true,
-    marketing: false
+    marketing: false,
   },
   privacy: {
     profileVisible: true,
-    shareAnalytics: true
+    shareAnalytics: true,
   },
   accessibility: {
     reducedMotion: false,
     highContrast: false,
-    fontSize: 'medium'
-  }
+    fontSize: 'medium',
+  },
 };
 
 /**
@@ -172,10 +172,10 @@ export class AuthPersistenceManager {
       deviceInfo: {
         userAgent: navigator.userAgent,
         platform: navigator.platform,
-        language: navigator.language
+        language: navigator.language,
       },
       loginAttempts: 0,
-      lastLoginTime: Date.now()
+      lastLoginTime: Date.now(),
     };
 
     this.setSessionData(sessionData);
@@ -270,7 +270,7 @@ export class AuthPersistenceManager {
     }
 
     const timeoutMs = preferences.sessionTimeout * 60 * 1000;
-    return (Date.now() - lastActivity) > timeoutMs;
+    return Date.now() - lastActivity > timeoutMs;
   }
 
   /**
@@ -324,8 +324,8 @@ export class AuthPersistenceManager {
       userPreferences: this.getUserPreferences(userId),
       sessionInfo: {
         lastActivity: this.getLastActivity(),
-        rememberMe: this.getRememberMe()
-      }
+        rememberMe: this.getRememberMe(),
+      },
     };
   }
 
@@ -394,9 +394,9 @@ export class AuthPersistenceManager {
       localStorageUsed,
       sessionStorageUsed,
       totalKeys,
-      authKeys: authKeys.filter(key =>
-        this.storage.getItem(key) || this.sessionStorage.getItem(key)
-      )
+      authKeys: authKeys.filter(
+        key => this.storage.getItem(key) || this.sessionStorage.getItem(key)
+      ),
     };
   }
 }

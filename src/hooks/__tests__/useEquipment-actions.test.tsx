@@ -39,14 +39,18 @@ const useTestHooks = () => {
   return {
     game: gameHook,
     equipment: equipmentHook,
-    inventory: inventoryHook
+    inventory: inventoryHook,
   };
 };
 
 /**
  * Helper to create a test player and wait for initialization
  */
-const createTestPlayer = async (result: any, playerClass: string = 'warrior', level: number = 1) => {
+const createTestPlayer = async (
+  result: any,
+  playerClass: string = 'warrior',
+  level: number = 1
+) => {
   await act(async () => {
     result.current.game.createPlayer('TestPlayer', playerClass);
   });
@@ -98,14 +102,14 @@ const createMockItem = (overrides: Partial<EnhancedItem> = {}): EnhancedItem => 
     useInCombat: false,
     useOutOfCombat: false,
     statModifiers: {
-      attack: 10
+      attack: 10,
     },
     requirements: {
       level: 1,
       classes: [],
-      stats: {}
+      stats: {},
     },
-    ...overrides
+    ...overrides,
   };
 };
 
@@ -146,7 +150,7 @@ describe('Task 9.1: equipItem successfully equips valid items', () => {
       name: 'Iron Sword',
       equipmentSlot: 'weapon',
       equipmentSubtype: 'sword',
-      statModifiers: { attack: 10 }
+      statModifiers: { attack: 10 },
     });
 
     await addItemToInventory(result, testSword);
@@ -162,7 +166,7 @@ describe('Task 9.1: equipItem successfully equips valid items', () => {
       console.log('❌ Equipment failed:', {
         message: equipResult.message,
         errors: equipResult.errors,
-        player: result.current.game.state.player
+        player: result.current.game.state.player,
       });
     }
 
@@ -183,7 +187,7 @@ describe('Task 9.1: equipItem successfully equips valid items', () => {
       name: 'Leather Armor',
       equipmentSlot: 'armor',
       equipmentSubtype: 'chestplate',
-      statModifiers: { defense: 15 }
+      statModifiers: { defense: 15 },
     });
 
     await addItemToInventory(result, testArmor);
@@ -199,7 +203,7 @@ describe('Task 9.1: equipItem successfully equips valid items', () => {
       console.log('❌ Armor equip failed:', {
         message: equipResult.message,
         errors: equipResult.errors,
-        itemSlot: testArmor.equipmentSlot
+        itemSlot: testArmor.equipmentSlot,
       });
     }
 
@@ -218,7 +222,7 @@ describe('Task 9.1: equipItem successfully equips valid items', () => {
       id: 'sword_1',
       name: 'Sword',
       equipmentSlot: 'weapon',
-      statModifiers: { attack: 10 }
+      statModifiers: { attack: 10 },
     });
 
     const helmet = createMockItem({
@@ -226,7 +230,7 @@ describe('Task 9.1: equipItem successfully equips valid items', () => {
       name: 'Helmet',
       equipmentSlot: 'helmet',
       equipmentSubtype: 'helmet',
-      statModifiers: { defense: 5 }
+      statModifiers: { defense: 5 },
     });
 
     const boots = createMockItem({
@@ -234,7 +238,7 @@ describe('Task 9.1: equipItem successfully equips valid items', () => {
       name: 'Boots',
       equipmentSlot: 'boots',
       equipmentSubtype: 'boots',
-      statModifiers: { speed: 3 }
+      statModifiers: { speed: 3 },
     });
 
     await addItemToInventory(result, sword);
@@ -278,7 +282,7 @@ describe('Task 9.1: equipItem successfully equips valid items', () => {
       name: 'Ring of Power',
       equipmentSlot: 'ring1',
       equipmentSubtype: 'ring',
-      statModifiers: { attack: 5, magicAttack: 5 }
+      statModifiers: { attack: 5, magicAttack: 5 },
     });
 
     await addItemToInventory(result, ring);
@@ -308,7 +312,7 @@ describe('Task 9.1: equipItem successfully equips valid items', () => {
       name: 'Leather Gloves',
       equipmentSlot: 'gloves',
       equipmentSubtype: 'gloves',
-      statModifiers: { accuracy: 2 }
+      statModifiers: { accuracy: 2 },
     });
 
     await addItemToInventory(result, gloves);
@@ -341,7 +345,7 @@ describe('Task 9.2: equipItem rejects items below level requirement', () => {
       name: 'Legendary Sword',
       equipmentSlot: 'weapon',
       levelRequirement: 10, // Requires level 10
-      statModifiers: { attack: 50 }
+      statModifiers: { attack: 50 },
     });
 
     await addItemToInventory(result, highLevelSword);
@@ -364,13 +368,12 @@ describe('Task 9.2: equipItem rejects items below level requirement', () => {
     const { result } = renderHook(() => useTestHooks(), { wrapper });
     await createTestPlayer(result, 'warrior', 3); // Level 3 player
 
-
     const level5Armor = createMockItem({
       id: 'epic_armor',
       name: 'Epic Chestplate',
       equipmentSlot: 'armor',
       levelRequirement: 5,
-      statModifiers: { defense: 30 }
+      statModifiers: { defense: 30 },
     });
 
     await addItemToInventory(result, level5Armor);
@@ -397,7 +400,7 @@ describe('Task 9.2: equipItem rejects items below level requirement', () => {
       name: 'Dragon Helmet',
       equipmentSlot: 'helmet',
       levelRequirement: 8,
-      statModifiers: { defense: 20, magicDefense: 15 }
+      statModifiers: { defense: 20, magicDefense: 15 },
     });
 
     await addItemToInventory(result, highLevelHelmet);
@@ -425,13 +428,12 @@ describe('Task 9.3: equipItem rejects items with wrong class requirement', () =>
     const { result } = renderHook(() => useTestHooks(), { wrapper });
     await createTestPlayer(result, 'warrior', 5); // Warrior class
 
-
     const mageStaff = createMockItem({
       id: 'wizard_staff',
       name: 'Wizard Staff',
       equipmentSlot: 'weapon',
       classRequirement: ['mage'], // Mage only
-      statModifiers: { magicAttack: 40 }
+      statModifiers: { magicAttack: 40 },
     });
 
     await addItemToInventory(result, mageStaff);
@@ -454,13 +456,12 @@ describe('Task 9.3: equipItem rejects items with wrong class requirement', () =>
     const { result } = renderHook(() => useTestHooks(), { wrapper });
     await createTestPlayer(result, 'archer', 5); // Archer class
 
-
     const warriorArmor = createMockItem({
       id: 'plate_armor',
       name: 'Heavy Plate Armor',
       equipmentSlot: 'armor',
       classRequirement: ['warrior', 'knight'],
-      statModifiers: { defense: 50 }
+      statModifiers: { defense: 50 },
     });
 
     await addItemToInventory(result, warriorArmor);
@@ -487,7 +488,7 @@ describe('Task 9.3: equipItem rejects items with wrong class requirement', () =>
       name: 'Arcane Robe',
       equipmentSlot: 'armor',
       classRequirement: ['mage', 'wizard'],
-      statModifiers: { magicDefense: 30 }
+      statModifiers: { magicDefense: 30 },
     });
 
     await addItemToInventory(result, mageRobe);
@@ -514,7 +515,7 @@ describe('Task 9.3: equipItem rejects items with wrong class requirement', () =>
       name: 'Versatile Sword',
       equipmentSlot: 'weapon',
       classRequirement: ['warrior', 'knight', 'paladin'],
-      statModifiers: { attack: 20 }
+      statModifiers: { attack: 20 },
     });
 
     await addItemToInventory(result, universalSword);
@@ -545,14 +546,14 @@ describe('Task 9.4: equipItem returns old item to inventory when replacing', () 
       id: 'iron_sword',
       name: 'Iron Sword',
       equipmentSlot: 'weapon',
-      statModifiers: { attack: 10 }
+      statModifiers: { attack: 10 },
     });
 
     const newSword = createMockItem({
       id: 'steel_sword',
       name: 'Steel Sword',
       equipmentSlot: 'weapon',
-      statModifiers: { attack: 20 }
+      statModifiers: { attack: 20 },
     });
 
     // Add both swords to inventory
@@ -582,9 +583,7 @@ describe('Task 9.4: equipItem returns old item to inventory when replacing', () 
     // Verify old sword is back in inventory
     await waitFor(() => {
       const mainInventory = result.current.inventory.inventoryState.containers.main;
-      const hasOldSword = mainInventory.items.some(
-        (slot: any) => slot.item?.id === oldSword.id
-      );
+      const hasOldSword = mainInventory.items.some((slot: any) => slot.item?.id === oldSword.id);
       expect(hasOldSword).toBe(true);
     });
   });
@@ -598,14 +597,14 @@ describe('Task 9.4: equipItem returns old item to inventory when replacing', () 
       id: 'leather_helmet',
       name: 'Leather Helmet',
       equipmentSlot: 'helmet',
-      statModifiers: { defense: 5 }
+      statModifiers: { defense: 5 },
     });
 
     const ironHelmet = createMockItem({
       id: 'iron_helmet',
       name: 'Iron Helmet',
       equipmentSlot: 'helmet',
-      statModifiers: { defense: 12 }
+      statModifiers: { defense: 12 },
     });
 
     await addItemToInventory(result, leatherHelmet);
@@ -637,14 +636,14 @@ describe('Task 9.4: equipItem returns old item to inventory when replacing', () 
       id: 'old_boots',
       name: 'Old Boots',
       equipmentSlot: 'boots',
-      statModifiers: { speed: 2 }
+      statModifiers: { speed: 2 },
     });
 
     const newBoots = createMockItem({
       id: 'new_boots',
       name: 'New Boots',
       equipmentSlot: 'boots',
-      statModifiers: { speed: 8 }
+      statModifiers: { speed: 8 },
     });
 
     await addItemToInventory(result, oldBoots);
@@ -663,9 +662,7 @@ describe('Task 9.4: equipItem returns old item to inventory when replacing', () 
     // Assert - Old boots should be findable in inventory
     await waitFor(() => {
       const mainInventory = result.current.inventory.inventoryState.containers.main;
-      const oldBootsSlot = mainInventory.items.find(
-        (slot: any) => slot.item?.id === oldBoots.id
-      );
+      const oldBootsSlot = mainInventory.items.find((slot: any) => slot.item?.id === oldBoots.id);
       expect(oldBootsSlot).toBeDefined();
       expect(oldBootsSlot.item.name).toBe('Old Boots');
       expect(oldBootsSlot.quantity).toBeGreaterThan(0);
@@ -681,14 +678,14 @@ describe('Task 9.4: equipItem returns old item to inventory when replacing', () 
       id: 'silver_ring',
       name: 'Silver Ring',
       equipmentSlot: 'ring1',
-      statModifiers: { attack: 3 }
+      statModifiers: { attack: 3 },
     });
 
     const ring2 = createMockItem({
       id: 'gold_ring',
       name: 'Gold Ring',
       equipmentSlot: 'ring1',
-      statModifiers: { attack: 7 }
+      statModifiers: { attack: 7 },
     });
 
     await addItemToInventory(result, ring1);
@@ -731,7 +728,7 @@ describe('Task 9.6: calculateFinalStats correctly sums base + equipment stats', 
       id: 'attack_sword',
       name: 'Attack Sword',
       equipmentSlot: 'weapon',
-      statModifiers: { attack: 15 }
+      statModifiers: { attack: 15 },
     });
 
     await addItemToInventory(result, sword);
@@ -761,21 +758,21 @@ describe('Task 9.6: calculateFinalStats correctly sums base + equipment stats', 
       id: 'def_helmet',
       name: 'Defense Helmet',
       equipmentSlot: 'helmet',
-      statModifiers: { defense: 10 }
+      statModifiers: { defense: 10 },
     });
 
     const armor = createMockItem({
       id: 'def_armor',
       name: 'Defense Armor',
       equipmentSlot: 'armor',
-      statModifiers: { defense: 20 }
+      statModifiers: { defense: 20 },
     });
 
     const gloves = createMockItem({
       id: 'def_gloves',
       name: 'Defense Gloves',
       equipmentSlot: 'gloves',
-      statModifiers: { defense: 5 }
+      statModifiers: { defense: 5 },
     });
 
     await addItemToInventory(result, helmet);
@@ -830,8 +827,8 @@ describe('Task 9.6: calculateFinalStats correctly sums base + equipment stats', 
       equipmentSlot: 'armor',
       statModifiers: {
         defense: 40,
-        speed: -10 // Heavy armor slows you down
-      }
+        speed: -10, // Heavy armor slows you down
+      },
     });
 
     await addItemToInventory(result, heavyArmor);
@@ -860,14 +857,14 @@ describe('Task 9.6: calculateFinalStats correctly sums base + equipment stats', 
       id: 'weak_sword',
       name: 'Weak Sword',
       equipmentSlot: 'weapon',
-      statModifiers: { attack: 5 }
+      statModifiers: { attack: 5 },
     });
 
     const strongSword = createMockItem({
       id: 'strong_sword',
       name: 'Strong Sword',
       equipmentSlot: 'weapon',
-      statModifiers: { attack: 25 }
+      statModifiers: { attack: 25 },
     });
 
     await addItemToInventory(result, weakSword);
@@ -910,7 +907,7 @@ describe('Task 9.7: checkCompatibility validates all restriction types', () => {
       id: 'level_10_item',
       name: 'Level 10 Item',
       equipmentSlot: 'weapon',
-      levelRequirement: 10
+      levelRequirement: 10,
     });
 
     // Act
@@ -923,8 +920,8 @@ describe('Task 9.7: checkCompatibility validates all restriction types', () => {
         expect.objectContaining({
           type: 'level_requirement',
           satisfied: false,
-          required: 10
-        })
+          required: 10,
+        }),
       ])
     );
   });
@@ -938,7 +935,7 @@ describe('Task 9.7: checkCompatibility validates all restriction types', () => {
       id: 'mage_only_item',
       name: 'Mage Only Item',
       equipmentSlot: 'weapon',
-      classRequirement: ['mage', 'wizard']
+      classRequirement: ['mage', 'wizard'],
     });
 
     // Act
@@ -952,8 +949,8 @@ describe('Task 9.7: checkCompatibility validates all restriction types', () => {
           type: 'class_requirement',
           satisfied: false,
           current: 'warrior',
-          required: ['mage', 'wizard']
-        })
+          required: ['mage', 'wizard'],
+        }),
       ])
     );
   });
@@ -963,15 +960,14 @@ describe('Task 9.7: checkCompatibility validates all restriction types', () => {
     const { result } = renderHook(() => useTestHooks(), { wrapper });
     await createTestPlayer(result, 'warrior', 1); // Low level = low stats
 
-
     const highStatItem = createMockItem({
       id: 'stat_req_item',
       name: 'High Stat Item',
       equipmentSlot: 'weapon',
       equipmentSubtype: 'sword',
       requirements: {
-        stats: { attack: 50 } // Requires 50 attack
-      }
+        stats: { attack: 50 }, // Requires 50 attack
+      },
     });
 
     // Act
@@ -982,8 +978,8 @@ describe('Task 9.7: checkCompatibility validates all restriction types', () => {
       expect(compatibility.reasons).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            type: 'stat_requirement'
-          })
+            type: 'stat_requirement',
+          }),
         ])
       );
     }
@@ -997,7 +993,7 @@ describe('Task 9.7: checkCompatibility validates all restriction types', () => {
     const helmetItem = createMockItem({
       id: 'test_helmet',
       name: 'Test Helmet',
-      equipmentSlot: 'helmet'
+      equipmentSlot: 'helmet',
     });
 
     // Act - Try to equip helmet in weapon slot (wrong slot)
@@ -1009,8 +1005,8 @@ describe('Task 9.7: checkCompatibility validates all restriction types', () => {
       expect.arrayContaining([
         expect.objectContaining({
           type: 'slot_conflict',
-          satisfied: false
-        })
+          satisfied: false,
+        }),
       ])
     );
   });
@@ -1025,7 +1021,7 @@ describe('Task 9.7: checkCompatibility validates all restriction types', () => {
       id: 'test_shield',
       name: 'Test Shield',
       equipmentSlot: 'shield',
-      statModifiers: { defense: 10 }
+      statModifiers: { defense: 10 },
     });
 
     await addItemToInventory(result, shield);
@@ -1039,14 +1035,11 @@ describe('Task 9.7: checkCompatibility validates all restriction types', () => {
       name: 'Two-Handed Sword',
       equipmentSlot: 'weapon',
       twoHanded: true,
-      statModifiers: { attack: 40 }
+      statModifiers: { attack: 40 },
     });
 
     // Act
-    const compatibility = result.current.equipment.checkCompatibility(
-      twoHandedSword,
-      'weapon'
-    );
+    const compatibility = result.current.equipment.checkCompatibility(twoHandedSword, 'weapon');
 
     // Assert - Should have warnings about shield conflict
     expect(compatibility.warnings.length).toBeGreaterThan(0);
@@ -1067,7 +1060,7 @@ describe('Task 9.7: checkCompatibility validates all restriction types', () => {
       equipmentSlot: 'weapon',
       levelRequirement: 3,
       classRequirement: ['warrior', 'knight'],
-      statModifiers: { attack: 15 }
+      statModifiers: { attack: 15 },
     });
 
     // Act
@@ -1088,7 +1081,7 @@ describe('Task 9.7: checkCompatibility validates all restriction types', () => {
       name: 'Restricted Item',
       equipmentSlot: 'weapon',
       levelRequirement: 8,
-      statModifiers: { attack: 30 }
+      statModifiers: { attack: 30 },
     });
 
     // Act

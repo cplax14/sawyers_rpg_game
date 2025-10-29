@@ -12,47 +12,89 @@ import { CreatureScreen } from './CreatureScreen';
 jest.mock('../../hooks/useCreatures');
 jest.mock('../../contexts/ReactGameContext');
 jest.mock('../../hooks', () => ({
-  useResponsive: jest.fn()
+  useResponsive: jest.fn(),
 }));
 jest.mock('../../utils/creatureUtils');
 
 // Mock child components
 jest.mock('../atoms/Button', () => ({
   Button: ({ children, onClick, disabled, variant, ...props }: any) => (
-    <button onClick={onClick} disabled={disabled} data-testid="button" data-variant={variant} {...props}>
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      data-testid='button'
+      data-variant={variant}
+      {...props}
+    >
       {children}
     </button>
-  )
+  ),
 }));
 jest.mock('../atoms/LoadingSpinner', () => ({
-  LoadingSpinner: () => <div data-testid="loading-spinner">Loading...</div>
+  LoadingSpinner: () => <div data-testid='loading-spinner'>Loading...</div>,
 }));
 jest.mock('../molecules/CreatureCard', () => ({
-  CreatureCard: ({ creature, onClick, onRelease, onAddToTeam, onBreed, onTrade, ...props }: any) => (
-    <div data-testid="creature-card" data-creature-id={creature?.id} {...props}>
+  CreatureCard: ({
+    creature,
+    onClick,
+    onRelease,
+    onAddToTeam,
+    onBreed,
+    onTrade,
+    ...props
+  }: any) => (
+    <div data-testid='creature-card' data-creature-id={creature?.id} {...props}>
       <span>{creature?.name}</span>
       <span>Level: {creature?.level}</span>
       <span>Type: {creature?.type}</span>
       <span>Rarity: {creature?.rarity}</span>
-      {onClick && <button onClick={() => onClick(creature)} data-testid="creature-click">Click</button>}
-      {onRelease && <button onClick={() => onRelease(creature)} data-testid="creature-release">Release</button>}
-      {onAddToTeam && <button onClick={() => onAddToTeam(creature)} data-testid="creature-add-team">Add to Team</button>}
-      {onBreed && <button onClick={() => onBreed(creature)} data-testid="creature-breed">Breed</button>}
-      {onTrade && <button onClick={() => onTrade(creature)} data-testid="creature-trade">Trade</button>}
+      {onClick && (
+        <button onClick={() => onClick(creature)} data-testid='creature-click'>
+          Click
+        </button>
+      )}
+      {onRelease && (
+        <button onClick={() => onRelease(creature)} data-testid='creature-release'>
+          Release
+        </button>
+      )}
+      {onAddToTeam && (
+        <button onClick={() => onAddToTeam(creature)} data-testid='creature-add-team'>
+          Add to Team
+        </button>
+      )}
+      {onBreed && (
+        <button onClick={() => onBreed(creature)} data-testid='creature-breed'>
+          Breed
+        </button>
+      )}
+      {onTrade && (
+        <button onClick={() => onTrade(creature)} data-testid='creature-trade'>
+          Trade
+        </button>
+      )}
     </div>
-  )
+  ),
 }));
 
 // Import mocked modules
 import { useCreatures } from '../../hooks/useCreatures';
 import { useGameState } from '../../contexts/ReactGameContext';
 import { useResponsive } from '../../hooks';
-import { checkBreedingCompatibility, breedCreatures, generateNPCTraders, canMakeTrade, executeNPCTrade } from '../../utils/creatureUtils';
+import {
+  checkBreedingCompatibility,
+  breedCreatures,
+  generateNPCTraders,
+  canMakeTrade,
+  executeNPCTrade,
+} from '../../utils/creatureUtils';
 
 const mockUseCreatures = useCreatures as jest.MockedFunction<typeof useCreatures>;
 const mockUseGameState = useGameState as jest.MockedFunction<typeof useGameState>;
 const mockUseResponsive = useResponsive as jest.MockedFunction<typeof useResponsive>;
-const mockCheckBreedingCompatibility = checkBreedingCompatibility as jest.MockedFunction<typeof checkBreedingCompatibility>;
+const mockCheckBreedingCompatibility = checkBreedingCompatibility as jest.MockedFunction<
+  typeof checkBreedingCompatibility
+>;
 const mockBreedCreatures = breedCreatures as jest.MockedFunction<typeof breedCreatures>;
 const mockGenerateNPCTraders = generateNPCTraders as jest.MockedFunction<typeof generateNPCTraders>;
 const mockCanMakeTrade = canMakeTrade as jest.MockedFunction<typeof canMakeTrade>;
@@ -75,21 +117,21 @@ describe('CreatureScreen Component', () => {
       attack: 80,
       defense: 60,
       speed: 90,
-      mana: 40
+      mana: 40,
     },
     currentStats: {
       health: 120,
       attack: 80,
       defense: 60,
       speed: 90,
-      mana: 40
+      mana: 40,
     },
     capturedAt: new Date('2024-01-15'),
     discoveredAt: new Date('2024-01-10'),
     abilities: ['Shadow Strike', 'Pack Hunt'],
     isCaptured: true,
     isInTeam: false,
-    breedingEligible: true
+    breedingEligible: true,
   };
 
   const mockDragonCreature = {
@@ -106,21 +148,21 @@ describe('CreatureScreen Component', () => {
       attack: 150,
       defense: 120,
       speed: 70,
-      mana: 100
+      mana: 100,
     },
     currentStats: {
       health: 200,
       attack: 150,
       defense: 120,
       speed: 70,
-      mana: 100
+      mana: 100,
     },
     capturedAt: new Date('2024-01-20'),
     discoveredAt: new Date('2024-01-18'),
     abilities: ['Fire Breath', 'Dragon Roar', 'Wing Strike'],
     isCaptured: true,
     isInTeam: true,
-    breedingEligible: true
+    breedingEligible: true,
   };
 
   const mockElementalCreature = {
@@ -137,28 +179,28 @@ describe('CreatureScreen Component', () => {
       attack: 70,
       defense: 80,
       speed: 85,
-      mana: 120
+      mana: 120,
     },
     currentStats: {
       health: 100,
       attack: 70,
       defense: 80,
       speed: 85,
-      mana: 120
+      mana: 120,
     },
     capturedAt: null,
     discoveredAt: new Date('2024-01-12'),
     abilities: ['Water Surge', 'Healing Stream'],
     isCaptured: false,
     isInTeam: false,
-    breedingEligible: false
+    breedingEligible: false,
   };
 
   const mockCollection = [mockBeastCreature, mockDragonCreature];
   const mockBestiary = [
     { creature: mockBeastCreature },
     { creature: mockDragonCreature },
-    { creature: mockElementalCreature }
+    { creature: mockElementalCreature },
   ];
   const mockActiveTeam = [mockDragonCreature];
 
@@ -171,10 +213,10 @@ describe('CreatureScreen Component', () => {
         {
           id: 'offer-1',
           wants: { type: 'beast', rarity: 'common' },
-          gives: { gold: 100, items: ['Beast Food'] }
-        }
-      ]
-    }
+          gives: { gold: 100, items: ['Beast Food'] },
+        },
+      ],
+    },
   ];
 
   const defaultMocks = {
@@ -189,13 +231,13 @@ describe('CreatureScreen Component', () => {
         total: 2,
         captured: 2,
         discovered: 3,
-        completionPercentage: 67
+        completionPercentage: 67,
       }),
-      searchCreatures: jest.fn().mockImplementation((query) =>
-        mockBestiary.filter(creature =>
-          creature.name.toLowerCase().includes(query.toLowerCase())
-        )
-      ),
+      searchCreatures: jest
+        .fn()
+        .mockImplementation(query =>
+          mockBestiary.filter(creature => creature.name.toLowerCase().includes(query.toLowerCase()))
+        ),
       filterCreatures: jest.fn().mockImplementation((creatures, filter) => {
         if (filter.type === 'all') return creatures;
         return creatures.filter(creature => creature.type === filter.type);
@@ -207,7 +249,7 @@ describe('CreatureScreen Component', () => {
           }
           return 0;
         });
-      })
+      }),
     },
     gameState: {
       gameState: {
@@ -221,24 +263,24 @@ describe('CreatureScreen Component', () => {
             agility: 18,
             intelligence: 10,
             health: 150,
-            mana: 80
-          }
-        }
+            mana: 80,
+          },
+        },
       },
-      updateGameState: jest.fn()
+      updateGameState: jest.fn(),
     },
     responsive: {
       isMobile: false,
       isTablet: false,
-      isDesktop: true
+      isDesktop: true,
     },
     utils: {
       checkBreedingCompatibility: true,
       breedCreatures: { success: true, offspring: mockBeastCreature },
       generateNPCTraders: mockNPCTraders,
       canMakeTrade: true,
-      executeNPCTrade: { success: true, result: 'Trade completed' }
-    }
+      executeNPCTrade: { success: true, result: 'Trade completed' },
+    },
   };
 
   beforeEach(() => {
@@ -260,7 +302,7 @@ describe('CreatureScreen Component', () => {
   const renderCreatureScreen = (props = {}) => {
     const defaultProps = {
       onClose: mockOnClose,
-      ...props
+      ...props,
     };
 
     return render(<CreatureScreen {...defaultProps} />);
@@ -271,7 +313,9 @@ describe('CreatureScreen Component', () => {
       renderCreatureScreen();
 
       expect(screen.getByText('Creature Collection')).toBeInTheDocument();
-      expect(screen.getByText('Discover, capture, and manage your creature companions')).toBeInTheDocument();
+      expect(
+        screen.getByText('Discover, capture, and manage your creature companions')
+      ).toBeInTheDocument();
     });
 
     it('should render view mode tabs', () => {
@@ -397,7 +441,7 @@ describe('CreatureScreen Component', () => {
         ...defaultMocks.creatures,
         collection: [],
         filteredCreatures: [],
-        filteredBestiary: []
+        filteredBestiary: [],
       } as any);
 
       renderCreatureScreen();
@@ -446,7 +490,7 @@ describe('CreatureScreen Component', () => {
       const user = userEvent.setup();
       mockUseCreatures.mockReturnValue({
         ...defaultMocks.creatures,
-        searchCreatures: jest.fn().mockReturnValue([])
+        searchCreatures: jest.fn().mockReturnValue([]),
       } as any);
 
       renderCreatureScreen();
@@ -497,8 +541,8 @@ describe('CreatureScreen Component', () => {
           total: 5,
           captured: 3,
           discovered: 5,
-          completionPercentage: 60
-        })
+          completionPercentage: 60,
+        }),
       } as any);
 
       renderCreatureScreen();
@@ -648,7 +692,7 @@ describe('CreatureScreen Component', () => {
       mockUseResponsive.mockReturnValue({
         isMobile: true,
         isTablet: false,
-        isDesktop: false
+        isDesktop: false,
       });
 
       renderCreatureScreen();
@@ -660,7 +704,7 @@ describe('CreatureScreen Component', () => {
       mockUseResponsive.mockReturnValue({
         isMobile: false,
         isTablet: true,
-        isDesktop: false
+        isDesktop: false,
       });
 
       renderCreatureScreen();
@@ -679,7 +723,7 @@ describe('CreatureScreen Component', () => {
     it('should show loading spinner when loading', () => {
       mockUseCreatures.mockReturnValue({
         ...defaultMocks.creatures,
-        isLoading: true
+        isLoading: true,
       } as any);
 
       renderCreatureScreen();
@@ -698,7 +742,7 @@ describe('CreatureScreen Component', () => {
     it('should handle creature system errors gracefully', () => {
       mockUseCreatures.mockReturnValue({
         ...defaultMocks.creatures,
-        error: 'Failed to load creatures'
+        error: 'Failed to load creatures',
       } as any);
 
       renderCreatureScreen();
@@ -709,7 +753,7 @@ describe('CreatureScreen Component', () => {
     it('should handle missing player data gracefully', () => {
       mockUseGameState.mockReturnValue({
         gameState: { player: null },
-        updateGameState: jest.fn()
+        updateGameState: jest.fn(),
       } as any);
 
       renderCreatureScreen();
@@ -788,14 +832,14 @@ describe('CreatureScreen Component', () => {
       const largeCollection = Array.from({ length: 500 }, (_, i) => ({
         ...mockBeastCreature,
         id: `creature-${i}`,
-        name: `Creature ${i}`
+        name: `Creature ${i}`,
       }));
 
       mockUseCreatures.mockReturnValue({
         ...defaultMocks.creatures,
         collection: largeCollection,
         filteredCreatures: largeCollection,
-        filteredBestiary: largeCollection
+        filteredBestiary: largeCollection,
       } as any);
 
       renderCreatureScreen();

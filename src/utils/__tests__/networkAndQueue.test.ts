@@ -39,7 +39,7 @@ describe('Network and Offline Queue Core Functionality', () => {
       const { OfflineQueueManager } = require('../offlineQueue');
       const instance = new OfflineQueueManager({
         enablePersistence: false,
-        autoProcessOnline: false
+        autoProcessOnline: false,
       });
 
       expect(typeof instance.enqueue).toBe('function');
@@ -56,7 +56,7 @@ describe('Network and Offline Queue Core Functionality', () => {
       const { OfflineQueueManager } = require('../offlineQueue');
       const queue = new OfflineQueueManager({
         enablePersistence: false,
-        autoProcessOnline: false
+        autoProcessOnline: false,
       });
 
       const initialStatus = queue.getStatus();
@@ -80,7 +80,7 @@ describe('Network and Offline Queue Core Functionality', () => {
       const { OfflineQueueManager } = require('../offlineQueue');
       const queue = new OfflineQueueManager({
         enablePersistence: false,
-        autoProcessOnline: false
+        autoProcessOnline: false,
       });
 
       const operationId = queue.enqueue('save', { testData: 'value' });
@@ -100,7 +100,7 @@ describe('Network and Offline Queue Core Functionality', () => {
       const { OfflineQueueManager } = require('../offlineQueue');
       const queue = new OfflineQueueManager({
         enablePersistence: false,
-        autoProcessOnline: false
+        autoProcessOnline: false,
       });
 
       queue.enqueue('save', { data: 1 });
@@ -120,7 +120,7 @@ describe('Network and Offline Queue Core Functionality', () => {
       const { OfflineQueueManager } = require('../offlineQueue');
       const queue = new OfflineQueueManager({
         enablePersistence: false,
-        autoProcessOnline: false
+        autoProcessOnline: false,
       });
 
       queue.enqueue('save', { data: 1 });
@@ -174,7 +174,7 @@ describe('Network and Offline Queue Core Functionality', () => {
       const networkManager = new NetworkStatusManager({ pingInterval: 0 });
       const queueManager = new OfflineQueueManager({
         enablePersistence: false,
-        autoProcessOnline: false
+        autoProcessOnline: false,
       });
 
       // Both should initialize without errors
@@ -183,7 +183,7 @@ describe('Network and Offline Queue Core Functionality', () => {
 
       // Queue should be able to enqueue operations
       const operationId = queueManager.enqueue('save', {
-        testData: 'integration test'
+        testData: 'integration test',
       });
       expect(operationId).toBeDefined();
 

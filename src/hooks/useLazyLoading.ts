@@ -43,15 +43,13 @@ interface LazyLoadResult<T> {
  * - Throttled loading to prevent excessive API calls
  */
 export function useLazyLoading<T>(
-  loadFunction: (page: number, pageSize: number) => Promise<{ items: T[]; totalCount: number; hasMore: boolean }>,
+  loadFunction: (
+    page: number,
+    pageSize: number
+  ) => Promise<{ items: T[]; totalCount: number; hasMore: boolean }>,
   config: LazyLoadConfig
 ): LazyLoadResult<T> {
-  const {
-    pageSize,
-    preloadDistance = 1,
-    throttleMs = 300,
-    maxCacheSize = 1000
-  } = config;
+  const { pageSize, preloadDistance = 1, throttleMs = 300, maxCacheSize = 1000 } = config;
 
   const [state, setState] = useState<LazyLoadState<T>>({
     items: [],
@@ -60,7 +58,7 @@ export function useLazyLoading<T>(
     error: null,
     totalCount: 0,
     currentPage: 0,
-    loadedPages: new Set()
+    loadedPages: new Set(),
   });
 
   const loadTimeoutRef = useRef<NodeJS.Timeout>();
@@ -68,71 +66,74 @@ export function useLazyLoading<T>(
   const loadingPagesRef = useRef<Set<number>>(new Set());
 
   // Throttled loading function
-  const throttledLoad = useCallback(async (page: number) => {
-    if (loadTimeoutRef.current) {
-      clearTimeout(loadTimeoutRef.current);
-    }
+  const throttledLoad = useCallback(
+    async (page: number) => {
+      if (loadTimeoutRef.current) {
+        clearTimeout(loadTimeoutRef.current);
+      }
 
-    return new Promise<void>((resolve, reject) => {
-      loadTimeoutRef.current = setTimeout(async () => {
-        try {
-          // Prevent duplicate loading
-          if (loadingPagesRef.current.has(page) || state.loadedPages.has(page)) {
-            resolve();
-            return;
-          }
+      return new Promise<void>((resolve, reject) => {
+        loadTimeoutRef.current = setTimeout(async () => {
+          try {
+            // Prevent duplicate loading
+            if (loadingPagesRef.current.has(page) || state.loadedPages.has(page)) {
+              resolve();
+              return;
+            }
 
-          loadingPagesRef.current.add(page);
-          setState(prev => ({ ...prev, loading: true, error: null }));
+            loadingPagesRef.current.add(page);
+            setState(prev => ({ ...prev, loading: true, error: null }));
 
-          const result = await loadFunction(page, pageSize);
+            const result = await loadFunction(page, pageSize);
 
-          // Cache the results
-          cacheRef.current.set(page, result.items);
+            // Cache the results
+            cacheRef.current.set(page, result.items);
 
-          // Implement cache size limit
-          if (cacheRef.current.size > maxCacheSize / pageSize) {
-            const oldestPage = Math.min(...cacheRef.current.keys());
-            cacheRef.current.delete(oldestPage);
-          }
+            // Implement cache size limit
+            if (cacheRef.current.size > maxCacheSize / pageSize) {
+              const oldestPage = Math.min(...cacheRef.current.keys());
+              cacheRef.current.delete(oldestPage);
+            }
 
-          setState(prev => {
-            const newLoadedPages = new Set(prev.loadedPages);
-            newLoadedPages.add(page);
+            setState(prev => {
+              const newLoadedPages = new Set(prev.loadedPages);
+              newLoadedPages.add(page);
 
-            // Merge items maintaining order
-            const newItems = [...prev.items];
-            const startIndex = page * pageSize;
+              // Merge items maintaining order
+              const newItems = [...prev.items];
+              const startIndex = page * pageSize;
 
-            result.items.forEach((item, index) => {
-              newItems[startIndex + index] = item;
+              result.items.forEach((item, index) => {
+                newItems[startIndex + index] = item;
+              });
+
+              return {
+                ...prev,
+                items: newItems,
+                loading: false,
+                hasMore: result.hasMore,
+                totalCount: result.totalCount,
+                currentPage: Math.max(prev.currentPage, page),
+                loadedPages: newLoadedPages,
+              };
             });
 
-            return {
+            loadingPagesRef.current.delete(page);
+            resolve();
+          } catch (error) {
+            loadingPagesRef.current.delete(page);
+            setState(prev => ({
               ...prev,
-              items: newItems,
               loading: false,
-              hasMore: result.hasMore,
-              totalCount: result.totalCount,
-              currentPage: Math.max(prev.currentPage, page),
-              loadedPages: newLoadedPages
-            };
-          });
-
-          loadingPagesRef.current.delete(page);
-          resolve();
-        } catch (error) {
-          loadingPagesRef.current.delete(page);
-          setState(prev => ({
-            ...prev,
-            loading: false,
-            error: error instanceof Error ? error.message : 'Loading failed'
-          }));
-          reject(error);
-        }
-      }, throttleMs);
-    });
-  }, [loadFunction, pageSize, throttleMs, maxCacheSize, state.loadedPages]);
+              error: error instanceof Error ? error.message : 'Loading failed',
+            }));
+            reject(error);
+          }
+        }, throttleMs);
+      });
+    },
+    [loadFunction, pageSize, throttleMs, maxCacheSize, state.loadedPages]
+  );
 
   // Load next page
   const loadMore = useCallback(async () => {
@@ -143,11 +144,14 @@ export function useLazyLoading<T>(
   }, [state.loading, state.hasMore, state.currentPage, throttledLoad]);
 
   // Load specific page
-  const loadPage = useCallback(async (page: number) => {
-    if (state.loadedPages.has(page) || loadingPagesRef.current.has(page)) return;
+  const loadPage = useCallback(
+    async (page: number) => {
+      if (state.loadedPages.has(page) || loadingPagesRef.current.has(page)) return;
 
-    await throttledLoad(page);
-  }, [state.loadedPages, throttledLoad]);
+      await throttledLoad(page);
+    },
+    [state.loadedPages, throttledLoad]
+  );
 
   // Reset to initial state
   const reset = useCallback(() => {
@@ -164,45 +168,54 @@ export function useLazyLoading<T>(
       error: null,
       totalCount: 0,
       currentPage: 0,
-      loadedPages: new Set()
+      loadedPages: new Set(),
     });
   }, []);
 
   // Get item by index (may trigger loading)
-  const getItem = useCallback((index: number): T | undefined => {
-    const page = Math.floor(index / pageSize);
+  const getItem = useCallback(
+    (index: number): T | undefined => {
+      const page = Math.floor(index / pageSize);
 
-    // Trigger loading if page not loaded
-    if (!state.loadedPages.has(page) && !loadingPagesRef.current.has(page)) {
-      loadPage(page);
-      return undefined; // Return placeholder while loading
-    }
+      // Trigger loading if page not loaded
+      if (!state.loadedPages.has(page) && !loadingPagesRef.current.has(page)) {
+        loadPage(page);
+        return undefined; // Return placeholder while loading
+      }
 
-    return state.items[index];
-  }, [pageSize, state.loadedPages, state.items, loadPage]);
+      return state.items[index];
+    },
+    [pageSize, state.loadedPages, state.items, loadPage]
+  );
 
   // Check if page is loaded
-  const isPageLoaded = useCallback((page: number): boolean => {
-    return state.loadedPages.has(page);
-  }, [state.loadedPages]);
+  const isPageLoaded = useCallback(
+    (page: number): boolean => {
+      return state.loadedPages.has(page);
+    },
+    [state.loadedPages]
+  );
 
   // Preload pages around a center index
-  const preloadAround = useCallback(async (centerIndex: number) => {
-    const centerPage = Math.floor(centerIndex / pageSize);
-    const pagesToLoad: number[] = [];
+  const preloadAround = useCallback(
+    async (centerIndex: number) => {
+      const centerPage = Math.floor(centerIndex / pageSize);
+      const pagesToLoad: number[] = [];
 
-    // Calculate pages to preload
-    for (let i = -preloadDistance; i <= preloadDistance; i++) {
-      const page = centerPage + i;
-      if (page >= 0 && !state.loadedPages.has(page) && !loadingPagesRef.current.has(page)) {
-        pagesToLoad.push(page);
+      // Calculate pages to preload
+      for (let i = -preloadDistance; i <= preloadDistance; i++) {
+        const page = centerPage + i;
+        if (page >= 0 && !state.loadedPages.has(page) && !loadingPagesRef.current.has(page)) {
+          pagesToLoad.push(page);
+        }
       }
-    }
 
-    // Load pages in parallel
-    const loadPromises = pagesToLoad.map(page => loadPage(page));
-    await Promise.allSettled(loadPromises);
-  }, [pageSize, preloadDistance, state.loadedPages, loadPage]);
+      // Load pages in parallel
+      const loadPromises = pagesToLoad.map(page => loadPage(page));
+      await Promise.allSettled(loadPromises);
+    },
+    [pageSize, preloadDistance, state.loadedPages, loadPage]
+  );
 
   // Cleanup on unmount
   useEffect(() => {
@@ -225,7 +238,7 @@ export function useLazyLoading<T>(
     reset,
     getItem,
     isPageLoaded,
-    preloadAround
+    preloadAround,
   };
 }
 
@@ -233,14 +246,18 @@ export function useLazyLoading<T>(
  * useLazyInventoryLoading - Specialized hook for lazy loading inventory items
  */
 export function useLazyInventoryLoading(
-  loadItems: (page: number, pageSize: number, filters?: any) => Promise<{ items: any[]; totalCount: number; hasMore: boolean }>,
+  loadItems: (
+    page: number,
+    pageSize: number,
+    filters?: any
+  ) => Promise<{ items: any[]; totalCount: number; hasMore: boolean }>,
   filters?: any
 ) {
   const config: LazyLoadConfig = {
     pageSize: 50, // Load 50 items at a time
     preloadDistance: 2, // Preload 2 pages ahead
     throttleMs: 200, // Faster loading for inventory
-    maxCacheSize: 500 // Keep up to 500 items in cache
+    maxCacheSize: 500, // Keep up to 500 items in cache
   };
 
   const loadFunction = useCallback(
@@ -255,14 +272,18 @@ export function useLazyInventoryLoading(
  * useLazyCreatureLoading - Specialized hook for lazy loading creature collections
  */
 export function useLazyCreatureLoading(
-  loadCreatures: (page: number, pageSize: number, viewMode?: string) => Promise<{ items: any[]; totalCount: number; hasMore: boolean }>,
+  loadCreatures: (
+    page: number,
+    pageSize: number,
+    viewMode?: string
+  ) => Promise<{ items: any[]; totalCount: number; hasMore: boolean }>,
   viewMode?: string
 ) {
   const config: LazyLoadConfig = {
     pageSize: 30, // Load 30 creatures at a time
     preloadDistance: 1, // Conservative preloading for creatures
     throttleMs: 300, // Standard throttling
-    maxCacheSize: 300 // Keep up to 300 creatures in cache
+    maxCacheSize: 300, // Keep up to 300 creatures in cache
   };
 
   const loadFunction = useCallback(

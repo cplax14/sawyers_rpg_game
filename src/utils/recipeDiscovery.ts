@@ -36,9 +36,7 @@ export function checkRecipeDiscovery(
   }
 
   // Get unique species in player's collection
-  const ownedSpecies = new Set(
-    Object.values(capturedCreatures).map(creature => creature.species)
-  );
+  const ownedSpecies = new Set(Object.values(capturedCreatures).map(creature => creature.species));
 
   // Check each recipe
   for (const recipeId in recipeData.recipes) {
@@ -123,12 +121,7 @@ export function checkRecipeDiscoveryAfterCapture(
     [newCreature.creatureId]: newCreature,
   };
 
-  return checkRecipeDiscovery(
-    updatedCreatures,
-    discoveredRecipes,
-    playerLevel,
-    storyFlags
-  );
+  return checkRecipeDiscovery(updatedCreatures, discoveredRecipes, playerLevel, storyFlags);
 }
 
 /**

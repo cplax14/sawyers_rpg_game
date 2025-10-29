@@ -31,17 +31,24 @@ const getFirebaseConfig = (): FirebaseConfig => {
     storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET || 'sawyers-rpg-game.firebasestorage.app',
     messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID || '963309553093',
     appId: env.VITE_FIREBASE_APP_ID || '1:963309553093:web:4a989b49ab75f8bafd37ac',
-    measurementId: env.VITE_FIREBASE_MEASUREMENT_ID || 'G-YQ5SKL679K'
+    measurementId: env.VITE_FIREBASE_MEASUREMENT_ID || 'G-YQ5SKL679K',
   };
 
   // Validate required configuration
   const requiredFields: (keyof FirebaseConfig)[] = [
-    'apiKey', 'authDomain', 'projectId', 'storageBucket', 'messagingSenderId', 'appId'
+    'apiKey',
+    'authDomain',
+    'projectId',
+    'storageBucket',
+    'messagingSenderId',
+    'appId',
   ];
 
   for (const field of requiredFields) {
     if (!config[field] || config[field]?.includes('your-')) {
-      console.warn(`Firebase ${field} is not configured properly. Please set VITE_FIREBASE_${field.toUpperCase()} in your environment variables.`);
+      console.warn(
+        `Firebase ${field} is not configured properly. Please set VITE_FIREBASE_${field.toUpperCase()} in your environment variables.`
+      );
     }
   }
 
@@ -99,7 +106,7 @@ export const initializeFirebase = (): {
       app: firebaseApp,
       auth: firebaseAuth,
       firestore: firebaseFirestore,
-      storage: firebaseStorage
+      storage: firebaseStorage,
     };
   } catch (error) {
     console.error('Failed to initialize Firebase:', error);
@@ -119,7 +126,7 @@ export const getFirebaseServices = () => {
     app: firebaseApp,
     auth: firebaseAuth,
     firestore: firebaseFirestore,
-    storage: firebaseStorage
+    storage: firebaseStorage,
   };
 };
 
@@ -147,8 +154,8 @@ export const getFirebaseStorage = (): FirebaseStorage => {
 export const isFirebaseConfigured = (): boolean => {
   try {
     const config = getFirebaseConfig();
-    return !Object.values(config).some(value =>
-      value && typeof value === 'string' && value.includes('your-')
+    return !Object.values(config).some(
+      value => value && typeof value === 'string' && value.includes('your-')
     );
   } catch {
     return false;
@@ -184,8 +191,8 @@ export const checkFirebaseConnection = async (): Promise<{
       services: {
         auth: authStatus,
         firestore: firestoreStatus,
-        storage: storageStatus
-      }
+        storage: storageStatus,
+      },
     };
   } catch (error) {
     return {
@@ -193,9 +200,9 @@ export const checkFirebaseConnection = async (): Promise<{
       services: {
         auth: false,
         firestore: false,
-        storage: false
+        storage: false,
       },
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 };
@@ -205,5 +212,5 @@ export {
   firebaseApp as app,
   firebaseAuth as auth,
   firebaseFirestore as firestore,
-  firebaseStorage as storage
+  firebaseStorage as storage,
 };

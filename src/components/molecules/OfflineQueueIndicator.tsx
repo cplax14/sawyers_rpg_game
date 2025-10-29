@@ -25,9 +25,10 @@ export const OfflineQueueIndicator: React.FC<OfflineQueueIndicatorProps> = ({
   userId,
   showDetails = false,
   compact = false,
-  className = ''
+  className = '',
 }) => {
-  const { status, operations, processQueue, clear, clearFailed, retryFailed, canProcessNow } = useOfflineQueue();
+  const { status, operations, processQueue, clear, clearFailed, retryFailed, canProcessNow } =
+    useOfflineQueue();
   const { isOnline } = useNetworkStatus();
   const [showDetailsPanel, setShowDetailsPanel] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -92,7 +93,7 @@ export const OfflineQueueIndicator: React.FC<OfflineQueueIndicatorProps> = ({
     borderRadius: '6px',
     border: `1px solid ${getStatusColor()}`,
     fontSize: compact ? '0.8rem' : '0.9rem',
-    position: 'relative'
+    position: 'relative',
   };
 
   const statusIndicatorStyle: React.CSSProperties = {
@@ -100,7 +101,7 @@ export const OfflineQueueIndicator: React.FC<OfflineQueueIndicatorProps> = ({
     height: compact ? '8px' : '10px',
     borderRadius: '50%',
     backgroundColor: getStatusColor(),
-    animation: (status.processingOperations > 0 || isProcessing) ? 'pulse 1s infinite' : undefined
+    animation: status.processingOperations > 0 || isProcessing ? 'pulse 1s infinite' : undefined,
   };
 
   if (compact) {
@@ -132,7 +133,7 @@ export const OfflineQueueIndicator: React.FC<OfflineQueueIndicatorProps> = ({
                 borderRadius: '6px',
                 fontSize: '0.8rem',
                 zIndex: 1000,
-                minWidth: '300px'
+                minWidth: '300px',
               }}
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -168,29 +169,20 @@ export const OfflineQueueIndicator: React.FC<OfflineQueueIndicatorProps> = ({
       <div style={statusIndicatorStyle} />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flex: 1 }}>
-        <div style={{ color: '#ffffff', fontWeight: 'bold' }}>
-          {getStatusIcon()} Offline Queue
-        </div>
-        <div style={{ color: '#cccccc', fontSize: '0.75rem' }}>
-          {getStatusText()}
-        </div>
+        <div style={{ color: '#ffffff', fontWeight: 'bold' }}>{getStatusIcon()} Offline Queue</div>
+        <div style={{ color: '#cccccc', fontSize: '0.75rem' }}>{getStatusText()}</div>
       </div>
 
       {canProcessNow && (
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={handleProcessQueue}
-          disabled={isProcessing}
-        >
+        <Button variant='secondary' size='sm' onClick={handleProcessQueue} disabled={isProcessing}>
           {isProcessing ? 'Processing...' : 'Process'}
         </Button>
       )}
 
       {showDetails && (
         <Button
-          variant="ghost"
-          size="sm"
+          variant='ghost'
+          size='sm'
           onClick={() => setShowDetailsPanel(!showDetailsPanel)}
           style={{ marginLeft: '4px' }}
         >
@@ -215,7 +207,7 @@ export const OfflineQueueIndicator: React.FC<OfflineQueueIndicatorProps> = ({
               zIndex: 1000,
               minWidth: '350px',
               maxHeight: '400px',
-              overflowY: 'auto'
+              overflowY: 'auto',
             }}
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -261,16 +253,22 @@ const QueueDetails: React.FC<QueueDetailsProps> = ({
   onClear,
   onClearFailed,
   onRetryFailed,
-  isProcessing
+  isProcessing,
 }) => {
   const getOperationIcon = (type: QueueOperationType) => {
     switch (type) {
-      case 'save': return '💾';
-      case 'load': return '📂';
-      case 'delete': return '🗑️';
-      case 'sync': return '🔄';
-      case 'custom': return '⚙️';
-      default: return '❓';
+      case 'save':
+        return '💾';
+      case 'load':
+        return '📂';
+      case 'delete':
+        return '🗑️';
+      case 'sync':
+        return '🔄';
+      case 'custom':
+        return '⚙️';
+      default:
+        return '❓';
     }
   };
 
@@ -293,24 +291,39 @@ const QueueDetails: React.FC<QueueDetailsProps> = ({
     padding: '8px',
     background: 'rgba(255, 255, 255, 0.05)',
     borderRadius: '4px',
-    marginBottom: '8px'
+    marginBottom: '8px',
   };
 
-  const groupedOperations = operations.reduce((acc, op) => {
-    if (!acc[op.type]) acc[op.type] = [];
-    acc[op.type].push(op);
-    return acc;
-  }, {} as Record<QueueOperationType, QueuedOperation[]>);
+  const groupedOperations = operations.reduce(
+    (acc, op) => {
+      if (!acc[op.type]) acc[op.type] = [];
+      acc[op.type].push(op);
+      return acc;
+    },
+    {} as Record<QueueOperationType, QueuedOperation[]>
+  );
 
   return (
     <div>
-      <h4 style={{ margin: '0 0 12px 0', color: '#d4af37', fontSize: '0.9rem' }}>
-        Queue Details
-      </h4>
+      <h4 style={{ margin: '0 0 12px 0', color: '#d4af37', fontSize: '0.9rem' }}>Queue Details</h4>
 
       {/* Status Summary */}
-      <div style={{ marginBottom: '16px', padding: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', fontSize: '0.75rem' }}>
+      <div
+        style={{
+          marginBottom: '16px',
+          padding: '8px',
+          background: 'rgba(255,255,255,0.05)',
+          borderRadius: '4px',
+        }}
+      >
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, 1fr)',
+            gap: '8px',
+            fontSize: '0.75rem',
+          }}
+        >
           <div>
             <span style={{ color: '#999999' }}>Total:</span>
             <span style={{ color: '#ffffff', marginLeft: '4px', fontWeight: 'bold' }}>
@@ -345,7 +358,7 @@ const QueueDetails: React.FC<QueueDetailsProps> = ({
             {getOperationIcon(type as QueueOperationType)} {type.toUpperCase()} ({ops.length})
           </h5>
 
-          {ops.slice(0, 5).map((op) => (
+          {ops.slice(0, 5).map(op => (
             <div key={op.id} style={operationItemStyle}>
               <div style={{ flex: 1 }}>
                 <div style={{ color: '#ffffff', fontSize: '0.75rem', marginBottom: '2px' }}>
@@ -356,11 +369,13 @@ const QueueDetails: React.FC<QueueDetailsProps> = ({
                   {op.metadata?.slotNumber !== undefined && ` • Slot ${op.metadata.slotNumber}`}
                 </div>
               </div>
-              <div style={{
-                color: getOperationStatusColor(op),
-                fontSize: '0.7rem',
-                fontWeight: 'bold'
-              }}>
+              <div
+                style={{
+                  color: getOperationStatusColor(op),
+                  fontSize: '0.7rem',
+                  fontWeight: 'bold',
+                }}
+              >
                 {getOperationStatus(op)}
                 {op.retryCount > 0 && ` (${op.retryCount}/${op.maxRetries})`}
               </div>
@@ -368,7 +383,14 @@ const QueueDetails: React.FC<QueueDetailsProps> = ({
           ))}
 
           {ops.length > 5 && (
-            <div style={{ color: '#999999', fontSize: '0.7rem', textAlign: 'center', marginTop: '4px' }}>
+            <div
+              style={{
+                color: '#999999',
+                fontSize: '0.7rem',
+                textAlign: 'center',
+                marginTop: '4px',
+              }}
+            >
               ... and {ops.length - 5} more
             </div>
           )}
@@ -376,18 +398,20 @@ const QueueDetails: React.FC<QueueDetailsProps> = ({
       ))}
 
       {/* Action Buttons */}
-      <div style={{
-        marginTop: '16px',
-        paddingTop: '12px',
-        borderTop: '1px solid rgba(255,255,255,0.1)',
-        display: 'grid',
-        gridTemplateColumns: 'repeat(2, 1fr)',
-        gap: '8px'
-      }}>
+      <div
+        style={{
+          marginTop: '16px',
+          paddingTop: '12px',
+          borderTop: '1px solid rgba(255,255,255,0.1)',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, 1fr)',
+          gap: '8px',
+        }}
+      >
         {canProcessNow && (
           <Button
-            variant="primary"
-            size="sm"
+            variant='primary'
+            size='sm'
             onClick={onProcessQueue}
             disabled={isProcessing}
             style={{ gridColumn: '1 / -1' }}
@@ -398,18 +422,10 @@ const QueueDetails: React.FC<QueueDetailsProps> = ({
 
         {status.failedOperations > 0 && (
           <>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={onRetryFailed}
-            >
+            <Button variant='secondary' size='sm' onClick={onRetryFailed}>
               Retry Failed
             </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={onClearFailed}
-            >
+            <Button variant='destructive' size='sm' onClick={onClearFailed}>
               Clear Failed
             </Button>
           </>
@@ -417,8 +433,8 @@ const QueueDetails: React.FC<QueueDetailsProps> = ({
 
         {operations.length > 0 && (
           <Button
-            variant="destructive"
-            size="sm"
+            variant='destructive'
+            size='sm'
             onClick={onClear}
             style={{ gridColumn: status.failedOperations > 0 ? 'auto' : '1 / -1' }}
           >
@@ -428,16 +444,18 @@ const QueueDetails: React.FC<QueueDetailsProps> = ({
       </div>
 
       {!isOnline && (
-        <div style={{
-          marginTop: '12px',
-          padding: '8px',
-          background: 'rgba(255, 167, 38, 0.1)',
-          border: '1px solid rgba(255, 167, 38, 0.3)',
-          borderRadius: '4px',
-          color: '#ffa726',
-          fontSize: '0.7rem',
-          textAlign: 'center'
-        }}>
+        <div
+          style={{
+            marginTop: '12px',
+            padding: '8px',
+            background: 'rgba(255, 167, 38, 0.1)',
+            border: '1px solid rgba(255, 167, 38, 0.3)',
+            borderRadius: '4px',
+            color: '#ffa726',
+            fontSize: '0.7rem',
+            textAlign: 'center',
+          }}
+        >
           📴 Queue will process automatically when connection is restored
         </div>
       )}

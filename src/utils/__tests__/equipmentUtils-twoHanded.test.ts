@@ -29,7 +29,7 @@ describe('checkEquipmentCompatibility - Two-Handed Weapon Conflicts', () => {
     magicAttack: 5,
     magicDefense: 10,
     speed: 12,
-    accuracy: 85
+    accuracy: 85,
   };
 
   // Mock items
@@ -54,7 +54,7 @@ describe('checkEquipmentCompatibility - Two-Handed Weapon Conflicts', () => {
     usable: false,
     consumeOnUse: false,
     useInCombat: false,
-    useOutOfCombat: false
+    useOutOfCombat: false,
   };
 
   const oneHandedSword: EnhancedItem = {
@@ -78,7 +78,7 @@ describe('checkEquipmentCompatibility - Two-Handed Weapon Conflicts', () => {
     usable: false,
     consumeOnUse: false,
     useInCombat: false,
-    useOutOfCombat: false
+    useOutOfCombat: false,
   };
 
   const shield: EnhancedItem = {
@@ -101,7 +101,7 @@ describe('checkEquipmentCompatibility - Two-Handed Weapon Conflicts', () => {
     usable: false,
     consumeOnUse: false,
     useInCombat: false,
-    useOutOfCombat: false
+    useOutOfCombat: false,
   };
 
   describe('Two-handed weapon with equipped shield', () => {
@@ -116,7 +116,7 @@ describe('checkEquipmentCompatibility - Two-Handed Weapon Conflicts', () => {
         boots: null,
         ring1: null,
         ring2: null,
-        charm: null
+        charm: null,
       };
 
       const result = checkEquipmentCompatibility(
@@ -133,8 +133,8 @@ describe('checkEquipmentCompatibility - Two-Handed Weapon Conflicts', () => {
       expect(result.warnings.length).toBeGreaterThan(0);
 
       // Check for kid-friendly warning message
-      const warningMessage = result.warnings.find(w =>
-        w.includes('two-handed weapon') && w.includes('shield')
+      const warningMessage = result.warnings.find(
+        w => w.includes('two-handed weapon') && w.includes('shield')
       );
       expect(warningMessage).toBeDefined();
       expect(warningMessage).toContain('Iron Shield');
@@ -152,7 +152,7 @@ describe('checkEquipmentCompatibility - Two-Handed Weapon Conflicts', () => {
         boots: null,
         ring1: null,
         ring2: null,
-        charm: null
+        charm: null,
       };
 
       const result = checkEquipmentCompatibility(
@@ -166,9 +166,7 @@ describe('checkEquipmentCompatibility - Two-Handed Weapon Conflicts', () => {
 
       // Should be compatible with no warnings about shields
       expect(result.canEquip).toBe(true);
-      const shieldWarning = result.warnings.find(w =>
-        w.includes('shield')
-      );
+      const shieldWarning = result.warnings.find(w => w.includes('shield'));
       expect(shieldWarning).toBeUndefined();
     });
 
@@ -178,7 +176,7 @@ describe('checkEquipmentCompatibility - Two-Handed Weapon Conflicts', () => {
         id: 'great_axe',
         name: 'Great Axe',
         description: 'A massive two-handed axe',
-        equipmentSubtype: 'axe'
+        equipmentSubtype: 'axe',
       };
 
       const currentEquipment: EquipmentSet = {
@@ -191,7 +189,7 @@ describe('checkEquipmentCompatibility - Two-Handed Weapon Conflicts', () => {
         boots: null,
         ring1: null,
         ring2: null,
-        charm: null
+        charm: null,
       };
 
       const result = checkEquipmentCompatibility(
@@ -205,9 +203,7 @@ describe('checkEquipmentCompatibility - Two-Handed Weapon Conflicts', () => {
 
       // Should be compatible with no shield-related warnings
       expect(result.canEquip).toBe(true);
-      const shieldWarning = result.warnings.find(w =>
-        w.includes('shield')
-      );
+      const shieldWarning = result.warnings.find(w => w.includes('shield'));
       expect(shieldWarning).toBeUndefined();
     });
   });
@@ -224,7 +220,7 @@ describe('checkEquipmentCompatibility - Two-Handed Weapon Conflicts', () => {
         boots: null,
         ring1: null,
         ring2: null,
-        charm: null
+        charm: null,
       };
 
       const result = checkEquipmentCompatibility(
@@ -241,8 +237,8 @@ describe('checkEquipmentCompatibility - Two-Handed Weapon Conflicts', () => {
       expect(result.warnings.length).toBeGreaterThan(0);
 
       // Check for kid-friendly warning message
-      const warningMessage = result.warnings.find(w =>
-        w.includes('two-handed weapon') && w.includes('equipped')
+      const warningMessage = result.warnings.find(
+        w => w.includes('two-handed weapon') && w.includes('equipped')
       );
       expect(warningMessage).toBeDefined();
       expect(warningMessage).toContain('Great Sword');
@@ -260,7 +256,7 @@ describe('checkEquipmentCompatibility - Two-Handed Weapon Conflicts', () => {
         boots: null,
         ring1: null,
         ring2: null,
-        charm: null
+        charm: null,
       };
 
       const result = checkEquipmentCompatibility(
@@ -274,9 +270,7 @@ describe('checkEquipmentCompatibility - Two-Handed Weapon Conflicts', () => {
 
       // Should be compatible with no warnings
       expect(result.canEquip).toBe(true);
-      const twoHandedWarning = result.warnings.find(w =>
-        w.includes('two-handed')
-      );
+      const twoHandedWarning = result.warnings.find(w => w.includes('two-handed'));
       expect(twoHandedWarning).toBeUndefined();
     });
 
@@ -291,7 +285,7 @@ describe('checkEquipmentCompatibility - Two-Handed Weapon Conflicts', () => {
         boots: null,
         ring1: null,
         ring2: null,
-        charm: null
+        charm: null,
       };
 
       const result = checkEquipmentCompatibility(
@@ -305,9 +299,7 @@ describe('checkEquipmentCompatibility - Two-Handed Weapon Conflicts', () => {
 
       // Should be compatible with no warnings
       expect(result.canEquip).toBe(true);
-      const twoHandedWarning = result.warnings.find(w =>
-        w.includes('two-handed')
-      );
+      const twoHandedWarning = result.warnings.find(w => w.includes('two-handed'));
       expect(twoHandedWarning).toBeUndefined();
     });
   });
@@ -324,7 +316,7 @@ describe('checkEquipmentCompatibility - Two-Handed Weapon Conflicts', () => {
         boots: null,
         ring1: null,
         ring2: null,
-        charm: null
+        charm: null,
       };
 
       const result = checkEquipmentCompatibility(
@@ -338,8 +330,8 @@ describe('checkEquipmentCompatibility - Two-Handed Weapon Conflicts', () => {
 
       // Should be fully compatible with no warnings
       expect(result.canEquip).toBe(true);
-      const twoHandedWarning = result.warnings.find(w =>
-        w.includes('two-handed') || w.includes('shield')
+      const twoHandedWarning = result.warnings.find(
+        w => w.includes('two-handed') || w.includes('shield')
       );
       expect(twoHandedWarning).toBeUndefined();
     });
@@ -347,7 +339,7 @@ describe('checkEquipmentCompatibility - Two-Handed Weapon Conflicts', () => {
     it('should handle weapons without twoHanded property as one-handed', () => {
       const weaponWithoutProperty: EnhancedItem = {
         ...oneHandedSword,
-        twoHanded: undefined // Property not defined
+        twoHanded: undefined, // Property not defined
       };
 
       const currentEquipment: EquipmentSet = {
@@ -360,7 +352,7 @@ describe('checkEquipmentCompatibility - Two-Handed Weapon Conflicts', () => {
         boots: null,
         ring1: null,
         ring2: null,
-        charm: null
+        charm: null,
       };
 
       const result = checkEquipmentCompatibility(
@@ -374,9 +366,7 @@ describe('checkEquipmentCompatibility - Two-Handed Weapon Conflicts', () => {
 
       // Should be compatible (default to one-handed)
       expect(result.canEquip).toBe(true);
-      const twoHandedWarning = result.warnings.find(w =>
-        w.includes('two-handed')
-      );
+      const twoHandedWarning = result.warnings.find(w => w.includes('two-handed'));
       expect(twoHandedWarning).toBeUndefined();
     });
   });
@@ -425,7 +415,7 @@ describe('checkEquipmentCompatibility - Two-Handed Weapon Conflicts', () => {
         boots: null,
         ring1: null,
         ring2: null,
-        charm: null
+        charm: null,
       };
 
       const result = checkEquipmentCompatibility(
@@ -462,7 +452,7 @@ describe('checkEquipmentCompatibility - Two-Handed Weapon Conflicts', () => {
         boots: null,
         ring1: null,
         ring2: null,
-        charm: null
+        charm: null,
       };
 
       const result = checkEquipmentCompatibility(
@@ -493,7 +483,7 @@ describe('checkEquipmentCompatibility - Two-Handed Weapon Conflicts', () => {
     it('should combine two-handed warnings with other warnings', () => {
       const legendaryTwoHandedWeapon: EnhancedItem = {
         ...twoHandedSword,
-        rarity: 'legendary'
+        rarity: 'legendary',
       };
 
       const currentEquipment: EquipmentSet = {
@@ -506,7 +496,7 @@ describe('checkEquipmentCompatibility - Two-Handed Weapon Conflicts', () => {
         boots: null,
         ring1: null,
         ring2: null,
-        charm: null
+        charm: null,
       };
 
       const result = checkEquipmentCompatibility(
@@ -533,7 +523,7 @@ describe('checkEquipmentCompatibility - Two-Handed Weapon Conflicts', () => {
     it('should not add two-handed warnings when item fails other requirements', () => {
       const highLevelTwoHandedWeapon: EnhancedItem = {
         ...twoHandedSword,
-        levelRequirement: 50 // Player is level 10
+        levelRequirement: 50, // Player is level 10
       };
 
       const currentEquipment: EquipmentSet = {
@@ -546,7 +536,7 @@ describe('checkEquipmentCompatibility - Two-Handed Weapon Conflicts', () => {
         boots: null,
         ring1: null,
         ring2: null,
-        charm: null
+        charm: null,
       };
 
       const result = checkEquipmentCompatibility(

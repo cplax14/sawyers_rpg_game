@@ -140,16 +140,9 @@ const Modal: React.FC<ModalProps> = ({
     }
   };
 
-  const overlayClasses = [
-    styles.overlay,
-    overlayClassName,
-  ].filter(Boolean).join(' ');
+  const overlayClasses = [styles.overlay, overlayClassName].filter(Boolean).join(' ');
 
-  const modalClasses = [
-    styles.modal,
-    styles[size],
-    className,
-  ].filter(Boolean).join(' ');
+  const modalClasses = [styles.modal, styles[size], className].filter(Boolean).join(' ');
 
   return (
     <AnimatePresence>
@@ -165,30 +158,30 @@ const Modal: React.FC<ModalProps> = ({
         >
           <motion.div
             className={modalClasses}
-            role="dialog"
-            aria-modal="true"
+            role='dialog'
+            aria-modal='true'
             aria-labelledby={title ? 'modal-title' : undefined}
             tabIndex={-1}
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
           >
             {/* Header */}
             {(title || showCloseButton) && (
               <div className={styles.header}>
                 {title && (
-                  <h2 id="modal-title" className={styles.title}>
+                  <h2 id='modal-title' className={styles.title}>
                     {title}
                   </h2>
                 )}
                 {showCloseButton && (
                   <button
-                    type="button"
+                    type='button'
                     className={styles.closeButton}
                     onClick={onClose}
-                    aria-label="Close modal"
+                    aria-label='Close modal'
                   >
                     ✕
                   </button>
@@ -197,9 +190,7 @@ const Modal: React.FC<ModalProps> = ({
             )}
 
             {/* Content */}
-            <div className={styles.content}>
-              {children}
-            </div>
+            <div className={styles.content}>{children}</div>
           </motion.div>
         </motion.div>
       )}

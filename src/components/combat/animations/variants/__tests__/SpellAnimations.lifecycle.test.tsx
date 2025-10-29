@@ -94,9 +94,7 @@ describe('Spell Animation Lifecycle Tests', () => {
       const onComplete = jest.fn();
 
       // Act
-      const { container } = render(
-        <FireballAnimation {...defaultProps} onComplete={onComplete} />
-      );
+      const { container } = render(<FireballAnimation {...defaultProps} onComplete={onComplete} />);
 
       // Assert - Animation should render and complete all phases
       expect(container.firstChild).toBeInTheDocument();
@@ -169,9 +167,7 @@ describe('Spell Animation Lifecycle Tests', () => {
       const onComplete = jest.fn();
 
       // Act
-      const { container } = render(
-        <IceShardAnimation {...defaultProps} onComplete={onComplete} />
-      );
+      const { container } = render(<IceShardAnimation {...defaultProps} onComplete={onComplete} />);
 
       // Assert
       expect(container.firstChild).toBeInTheDocument();
@@ -212,7 +208,9 @@ describe('Spell Animation Lifecycle Tests', () => {
       const onComplete = jest.fn();
 
       // Act
-      const { container } = render(<LightningAnimation {...defaultProps} onComplete={onComplete} />);
+      const { container } = render(
+        <LightningAnimation {...defaultProps} onComplete={onComplete} />
+      );
 
       // Assert - Component renders
       expect(container.firstChild).toBeInTheDocument();
@@ -266,9 +264,7 @@ describe('Spell Animation Lifecycle Tests', () => {
       const onComplete = jest.fn();
 
       // Act
-      const { container } = render(
-        <HolyBeamAnimation {...defaultProps} onComplete={onComplete} />
-      );
+      const { container } = render(<HolyBeamAnimation {...defaultProps} onComplete={onComplete} />);
 
       // Assert
       expect(container.firstChild).toBeInTheDocument();
@@ -325,9 +321,7 @@ describe('Spell Animation Lifecycle Tests', () => {
       const onComplete = jest.fn();
 
       // Act
-      const { container } = render(
-        <MeteorAnimation {...defaultProps} onComplete={onComplete} />
-      );
+      const { container } = render(<MeteorAnimation {...defaultProps} onComplete={onComplete} />);
 
       // Assert
       expect(container.firstChild).toBeInTheDocument();
@@ -384,9 +378,7 @@ describe('Spell Animation Lifecycle Tests', () => {
       const onComplete = jest.fn();
 
       // Act
-      const { container } = render(
-        <HealAnimation {...defaultProps} onComplete={onComplete} />
-      );
+      const { container } = render(<HealAnimation {...defaultProps} onComplete={onComplete} />);
 
       // Assert
       expect(container.firstChild).toBeInTheDocument();
@@ -545,7 +537,9 @@ describe('Spell Animation Lifecycle Tests', () => {
       // Act & Assert
       for (const { name, component: Component } of animations) {
         const onComplete = jest.fn();
-        const { container, unmount } = render(<Component {...defaultProps} onComplete={onComplete} />);
+        const { container, unmount } = render(
+          <Component {...defaultProps} onComplete={onComplete} />
+        );
 
         // Verify component renders
         expect(container.firstChild).toBeInTheDocument();

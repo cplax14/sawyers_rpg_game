@@ -14,12 +14,29 @@ import { Monster, Ability, PlayerStats } from './game';
 export type CreatureRarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary' | 'mythical';
 
 export type CreatureType =
-  | 'beast' | 'elemental' | 'undead' | 'dragon' | 'spirit'
-  | 'construct' | 'fey' | 'demon' | 'angel' | 'plant' | 'insect';
+  | 'beast'
+  | 'elemental'
+  | 'undead'
+  | 'dragon'
+  | 'spirit'
+  | 'construct'
+  | 'fey'
+  | 'demon'
+  | 'angel'
+  | 'plant'
+  | 'insect';
 
 export type CreatureElement =
-  | 'fire' | 'water' | 'earth' | 'air' | 'light' | 'dark'
-  | 'ice' | 'lightning' | 'nature' | 'neutral';
+  | 'fire'
+  | 'water'
+  | 'earth'
+  | 'air'
+  | 'light'
+  | 'dark'
+  | 'ice'
+  | 'lightning'
+  | 'nature'
+  | 'neutral';
 
 export interface EnhancedCreature extends Monster {
   // Collection metadata
@@ -82,11 +99,18 @@ export interface CreaturePersonality {
 }
 
 export type CreaturePersonalityTrait =
-  | 'aggressive' | 'docile' | 'playful' | 'serious' | 'curious'
-  | 'lazy' | 'energetic' | 'protective' | 'independent' | 'clingy';
+  | 'aggressive'
+  | 'docile'
+  | 'playful'
+  | 'serious'
+  | 'curious'
+  | 'lazy'
+  | 'energetic'
+  | 'protective'
+  | 'independent'
+  | 'clingy';
 
-export type CreatureMood =
-  | 'happy' | 'content' | 'neutral' | 'sad' | 'angry' | 'excited' | 'tired';
+export type CreatureMood = 'happy' | 'content' | 'neutral' | 'sad' | 'angry' | 'excited' | 'tired';
 
 export interface CreatureNature {
   name: string;
@@ -194,8 +218,7 @@ export interface CreatureCompanionData {
   };
 }
 
-export type CreatureCombatRole =
-  | 'tank' | 'damage' | 'support' | 'healer' | 'debuffer' | 'utility';
+export type CreatureCombatRole = 'tank' | 'damage' | 'support' | 'healer' | 'debuffer' | 'utility';
 
 export interface CreatureAIPersonality {
   aggression: number; // 0-100
@@ -219,7 +242,12 @@ export interface CreatureCollectionStatus {
 }
 
 export type CreatureCompletionLevel =
-  | 'unknown' | 'spotted' | 'observed' | 'captured' | 'studied' | 'mastered';
+  | 'unknown'
+  | 'spotted'
+  | 'observed'
+  | 'captured'
+  | 'studied'
+  | 'mastered';
 
 export interface BestiaryEntry {
   species: string;
@@ -356,8 +384,16 @@ export interface CreatureFilter {
 // =============================================================================
 
 export type CreatureOperation =
-  | 'capture' | 'release' | 'rename' | 'favorite' | 'train'
-  | 'breed' | 'trade' | 'evolve' | 'heal' | 'feed';
+  | 'capture'
+  | 'release'
+  | 'rename'
+  | 'favorite'
+  | 'train'
+  | 'breed'
+  | 'trade'
+  | 'evolve'
+  | 'heal'
+  | 'feed';
 
 export interface CreatureOperationResult {
   success: boolean;
@@ -383,9 +419,15 @@ export interface CreatureCaptureAttempt {
 // =============================================================================
 
 export type CreatureEventType =
-  | 'creature_discovered' | 'creature_captured' | 'creature_released'
-  | 'breeding_started' | 'breeding_completed' | 'evolution_available'
-  | 'companion_leveled' | 'trade_received' | 'rare_encounter';
+  | 'creature_discovered'
+  | 'creature_captured'
+  | 'creature_released'
+  | 'breeding_started'
+  | 'breeding_completed'
+  | 'evolution_available'
+  | 'companion_leveled'
+  | 'trade_received'
+  | 'rare_encounter';
 
 export interface CreatureEvent {
   type: CreatureEventType;
@@ -411,7 +453,7 @@ export enum CreatureError {
   INVALID_TRADE = 'INVALID_TRADE',
   CREATURE_IN_USE = 'CREATURE_IN_USE',
   INSUFFICIENT_BOND = 'INSUFFICIENT_BOND',
-  EVOLUTION_REQUIREMENTS_NOT_MET = 'EVOLUTION_REQUIREMENTS_NOT_MET'
+  EVOLUTION_REQUIREMENTS_NOT_MET = 'EVOLUTION_REQUIREMENTS_NOT_MET',
 }
 
 export class CreatureException extends Error {

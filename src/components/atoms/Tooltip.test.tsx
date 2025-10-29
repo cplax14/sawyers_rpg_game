@@ -23,14 +23,12 @@ describe('Tooltip', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // Mock getBoundingClientRect
-    Element.prototype.getBoundingClientRect = jest.fn(() =>
-      mockGetBoundingClientRect()
-    );
+    Element.prototype.getBoundingClientRect = jest.fn(() => mockGetBoundingClientRect());
   });
 
   it('renders trigger element', () => {
     render(
-      <Tooltip content="Tooltip content">
+      <Tooltip content='Tooltip content'>
         <button>Trigger</button>
       </Tooltip>
     );
@@ -42,7 +40,7 @@ describe('Tooltip', () => {
     const user = userEvent.setup();
 
     render(
-      <Tooltip content="Tooltip content">
+      <Tooltip content='Tooltip content'>
         <button>Trigger</button>
       </Tooltip>
     );
@@ -60,7 +58,7 @@ describe('Tooltip', () => {
     const user = userEvent.setup();
 
     render(
-      <Tooltip content="Tooltip content">
+      <Tooltip content='Tooltip content'>
         <button>Trigger</button>
       </Tooltip>
     );
@@ -83,7 +81,7 @@ describe('Tooltip', () => {
     const user = userEvent.setup();
 
     render(
-      <Tooltip content="Tooltip content" trigger="click">
+      <Tooltip content='Tooltip content' trigger='click'>
         <button>Trigger</button>
       </Tooltip>
     );
@@ -100,7 +98,7 @@ describe('Tooltip', () => {
     const user = userEvent.setup();
 
     render(
-      <Tooltip content="Tooltip content" trigger="click">
+      <Tooltip content='Tooltip content' trigger='click'>
         <button>Trigger</button>
       </Tooltip>
     );
@@ -124,7 +122,7 @@ describe('Tooltip', () => {
     const user = userEvent.setup();
 
     render(
-      <Tooltip content="Tooltip content" trigger="focus">
+      <Tooltip content='Tooltip content' trigger='focus'>
         <button>Trigger</button>
       </Tooltip>
     );
@@ -141,7 +139,7 @@ describe('Tooltip', () => {
 
   it('respects manual control via visible prop', async () => {
     const { rerender } = render(
-      <Tooltip content="Tooltip content" visible={false} trigger="manual">
+      <Tooltip content='Tooltip content' visible={false} trigger='manual'>
         <button>Trigger</button>
       </Tooltip>
     );
@@ -149,7 +147,7 @@ describe('Tooltip', () => {
     expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
 
     rerender(
-      <Tooltip content="Tooltip content" visible={true} trigger="manual">
+      <Tooltip content='Tooltip content' visible={true} trigger='manual'>
         <button>Trigger</button>
       </Tooltip>
     );
@@ -163,7 +161,7 @@ describe('Tooltip', () => {
     const user = userEvent.setup();
     // Test different placements separately since changing placement while visible may not update
     const { unmount } = render(
-      <Tooltip content="Tooltip content" placement="top">
+      <Tooltip content='Tooltip content' placement='top'>
         <button>Trigger</button>
       </Tooltip>
     );
@@ -185,7 +183,7 @@ describe('Tooltip', () => {
 
     // Test bottom placement separately
     render(
-      <Tooltip content="Tooltip content" placement="bottom">
+      <Tooltip content='Tooltip content' placement='bottom'>
         <button>Trigger</button>
       </Tooltip>
     );
@@ -202,7 +200,7 @@ describe('Tooltip', () => {
   it('handles different variant themes', async () => {
     const user = userEvent.setup();
     const { rerender } = render(
-      <Tooltip content="Tooltip content" variant="dark">
+      <Tooltip content='Tooltip content' variant='dark'>
         <button>Trigger</button>
       </Tooltip>
     );
@@ -216,7 +214,7 @@ describe('Tooltip', () => {
     });
 
     rerender(
-      <Tooltip content="Tooltip content" variant="light">
+      <Tooltip content='Tooltip content' variant='light'>
         <button>Trigger</button>
       </Tooltip>
     );
@@ -231,7 +229,7 @@ describe('Tooltip', () => {
     const user = userEvent.setup();
 
     render(
-      <Tooltip content="Tooltip content" disabled>
+      <Tooltip content='Tooltip content' disabled>
         <button>Trigger</button>
       </Tooltip>
     );
@@ -248,7 +246,7 @@ describe('Tooltip', () => {
     const user = userEvent.setup();
 
     render(
-      <Tooltip content="Tooltip content" delay={500}>
+      <Tooltip content='Tooltip content' delay={500}>
         <button>Trigger</button>
       </Tooltip>
     );
@@ -272,7 +270,7 @@ describe('Tooltip', () => {
     const user = userEvent.setup();
 
     render(
-      <Tooltip content="Tooltip content" className="custom-tooltip">
+      <Tooltip content='Tooltip content' className='custom-tooltip'>
         <button>Trigger</button>
       </Tooltip>
     );
@@ -290,7 +288,7 @@ describe('Tooltip', () => {
     const user = userEvent.setup();
 
     render(
-      <Tooltip content="Tooltip content">
+      <Tooltip content='Tooltip content'>
         <button>Trigger</button>
       </Tooltip>
     );
@@ -308,7 +306,7 @@ describe('Tooltip', () => {
     const user = userEvent.setup();
 
     render(
-      <Tooltip content="Tooltip content" showArrow={false}>
+      <Tooltip content='Tooltip content' showArrow={false}>
         <button>Trigger</button>
       </Tooltip>
     );
@@ -327,7 +325,7 @@ describe('Tooltip', () => {
     const onVisibleChange = jest.fn();
 
     render(
-      <Tooltip content="Tooltip content" onVisibleChange={onVisibleChange}>
+      <Tooltip content='Tooltip content' onVisibleChange={onVisibleChange}>
         <button>Trigger</button>
       </Tooltip>
     );
@@ -377,7 +375,7 @@ describe('Tooltip', () => {
 
     render(
       <div>
-        <Tooltip content="Tooltip content" trigger="click">
+        <Tooltip content='Tooltip content' trigger='click'>
           <button>Trigger</button>
         </Tooltip>
         <button>Outside</button>
@@ -404,7 +402,7 @@ describe('Tooltip', () => {
     const user = userEvent.setup();
 
     render(
-      <Tooltip content="">
+      <Tooltip content=''>
         <button>Trigger</button>
       </Tooltip>
     );

@@ -20,38 +20,38 @@ const modalStyles = {
     maxWidth: '600px',
     width: '90%',
     maxHeight: '80vh',
-    overflow: 'auto'
+    overflow: 'auto',
   },
   header: {
     marginBottom: '1.5rem',
-    textAlign: 'center' as const
+    textAlign: 'center' as const,
   },
   title: {
     fontSize: '1.5rem',
     fontWeight: 'bold',
     color: '#d4af37',
-    margin: '0 0 0.5rem 0'
+    margin: '0 0 0.5rem 0',
   },
   subtitle: {
     fontSize: '0.9rem',
     color: '#94a3b8',
-    margin: 0
+    margin: 0,
   },
   slotsInfo: {
     background: 'rgba(59, 130, 246, 0.2)',
     borderRadius: '8px',
     padding: '1rem',
     marginBottom: '1.5rem',
-    border: '1px solid rgba(59, 130, 246, 0.3)'
+    border: '1px solid rgba(59, 130, 246, 0.3)',
   },
   slotsText: {
     fontSize: '0.9rem',
     color: '#60a5fa',
     margin: 0,
-    textAlign: 'center' as const
+    textAlign: 'center' as const,
   },
   section: {
-    marginBottom: '1.5rem'
+    marginBottom: '1.5rem',
   },
   sectionTitle: {
     fontSize: '1rem',
@@ -60,12 +60,12 @@ const modalStyles = {
     marginBottom: '0.75rem',
     display: 'flex',
     alignItems: 'center',
-    gap: '0.5rem'
+    gap: '0.5rem',
   },
   abilityGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-    gap: '0.75rem'
+    gap: '0.75rem',
   },
   abilityCard: {
     background: 'rgba(255, 255, 255, 0.05)',
@@ -73,41 +73,41 @@ const modalStyles = {
     padding: '0.75rem',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
-    border: '2px solid transparent'
+    border: '2px solid transparent',
   },
   abilityCardSelected: {
     background: 'rgba(34, 197, 94, 0.2)',
     borderColor: 'rgba(34, 197, 94, 0.5)',
-    boxShadow: '0 0 12px rgba(34, 197, 94, 0.3)'
+    boxShadow: '0 0 12px rgba(34, 197, 94, 0.3)',
   },
   abilityCardDisabled: {
     opacity: 0.5,
-    cursor: 'not-allowed'
+    cursor: 'not-allowed',
   },
   abilityName: {
     fontSize: '0.9rem',
     fontWeight: 'bold',
     color: '#d4af37',
-    marginBottom: '0.25rem'
+    marginBottom: '0.25rem',
   },
   abilityDescription: {
     fontSize: '0.75rem',
     color: '#94a3b8',
     lineHeight: '1.3',
-    marginBottom: '0.5rem'
+    marginBottom: '0.5rem',
   },
   abilityMeta: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     fontSize: '0.7rem',
-    color: '#9ca3af'
+    color: '#9ca3af',
   },
   abilityCost: {
     background: 'rgba(59, 130, 246, 0.2)',
     borderRadius: '4px',
     padding: '0.15rem 0.4rem',
-    color: '#60a5fa'
+    color: '#60a5fa',
   },
   inheritedBadge: {
     background: 'rgba(168, 85, 247, 0.2)',
@@ -115,27 +115,27 @@ const modalStyles = {
     padding: '0.15rem 0.4rem',
     fontSize: '0.65rem',
     color: '#a855f7',
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   },
   actions: {
     display: 'flex',
     gap: '0.75rem',
     marginTop: '1.5rem',
     paddingTop: '1.5rem',
-    borderTop: '1px solid rgba(255, 255, 255, 0.1)'
+    borderTop: '1px solid rgba(255, 255, 255, 0.1)',
   },
   warningBox: {
     background: 'rgba(239, 68, 68, 0.1)',
     borderRadius: '8px',
     padding: '1rem',
     marginBottom: '1rem',
-    border: '1px solid rgba(239, 68, 68, 0.3)'
+    border: '1px solid rgba(239, 68, 68, 0.3)',
   },
   warningText: {
     fontSize: '0.85rem',
     color: '#ef4444',
-    margin: 0
-  }
+    margin: 0,
+  },
 };
 
 export const AbilitySelectionModal: React.FC<AbilitySelectionModalProps> = ({
@@ -145,10 +145,11 @@ export const AbilitySelectionModal: React.FC<AbilitySelectionModalProps> = ({
   inheritedAbilities,
   naturalAbilities,
   generation,
-  maxSelection
+  maxSelection,
 }) => {
   // Get ability slots for this generation
-  const abilitySlots = DEFAULT_ABILITY_INHERITANCE.abilitySlotsByGeneration[generation] ||
+  const abilitySlots =
+    DEFAULT_ABILITY_INHERITANCE.abilitySlotsByGeneration[generation] ||
     DEFAULT_ABILITY_INHERITANCE.abilitySlotsByGeneration[0];
 
   const totalSlots = abilitySlots.baseSlots + abilitySlots.bonusSlots;
@@ -206,9 +207,7 @@ export const AbilitySelectionModal: React.FC<AbilitySelectionModalProps> = ({
     <Modal isOpen={isOpen} onClose={handleCancel} style={modalStyles.content}>
       <div style={modalStyles.header}>
         <h2 style={modalStyles.title}>Select Abilities</h2>
-        <p style={modalStyles.subtitle}>
-          Choose which abilities your offspring will learn
-        </p>
+        <p style={modalStyles.subtitle}>Choose which abilities your offspring will learn</p>
       </div>
 
       {/* Slots Information */}
@@ -216,7 +215,11 @@ export const AbilitySelectionModal: React.FC<AbilitySelectionModalProps> = ({
         <p style={modalStyles.slotsText}>
           <strong>Available Slots:</strong> {maxAbilities} ability slots
           {abilitySlots.bonusSlots > 0 && (
-            <span> ({abilitySlots.baseSlots} base + {abilitySlots.bonusSlots} bonus from Gen {generation})</span>
+            <span>
+              {' '}
+              ({abilitySlots.baseSlots} base + {abilitySlots.bonusSlots} bonus from Gen {generation}
+              )
+            </span>
           )}
         </p>
         <p style={{ ...modalStyles.slotsText, marginTop: '0.5rem' }}>
@@ -228,8 +231,8 @@ export const AbilitySelectionModal: React.FC<AbilitySelectionModalProps> = ({
       {allAbilities.length > maxAbilities && (
         <div style={modalStyles.warningBox}>
           <p style={modalStyles.warningText}>
-            ⚠️ Your offspring has inherited {allAbilities.length} potential abilities,
-            but can only learn {maxAbilities}. Choose wisely!
+            ⚠️ Your offspring has inherited {allAbilities.length} potential abilities, but can only
+            learn {maxAbilities}. Choose wisely!
           </p>
         </div>
       )}
@@ -252,24 +255,29 @@ export const AbilitySelectionModal: React.FC<AbilitySelectionModalProps> = ({
                   style={{
                     ...modalStyles.abilityCard,
                     ...(isSelected ? modalStyles.abilityCardSelected : {}),
-                    ...(isDisabled ? modalStyles.abilityCardDisabled : {})
+                    ...(isDisabled ? modalStyles.abilityCardDisabled : {}),
                   }}
                   onClick={() => !isDisabled && handleToggleAbility(ability.id)}
                   whileHover={isDisabled ? {} : { scale: 1.02 }}
                   whileTap={isDisabled ? {} : { scale: 0.98 }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.25rem' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      marginBottom: '0.25rem',
+                    }}
+                  >
                     <div style={modalStyles.abilityName}>{ability.name}</div>
                     <div style={modalStyles.inheritedBadge}>Inherited</div>
                   </div>
-                  <div style={modalStyles.abilityDescription}>
-                    {ability.description}
-                  </div>
+                  <div style={modalStyles.abilityDescription}>{ability.description}</div>
                   <div style={modalStyles.abilityMeta}>
-                    <span style={modalStyles.abilityCost}>
-                      {ability.cost} MP
-                    </span>
-                    {isSelected && <span style={{ color: '#22c55e', fontWeight: 'bold' }}>✓ Selected</span>}
+                    <span style={modalStyles.abilityCost}>{ability.cost} MP</span>
+                    {isSelected && (
+                      <span style={{ color: '#22c55e', fontWeight: 'bold' }}>✓ Selected</span>
+                    )}
                   </div>
                 </motion.div>
               );
@@ -296,21 +304,19 @@ export const AbilitySelectionModal: React.FC<AbilitySelectionModalProps> = ({
                   style={{
                     ...modalStyles.abilityCard,
                     ...(isSelected ? modalStyles.abilityCardSelected : {}),
-                    ...(isDisabled ? modalStyles.abilityCardDisabled : {})
+                    ...(isDisabled ? modalStyles.abilityCardDisabled : {}),
                   }}
                   onClick={() => !isDisabled && handleToggleAbility(ability.id)}
                   whileHover={isDisabled ? {} : { scale: 1.02 }}
                   whileTap={isDisabled ? {} : { scale: 0.98 }}
                 >
                   <div style={modalStyles.abilityName}>{ability.name}</div>
-                  <div style={modalStyles.abilityDescription}>
-                    {ability.description}
-                  </div>
+                  <div style={modalStyles.abilityDescription}>{ability.description}</div>
                   <div style={modalStyles.abilityMeta}>
-                    <span style={modalStyles.abilityCost}>
-                      {ability.cost} MP
-                    </span>
-                    {isSelected && <span style={{ color: '#22c55e', fontWeight: 'bold' }}>✓ Selected</span>}
+                    <span style={modalStyles.abilityCost}>{ability.cost} MP</span>
+                    {isSelected && (
+                      <span style={{ color: '#22c55e', fontWeight: 'bold' }}>✓ Selected</span>
+                    )}
                   </div>
                 </motion.div>
               );
@@ -321,15 +327,11 @@ export const AbilitySelectionModal: React.FC<AbilitySelectionModalProps> = ({
 
       {/* Actions */}
       <div style={modalStyles.actions}>
-        <Button
-          variant="secondary"
-          onClick={handleCancel}
-          style={{ flex: 1 }}
-        >
+        <Button variant='secondary' onClick={handleCancel} style={{ flex: 1 }}>
           Cancel
         </Button>
         <Button
-          variant="primary"
+          variant='primary'
           onClick={handleConfirm}
           disabled={!isSelectionValid}
           style={{ flex: 2 }}

@@ -3,18 +3,23 @@
  * Tests for cloud storage quota monitoring functionality
  */
 
-import { QuotaMonitorService, DEFAULT_QUOTA_CONFIG, QuotaStatus, QuotaNotification } from '../quotaMonitor';
+import {
+  QuotaMonitorService,
+  DEFAULT_QUOTA_CONFIG,
+  QuotaStatus,
+  QuotaNotification,
+} from '../quotaMonitor';
 import { CloudStorageService } from '../cloudStorage';
 import { User } from 'firebase/auth';
 
 // Mock CloudStorageService
 const mockCloudStorage = {
-  listCloudSaves: jest.fn()
+  listCloudSaves: jest.fn(),
 } as unknown as CloudStorageService;
 
 // Mock user
 const mockUser = {
-  uid: 'test-user-123'
+  uid: 'test-user-123',
 } as User;
 
 describe('QuotaMonitorService', () => {
@@ -27,7 +32,7 @@ describe('QuotaMonitorService', () => {
       onQuotaCritical: jest.fn(),
       onQuotaExceeded: jest.fn(),
       onCleanupPerformed: jest.fn(),
-      onNotification: jest.fn()
+      onNotification: jest.fn(),
     };
 
     quotaService = new QuotaMonitorService(
@@ -35,7 +40,7 @@ describe('QuotaMonitorService', () => {
       {
         maxStorageBytes: 1000, // 1KB for testing
         warningThreshold: 75,
-        criticalThreshold: 90
+        criticalThreshold: 90,
       },
       mockEventHandlers
     );
@@ -59,7 +64,7 @@ describe('QuotaMonitorService', () => {
     it('should merge custom configuration', () => {
       const service = new QuotaMonitorService(mockCloudStorage, {
         maxStorageBytes: 2000,
-        warningThreshold: 80
+        warningThreshold: 80,
       });
 
       const config = service.getConfig();
@@ -88,9 +93,9 @@ describe('QuotaMonitorService', () => {
             compressedSize: 500,
             dataSize: 600,
             createdAt: new Date(),
-            updatedAt: new Date()
-          }
-        ]
+            updatedAt: new Date(),
+          },
+        ],
       });
 
       const status = await quotaService.checkQuota(mockUser);
@@ -112,9 +117,9 @@ describe('QuotaMonitorService', () => {
             compressedSize: 800,
             dataSize: 900,
             createdAt: new Date(),
-            updatedAt: new Date()
-          }
-        ]
+            updatedAt: new Date(),
+          },
+        ],
       });
 
       const status = await quotaService.checkQuota(mockUser);
@@ -135,9 +140,9 @@ describe('QuotaMonitorService', () => {
             compressedSize: 950,
             dataSize: 1000,
             createdAt: new Date(),
-            updatedAt: new Date()
-          }
-        ]
+            updatedAt: new Date(),
+          },
+        ],
       });
 
       const status = await quotaService.checkQuota(mockUser);
@@ -158,9 +163,9 @@ describe('QuotaMonitorService', () => {
             compressedSize: 1200,
             dataSize: 1300,
             createdAt: new Date(),
-            updatedAt: new Date()
-          }
-        ]
+            updatedAt: new Date(),
+          },
+        ],
       });
 
       const status = await quotaService.checkQuota(mockUser);
@@ -180,7 +185,7 @@ describe('QuotaMonitorService', () => {
           compressedSize: 300,
           dataSize: 350,
           createdAt: new Date('2023-01-01'),
-          updatedAt: new Date('2023-01-02')
+          updatedAt: new Date('2023-01-02'),
         },
         {
           slotNumber: 2,
@@ -188,13 +193,13 @@ describe('QuotaMonitorService', () => {
           compressedSize: 200,
           dataSize: 250,
           createdAt: new Date('2023-01-03'),
-          updatedAt: new Date('2023-01-04')
-        }
+          updatedAt: new Date('2023-01-04'),
+        },
       ];
 
       (mockCloudStorage.listCloudSaves as jest.Mock).mockResolvedValue({
         success: true,
-        data: mockSaves
+        data: mockSaves,
       });
 
       const status = await quotaService.checkQuota(mockUser);
@@ -212,7 +217,16 @@ describe('QuotaMonitorService', () => {
     it('should create warning notification', async () => {
       (mockCloudStorage.listCloudSaves as jest.Mock).mockResolvedValue({
         success: true,
-        data: [{ slotNumber: 1, saveName: 'Test', compressedSize: 800, dataSize: 900, createdAt: new Date(), updatedAt: new Date() }]
+        data: [
+          {
+            slotNumber: 1,
+            saveName: 'Test',
+            compressedSize: 800,
+            dataSize: 900,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ],
       });
 
       await quotaService.checkQuota(mockUser);
@@ -229,7 +243,16 @@ describe('QuotaMonitorService', () => {
     it('should create exceeded notification with cleanup action', async () => {
       (mockCloudStorage.listCloudSaves as jest.Mock).mockResolvedValue({
         success: true,
-        data: [{ slotNumber: 1, saveName: 'Test', compressedSize: 1200, dataSize: 1300, createdAt: new Date(), updatedAt: new Date() }]
+        data: [
+          {
+            slotNumber: 1,
+            saveName: 'Test',
+            compressedSize: 1200,
+            dataSize: 1300,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ],
       });
 
       await quotaService.checkQuota(mockUser);
@@ -247,7 +270,16 @@ describe('QuotaMonitorService', () => {
     it('should track notifications', async () => {
       (mockCloudStorage.listCloudSaves as jest.Mock).mockResolvedValue({
         success: true,
-        data: [{ slotNumber: 1, saveName: 'Test', compressedSize: 800, dataSize: 900, createdAt: new Date(), updatedAt: new Date() }]
+        data: [
+          {
+            slotNumber: 1,
+            saveName: 'Test',
+            compressedSize: 800,
+            dataSize: 900,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ],
       });
 
       await quotaService.checkQuota(mockUser);
@@ -260,7 +292,16 @@ describe('QuotaMonitorService', () => {
     it('should mark notifications as read', async () => {
       (mockCloudStorage.listCloudSaves as jest.Mock).mockResolvedValue({
         success: true,
-        data: [{ slotNumber: 1, saveName: 'Test', compressedSize: 800, dataSize: 900, createdAt: new Date(), updatedAt: new Date() }]
+        data: [
+          {
+            slotNumber: 1,
+            saveName: 'Test',
+            compressedSize: 800,
+            dataSize: 900,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ],
       });
 
       await quotaService.checkQuota(mockUser);
@@ -277,7 +318,16 @@ describe('QuotaMonitorService', () => {
     it('should get unread notifications count', async () => {
       (mockCloudStorage.listCloudSaves as jest.Mock).mockResolvedValue({
         success: true,
-        data: [{ slotNumber: 1, saveName: 'Test', compressedSize: 800, dataSize: 900, createdAt: new Date(), updatedAt: new Date() }]
+        data: [
+          {
+            slotNumber: 1,
+            saveName: 'Test',
+            compressedSize: 800,
+            dataSize: 900,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ],
       });
 
       await quotaService.checkQuota(mockUser);
@@ -325,7 +375,7 @@ describe('QuotaMonitorService', () => {
     it('should handle cloud storage errors gracefully', async () => {
       (mockCloudStorage.listCloudSaves as jest.Mock).mockResolvedValue({
         success: false,
-        error: { message: 'Network error' }
+        error: { message: 'Network error' },
       });
 
       const status = await quotaService.checkQuota(mockUser);
@@ -353,7 +403,16 @@ describe('QuotaMonitorService', () => {
       // First check - normal status
       (mockCloudStorage.listCloudSaves as jest.Mock).mockResolvedValue({
         success: true,
-        data: [{ slotNumber: 1, saveName: 'Test', compressedSize: 400, dataSize: 500, createdAt: new Date(), updatedAt: new Date() }]
+        data: [
+          {
+            slotNumber: 1,
+            saveName: 'Test',
+            compressedSize: 400,
+            dataSize: 500,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ],
       });
 
       await quotaService.checkQuota(mockUser);
@@ -364,7 +423,16 @@ describe('QuotaMonitorService', () => {
       // Second check - warning status
       (mockCloudStorage.listCloudSaves as jest.Mock).mockResolvedValue({
         success: true,
-        data: [{ slotNumber: 1, saveName: 'Test', compressedSize: 800, dataSize: 900, createdAt: new Date(), updatedAt: new Date() }]
+        data: [
+          {
+            slotNumber: 1,
+            saveName: 'Test',
+            compressedSize: 800,
+            dataSize: 900,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ],
       });
 
       await quotaService.checkQuota(mockUser);
@@ -376,7 +444,16 @@ describe('QuotaMonitorService', () => {
       // First check - 50% usage
       (mockCloudStorage.listCloudSaves as jest.Mock).mockResolvedValue({
         success: true,
-        data: [{ slotNumber: 1, saveName: 'Test', compressedSize: 500, dataSize: 600, createdAt: new Date(), updatedAt: new Date() }]
+        data: [
+          {
+            slotNumber: 1,
+            saveName: 'Test',
+            compressedSize: 500,
+            dataSize: 600,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ],
       });
 
       await quotaService.checkQuota(mockUser);
@@ -384,7 +461,16 @@ describe('QuotaMonitorService', () => {
       // Second check - 52% usage (small change)
       (mockCloudStorage.listCloudSaves as jest.Mock).mockResolvedValue({
         success: true,
-        data: [{ slotNumber: 1, saveName: 'Test', compressedSize: 520, dataSize: 620, createdAt: new Date(), updatedAt: new Date() }]
+        data: [
+          {
+            slotNumber: 1,
+            saveName: 'Test',
+            compressedSize: 520,
+            dataSize: 620,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ],
       });
 
       jest.clearAllMocks();

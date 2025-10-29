@@ -5,14 +5,18 @@
 
 import { renderHook, act } from '@testing-library/react';
 import { useSmartCache, useInventoryCache, useCreatureCache } from '../../hooks/useSmartCache';
-import { useDataComputationCache, useSmartItemFiltering, useSmartAggregations } from '../../hooks/useDataComputationCache';
+import {
+  useDataComputationCache,
+  useSmartItemFiltering,
+  useSmartAggregations,
+} from '../../hooks/useDataComputationCache';
 import { EnhancedItem } from '../../types/inventory';
 import { EnhancedCreature } from '../../types/creatures';
 
 // Mock performance API
 Object.defineProperty(global.performance, 'now', {
   writable: true,
-  value: jest.fn(() => Date.now())
+  value: jest.fn(() => Date.now()),
 });
 
 describe('Performance Optimizations', () => {
@@ -30,10 +34,12 @@ describe('Performance Optimizations', () => {
     });
 
     it('should handle TTL expiration', async () => {
-      const { result } = renderHook(() => useSmartCache<string, string>({
-        maxSize: 10,
-        defaultTTL: 100 // 100ms
-      }));
+      const { result } = renderHook(() =>
+        useSmartCache<string, string>({
+          maxSize: 10,
+          defaultTTL: 100, // 100ms
+        })
+      );
 
       act(() => {
         result.current.set('key1', 'value1');
@@ -120,7 +126,7 @@ describe('Performance Optimizations', () => {
         value: 50,
         stackable: true,
         usable: true,
-        description: 'Restores health'
+        description: 'Restores health',
       },
       {
         id: 'item2',
@@ -132,8 +138,8 @@ describe('Performance Optimizations', () => {
         value: 200,
         stackable: false,
         usable: false,
-        description: 'A sharp blade'
-      }
+        description: 'A sharp blade',
+      },
     ];
 
     it('should cache computation results', async () => {
@@ -167,7 +173,9 @@ describe('Performance Optimizations', () => {
 
       // Different dependencies should trigger new computation
       await result.current.computeWithCache('test-key', () => computation('common'), ['common']);
-      await result.current.computeWithCache('test-key', () => computation('uncommon'), ['uncommon']);
+      await result.current.computeWithCache('test-key', () => computation('uncommon'), [
+        'uncommon',
+      ]);
 
       expect(computationCount).toBe(2);
     });
@@ -185,7 +193,7 @@ describe('Performance Optimizations', () => {
         value: 50,
         stackable: true,
         usable: true,
-        description: 'Restores health'
+        description: 'Restores health',
       },
       {
         id: 'item2',
@@ -197,7 +205,7 @@ describe('Performance Optimizations', () => {
         value: 200,
         stackable: false,
         usable: false,
-        description: 'A sharp blade'
+        description: 'A sharp blade',
       },
       {
         id: 'item3',
@@ -209,15 +217,15 @@ describe('Performance Optimizations', () => {
         value: 500,
         stackable: false,
         usable: false,
-        description: 'Increases mana'
-      }
+        description: 'Increases mana',
+      },
     ];
 
     it('should filter items by category', async () => {
       const { result } = renderHook(() => useSmartItemFiltering(mockItems));
 
       const filtered = await result.current.filterItems({
-        category: 'equipment'
+        category: 'equipment',
       });
 
       expect(filtered.data).toHaveLength(2);
@@ -228,7 +236,7 @@ describe('Performance Optimizations', () => {
       const { result } = renderHook(() => useSmartItemFiltering(mockItems));
 
       const filtered = await result.current.filterItems({
-        rarity: ['common', 'uncommon']
+        rarity: ['common', 'uncommon'],
       });
 
       expect(filtered.data).toHaveLength(2);
@@ -239,7 +247,7 @@ describe('Performance Optimizations', () => {
       const { result } = renderHook(() => useSmartItemFiltering(mockItems));
 
       const filtered = await result.current.filterItems({
-        valueRange: { min: 100, max: 300 }
+        valueRange: { min: 100, max: 300 },
       });
 
       expect(filtered.data).toHaveLength(1);
@@ -250,7 +258,7 @@ describe('Performance Optimizations', () => {
       const { result } = renderHook(() => useSmartItemFiltering(mockItems));
 
       const filtered = await result.current.filterItems({
-        search: 'sword'
+        search: 'sword',
       });
 
       expect(filtered.data).toHaveLength(1);
@@ -260,21 +268,18 @@ describe('Performance Optimizations', () => {
     it('should sort filtered results', async () => {
       const { result } = renderHook(() => useSmartItemFiltering(mockItems));
 
-      const filtered = await result.current.filterItems(
-        {},
-        { field: 'value', order: 'desc' }
-      );
+      const filtered = await result.current.filterItems({}, { field: 'value', order: 'desc' });
 
       expect(filtered.data[0].value).toBe(500); // Magic Ring
       expect(filtered.data[1].value).toBe(200); // Steel Sword
-      expect(filtered.data[2].value).toBe(50);  // Health Potion
+      expect(filtered.data[2].value).toBe(50); // Health Potion
     });
 
     it('should provide performance metrics', async () => {
       const { result } = renderHook(() => useSmartItemFiltering(mockItems));
 
       const filtered = await result.current.filterItems({
-        category: 'equipment'
+        category: 'equipment',
       });
 
       expect(typeof filtered.computeTime).toBe('number');
@@ -296,7 +301,7 @@ describe('Performance Optimizations', () => {
         value: 50,
         stackable: true,
         usable: true,
-        description: 'Restores health'
+        description: 'Restores health',
       },
       {
         id: 'item2',
@@ -308,8 +313,8 @@ describe('Performance Optimizations', () => {
         value: 200,
         stackable: false,
         usable: false,
-        description: 'A sharp blade'
-      }
+        description: 'A sharp blade',
+      },
     ];
 
     const mockCreatures: EnhancedCreature[] = [
@@ -322,7 +327,7 @@ describe('Performance Optimizations', () => {
         level: 25,
         rarity: 'legendary',
         stats: { health: 500, attack: 80, defense: 60, speed: 40 },
-        collectionStatus: 'captured'
+        collectionStatus: 'captured',
       },
       {
         id: 'creature2',
@@ -333,8 +338,8 @@ describe('Performance Optimizations', () => {
         level: 15,
         rarity: 'rare',
         stats: { health: 200, attack: 60, defense: 40, speed: 70 },
-        collectionStatus: 'discovered'
-      }
+        collectionStatus: 'discovered',
+      },
     ];
 
     it('should compute item statistics', async () => {

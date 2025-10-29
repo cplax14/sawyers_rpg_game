@@ -41,31 +41,31 @@ describe('Save/Load Cloud Synchronization Integration', () => {
         level: 5,
         experience: 1000,
         currentArea: 'forest',
-        stats: { health: 100, mana: 50 }
+        stats: { health: 100, mana: 50 },
       },
       inventory: {
         items: [
           { id: 'sword_01', quantity: 1 },
-          { id: 'potion_health', quantity: 3 }
-        ]
+          { id: 'potion_health', quantity: 3 },
+        ],
       },
       gameFlags: {
         tutorial_completed: true,
-        boss_defeated: false
+        boss_defeated: false,
       },
       story: {
         currentChapter: 2,
-        completedQuests: ['quest_001', 'quest_002']
+        completedQuests: ['quest_001', 'quest_002'],
       },
       version: '1.0.0',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     } as ReactGameState;
 
     // Mock user
     mockUser = {
       uid: 'test-user-123',
       email: 'test@example.com',
-      displayName: 'Test User'
+      displayName: 'Test User',
     };
 
     // Setup service mode
@@ -80,7 +80,7 @@ describe('Save/Load Cloud Synchronization Integration', () => {
         user: mockUser,
         signIn: jest.fn(),
         signOut: jest.fn(),
-        register: jest.fn()
+        register: jest.fn(),
       } as any);
 
       mockUseSaveSystem.mockReturnValue({
@@ -90,7 +90,7 @@ describe('Save/Load Cloud Synchronization Integration', () => {
         isInitialized: true,
         saveSlots: [],
         isLoading: false,
-        error: null
+        error: null,
       } as any);
 
       mockUseCloudSave.mockReturnValue({
@@ -100,28 +100,26 @@ describe('Save/Load Cloud Synchronization Integration', () => {
             slotNumber: 1,
             saveName: 'Test Save',
             dataSize: 1000,
-            compressedSize: 500
-          }
+            compressedSize: 500,
+          },
         }),
         restoreFromCloud: jest.fn(),
         syncSlot: jest.fn(),
         isOnline: true,
         syncInProgress: false,
-        isInitialized: true
+        isInitialized: true,
       } as any);
 
       // Test the smart save flow
-      const { result } = renderHook(() => useSmartSave({
-        preferCloud: true,
-        autoFallback: true
-      }));
+      const { result } = renderHook(() =>
+        useSmartSave({
+          preferCloud: true,
+          autoFallback: true,
+        })
+      );
 
       await act(async () => {
-        const saveResult = await result.current.smartSave(
-          1,
-          'Test Save',
-          mockGameState
-        );
+        const saveResult = await result.current.smartSave(1, 'Test Save', mockGameState);
 
         expect(saveResult.success).toBe(true);
         expect(saveResult.savedTo).toBe('both');
@@ -140,7 +138,7 @@ describe('Save/Load Cloud Synchronization Integration', () => {
         user: mockUser,
         signIn: jest.fn(),
         signOut: jest.fn(),
-        register: jest.fn()
+        register: jest.fn(),
       } as any);
 
       mockUseSaveSystem.mockReturnValue({
@@ -150,7 +148,7 @@ describe('Save/Load Cloud Synchronization Integration', () => {
         isInitialized: true,
         saveSlots: [],
         isLoading: false,
-        error: null
+        error: null,
       } as any);
 
       mockUseCloudSave.mockReturnValue({
@@ -158,28 +156,26 @@ describe('Save/Load Cloud Synchronization Integration', () => {
           success: false,
           error: {
             code: 'network/error',
-            message: 'Network failure'
-          }
+            message: 'Network failure',
+          },
         }),
         restoreFromCloud: jest.fn(),
         syncSlot: jest.fn(),
         isOnline: false, // Simulate offline
         syncInProgress: false,
-        isInitialized: true
+        isInitialized: true,
       } as any);
 
       // Test the smart save flow with fallback
-      const { result } = renderHook(() => useSmartSave({
-        preferCloud: true,
-        autoFallback: true
-      }));
+      const { result } = renderHook(() =>
+        useSmartSave({
+          preferCloud: true,
+          autoFallback: true,
+        })
+      );
 
       await act(async () => {
-        const saveResult = await result.current.smartSave(
-          1,
-          'Test Save',
-          mockGameState
-        );
+        const saveResult = await result.current.smartSave(1, 'Test Save', mockGameState);
 
         expect(saveResult.success).toBe(true);
         expect(saveResult.savedTo).toBe('local');
@@ -198,7 +194,7 @@ describe('Save/Load Cloud Synchronization Integration', () => {
         user: mockUser,
         signIn: jest.fn(),
         signOut: jest.fn(),
-        register: jest.fn()
+        register: jest.fn(),
       } as any);
 
       mockUseSaveSystem.mockReturnValue({
@@ -208,7 +204,7 @@ describe('Save/Load Cloud Synchronization Integration', () => {
         isInitialized: true,
         saveSlots: [],
         isLoading: false,
-        error: null
+        error: null,
       } as any);
 
       // First attempt cloud load (succeeds)
@@ -220,14 +216,14 @@ describe('Save/Load Cloud Synchronization Integration', () => {
             gameState: mockGameState,
             metadata: {
               slotNumber: 1,
-              saveName: 'Cloud Save'
-            }
-          }
+              saveName: 'Cloud Save',
+            },
+          },
         }),
         syncSlot: jest.fn(),
         isOnline: true,
         syncInProgress: false,
-        isInitialized: true
+        isInitialized: true,
       } as any);
 
       const { result } = renderHook(() => useSmartSave());
@@ -235,7 +231,7 @@ describe('Save/Load Cloud Synchronization Integration', () => {
       await act(async () => {
         const loadResult = await result.current.smartLoad(1, {
           preferCloud: true,
-          fallbackToLocal: true
+          fallbackToLocal: true,
         });
 
         expect(loadResult.success).toBe(true);
@@ -252,7 +248,7 @@ describe('Save/Load Cloud Synchronization Integration', () => {
       const newerGameState = {
         ...mockGameState,
         player: { ...mockGameState.player, level: 10 },
-        timestamp: new Date(Date.now() + 1000).toISOString()
+        timestamp: new Date(Date.now() + 1000).toISOString(),
       };
 
       // Setup mocks with conflict scenario
@@ -261,7 +257,7 @@ describe('Save/Load Cloud Synchronization Integration', () => {
         user: mockUser,
         signIn: jest.fn(),
         signOut: jest.fn(),
-        register: jest.fn()
+        register: jest.fn(),
       } as any);
 
       mockUseSaveSystem.mockReturnValue({
@@ -271,7 +267,7 @@ describe('Save/Load Cloud Synchronization Integration', () => {
         isInitialized: true,
         saveSlots: [],
         isLoading: false,
-        error: null
+        error: null,
       } as any);
 
       mockUseCloudSave.mockReturnValue({
@@ -283,18 +279,18 @@ describe('Save/Load Cloud Synchronization Integration', () => {
             metadata: {
               slotNumber: 1,
               saveName: 'Cloud Save',
-              updatedAt: new Date(Date.now() + 1000)
-            }
-          }
+              updatedAt: new Date(Date.now() + 1000),
+            },
+          },
         }),
         syncSlot: jest.fn().mockResolvedValue({
           success: true,
           action: 'download',
-          message: 'Downloaded newer cloud save'
+          message: 'Downloaded newer cloud save',
         }),
         isOnline: true,
         syncInProgress: false,
-        isInitialized: true
+        isInitialized: true,
       } as any);
 
       const { result } = renderHook(() => useSmartSave());
@@ -317,7 +313,7 @@ describe('Save/Load Cloud Synchronization Integration', () => {
         user: mockUser,
         signIn: jest.fn(),
         signOut: jest.fn(),
-        register: jest.fn()
+        register: jest.fn(),
       } as any);
 
       mockUseSaveSystem.mockReturnValue({
@@ -327,36 +323,34 @@ describe('Save/Load Cloud Synchronization Integration', () => {
         isInitialized: true,
         saveSlots: [],
         isLoading: false,
-        error: null
+        error: null,
       } as any);
 
       // Start with cloud unavailable
       const cloudSaveMock = {
         backupToCloud: jest.fn().mockResolvedValue({
           success: false,
-          error: { code: 'network/unavailable' }
+          error: { code: 'network/unavailable' },
         }),
         restoreFromCloud: jest.fn(),
         syncSlot: jest.fn().mockResolvedValue({ success: true }),
         isOnline: false,
         syncInProgress: false,
-        isInitialized: true
+        isInitialized: true,
       };
 
       mockUseCloudSave.mockReturnValue(cloudSaveMock as any);
 
-      const { result, rerender } = renderHook(() => useSmartSave({
-        autoFallback: true,
-        syncWhenRestored: true
-      }));
+      const { result, rerender } = renderHook(() =>
+        useSmartSave({
+          autoFallback: true,
+          syncWhenRestored: true,
+        })
+      );
 
       // Save while offline - should queue
       await act(async () => {
-        const saveResult = await result.current.smartSave(
-          1,
-          'Offline Save',
-          mockGameState
-        );
+        const saveResult = await result.current.smartSave(1, 'Offline Save', mockGameState);
 
         expect(saveResult.success).toBe(true);
         expect(saveResult.savedTo).toBe('local');
@@ -393,7 +387,7 @@ describe('Save/Load Cloud Synchronization Integration', () => {
         user: mockUser,
         signIn: jest.fn(),
         signOut: jest.fn(),
-        register: jest.fn()
+        register: jest.fn(),
       } as any);
 
       mockUseSaveSystem.mockReturnValue({
@@ -403,7 +397,7 @@ describe('Save/Load Cloud Synchronization Integration', () => {
         isInitialized: true,
         saveSlots: [],
         isLoading: false,
-        error: null
+        error: null,
       } as any);
 
       mockUseCloudSave.mockReturnValue({
@@ -413,13 +407,13 @@ describe('Save/Load Cloud Synchronization Integration', () => {
             // First call fails
             return Promise.resolve({
               success: false,
-              error: { code: 'network/timeout', message: 'Request timeout' }
+              error: { code: 'network/timeout', message: 'Request timeout' },
             });
           } else {
             // Second call succeeds
             return Promise.resolve({
               success: true,
-              metadata: { slotNumber: 1, saveName: 'Recovered Save' }
+              metadata: { slotNumber: 1, saveName: 'Recovered Save' },
             });
           }
         }),
@@ -427,21 +421,19 @@ describe('Save/Load Cloud Synchronization Integration', () => {
         syncSlot: jest.fn(),
         isOnline: true,
         syncInProgress: false,
-        isInitialized: true
+        isInitialized: true,
       } as any);
 
-      const { result } = renderHook(() => useSmartSave({
-        preferCloud: true,
-        autoFallback: true
-      }));
+      const { result } = renderHook(() =>
+        useSmartSave({
+          preferCloud: true,
+          autoFallback: true,
+        })
+      );
 
       // First save attempt (will fail then succeed)
       await act(async () => {
-        const saveResult = await result.current.smartSave(
-          1,
-          'Recovery Test',
-          mockGameState
-        );
+        const saveResult = await result.current.smartSave(1, 'Recovery Test', mockGameState);
 
         // Should eventually succeed with fallback to local
         expect(saveResult.success).toBe(true);
@@ -458,7 +450,7 @@ describe('Save/Load Cloud Synchronization Integration', () => {
         user: null,
         signIn: jest.fn(),
         signOut: jest.fn(),
-        register: jest.fn()
+        register: jest.fn(),
       } as any);
 
       mockUseSaveSystem.mockReturnValue({
@@ -468,29 +460,25 @@ describe('Save/Load Cloud Synchronization Integration', () => {
         isInitialized: true,
         saveSlots: [],
         isLoading: false,
-        error: null
+        error: null,
       } as any);
 
       mockUseCloudSave.mockReturnValue({
         backupToCloud: jest.fn().mockResolvedValue({
           success: false,
-          error: { code: 'auth/required', message: 'Authentication required' }
+          error: { code: 'auth/required', message: 'Authentication required' },
         }),
         restoreFromCloud: jest.fn(),
         syncSlot: jest.fn(),
         isOnline: true,
         syncInProgress: false,
-        isInitialized: true
+        isInitialized: true,
       } as any);
 
       const { result } = renderHook(() => useSmartSave());
 
       await act(async () => {
-        const saveResult = await result.current.smartSave(
-          1,
-          'Auth Test',
-          mockGameState
-        );
+        const saveResult = await result.current.smartSave(1, 'Auth Test', mockGameState);
 
         // Should fallback to local save when not authenticated
         expect(saveResult.success).toBe(true);
@@ -508,7 +496,7 @@ describe('Save/Load Cloud Synchronization Integration', () => {
         user: mockUser,
         signIn: jest.fn(),
         signOut: jest.fn(),
-        register: jest.fn()
+        register: jest.fn(),
       } as any);
 
       mockUseSaveSystem.mockReturnValue({
@@ -518,7 +506,7 @@ describe('Save/Load Cloud Synchronization Integration', () => {
         isInitialized: true,
         saveSlots: [],
         isLoading: false,
-        error: null
+        error: null,
       } as any);
 
       mockUseCloudSave.mockReturnValue({
@@ -527,7 +515,7 @@ describe('Save/Load Cloud Synchronization Integration', () => {
         syncSlot: jest.fn(),
         isOnline: true,
         syncInProgress: false,
-        isInitialized: true
+        isInitialized: true,
       } as any);
 
       const { result } = renderHook(() => useSmartSave());
@@ -537,7 +525,7 @@ describe('Save/Load Cloud Synchronization Integration', () => {
         const savePromises = [
           result.current.smartSave(1, 'Save 1', mockGameState),
           result.current.smartSave(2, 'Save 2', mockGameState),
-          result.current.smartSave(3, 'Save 3', mockGameState)
+          result.current.smartSave(3, 'Save 3', mockGameState),
         ];
 
         const results = await Promise.all(savePromises);
@@ -561,7 +549,7 @@ describe('Save/Load Cloud Synchronization Integration', () => {
         user: mockUser,
         signIn: jest.fn(),
         signOut: jest.fn(),
-        register: jest.fn()
+        register: jest.fn(),
       } as any);
 
       mockUseSaveSystem.mockReturnValue({
@@ -574,7 +562,7 @@ describe('Save/Load Cloud Synchronization Integration', () => {
         isInitialized: true,
         saveSlots: [],
         isLoading: false,
-        error: null
+        error: null,
       } as any);
 
       mockUseCloudSave.mockReturnValue({
@@ -583,7 +571,7 @@ describe('Save/Load Cloud Synchronization Integration', () => {
         syncSlot: jest.fn(),
         isOnline: true,
         syncInProgress: false,
-        isInitialized: true
+        isInitialized: true,
       } as any);
 
       const { result } = renderHook(() => useSmartSave());
@@ -605,7 +593,7 @@ describe('Save/Load Cloud Synchronization Integration', () => {
       const invalidGameState = {
         // Missing required fields
         player: null,
-        inventory: undefined
+        inventory: undefined,
       } as any;
 
       mockUseAuth.mockReturnValue({
@@ -613,7 +601,7 @@ describe('Save/Load Cloud Synchronization Integration', () => {
         user: mockUser,
         signIn: jest.fn(),
         signOut: jest.fn(),
-        register: jest.fn()
+        register: jest.fn(),
       } as any);
 
       mockUseSaveSystem.mockReturnValue({
@@ -623,7 +611,7 @@ describe('Save/Load Cloud Synchronization Integration', () => {
         isInitialized: true,
         saveSlots: [],
         isLoading: false,
-        error: null
+        error: null,
       } as any);
 
       mockUseCloudSave.mockReturnValue({
@@ -632,17 +620,13 @@ describe('Save/Load Cloud Synchronization Integration', () => {
         syncSlot: jest.fn(),
         isOnline: true,
         syncInProgress: false,
-        isInitialized: true
+        isInitialized: true,
       } as any);
 
       const { result } = renderHook(() => useSmartSave());
 
       await act(async () => {
-        const saveResult = await result.current.smartSave(
-          1,
-          'Invalid Save',
-          invalidGameState
-        );
+        const saveResult = await result.current.smartSave(1, 'Invalid Save', invalidGameState);
 
         expect(saveResult.success).toBe(false);
         expect(saveResult.error).toBeDefined();
@@ -654,7 +638,7 @@ describe('Save/Load Cloud Synchronization Integration', () => {
         player: mockGameState.player,
         // Corrupted inventory data
         inventory: { corruptedData: true },
-        gameFlags: null
+        gameFlags: null,
       } as any;
 
       mockUseAuth.mockReturnValue({
@@ -662,7 +646,7 @@ describe('Save/Load Cloud Synchronization Integration', () => {
         user: mockUser,
         signIn: jest.fn(),
         signOut: jest.fn(),
-        register: jest.fn()
+        register: jest.fn(),
       } as any);
 
       mockUseSaveSystem.mockReturnValue({
@@ -672,19 +656,19 @@ describe('Save/Load Cloud Synchronization Integration', () => {
         isInitialized: true,
         saveSlots: [],
         isLoading: false,
-        error: null
+        error: null,
       } as any);
 
       mockUseCloudSave.mockReturnValue({
         backupToCloud: jest.fn(),
         restoreFromCloud: jest.fn().mockResolvedValue({
           success: false,
-          error: { code: 'data/corrupted', message: 'Data integrity check failed' }
+          error: { code: 'data/corrupted', message: 'Data integrity check failed' },
         }),
         syncSlot: jest.fn(),
         isOnline: true,
         syncInProgress: false,
-        isInitialized: true
+        isInitialized: true,
       } as any);
 
       const { result } = renderHook(() => useSmartSave());

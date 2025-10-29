@@ -11,7 +11,7 @@ import {
   hasActiveStoryMoments,
   getHighestPriorityStoryMoment,
   STORY_SEQUENCES,
-  STORY_MOMENTS
+  STORY_MOMENTS,
 } from '../utils/storyMoments';
 
 interface UseStoryMomentsResult {
@@ -62,45 +62,66 @@ export const useStoryMoments = (): UseStoryMomentsResult => {
   }, [activeStoryMoments]);
 
   // Story moment controls
-  const startStoryMoment = useCallback((flag: string) => {
-    storyMomentManager.startStoryMoment(flag);
-  }, [storyMomentManager]);
+  const startStoryMoment = useCallback(
+    (flag: string) => {
+      storyMomentManager.startStoryMoment(flag);
+    },
+    [storyMomentManager]
+  );
 
-  const endStoryMoment = useCallback((flag: string) => {
-    storyMomentManager.endStoryMoment(flag);
-  }, [storyMomentManager]);
+  const endStoryMoment = useCallback(
+    (flag: string) => {
+      storyMomentManager.endStoryMoment(flag);
+    },
+    [storyMomentManager]
+  );
 
-  const startStoryMoments = useCallback((flags: string[]) => {
-    storyMomentManager.startStoryMoments(flags);
-  }, [storyMomentManager]);
+  const startStoryMoments = useCallback(
+    (flags: string[]) => {
+      storyMomentManager.startStoryMoments(flags);
+    },
+    [storyMomentManager]
+  );
 
-  const endStoryMoments = useCallback((flags: string[]) => {
-    storyMomentManager.endStoryMoments(flags);
-  }, [storyMomentManager]);
+  const endStoryMoments = useCallback(
+    (flags: string[]) => {
+      storyMomentManager.endStoryMoments(flags);
+    },
+    [storyMomentManager]
+  );
 
   // Sequence controls
-  const startSequence = useCallback((sequenceName: keyof typeof STORY_SEQUENCES) => {
-    const sequence = STORY_SEQUENCES[sequenceName];
-    if (sequence) {
-      storyMomentManager.startStoryMoments(sequence);
-    } else {
-      console.warn(`Unknown story sequence: ${sequenceName}`);
-    }
-  }, [storyMomentManager]);
+  const startSequence = useCallback(
+    (sequenceName: keyof typeof STORY_SEQUENCES) => {
+      const sequence = STORY_SEQUENCES[sequenceName];
+      if (sequence) {
+        storyMomentManager.startStoryMoments(sequence);
+      } else {
+        console.warn(`Unknown story sequence: ${sequenceName}`);
+      }
+    },
+    [storyMomentManager]
+  );
 
-  const endSequence = useCallback((sequenceName: keyof typeof STORY_SEQUENCES) => {
-    const sequence = STORY_SEQUENCES[sequenceName];
-    if (sequence) {
-      storyMomentManager.endStoryMoments(sequence);
-    } else {
-      console.warn(`Unknown story sequence: ${sequenceName}`);
-    }
-  }, [storyMomentManager]);
+  const endSequence = useCallback(
+    (sequenceName: keyof typeof STORY_SEQUENCES) => {
+      const sequence = STORY_SEQUENCES[sequenceName];
+      if (sequence) {
+        storyMomentManager.endStoryMoments(sequence);
+      } else {
+        console.warn(`Unknown story sequence: ${sequenceName}`);
+      }
+    },
+    [storyMomentManager]
+  );
 
   // Query functions
-  const isStoryMomentActive = useCallback((flag: string): boolean => {
-    return storyMomentManager.isStoryMomentActive(flag, state.storyFlags);
-  }, [storyMomentManager, state.storyFlags]);
+  const isStoryMomentActive = useCallback(
+    (flag: string): boolean => {
+      return storyMomentManager.isStoryMomentActive(flag, state.storyFlags);
+    },
+    [storyMomentManager, state.storyFlags]
+  );
 
   const getStoryMomentInfo = useCallback((flag: string): StoryMoment | undefined => {
     return STORY_MOMENTS[flag];
@@ -142,7 +163,7 @@ export const useStoryMoments = (): UseStoryMomentsResult => {
 
     // Utilities
     getAllStoryMoments,
-    getAvailableSequences
+    getAvailableSequences,
   };
 };
 

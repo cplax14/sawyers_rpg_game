@@ -29,23 +29,23 @@ const modalStyles = {
     maxHeight: '70vh',
     overflow: 'hidden',
     display: 'flex',
-    flexDirection: 'column' as const
+    flexDirection: 'column' as const,
   },
   header: {
     textAlign: 'center' as const,
     marginBottom: '1rem',
-    padding: '0 0.5rem'
+    padding: '0 0.5rem',
   },
   subtitle: {
     fontSize: '0.9rem',
     color: '#94a3b8',
-    margin: 0
+    margin: 0,
   },
   content: {
     flex: 1,
     overflow: 'hidden',
     display: 'flex',
-    gap: '1rem'
+    gap: '1rem',
   },
   itemList: {
     flex: 1,
@@ -54,17 +54,17 @@ const modalStyles = {
     padding: '0.5rem',
     background: 'rgba(0, 0, 0, 0.2)',
     borderRadius: '8px',
-    border: '1px solid rgba(212, 175, 55, 0.2)'
+    border: '1px solid rgba(212, 175, 55, 0.2)',
   },
   comparison: {
     flex: 1,
-    minWidth: '300px'
+    minWidth: '300px',
   },
   noItems: {
     textAlign: 'center' as const,
     color: '#94a3b8',
     fontStyle: 'italic',
-    padding: '2rem'
+    padding: '2rem',
   },
   itemCard: {
     padding: '0.75rem',
@@ -73,38 +73,38 @@ const modalStyles = {
     background: 'rgba(255, 255, 255, 0.02)',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
-    position: 'relative' as const
+    position: 'relative' as const,
   },
   itemCardSelected: {
-    background: 'rgba(212, 175, 55, 0.1)'
+    background: 'rgba(212, 175, 55, 0.1)',
   },
   itemCardIncompatible: {
     opacity: 0.5,
     filter: 'grayscale(0.5)',
-    cursor: 'not-allowed'
+    cursor: 'not-allowed',
   },
   itemHeader: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '0.5rem'
+    marginBottom: '0.5rem',
   },
   itemName: {
     fontSize: '0.9rem',
     fontWeight: 'bold',
     color: '#f4f4f4',
-    margin: 0
+    margin: 0,
   },
   itemRarity: {
     fontSize: '0.7rem',
     padding: '0.2rem 0.5rem',
     borderRadius: '4px',
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   },
   itemStats: {
     fontSize: '0.8rem',
     color: '#94a3b8',
-    lineHeight: '1.3'
+    lineHeight: '1.3',
   },
   incompatibleText: {
     fontSize: '0.75rem',
@@ -114,21 +114,21 @@ const modalStyles = {
     display: 'flex',
     alignItems: 'center',
     gap: '0.3rem',
-    fontWeight: '500'
+    fontWeight: '500',
   },
   upgradeIndicator: {
     fontSize: '0.7rem',
     fontWeight: 'bold',
     padding: '0.2rem 0.4rem',
     borderRadius: '3px',
-    marginLeft: '0.5rem'
+    marginLeft: '0.5rem',
   },
   actions: {
     display: 'flex',
     gap: '0.75rem',
     justifyContent: 'center',
     marginTop: '1rem',
-    padding: '1rem 0.5rem 0'
+    padding: '1rem 0.5rem 0',
   },
   errorMessage: {
     background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.1))',
@@ -141,8 +141,8 @@ const modalStyles = {
     fontWeight: '500',
     textAlign: 'center' as const,
     lineHeight: '1.5',
-    boxShadow: '0 2px 8px rgba(239, 68, 68, 0.2)'
-  }
+    boxShadow: '0 2px 8px rgba(239, 68, 68, 0.2)',
+  },
 };
 
 // Rarity colors
@@ -152,7 +152,7 @@ const rarityColors = {
   rare: '#8b5cf6',
   epic: '#f59e0b',
   legendary: '#ef4444',
-  mythical: '#ec4899'
+  mythical: '#ec4899',
 };
 
 export const EquipmentSelectionModal: React.FC<EquipmentSelectionModalProps> = ({
@@ -167,7 +167,7 @@ export const EquipmentSelectionModal: React.FC<EquipmentSelectionModalProps> = (
   playerLevel,
   playerClass,
   isLoading = false,
-  errorMessage = null
+  errorMessage = null,
 }) => {
   const [selectedItem, setSelectedItem] = useState<EnhancedItem | null>(null);
 
@@ -176,13 +176,17 @@ export const EquipmentSelectionModal: React.FC<EquipmentSelectionModalProps> = (
     const compatible: EnhancedItem[] = [];
     const incompatible: EnhancedItem[] = [];
 
-    const filteredItems = availableItems.filter(item =>
-      item.equipmentSlot === slot && item.id !== currentItem?.id
+    const filteredItems = availableItems.filter(
+      item => item.equipmentSlot === slot && item.id !== currentItem?.id
     );
 
     filteredItems.forEach(item => {
       const compatibility = checkEquipmentCompatibility(
-        item, slot, playerLevel, playerClass, baseStats
+        item,
+        slot,
+        playerLevel,
+        playerClass,
+        baseStats
       );
 
       if (compatibility.canEquip) {
@@ -214,7 +218,7 @@ export const EquipmentSelectionModal: React.FC<EquipmentSelectionModalProps> = (
     if (!isCompatible) {
       return {
         border: '2px solid #6b7280', // Gray for locked
-        borderColor: '#6b7280'
+        borderColor: '#6b7280',
       };
     }
 
@@ -226,7 +230,7 @@ export const EquipmentSelectionModal: React.FC<EquipmentSelectionModalProps> = (
       return {
         border: '2px solid #10b981',
         borderColor: '#10b981',
-        boxShadow: '0 0 8px rgba(16, 185, 129, 0.3)'
+        boxShadow: '0 0 8px rgba(16, 185, 129, 0.3)',
       };
     }
 
@@ -235,14 +239,14 @@ export const EquipmentSelectionModal: React.FC<EquipmentSelectionModalProps> = (
       return {
         border: '2px solid #ef4444',
         borderColor: '#ef4444',
-        boxShadow: '0 0 8px rgba(239, 68, 68, 0.3)'
+        boxShadow: '0 0 8px rgba(239, 68, 68, 0.3)',
       };
     }
 
     // Default gold for neutral
     return {
       border: '2px solid #d4af37',
-      borderColor: '#d4af37'
+      borderColor: '#d4af37',
     };
   };
 
@@ -260,7 +264,7 @@ export const EquipmentSelectionModal: React.FC<EquipmentSelectionModalProps> = (
         bg: 'rgba(16, 185, 129, 0.25)',
         glow: '0 0 8px rgba(16, 185, 129, 0.4)',
         badge: 'MAJOR UPGRADE',
-        priority: 'high'
+        priority: 'high',
       };
     } else if (comparison.recommendation === 'minor_upgrade') {
       return {
@@ -269,7 +273,7 @@ export const EquipmentSelectionModal: React.FC<EquipmentSelectionModalProps> = (
         bg: 'rgba(34, 197, 94, 0.15)',
         glow: '0 0 4px rgba(34, 197, 94, 0.3)',
         badge: isSignificant ? 'GOOD UPGRADE' : 'Minor Upgrade',
-        priority: isSignificant ? 'medium' : 'low'
+        priority: isSignificant ? 'medium' : 'low',
       };
     } else if (comparison.recommendation === 'minor_downgrade') {
       return {
@@ -278,7 +282,7 @@ export const EquipmentSelectionModal: React.FC<EquipmentSelectionModalProps> = (
         bg: 'rgba(248, 113, 113, 0.15)',
         glow: '0 0 4px rgba(248, 113, 113, 0.3)',
         badge: 'Minor Loss',
-        priority: 'low'
+        priority: 'low',
       };
     } else if (comparison.recommendation === 'strong_downgrade') {
       return {
@@ -287,7 +291,7 @@ export const EquipmentSelectionModal: React.FC<EquipmentSelectionModalProps> = (
         bg: 'rgba(239, 68, 68, 0.25)',
         glow: '0 0 8px rgba(239, 68, 68, 0.4)',
         badge: 'MAJOR LOSS',
-        priority: 'warning'
+        priority: 'warning',
       };
     }
     return {
@@ -296,13 +300,17 @@ export const EquipmentSelectionModal: React.FC<EquipmentSelectionModalProps> = (
       bg: 'rgba(156, 163, 175, 0.1)',
       glow: 'none',
       badge: 'No Change',
-      priority: 'neutral'
+      priority: 'neutral',
     };
   };
 
   const handleItemClick = (item: EnhancedItem) => {
     const compatibility = checkEquipmentCompatibility(
-      item, slot, playerLevel, playerClass, baseStats
+      item,
+      slot,
+      playerLevel,
+      playerClass,
+      baseStats
     );
 
     if (compatibility.canEquip) {
@@ -329,7 +337,7 @@ export const EquipmentSelectionModal: React.FC<EquipmentSelectionModalProps> = (
       isOpen={isOpen}
       onClose={onClose}
       title={`Equip ${slotName}`}
-      size="xl"
+      size='xl'
       closeOnOverlayClick={!isLoading}
       closeOnEscape={!isLoading}
       showCloseButton={!isLoading}
@@ -345,9 +353,7 @@ export const EquipmentSelectionModal: React.FC<EquipmentSelectionModalProps> = (
           {/* Item List */}
           <div style={modalStyles.itemList}>
             {allItems.length === 0 ? (
-              <div style={modalStyles.noItems}>
-                No {slotName.toLowerCase()} items available
-              </div>
+              <div style={modalStyles.noItems}>No {slotName.toLowerCase()} items available</div>
             ) : (
               <AnimatePresence>
                 {allItems.map((item, index) => {
@@ -355,7 +361,11 @@ export const EquipmentSelectionModal: React.FC<EquipmentSelectionModalProps> = (
                   const isSelected = selectedItem?.id === item.id;
                   const upgrade = isCompatible ? getUpgradeIndicator(item) : null;
                   const compatibility = checkEquipmentCompatibility(
-                    item, slot, playerLevel, playerClass, baseStats
+                    item,
+                    slot,
+                    playerLevel,
+                    playerClass,
+                    baseStats
                   );
                   const borderStyle = getBorderStyle(item, isCompatible);
 
@@ -366,16 +376,22 @@ export const EquipmentSelectionModal: React.FC<EquipmentSelectionModalProps> = (
                         ...modalStyles.itemCard,
                         ...borderStyle,
                         ...(isSelected ? modalStyles.itemCardSelected : {}),
-                        ...(!isCompatible ? modalStyles.itemCardIncompatible : {})
+                        ...(!isCompatible ? modalStyles.itemCardIncompatible : {}),
                       }}
                       onClick={() => handleItemClick(item)}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.05 }}
-                      whileHover={isCompatible ? {
-                        scale: 1.02,
-                        boxShadow: borderStyle.boxShadow ? `0 0 12px ${borderStyle.borderColor}40` : undefined
-                      } : undefined}
+                      whileHover={
+                        isCompatible
+                          ? {
+                              scale: 1.02,
+                              boxShadow: borderStyle.boxShadow
+                                ? `0 0 12px ${borderStyle.borderColor}40`
+                                : undefined,
+                            }
+                          : undefined
+                      }
                       whileTap={isCompatible ? { scale: 0.98 } : undefined}
                     >
                       <div style={modalStyles.itemHeader}>
@@ -385,7 +401,7 @@ export const EquipmentSelectionModal: React.FC<EquipmentSelectionModalProps> = (
                             style={{
                               ...modalStyles.itemRarity,
                               background: getRarityColor(item.rarity),
-                              color: '#ffffff'
+                              color: '#ffffff',
                             }}
                           >
                             {item.rarity}
@@ -399,14 +415,14 @@ export const EquipmentSelectionModal: React.FC<EquipmentSelectionModalProps> = (
                               background: upgrade.bg,
                               boxShadow: upgrade.glow !== 'none' ? upgrade.glow : undefined,
                               fontSize: upgrade.priority === 'high' ? '0.9rem' : '0.7rem',
-                              fontWeight: upgrade.priority === 'high' ? 'bold' : '500'
+                              fontWeight: upgrade.priority === 'high' ? 'bold' : '500',
                             }}
                             initial={{ scale: 0, rotate: -180 }}
                             animate={{ scale: 1, rotate: 0 }}
                             transition={{
                               delay: index * 0.05,
                               type: 'spring',
-                              stiffness: 400
+                              stiffness: 400,
                             }}
                             whileHover={{ scale: 1.1 }}
                           >
@@ -426,13 +442,13 @@ export const EquipmentSelectionModal: React.FC<EquipmentSelectionModalProps> = (
                               padding: '0.15rem 0.3rem',
                               borderRadius: '8px',
                               border: '1px solid rgba(255, 255, 255, 0.3)',
-                              zIndex: 10
+                              zIndex: 10,
                             }}
                             initial={{ scale: 0, y: -10 }}
                             animate={{ scale: 1, y: 0 }}
                             transition={{
                               delay: 0.2 + index * 0.05,
-                              type: 'spring'
+                              type: 'spring',
                             }}
                           >
                             {upgrade.badge}
@@ -440,9 +456,7 @@ export const EquipmentSelectionModal: React.FC<EquipmentSelectionModalProps> = (
                         )}
                       </div>
 
-                      <div style={modalStyles.itemStats}>
-                        {formatStatModifiers(item)}
-                      </div>
+                      <div style={modalStyles.itemStats}>{formatStatModifiers(item)}</div>
 
                       {!isCompatible && compatibility.reasons.length > 0 && (
                         <motion.div
@@ -491,11 +505,13 @@ export const EquipmentSelectionModal: React.FC<EquipmentSelectionModalProps> = (
                 </div>
               </>
             ) : (
-              <div style={{
-                ...modalStyles.noItems,
-                border: '1px dashed rgba(212, 175, 55, 0.3)',
-                borderRadius: '8px'
-              }}>
+              <div
+                style={{
+                  ...modalStyles.noItems,
+                  border: '1px dashed rgba(212, 175, 55, 0.3)',
+                  borderRadius: '8px',
+                }}
+              >
                 Select an item to see comparison
               </div>
             )}
@@ -517,23 +533,18 @@ export const EquipmentSelectionModal: React.FC<EquipmentSelectionModalProps> = (
 
         {/* Actions */}
         <div style={modalStyles.actions}>
-          <Button
-            variant="secondary"
-            onClick={onClose}
-            disabled={isLoading}
-            size="md"
-          >
+          <Button variant='secondary' onClick={onClose} disabled={isLoading} size='md'>
             Cancel
           </Button>
 
           <Button
-            variant="primary"
+            variant='primary'
             onClick={handleEquip}
             disabled={
               !selectedItem ||
               isLoading ||
               !checkEquipmentCompatibility(
-                selectedItem || {} as EnhancedItem,
+                selectedItem || ({} as EnhancedItem),
                 slot,
                 playerLevel,
                 playerClass,
@@ -541,18 +552,13 @@ export const EquipmentSelectionModal: React.FC<EquipmentSelectionModalProps> = (
               ).canEquip
             }
             loading={isLoading}
-            size="md"
+            size='md'
           >
-            {selectedItem && !checkEquipmentCompatibility(
-              selectedItem,
-              slot,
-              playerLevel,
-              playerClass,
-              baseStats
-            ).canEquip
+            {selectedItem &&
+            !checkEquipmentCompatibility(selectedItem, slot, playerLevel, playerClass, baseStats)
+              .canEquip
               ? 'Cannot Equip'
-              : 'Equip Item'
-            }
+              : 'Equip Item'}
           </Button>
         </div>
       </div>

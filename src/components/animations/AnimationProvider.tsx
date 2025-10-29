@@ -33,7 +33,7 @@ export function AnimationProvider({ children, defaultSettings = {} }: AnimationP
     showPerformanceStats: false,
     targetFps: 60,
     enableAutoOptimization: true,
-    ...defaultSettings
+    ...defaultSettings,
   });
 
   const [isPerformanceGood, setIsPerformanceGood] = useState(true);
@@ -42,12 +42,13 @@ export function AnimationProvider({ children, defaultSettings = {} }: AnimationP
   // Initialize performance monitoring
   useEffect(() => {
     globalPerformanceMonitor.startMonitoring(
-      (metrics) => {
+      metrics => {
         setCurrentFps(metrics.fps);
 
         // Auto-adjust quality based on performance
         if (settings.enableAutoOptimization) {
-          const performanceGood = metrics.fps >= globalPerformanceMonitor.thresholds.minAcceptableFps;
+          const performanceGood =
+            metrics.fps >= globalPerformanceMonitor.thresholds.minAcceptableFps;
           setIsPerformanceGood(performanceGood);
 
           // Auto-adjust quality settings
@@ -60,7 +61,7 @@ export function AnimationProvider({ children, defaultSettings = {} }: AnimationP
           }
         }
       },
-      (warning) => {
+      warning => {
         console.warn(`Animation Performance Warning: ${warning}`);
       }
     );
@@ -97,14 +98,14 @@ export function AnimationProvider({ children, defaultSettings = {} }: AnimationP
     settings,
     updateSettings,
     isPerformanceGood,
-    currentFps
+    currentFps,
   };
 
   return (
     <AnimationContext.Provider value={contextValue}>
       {children}
       {settings.showPerformanceStats && (
-        <PerformanceDashboard visible={true} position="top-right" />
+        <PerformanceDashboard visible={true} position='top-right' />
       )}
     </AnimationContext.Provider>
   );
@@ -129,7 +130,7 @@ export function useOptimizedAnimation() {
       return {
         initial: { opacity: 0 },
         animate: { opacity: 1 },
-        transition: { duration: 0.1 }
+        transition: { duration: 0.1 },
       };
     }
 
@@ -139,7 +140,10 @@ export function useOptimizedAnimation() {
     if (settings.quality === 'low' || !isPerformanceGood) {
       // Simplify animations
       if (optimizedProps.transition) {
-        optimizedProps.transition.duration = Math.min(optimizedProps.transition.duration || 0.3, 0.2);
+        optimizedProps.transition.duration = Math.min(
+          optimizedProps.transition.duration || 0.3,
+          0.2
+        );
       }
 
       // Remove complex effects
@@ -157,7 +161,7 @@ export function useOptimizedAnimation() {
     getAnimationProps,
     shouldAnimate: settings.enabled && !settings.reducedMotion,
     quality: settings.quality,
-    isPerformanceGood
+    isPerformanceGood,
   };
 }
 

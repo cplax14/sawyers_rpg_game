@@ -97,17 +97,17 @@ const initializeApp = () => {
         overflow: window.getComputedStyle(rootElement).overflow,
         margin: window.getComputedStyle(rootElement).margin,
         padding: window.getComputedStyle(rootElement).padding,
-        boxSizing: window.getComputedStyle(rootElement).boxSizing
+        boxSizing: window.getComputedStyle(rootElement).boxSizing,
       },
       viewport: {
         innerWidth: window.innerWidth,
-        innerHeight: window.innerHeight
+        innerHeight: window.innerHeight,
       },
       bodyStyle: {
         width: window.getComputedStyle(document.body).width,
         height: window.getComputedStyle(document.body).height,
-        overflow: window.getComputedStyle(document.body).overflow
-      }
+        overflow: window.getComputedStyle(document.body).overflow,
+      },
     });
 
     // Create React root and render the app
@@ -116,9 +116,7 @@ const initializeApp = () => {
     const isDevelopment = import.meta.env?.DEV || process.env.NODE_ENV === 'development';
     const AppComponent = isDevelopment ? ReactAppWithDevtools : ReactAppWithDevtools; // Always use devtools for now
 
-    root.render(
-      <AppComponent />
-    );
+    root.render(<AppComponent />);
 
     console.log('🎮 React Game App mounted successfully');
 
@@ -134,14 +132,14 @@ const initializeApp = () => {
         children: Array.from(rootElement.children).map(child => ({
           tagName: child.tagName,
           className: child.className,
-          boundingRect: child.getBoundingClientRect()
+          boundingRect: child.getBoundingClientRect(),
         })),
         computedStyle: {
           width: window.getComputedStyle(rootElement).width,
           height: window.getComputedStyle(rootElement).height,
           display: window.getComputedStyle(rootElement).display,
-          position: window.getComputedStyle(rootElement).position
-        }
+          position: window.getComputedStyle(rootElement).position,
+        },
       });
     }, 100);
 
@@ -152,14 +150,15 @@ const initializeApp = () => {
         version: '1.0.0',
         mode: 'pure-react',
         root,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
 
       console.log('🔧 Development mode active - Game accessible via window.__REACT_GAME_APP__');
     }
-
   } catch (error) {
-    handleInitializationError(error instanceof Error ? error : new Error('Unknown initialization error'));
+    handleInitializationError(
+      error instanceof Error ? error : new Error('Unknown initialization error')
+    );
   }
 };
 
@@ -172,12 +171,12 @@ if (document.readyState === 'loading') {
 }
 
 // Handle unhandled errors
-window.addEventListener('error', (event) => {
+window.addEventListener('error', event => {
   console.error('🔥 Unhandled Error:', event.error);
   // Could send to error reporting service here
 });
 
-window.addEventListener('unhandledrejection', (event) => {
+window.addEventListener('unhandledrejection', event => {
   console.error('🔥 Unhandled Promise Rejection:', event.reason);
   // Could send to error reporting service here
 });

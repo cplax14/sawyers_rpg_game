@@ -21,7 +21,7 @@ export const DEFAULT_COMPRESSION_CONFIG: CompressionConfig = {
   level: 'balanced',
   enableBase64: true,
   chunkSize: 64 * 1024, // 64KB chunks
-  minimumCompressionRatio: 0.1 // Only compress if at least 10% reduction
+  minimumCompressionRatio: 0.1, // Only compress if at least 10% reduction
 };
 
 // Compression result metadata
@@ -52,20 +52,20 @@ export interface SerializationOptions {
 const DEFAULT_SERIALIZATION_OPTIONS: SerializationOptions = {
   includeMetadata: true,
   stripFunctions: true,
-  preserveUndefined: false
+  preserveUndefined: false,
 };
 
 /**
  * Calculate CRC32 checksum for data integrity
  */
 function calculateCRC32(str: string): string {
-  let crc = 0 ^ (-1);
+  let crc = 0 ^ -1;
 
   for (let i = 0; i < str.length; i++) {
-    crc = (crc >>> 8) ^ crc32Table[(crc ^ str.charCodeAt(i)) & 0xFF];
+    crc = (crc >>> 8) ^ crc32Table[(crc ^ str.charCodeAt(i)) & 0xff];
   }
 
-  return ((crc ^ (-1)) >>> 0).toString(16).padStart(8, '0');
+  return ((crc ^ -1) >>> 0).toString(16).padStart(8, '0');
 }
 
 // CRC32 lookup table
@@ -73,7 +73,7 @@ const crc32Table = new Array(256);
 for (let i = 0; i < 256; i++) {
   let c = i;
   for (let j = 0; j < 8; j++) {
-    c = ((c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1));
+    c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
   }
   crc32Table[i] = c;
 }
@@ -112,7 +112,7 @@ export class GameStateSerializer {
       if (value instanceof Map) {
         return {
           __type: 'Map',
-          value: Array.from(value.entries())
+          value: Array.from(value.entries()),
         };
       }
 
@@ -120,7 +120,7 @@ export class GameStateSerializer {
       if (value instanceof Set) {
         return {
           __type: 'Set',
-          value: Array.from(value)
+          value: Array.from(value),
         };
       }
 
@@ -136,12 +136,14 @@ export class GameStateSerializer {
 
     const serializedState = {
       gameState,
-      metadata: this.options.includeMetadata ? {
-        version: '1.0.0',
-        timestamp: new Date().toISOString(),
-        serializer: 'GameStateSerializer',
-        platform: navigator.userAgent
-      } : undefined
+      metadata: this.options.includeMetadata
+        ? {
+            version: '1.0.0',
+            timestamp: new Date().toISOString(),
+            serializer: 'GameStateSerializer',
+            platform: navigator.userAgent,
+          }
+        : undefined,
     };
 
     return JSON.stringify(serializedState, replacer);
@@ -188,7 +190,10 @@ export class DataCompressor {
   private config: CompressionConfig;
   private serializer: GameStateSerializer;
 
-  constructor(config: Partial<CompressionConfig> = {}, serializerOptions: Partial<SerializationOptions> = {}) {
+  constructor(
+    config: Partial<CompressionConfig> = {},
+    serializerOptions: Partial<SerializationOptions> = {}
+  ) {
     this.config = { ...DEFAULT_COMPRESSION_CONFIG, ...config };
     this.serializer = new GameStateSerializer(serializerOptions);
   }
@@ -241,7 +246,10 @@ export class DataCompressor {
       const compressionRatio = (originalSize - compressedSize) / originalSize;
 
       // Only use compression if it meets minimum ratio and algorithm isn't 'none'
-      if (compressionRatio >= this.config.minimumCompressionRatio && this.config.algorithm !== 'none') {
+      if (
+        compressionRatio >= this.config.minimumCompressionRatio &&
+        this.config.algorithm !== 'none'
+      ) {
         isCompressed = true;
       } else {
         compressedData = data;
@@ -265,8 +273,8 @@ export class DataCompressor {
         metadata: {
           timestamp: new Date(),
           checksum,
-          version: '1.0.0'
-        }
+          version: '1.0.0',
+        },
       };
 
       // Only add chunks property if it was actually created
@@ -275,7 +283,6 @@ export class DataCompressor {
       }
 
       return result;
-
     } catch (error) {
       console.warn('Compression failed, falling back to uncompressed:', error);
       return {
@@ -288,8 +295,8 @@ export class DataCompressor {
         metadata: {
           timestamp: new Date(),
           checksum,
-          version: '1.0.0'
-        }
+          version: '1.0.0',
+        },
       };
     }
   }
@@ -328,17 +335,22 @@ export class DataCompressor {
       // Verify integrity by recompressing and checking original checksum
       if (compressedResult.metadata?.checksum && compressedResult.isCompressed) {
         // For integrity check, we need to serialize the decompressed state and check its checksum
-        const recompressedResult = await this.compressString(JSON.stringify(this.serializer.deserialize(decompressed)));
+        const recompressedResult = await this.compressString(
+          JSON.stringify(this.serializer.deserialize(decompressed))
+        );
         if (recompressedResult.metadata.checksum !== compressedResult.metadata.checksum) {
-          throw new Error(`Data integrity check failed: expected ${compressedResult.metadata.checksum}, got ${recompressedResult.metadata.checksum}`);
+          throw new Error(
+            `Data integrity check failed: expected ${compressedResult.metadata.checksum}, got ${recompressedResult.metadata.checksum}`
+          );
         }
       }
 
       return decompressed;
-
     } catch (error) {
       console.error('Decompression failed:', error);
-      throw new Error(`Failed to decompress data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to decompress data: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -388,12 +400,12 @@ export class DataCompressor {
 
         // Try different decompression methods
         if (this.config.enableBase64) {
-          decompressed = LZString.decompressFromBase64(data) ||
-                        LZString.decompressFromEncodedURIComponent(data) ||
-                        LZString.decompress(data);
+          decompressed =
+            LZString.decompressFromBase64(data) ||
+            LZString.decompressFromEncodedURIComponent(data) ||
+            LZString.decompress(data);
         } else {
-          decompressed = LZString.decompressFromUTF16(data) ||
-                        LZString.decompress(data);
+          decompressed = LZString.decompressFromUTF16(data) || LZString.decompress(data);
         }
 
         if (decompressed === null) {
@@ -520,11 +532,12 @@ export class DataCompressor {
     return {
       totalOriginalSize,
       totalCompressedSize,
-      averageCompressionRatio: results.length > 0
-        ? results.reduce((sum, r) => sum + r.compressionRatio, 0) / results.length
-        : 0,
+      averageCompressionRatio:
+        results.length > 0
+          ? results.reduce((sum, r) => sum + r.compressionRatio, 0) / results.length
+          : 0,
       compressionCount,
-      algorithmUsage
+      algorithmUsage,
     };
   }
 }
@@ -537,5 +550,6 @@ export const defaultSerializer = new GameStateSerializer();
 export const compressGameState = (gameState: ReactGameState): Promise<CompressionResult> =>
   defaultCompressor.compressGameState(gameState);
 
-export const decompressGameState = (compressedData: CompressionResult | string): Promise<ReactGameState> =>
-  defaultCompressor.decompressGameState(compressedData);
+export const decompressGameState = (
+  compressedData: CompressionResult | string
+): Promise<ReactGameState> => defaultCompressor.decompressGameState(compressedData);

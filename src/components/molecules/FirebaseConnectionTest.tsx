@@ -29,7 +29,7 @@ interface ConnectionStatus {
 
 export const FirebaseConnectionTest: React.FC<FirebaseConnectionTestProps> = ({
   autoTest = true,
-  className = ''
+  className = '',
 }) => {
   const [status, setStatus] = useState<ConnectionStatus>({
     configured: false,
@@ -37,9 +37,9 @@ export const FirebaseConnectionTest: React.FC<FirebaseConnectionTestProps> = ({
     services: {
       auth: false,
       firestore: false,
-      storage: false
+      storage: false,
     },
-    testing: false
+    testing: false,
   });
 
   const testConnection = useCallback(async () => {
@@ -54,7 +54,7 @@ export const FirebaseConnectionTest: React.FC<FirebaseConnectionTestProps> = ({
         connected: connectionResult.connected,
         services: connectionResult.services,
         error: connectionResult.error,
-        testing: false
+        testing: false,
       });
     } catch (error) {
       setStatus({
@@ -63,10 +63,10 @@ export const FirebaseConnectionTest: React.FC<FirebaseConnectionTestProps> = ({
         services: {
           auth: false,
           firestore: false,
-          storage: false
+          storage: false,
         },
         error: error instanceof Error ? error.message : 'Unknown error',
-        testing: false
+        testing: false,
       });
     }
   }, []);
@@ -90,21 +90,21 @@ export const FirebaseConnectionTest: React.FC<FirebaseConnectionTestProps> = ({
     background: 'linear-gradient(135deg, #2a2a3e, #1e1e2f)',
     borderRadius: '12px',
     border: '2px solid rgba(212, 175, 55, 0.3)',
-    maxWidth: '600px'
+    maxWidth: '600px',
   };
 
   const headerStyle: React.CSSProperties = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: '20px'
+    marginBottom: '20px',
   };
 
   const titleStyle: React.CSSProperties = {
     color: '#d4af37',
     fontSize: '1.3rem',
     fontWeight: 'bold',
-    margin: 0
+    margin: 0,
   };
 
   const serviceStyle: React.CSSProperties = {
@@ -114,19 +114,19 @@ export const FirebaseConnectionTest: React.FC<FirebaseConnectionTestProps> = ({
     padding: '8px 12px',
     background: 'rgba(0, 0, 0, 0.3)',
     borderRadius: '6px',
-    marginBottom: '8px'
+    marginBottom: '8px',
   };
 
   const serviceNameStyle: React.CSSProperties = {
     color: '#ffffff',
-    fontWeight: '500'
+    fontWeight: '500',
   };
 
   const serviceStatusStyle: React.CSSProperties = {
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
-    fontSize: '0.9rem'
+    fontSize: '0.9rem',
   };
 
   return (
@@ -139,22 +139,19 @@ export const FirebaseConnectionTest: React.FC<FirebaseConnectionTestProps> = ({
     >
       <div style={headerStyle}>
         <h3 style={titleStyle}>Firebase Connection Status</h3>
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={testConnection}
-          disabled={status.testing}
-        >
+        <Button variant='secondary' size='sm' onClick={testConnection} disabled={status.testing}>
           {status.testing ? 'Testing...' : 'Test Again'}
         </Button>
       </div>
 
       {/* Overall Status */}
-      <div style={{
-        ...serviceStyle,
-        background: status.connected ? 'rgba(81, 207, 102, 0.1)' : 'rgba(255, 107, 107, 0.1)',
-        border: `1px solid ${status.connected ? 'rgba(81, 207, 102, 0.3)' : 'rgba(255, 107, 107, 0.3)'}`
-      }}>
+      <div
+        style={{
+          ...serviceStyle,
+          background: status.connected ? 'rgba(81, 207, 102, 0.1)' : 'rgba(255, 107, 107, 0.1)',
+          border: `1px solid ${status.connected ? 'rgba(81, 207, 102, 0.3)' : 'rgba(255, 107, 107, 0.3)'}`,
+        }}
+      >
         <span style={serviceNameStyle}>Overall Status</span>
         <div style={serviceStatusStyle}>
           <span style={{ color: getStatusColor(status.connected) }}>
@@ -177,9 +174,7 @@ export const FirebaseConnectionTest: React.FC<FirebaseConnectionTestProps> = ({
 
       {/* Individual Services */}
       <div style={{ marginTop: '16px' }}>
-        <h4 style={{ color: '#cccccc', margin: '0 0 12px 0', fontSize: '1rem' }}>
-          Services:
-        </h4>
+        <h4 style={{ color: '#cccccc', margin: '0 0 12px 0', fontSize: '1rem' }}>Services:</h4>
 
         <div style={serviceStyle}>
           <span style={serviceNameStyle}>Authentication</span>
@@ -214,46 +209,53 @@ export const FirebaseConnectionTest: React.FC<FirebaseConnectionTestProps> = ({
 
       {/* Error Display */}
       {status.error && (
-        <div style={{
-          marginTop: '16px',
-          padding: '12px',
-          background: 'rgba(255, 107, 107, 0.1)',
-          border: '1px solid rgba(255, 107, 107, 0.3)',
-          borderRadius: '6px',
-          color: '#ff9999',
-          fontSize: '0.9rem'
-        }}>
+        <div
+          style={{
+            marginTop: '16px',
+            padding: '12px',
+            background: 'rgba(255, 107, 107, 0.1)',
+            border: '1px solid rgba(255, 107, 107, 0.3)',
+            borderRadius: '6px',
+            color: '#ff9999',
+            fontSize: '0.9rem',
+          }}
+        >
           <strong>Error:</strong> {status.error}
         </div>
       )}
 
       {/* Configuration Help */}
       {!status.configured && (
-        <div style={{
-          marginTop: '16px',
-          padding: '12px',
-          background: 'rgba(255, 193, 7, 0.1)',
-          border: '1px solid rgba(255, 193, 7, 0.3)',
-          borderRadius: '6px',
-          color: '#ffc107',
-          fontSize: '0.9rem'
-        }}>
-          <strong>Setup Required:</strong> Please configure Firebase by creating a <code>.env.local</code> file
-          with your Firebase project settings. See <code>docs/firebase-setup.md</code> for detailed instructions.
+        <div
+          style={{
+            marginTop: '16px',
+            padding: '12px',
+            background: 'rgba(255, 193, 7, 0.1)',
+            border: '1px solid rgba(255, 193, 7, 0.3)',
+            borderRadius: '6px',
+            color: '#ffc107',
+            fontSize: '0.9rem',
+          }}
+        >
+          <strong>Setup Required:</strong> Please configure Firebase by creating a{' '}
+          <code>.env.local</code> file with your Firebase project settings. See{' '}
+          <code>docs/firebase-setup.md</code> for detailed instructions.
         </div>
       )}
 
       {/* Success Message */}
       {status.connected && (
-        <div style={{
-          marginTop: '16px',
-          padding: '12px',
-          background: 'rgba(81, 207, 102, 0.1)',
-          border: '1px solid rgba(81, 207, 102, 0.3)',
-          borderRadius: '6px',
-          color: '#51cf66',
-          fontSize: '0.9rem'
-        }}>
+        <div
+          style={{
+            marginTop: '16px',
+            padding: '12px',
+            background: 'rgba(81, 207, 102, 0.1)',
+            border: '1px solid rgba(81, 207, 102, 0.3)',
+            borderRadius: '6px',
+            color: '#51cf66',
+            fontSize: '0.9rem',
+          }}
+        >
           <strong>Success!</strong> Firebase is properly configured and all services are ready.
           Cloud save functionality is available.
         </div>

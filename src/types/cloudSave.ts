@@ -13,7 +13,7 @@ export type {
   CloudSaveData,
   CloudSaveListItem,
   CloudStorageConfig,
-  CloudStorageResult
+  CloudStorageResult,
 } from '../services/cloudStorage';
 
 // Additional cloud save types
@@ -173,7 +173,12 @@ export interface UseCloudSaveResult {
   storageQuota: CloudStorageQuota;
 
   // Operations
-  saveToCloud: (slotNumber: number, saveName: string, gameState: ReactGameState, screenshot?: string) => Promise<boolean>;
+  saveToCloud: (
+    slotNumber: number,
+    saveName: string,
+    gameState: ReactGameState,
+    screenshot?: string
+  ) => Promise<boolean>;
   loadFromCloud: (slotNumber: number) => Promise<ReactGameState | null>;
   deleteFromCloud: (slotNumber: number) => Promise<boolean>;
   syncWithCloud: () => Promise<boolean>;

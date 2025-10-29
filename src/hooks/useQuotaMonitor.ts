@@ -11,7 +11,7 @@ import {
   QuotaNotification,
   QuotaConfig,
   QuotaEventHandlers,
-  DEFAULT_QUOTA_CONFIG
+  DEFAULT_QUOTA_CONFIG,
 } from '../services/quotaMonitor';
 import { CloudStorageService } from '../services/cloudStorage';
 
@@ -70,21 +70,21 @@ export function useQuotaMonitor(
   useEffect(() => {
     if (cloudStorage && user) {
       const eventHandlers: QuotaEventHandlers = {
-        onQuotaWarning: (status) => {
+        onQuotaWarning: status => {
           setQuotaStatus(status);
           if (options.enableDebugLogging) {
             console.warn('Quota warning:', status);
           }
         },
 
-        onQuotaCritical: (status) => {
+        onQuotaCritical: status => {
           setQuotaStatus(status);
           if (options.enableDebugLogging) {
             console.warn('Quota critical:', status);
           }
         },
 
-        onQuotaExceeded: (status) => {
+        onQuotaExceeded: status => {
           setQuotaStatus(status);
           if (options.enableDebugLogging) {
             console.error('Quota exceeded:', status);
@@ -97,12 +97,12 @@ export function useQuotaMonitor(
           }
         },
 
-        onNotification: (notification) => {
+        onNotification: notification => {
           setNotifications(prev => {
             const updated = [notification, ...prev];
             return updated.slice(0, 50); // Keep last 50 notifications
           });
-        }
+        },
       };
 
       quotaServiceRef.current = new QuotaMonitorService(
@@ -118,14 +118,16 @@ export function useQuotaMonitor(
       }
 
       // Initial quota check
-      quotaServiceRef.current.checkQuota(user).then(status => {
-        setQuotaStatus(status);
-      }).catch(error => {
-        if (options.enableDebugLogging) {
-          console.error('Initial quota check failed:', error);
-        }
-      });
-
+      quotaServiceRef.current
+        .checkQuota(user)
+        .then(status => {
+          setQuotaStatus(status);
+        })
+        .catch(error => {
+          if (options.enableDebugLogging) {
+            console.error('Initial quota check failed:', error);
+          }
+        });
     } else {
       // Clean up if user or cloudStorage becomes unavailable
       if (quotaServiceRef.current) {
@@ -183,7 +185,7 @@ export function useQuotaMonitor(
     if (quotaServiceRef.current) {
       quotaServiceRef.current.markNotificationRead(notificationId);
       setNotifications(prev =>
-        prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n)
+        prev.map(n => (n.id === notificationId ? { ...n, isRead: true } : n))
       );
     }
   }, []);
@@ -269,7 +271,9 @@ export function useQuotaMonitor(
       suggestions.push('Consider keeping only recent saves');
 
       if (quotaStatus.totalSaves > 5) {
-        suggestions.push(`You have ${quotaStatus.totalSaves} saves - consider keeping only the 3-5 most recent`);
+        suggestions.push(
+          `You have ${quotaStatus.totalSaves} saves - consider keeping only the 3-5 most recent`
+        );
       }
     }
 
@@ -285,7 +289,9 @@ export function useQuotaMonitor(
         .slice(0, 3);
 
       if (largeSaves.length > 0) {
-        suggestions.push(`Your largest save is "${largeSaves[0].saveName}" (${formatBytes(largeSaves[0].sizeBytes)})`);
+        suggestions.push(
+          `Your largest save is "${largeSaves[0].saveName}" (${formatBytes(largeSaves[0].sizeBytes)})`
+        );
       }
     }
 
@@ -320,7 +326,7 @@ export function useQuotaMonitor(
     formatBytes,
     getUsageColor,
     getUsageIcon,
-    getSuggestions
+    getSuggestions,
   };
 }
 
@@ -338,14 +344,14 @@ export function useQuotaStatus(
 } {
   const { quotaStatus, isMonitoring } = useQuotaMonitor(user, cloudStorage, {
     autoStart: true,
-    config: { checkInterval: 10 * 60 * 1000 } // Check every 10 minutes
+    config: { checkInterval: 10 * 60 * 1000 }, // Check every 10 minutes
   });
 
   return {
     usagePercentage: quotaStatus?.usagePercentage || 0,
     status: quotaStatus?.status || 'normal',
     message: quotaStatus?.message || 'Checking storage...',
-    isLoading: !quotaStatus && isMonitoring
+    isLoading: !quotaStatus && isMonitoring,
   };
 }
 

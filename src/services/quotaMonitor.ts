@@ -84,7 +84,7 @@ export const DEFAULT_QUOTA_CONFIG: QuotaConfig = {
   criticalThreshold: 90, // 90%
   checkInterval: 5 * 60 * 1000, // 5 minutes
   autoCleanup: false, // Disabled by default
-  maxSavesToKeep: 5
+  maxSavesToKeep: 5,
 };
 
 /**
@@ -157,7 +157,6 @@ export class QuotaMonitorService {
 
       this.currentStatus = status;
       return status;
-
     } catch (error) {
       console.error('Failed to check quota:', error);
 
@@ -206,8 +205,8 @@ export class QuotaMonitorService {
         sizeBytes: save.dataSize,
         compressedSize: save.compressedSize,
         createdAt: save.createdAt,
-        lastPlayedAt: save.updatedAt
-      }))
+        lastPlayedAt: save.updatedAt,
+      })),
     };
   }
 
@@ -259,8 +258,8 @@ export class QuotaMonitorService {
         saveName: save.saveName,
         sizeBytes: save.compressedSize,
         createdAt: save.createdAt,
-        lastPlayedAt: save.lastPlayedAt
-      }))
+        lastPlayedAt: save.lastPlayedAt,
+      })),
     };
   }
 
@@ -302,8 +301,8 @@ export class QuotaMonitorService {
           message: status.message,
           actions: [
             { label: 'Manage Saves', action: 'manage' },
-            { label: 'Dismiss', action: 'dismiss' }
-          ]
+            { label: 'Dismiss', action: 'dismiss' },
+          ],
         });
         break;
 
@@ -315,8 +314,8 @@ export class QuotaMonitorService {
           message: status.message,
           actions: [
             { label: 'Clean Up Now', action: 'cleanup' },
-            { label: 'Manage Saves', action: 'manage' }
-          ]
+            { label: 'Manage Saves', action: 'manage' },
+          ],
         });
         break;
 
@@ -328,8 +327,8 @@ export class QuotaMonitorService {
           message: status.message,
           actions: [
             { label: 'Clean Up Now', action: 'cleanup' },
-            { label: 'Manage Saves', action: 'manage' }
-          ]
+            { label: 'Manage Saves', action: 'manage' },
+          ],
         });
 
         // Auto-cleanup if enabled
@@ -344,7 +343,7 @@ export class QuotaMonitorService {
             type: 'info',
             title: 'Storage Normal',
             message: 'Storage usage is back to normal levels.',
-            actions: [{ label: 'OK', action: 'dismiss' }]
+            actions: [{ label: 'OK', action: 'dismiss' }],
           });
         }
         break;
@@ -389,10 +388,9 @@ export class QuotaMonitorService {
           type: 'info',
           title: 'Automatic Cleanup Performed',
           message: `Deleted ${deletedCount} old saves, freed ${this.formatBytes(freedBytes)}.`,
-          actions: [{ label: 'OK', action: 'dismiss' }]
+          actions: [{ label: 'OK', action: 'dismiss' }],
         });
       }
-
     } catch (error) {
       console.error('Auto-cleanup failed:', error);
       this.createNotification({
@@ -401,8 +399,8 @@ export class QuotaMonitorService {
         message: 'Automatic cleanup encountered an error. Please manage saves manually.',
         actions: [
           { label: 'Manage Saves', action: 'manage' },
-          { label: 'Dismiss', action: 'dismiss' }
-        ]
+          { label: 'Dismiss', action: 'dismiss' },
+        ],
       });
     }
   }
@@ -410,12 +408,14 @@ export class QuotaMonitorService {
   /**
    * Create and store a notification
    */
-  private createNotification(notification: Omit<QuotaNotification, 'id' | 'timestamp' | 'isRead'>): void {
+  private createNotification(
+    notification: Omit<QuotaNotification, 'id' | 'timestamp' | 'isRead'>
+  ): void {
     const fullNotification: QuotaNotification = {
       id: `quota_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       timestamp: new Date(),
       isRead: false,
-      ...notification
+      ...notification,
     };
 
     this.notifications.unshift(fullNotification);
@@ -456,7 +456,7 @@ export class QuotaMonitorService {
    * Mark all notifications as read
    */
   markAllNotificationsRead(): void {
-    this.notifications.forEach(n => n.isRead = true);
+    this.notifications.forEach(n => (n.isRead = true));
   }
 
   /**
@@ -479,7 +479,7 @@ export class QuotaMonitorService {
       status: 'normal',
       message: 'Unable to check storage usage',
       lastChecked: new Date(),
-      saveBreakdown: []
+      saveBreakdown: [],
     };
   }
 

@@ -52,7 +52,7 @@ const defaultBreakpoints: BreakpointConfig = {
   mobile: 768,
   tablet: 1024,
   desktop: 1440,
-  largeDesktop: 1920
+  largeDesktop: 1920,
 };
 
 export const useResponsiveInventory = (customBreakpoints?: Partial<BreakpointConfig>) => {
@@ -71,7 +71,7 @@ export const useResponsiveInventory = (customBreakpoints?: Partial<BreakpointCon
         isLandscape: true,
         devicePixelRatio: 1,
         isTouch: false,
-        isSmallHeight: false
+        isSmallHeight: false,
       };
     }
 
@@ -89,7 +89,7 @@ export const useResponsiveInventory = (customBreakpoints?: Partial<BreakpointCon
       isLandscape: width > height,
       devicePixelRatio: window.devicePixelRatio || 1,
       isTouch: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
-      isSmallHeight: height < 600
+      isSmallHeight: height < 600,
     };
   });
 
@@ -111,7 +111,7 @@ export const useResponsiveInventory = (customBreakpoints?: Partial<BreakpointCon
         isLandscape: width > height,
         devicePixelRatio: window.devicePixelRatio || 1,
         isTouch: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
-        isSmallHeight: height < 600
+        isSmallHeight: height < 600,
       });
     };
 
@@ -151,7 +151,7 @@ export const useResponsiveInventory = (customBreakpoints?: Partial<BreakpointCon
         iconSize: '1.2rem',
         enableDragDrop: isTouch,
         showAdvancedControls: false,
-        enableStaggeredAnimations: false // Disable for performance
+        enableStaggeredAnimations: false, // Disable for performance
       };
     }
 
@@ -171,7 +171,7 @@ export const useResponsiveInventory = (customBreakpoints?: Partial<BreakpointCon
         iconSize: '1.1rem',
         enableDragDrop: isTouch,
         showAdvancedControls: true,
-        enableStaggeredAnimations: true
+        enableStaggeredAnimations: true,
       };
     }
 
@@ -191,7 +191,7 @@ export const useResponsiveInventory = (customBreakpoints?: Partial<BreakpointCon
       iconSize: '1rem',
       enableDragDrop: true,
       showAdvancedControls: true,
-      enableStaggeredAnimations: true
+      enableStaggeredAnimations: true,
     };
   }, [responsiveState]);
 
@@ -207,7 +207,8 @@ export const useResponsiveInventory = (customBreakpoints?: Partial<BreakpointCon
     if (isMobile) return values.mobile;
     if (isTablet) return values.tablet ?? values.mobile;
     if (isDesktop) return values.desktop ?? values.tablet ?? values.mobile;
-    if (isLargeDesktop) return values.largeDesktop ?? values.desktop ?? values.tablet ?? values.mobile;
+    if (isLargeDesktop)
+      return values.largeDesktop ?? values.desktop ?? values.tablet ?? values.mobile;
 
     return values.mobile;
   };
@@ -254,7 +255,7 @@ export const useResponsiveInventory = (customBreakpoints?: Partial<BreakpointCon
         maxWidth: 'none',
         maxHeight: 'none',
         borderRadius: '0',
-        margin: '0'
+        margin: '0',
       };
     }
 
@@ -265,7 +266,7 @@ export const useResponsiveInventory = (customBreakpoints?: Partial<BreakpointCon
         maxWidth: '1200px',
         maxHeight: '90vh',
         borderRadius: '12px',
-        margin: '1rem'
+        margin: '1rem',
       };
     }
 
@@ -275,7 +276,7 @@ export const useResponsiveInventory = (customBreakpoints?: Partial<BreakpointCon
       maxWidth: '95vw',
       maxHeight: '95vh',
       borderRadius: '16px',
-      margin: '1rem'
+      margin: '1rem',
     };
   };
 
@@ -288,7 +289,7 @@ export const useResponsiveInventory = (customBreakpoints?: Partial<BreakpointCon
       padding: isMobile ? '0.75rem 0.5rem' : '1rem 1.5rem',
       fontSize: isMobile ? '0.85rem' : '0.95rem',
       iconSize: isMobile ? '1.2rem' : '1.1rem',
-      gap: isMobile ? '0.25rem' : '0.5rem'
+      gap: isMobile ? '0.25rem' : '0.5rem',
     };
   };
 
@@ -300,7 +301,7 @@ export const useResponsiveInventory = (customBreakpoints?: Partial<BreakpointCon
         minWidth: isSmallHeight ? '70px' : '80px',
         minHeight: isSmallHeight ? '70px' : '80px',
         padding: '0.5rem',
-        fontSize: '0.75rem'
+        fontSize: '0.75rem',
       };
     }
 
@@ -309,7 +310,7 @@ export const useResponsiveInventory = (customBreakpoints?: Partial<BreakpointCon
         minWidth: '100px',
         minHeight: '100px',
         padding: '0.75rem',
-        fontSize: '0.85rem'
+        fontSize: '0.85rem',
       };
     }
 
@@ -317,7 +318,7 @@ export const useResponsiveInventory = (customBreakpoints?: Partial<BreakpointCon
       minWidth: '120px',
       minHeight: '120px',
       padding: '1rem',
-      fontSize: '0.9rem'
+      fontSize: '0.9rem',
     };
   };
 
@@ -331,7 +332,7 @@ export const useResponsiveInventory = (customBreakpoints?: Partial<BreakpointCon
     getResponsiveSpacing,
     getInventoryModalSize,
     getTabStyle,
-    getGridItemSize
+    getGridItemSize,
   };
 };
 

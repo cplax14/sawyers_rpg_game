@@ -17,7 +17,7 @@ export const GamePauseIndicator: React.FC<GamePauseIndicatorProps> = ({
   variant = 'minimal',
   showDuration = false,
   className = '',
-  style = {}
+  style = {},
 }) => {
   if (!pauseState.isPaused) {
     return null;
@@ -40,7 +40,7 @@ export const GamePauseIndicator: React.FC<GamePauseIndicatorProps> = ({
       'top-right': { top: '1rem', right: '1rem' },
       'bottom-left': { bottom: '1rem', left: '1rem' },
       'bottom-right': { bottom: '1rem', right: '1rem' },
-      'center': { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }
+      center: { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' },
     };
     return positions[position];
   };
@@ -52,7 +52,7 @@ export const GamePauseIndicator: React.FC<GamePauseIndicatorProps> = ({
       settings: '🔧',
       dialogue: '💬',
       loading: '⏳',
-      manual: '⏸️'
+      manual: '⏸️',
     };
     return reasonIcons[reason || ''] || '⏸️';
   };
@@ -64,7 +64,7 @@ export const GamePauseIndicator: React.FC<GamePauseIndicatorProps> = ({
       settings: 'Settings Open',
       dialogue: 'In Dialogue',
       loading: 'Loading',
-      manual: 'Game Paused'
+      manual: 'Game Paused',
     };
     return reasonTexts[reason || ''] || 'Game Paused';
   };
@@ -88,7 +88,7 @@ export const GamePauseIndicator: React.FC<GamePauseIndicatorProps> = ({
         color: '#f4f4f4',
         backdropFilter: 'blur(8px)',
         ...getPositionStyles(),
-        ...style
+        ...style,
       }}
       className={`game-pause-indicator game-pause-minimal ${className}`}
     >
@@ -101,11 +101,13 @@ export const GamePauseIndicator: React.FC<GamePauseIndicatorProps> = ({
       </motion.span>
       <span>{getReasonText(pauseState.pauseReason)}</span>
       {showDuration && (
-        <span style={{
-          opacity: 0.8,
-          fontSize: '0.8rem',
-          fontFamily: 'monospace'
-        }}>
+        <span
+          style={{
+            opacity: 0.8,
+            fontSize: '0.8rem',
+            fontFamily: 'monospace',
+          }}
+        >
           {formatDuration(getPauseDuration())}
         </span>
       )}
@@ -128,20 +130,22 @@ export const GamePauseIndicator: React.FC<GamePauseIndicatorProps> = ({
         boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
         backdropFilter: 'blur(12px)',
         ...getPositionStyles(),
-        ...style
+        ...style,
       }}
       className={`game-pause-indicator game-pause-detailed ${className}`}
     >
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.75rem',
-        marginBottom: '0.5rem'
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          marginBottom: '0.5rem',
+        }}
+      >
         <motion.div
           animate={{
             scale: [1, 1.2, 1],
-            rotate: [0, 10, -10, 0]
+            rotate: [0, 10, -10, 0],
           }}
           transition={{ duration: 1.5, repeat: Infinity }}
           style={{ fontSize: '1.5rem' }}
@@ -149,48 +153,56 @@ export const GamePauseIndicator: React.FC<GamePauseIndicatorProps> = ({
           {getReasonIcon(pauseState.pauseReason)}
         </motion.div>
         <div>
-          <div style={{
-            fontSize: '1rem',
-            fontWeight: '600',
-            color: '#ffd700'
-          }}>
+          <div
+            style={{
+              fontSize: '1rem',
+              fontWeight: '600',
+              color: '#ffd700',
+            }}
+          >
             Game Paused
           </div>
-          <div style={{
-            fontSize: '0.85rem',
-            color: 'rgba(244, 244, 244, 0.8)'
-          }}>
+          <div
+            style={{
+              fontSize: '0.85rem',
+              color: 'rgba(244, 244, 244, 0.8)',
+            }}
+          >
             {getReasonText(pauseState.pauseReason)}
           </div>
         </div>
       </div>
 
       {showDuration && (
-        <div style={{
-          fontSize: '0.8rem',
-          color: 'rgba(244, 244, 244, 0.6)',
-          fontFamily: 'monospace',
-          textAlign: 'center',
-          paddingTop: '0.5rem',
-          borderTop: '1px solid rgba(255, 215, 0, 0.2)'
-        }}>
+        <div
+          style={{
+            fontSize: '0.8rem',
+            color: 'rgba(244, 244, 244, 0.6)',
+            fontFamily: 'monospace',
+            textAlign: 'center',
+            paddingTop: '0.5rem',
+            borderTop: '1px solid rgba(255, 215, 0, 0.2)',
+          }}
+        >
           Paused for: {formatDuration(getPauseDuration())}
         </div>
       )}
 
       {/* Animated border glow */}
-      <div style={{
-        position: 'absolute',
-        top: '-2px',
-        left: '-2px',
-        right: '-2px',
-        bottom: '-2px',
-        borderRadius: '12px',
-        background: 'linear-gradient(45deg, #ffd700, transparent, #ffd700)',
-        opacity: 0.3,
-        zIndex: -1,
-        animation: 'borderGlow 2s ease-in-out infinite alternate'
-      }} />
+      <div
+        style={{
+          position: 'absolute',
+          top: '-2px',
+          left: '-2px',
+          right: '-2px',
+          bottom: '-2px',
+          borderRadius: '12px',
+          background: 'linear-gradient(45deg, #ffd700, transparent, #ffd700)',
+          opacity: 0.3,
+          zIndex: -1,
+          animation: 'borderGlow 2s ease-in-out infinite alternate',
+        }}
+      />
     </motion.div>
   );
 
@@ -215,7 +227,7 @@ export const GamePauseIndicator: React.FC<GamePauseIndicatorProps> = ({
         fontSize: '1rem',
         fontWeight: '600',
         boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-        ...style
+        ...style,
       }}
       className={`game-pause-indicator game-pause-banner ${className}`}
     >
@@ -229,16 +241,16 @@ export const GamePauseIndicator: React.FC<GamePauseIndicatorProps> = ({
 
       <span>⏸️ GAME PAUSED</span>
 
-      <span style={{ opacity: 0.8 }}>
-        {getReasonText(pauseState.pauseReason)}
-      </span>
+      <span style={{ opacity: 0.8 }}>{getReasonText(pauseState.pauseReason)}</span>
 
       {showDuration && (
-        <span style={{
-          fontFamily: 'monospace',
-          opacity: 0.7,
-          fontSize: '0.9rem'
-        }}>
+        <span
+          style={{
+            fontFamily: 'monospace',
+            opacity: 0.7,
+            fontSize: '0.9rem',
+          }}
+        >
           {formatDuration(getPauseDuration())}
         </span>
       )}
@@ -251,7 +263,7 @@ export const GamePauseIndicator: React.FC<GamePauseIndicatorProps> = ({
           left: 0,
           height: '3px',
           background: 'rgba(0, 0, 0, 0.3)',
-          borderRadius: '0 0 0 3px'
+          borderRadius: '0 0 0 3px',
         }}
         initial={{ width: '0%' }}
         animate={{ width: '100%' }}
@@ -275,8 +287,12 @@ export const GamePauseIndicator: React.FC<GamePauseIndicatorProps> = ({
 
       <style jsx>{`
         @keyframes borderGlow {
-          0% { opacity: 0.3; }
-          100% { opacity: 0.6; }
+          0% {
+            opacity: 0.3;
+          }
+          100% {
+            opacity: 0.6;
+          }
         }
       `}</style>
     </AnimatePresence>
@@ -288,11 +304,7 @@ export const InventoryPauseIndicator: React.FC<{
   isPaused: boolean;
   position?: 'header' | 'footer' | 'floating';
   compact?: boolean;
-}> = ({
-  isPaused,
-  position = 'header',
-  compact = false
-}) => {
+}> = ({ isPaused, position = 'header', compact = false }) => {
   if (!isPaused) return null;
 
   const baseStyle = {
@@ -301,7 +313,7 @@ export const InventoryPauseIndicator: React.FC<{
     gap: '0.5rem',
     fontSize: compact ? '0.8rem' : '0.9rem',
     color: '#ffd700',
-    fontWeight: '500'
+    fontWeight: '500',
   };
 
   const content = (
@@ -328,7 +340,7 @@ export const InventoryPauseIndicator: React.FC<{
             background: 'rgba(255, 215, 0, 0.1)',
             border: '1px solid rgba(255, 215, 0, 0.3)',
             borderRadius: '6px',
-            padding: '0.5rem 1rem'
+            padding: '0.5rem 1rem',
           }}
         >
           {content}
@@ -344,7 +356,7 @@ export const InventoryPauseIndicator: React.FC<{
           style={{
             ...baseStyle,
             justifyContent: 'center',
-            padding: '0.5rem'
+            padding: '0.5rem',
           }}
         >
           {content}
@@ -368,7 +380,7 @@ export const InventoryPauseIndicator: React.FC<{
             borderRadius: '20px',
             padding: '0.5rem 1rem',
             backdropFilter: 'blur(8px)',
-            zIndex: 10
+            zIndex: 10,
           }}
         >
           {content}

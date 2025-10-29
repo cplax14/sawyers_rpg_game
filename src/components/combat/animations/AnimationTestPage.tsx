@@ -24,11 +24,11 @@ interface AnimationTiming {
 }
 
 const SPELL_TIMINGS: Record<string, number> = {
-  'fireball': 950,
+  fireball: 950,
   'ice-shard': 900,
-  'lightning': 900,
+  lightning: 900,
   'holy-beam': 1000,
-  'meteor': 1500
+  meteor: 1500,
 };
 
 const CASTER_X = 200;
@@ -60,7 +60,7 @@ export const AnimationTestPage: React.FC = () => {
       const timing: AnimationTiming = {
         name: spell,
         expectedDuration,
-        actualDuration
+        actualDuration,
       };
 
       console.log(`✅ ${spell} completed in ${actualDuration}ms (expected: ${expectedDuration}ms)`);
@@ -110,32 +110,38 @@ export const AnimationTestPage: React.FC = () => {
   }, []);
 
   return (
-    <div style={{
-      width: '100vw',
-      height: '100vh',
-      background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
-      position: 'relative',
-      overflow: 'hidden',
-      fontFamily: 'system-ui, -apple-system, sans-serif'
-    }}>
+    <div
+      style={{
+        width: '100vw',
+        height: '100vh',
+        background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+        position: 'relative',
+        overflow: 'hidden',
+        fontFamily: 'system-ui, -apple-system, sans-serif',
+      }}
+    >
       {/* Header */}
-      <div style={{
-        position: 'absolute',
-        top: 20,
-        left: 20,
-        right: 20,
-        zIndex: 200,
-        background: 'rgba(0, 0, 0, 0.7)',
-        padding: '20px',
-        borderRadius: '8px',
-        backdropFilter: 'blur(10px)'
-      }}>
-        <h1 style={{
-          color: '#fff',
-          margin: '0 0 15px 0',
-          fontSize: '24px',
-          fontWeight: 600
-        }}>
+      <div
+        style={{
+          position: 'absolute',
+          top: 20,
+          left: 20,
+          right: 20,
+          zIndex: 200,
+          background: 'rgba(0, 0, 0, 0.7)',
+          padding: '20px',
+          borderRadius: '8px',
+          backdropFilter: 'blur(10px)',
+        }}
+      >
+        <h1
+          style={{
+            color: '#fff',
+            margin: '0 0 15px 0',
+            fontSize: '24px',
+            fontWeight: 600,
+          }}
+        >
           Spell Animation Test Harness
         </h1>
 
@@ -152,7 +158,7 @@ export const AnimationTestPage: React.FC = () => {
               cursor: activeSpell === null && !isPlayingAll ? 'pointer' : 'not-allowed',
               opacity: activeSpell === null && !isPlayingAll ? 1 : 0.5,
               fontSize: '14px',
-              fontWeight: 500
+              fontWeight: 500,
             }}
           >
             🔥 Fireball (950ms)
@@ -170,7 +176,7 @@ export const AnimationTestPage: React.FC = () => {
               cursor: activeSpell === null && !isPlayingAll ? 'pointer' : 'not-allowed',
               opacity: activeSpell === null && !isPlayingAll ? 1 : 0.5,
               fontSize: '14px',
-              fontWeight: 500
+              fontWeight: 500,
             }}
           >
             ❄️ Ice Shard (900ms)
@@ -188,7 +194,7 @@ export const AnimationTestPage: React.FC = () => {
               cursor: activeSpell === null && !isPlayingAll ? 'pointer' : 'not-allowed',
               opacity: activeSpell === null && !isPlayingAll ? 1 : 0.5,
               fontSize: '14px',
-              fontWeight: 500
+              fontWeight: 500,
             }}
           >
             ⚡ Lightning (900ms)
@@ -206,7 +212,7 @@ export const AnimationTestPage: React.FC = () => {
               cursor: activeSpell === null && !isPlayingAll ? 'pointer' : 'not-allowed',
               opacity: activeSpell === null && !isPlayingAll ? 1 : 0.5,
               fontSize: '14px',
-              fontWeight: 500
+              fontWeight: 500,
             }}
           >
             ✨ Holy Beam (1000ms)
@@ -224,7 +230,7 @@ export const AnimationTestPage: React.FC = () => {
               cursor: activeSpell === null && !isPlayingAll ? 'pointer' : 'not-allowed',
               opacity: activeSpell === null && !isPlayingAll ? 1 : 0.5,
               fontSize: '14px',
-              fontWeight: 500
+              fontWeight: 500,
             }}
           >
             ☄️ Meteor (1500ms)
@@ -244,7 +250,7 @@ export const AnimationTestPage: React.FC = () => {
               cursor: activeSpell === null && !isPlayingAll ? 'pointer' : 'not-allowed',
               opacity: activeSpell === null && !isPlayingAll ? 1 : 0.5,
               fontSize: '14px',
-              fontWeight: 600
+              fontWeight: 600,
             }}
           >
             🎬 Play All
@@ -260,7 +266,7 @@ export const AnimationTestPage: React.FC = () => {
               borderRadius: '4px',
               cursor: 'pointer',
               fontSize: '14px',
-              fontWeight: 500
+              fontWeight: 500,
             }}
           >
             🗑️ Clear Log
@@ -271,81 +277,95 @@ export const AnimationTestPage: React.FC = () => {
       {/* Position Indicators */}
       <div style={{ position: 'absolute', zIndex: 50 }}>
         {/* Caster position (blue) */}
-        <div style={{
-          position: 'absolute',
-          left: CASTER_X - 15,
-          top: CASTER_Y - 15,
-          width: 30,
-          height: 30,
-          borderRadius: '50%',
-          background: 'rgba(33, 150, 243, 0.3)',
-          border: '3px solid #2196f3',
-          boxShadow: '0 0 20px rgba(33, 150, 243, 0.5)'
-        }} />
-        <div style={{
-          position: 'absolute',
-          left: CASTER_X - 50,
-          top: CASTER_Y + 25,
-          color: '#2196f3',
-          fontSize: '12px',
-          fontWeight: 600,
-          textShadow: '0 0 8px rgba(33, 150, 243, 0.8)',
-          whiteSpace: 'nowrap'
-        }}>
+        <div
+          style={{
+            position: 'absolute',
+            left: CASTER_X - 15,
+            top: CASTER_Y - 15,
+            width: 30,
+            height: 30,
+            borderRadius: '50%',
+            background: 'rgba(33, 150, 243, 0.3)',
+            border: '3px solid #2196f3',
+            boxShadow: '0 0 20px rgba(33, 150, 243, 0.5)',
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            left: CASTER_X - 50,
+            top: CASTER_Y + 25,
+            color: '#2196f3',
+            fontSize: '12px',
+            fontWeight: 600,
+            textShadow: '0 0 8px rgba(33, 150, 243, 0.8)',
+            whiteSpace: 'nowrap',
+          }}
+        >
           CASTER ({CASTER_X}, {CASTER_Y})
         </div>
 
         {/* Target position (red) */}
-        <div style={{
-          position: 'absolute',
-          left: TARGET_X - 15,
-          top: TARGET_Y - 15,
-          width: 30,
-          height: 30,
-          borderRadius: '50%',
-          background: 'rgba(244, 67, 54, 0.3)',
-          border: '3px solid #f44336',
-          boxShadow: '0 0 20px rgba(244, 67, 54, 0.5)'
-        }} />
-        <div style={{
-          position: 'absolute',
-          left: TARGET_X - 50,
-          top: TARGET_Y + 25,
-          color: '#f44336',
-          fontSize: '12px',
-          fontWeight: 600,
-          textShadow: '0 0 8px rgba(244, 67, 54, 0.8)',
-          whiteSpace: 'nowrap'
-        }}>
+        <div
+          style={{
+            position: 'absolute',
+            left: TARGET_X - 15,
+            top: TARGET_Y - 15,
+            width: 30,
+            height: 30,
+            borderRadius: '50%',
+            background: 'rgba(244, 67, 54, 0.3)',
+            border: '3px solid #f44336',
+            boxShadow: '0 0 20px rgba(244, 67, 54, 0.5)',
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            left: TARGET_X - 50,
+            top: TARGET_Y + 25,
+            color: '#f44336',
+            fontSize: '12px',
+            fontWeight: 600,
+            textShadow: '0 0 8px rgba(244, 67, 54, 0.8)',
+            whiteSpace: 'nowrap',
+          }}
+        >
           TARGET ({TARGET_X}, {TARGET_Y})
         </div>
       </div>
 
       {/* Timing Log */}
       {timingLog.length > 0 && (
-        <div style={{
-          position: 'absolute',
-          bottom: 20,
-          right: 20,
-          background: 'rgba(0, 0, 0, 0.8)',
-          padding: '15px',
-          borderRadius: '8px',
-          maxWidth: '400px',
-          maxHeight: '300px',
-          overflowY: 'auto',
-          zIndex: 200,
-          backdropFilter: 'blur(10px)'
-        }}>
-          <h3 style={{
-            color: '#fff',
-            margin: '0 0 10px 0',
-            fontSize: '16px',
-            fontWeight: 600
-          }}>
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 20,
+            right: 20,
+            background: 'rgba(0, 0, 0, 0.8)',
+            padding: '15px',
+            borderRadius: '8px',
+            maxWidth: '400px',
+            maxHeight: '300px',
+            overflowY: 'auto',
+            zIndex: 200,
+            backdropFilter: 'blur(10px)',
+          }}
+        >
+          <h3
+            style={{
+              color: '#fff',
+              margin: '0 0 10px 0',
+              fontSize: '16px',
+              fontWeight: 600,
+            }}
+          >
             Timing Log
           </h3>
           {timingLog.map((timing, index) => {
-            const diff = timing.actualDuration ? timing.actualDuration - timing.expectedDuration : 0;
+            const diff = timing.actualDuration
+              ? timing.actualDuration - timing.expectedDuration
+              : 0;
             const isAccurate = Math.abs(diff) < 50; // Within 50ms tolerance
 
             return (
@@ -356,29 +376,36 @@ export const AnimationTestPage: React.FC = () => {
                   marginBottom: '6px',
                   background: 'rgba(255, 255, 255, 0.05)',
                   borderRadius: '4px',
-                  borderLeft: `3px solid ${isAccurate ? '#4caf50' : '#ff9800'}`
+                  borderLeft: `3px solid ${isAccurate ? '#4caf50' : '#ff9800'}`,
                 }}
               >
-                <div style={{
-                  color: '#fff',
-                  fontSize: '14px',
-                  fontWeight: 500,
-                  marginBottom: '4px'
-                }}>
+                <div
+                  style={{
+                    color: '#fff',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    marginBottom: '4px',
+                  }}
+                >
                   {timing.name.replace('-', ' ')}
                 </div>
-                <div style={{
-                  color: '#aaa',
-                  fontSize: '12px',
-                  display: 'flex',
-                  justifyContent: 'space-between'
-                }}>
+                <div
+                  style={{
+                    color: '#aaa',
+                    fontSize: '12px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                  }}
+                >
                   <span>Expected: {timing.expectedDuration}ms</span>
-                  <span style={{
-                    color: isAccurate ? '#4caf50' : '#ff9800',
-                    fontWeight: 500
-                  }}>
-                    Actual: {timing.actualDuration}ms ({diff >= 0 ? '+' : ''}{diff}ms)
+                  <span
+                    style={{
+                      color: isAccurate ? '#4caf50' : '#ff9800',
+                      fontWeight: 500,
+                    }}
+                  >
+                    Actual: {timing.actualDuration}ms ({diff >= 0 ? '+' : ''}
+                    {diff}ms)
                   </span>
                 </div>
               </div>
@@ -389,19 +416,21 @@ export const AnimationTestPage: React.FC = () => {
 
       {/* Active Status Indicator */}
       {activeSpell && (
-        <div style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          color: '#fff',
-          fontSize: '24px',
-          fontWeight: 700,
-          textShadow: '0 0 20px rgba(255, 255, 255, 0.8)',
-          zIndex: 150,
-          pointerEvents: 'none',
-          animation: 'pulse 1s infinite'
-        }}>
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            color: '#fff',
+            fontSize: '24px',
+            fontWeight: 700,
+            textShadow: '0 0 20px rgba(255, 255, 255, 0.8)',
+            zIndex: 150,
+            pointerEvents: 'none',
+            animation: 'pulse 1s infinite',
+          }}
+        >
           Playing: {activeSpell.replace('-', ' ').toUpperCase()}
         </div>
       )}

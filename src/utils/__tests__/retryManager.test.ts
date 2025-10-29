@@ -3,7 +3,13 @@
  * Tests for exponential backoff retry functionality
  */
 
-import { RetryManager, retry, RETRY_CONFIGS, RETRYABLE_ERROR_TYPES, NON_RETRYABLE_ERROR_TYPES } from '../retryManager';
+import {
+  RetryManager,
+  retry,
+  RETRY_CONFIGS,
+  RETRYABLE_ERROR_TYPES,
+  NON_RETRYABLE_ERROR_TYPES,
+} from '../retryManager';
 
 describe('RetryManager', () => {
   let retryManager: RetryManager;
@@ -30,7 +36,8 @@ describe('RetryManager', () => {
       const error = new Error('Network error');
       error.name = 'NetworkError';
 
-      const mockOperation = jest.fn()
+      const mockOperation = jest
+        .fn()
         .mockRejectedValueOnce(error)
         .mockRejectedValueOnce(error)
         .mockResolvedValue('success');
@@ -39,7 +46,7 @@ describe('RetryManager', () => {
         maxRetries: 3,
         initialDelay: 1, // Very short delay for testing
         backoffMultiplier: 1.1, // Small multiplier for testing
-        enableJitter: false
+        enableJitter: false,
       });
 
       expect(result.success).toBe(true);
@@ -56,7 +63,7 @@ describe('RetryManager', () => {
 
       const resultPromise = retryManager.executeWithRetry(mockOperation, {
         maxRetries: 3,
-        initialDelay: 100
+        initialDelay: 100,
       });
 
       const result = await resultPromise;
@@ -77,7 +84,7 @@ describe('RetryManager', () => {
         maxRetries: 2,
         initialDelay: 1,
         backoffMultiplier: 1.1,
-        enableJitter: false
+        enableJitter: false,
       });
 
       expect(result.success).toBe(false);
@@ -102,7 +109,7 @@ describe('RetryManager', () => {
         enableJitter: false,
         onRetry: (err, attempt, delay) => {
           delays.push(delay);
-        }
+        },
       });
 
       // Delays should be: 10, 20, 40 (exponential backoff)
@@ -124,7 +131,7 @@ describe('RetryManager', () => {
         enableJitter: false,
         onRetry: (err, attempt, delay) => {
           delays.push(delay);
-        }
+        },
       });
 
       // Delays should be: 100, 200 (capped), 200 (capped), 200 (capped)
@@ -138,7 +145,7 @@ describe('RetryManager', () => {
         { name: 'NetworkError' },
         { code: 'unavailable' },
         { code: 'deadline-exceeded' },
-        { status: 503 }
+        { status: 503 },
       ];
 
       retryableErrors.forEach(error => {
@@ -155,7 +162,7 @@ describe('RetryManager', () => {
         { code: 'invalid-argument' },
         { status: 400 },
         { status: 401 },
-        { status: 403 }
+        { status: 403 },
       ];
 
       nonRetryableErrors.forEach(error => {
@@ -201,7 +208,7 @@ describe('RetryManager', () => {
 
       const result = await retryManager.executeWithRetry(mockOperation, {
         maxRetries: 3,
-        shouldRetry: mockShouldRetry
+        shouldRetry: mockShouldRetry,
       });
 
       expect(result.success).toBe(false);
@@ -215,9 +222,7 @@ describe('RetryManager', () => {
       const error = new Error('Retryable error');
       error.name = 'NetworkError';
 
-      const mockOperation = jest.fn()
-        .mockRejectedValueOnce(error)
-        .mockResolvedValue('success');
+      const mockOperation = jest.fn().mockRejectedValueOnce(error).mockResolvedValue('success');
 
       const onRetry = jest.fn();
 
@@ -225,7 +230,7 @@ describe('RetryManager', () => {
         maxRetries: 1,
         initialDelay: 5,
         enableJitter: false,
-        onRetry
+        onRetry,
       });
 
       expect(onRetry).toHaveBeenCalledWith(error, 1, 5);
@@ -241,7 +246,7 @@ describe('RetryManager', () => {
       const result = await retryManager.executeWithRetry(mockOperation, {
         maxRetries: 1,
         initialDelay: 1,
-        enableJitter: false
+        enableJitter: false,
       });
 
       expect(result.success).toBe(false);

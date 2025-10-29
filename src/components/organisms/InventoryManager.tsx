@@ -4,7 +4,10 @@ import { EquipmentScreen } from './EquipmentScreen';
 import { InventoryScreen } from './InventoryScreen';
 import { CreatureScreen } from './CreatureScreen';
 import { StatsScreen } from './StatsScreen';
-import { InventoryNavigationProvider, useInventoryNavigation } from '../../contexts/InventoryNavigationContext';
+import {
+  InventoryNavigationProvider,
+  useInventoryNavigation,
+} from '../../contexts/InventoryNavigationContext';
 import { NavigationBar } from '../molecules/NavigationBar';
 import KeyboardShortcutsHelp from '../molecules/KeyboardShortcutsHelp';
 import { CombatRestrictionBanner } from '../molecules/CombatRestrictionBanner';
@@ -15,7 +18,10 @@ import { usePlayer } from '../../hooks/useGameState';
 import { useResponsiveInventory } from '../../hooks/useResponsiveInventory';
 import { ExperienceCalculator } from '../../utils/experienceUtils';
 import { useInventoryKeyboardShortcuts } from '../../hooks/useInventoryKeyboardShortcuts';
-import { useCombatInventoryRestrictions, isTabAllowedInCombat } from '../../hooks/useCombatInventoryRestrictions';
+import {
+  useCombatInventoryRestrictions,
+  isTabAllowedInCombat,
+} from '../../hooks/useCombatInventoryRestrictions';
 import { useInventoryPause } from '../../hooks/useGamePause';
 import { useInventoryAnimations } from '../../hooks/useInventoryAnimations';
 
@@ -44,7 +50,7 @@ const INVENTORY_TABS: TabConfig[] = [
     icon: '⚔️',
     shortcut: 'E',
     component: EquipmentScreen,
-    description: 'Manage weapons, armor, and accessories'
+    description: 'Manage weapons, armor, and accessories',
   },
   {
     id: 'items',
@@ -52,7 +58,7 @@ const INVENTORY_TABS: TabConfig[] = [
     icon: '🎒',
     shortcut: 'I',
     component: InventoryScreen,
-    description: 'View consumables, materials, and quest items'
+    description: 'View consumables, materials, and quest items',
   },
   {
     id: 'creatures',
@@ -60,7 +66,7 @@ const INVENTORY_TABS: TabConfig[] = [
     icon: '🐉',
     shortcut: 'C',
     component: CreatureScreen,
-    description: 'Manage creature collection and team'
+    description: 'Manage creature collection and team',
   },
   {
     id: 'stats',
@@ -68,16 +74,12 @@ const INVENTORY_TABS: TabConfig[] = [
     icon: '📊',
     shortcut: 'S',
     component: StatsScreen,
-    description: 'View character progression and statistics'
-  }
+    description: 'View character progression and statistics',
+  },
 ];
 
 // Inner component that uses navigation context
-const InventoryManagerInner: React.FC<InventoryManagerProps> = ({
-  isOpen,
-  onClose,
-  className
-}) => {
+const InventoryManagerInner: React.FC<InventoryManagerProps> = ({ isOpen, onClose, className }) => {
   const [isClosing, setIsClosing] = useState(false);
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
   const [combatBannerDismissed, setCombatBannerDismissed] = useState(false);
@@ -91,26 +93,22 @@ const InventoryManagerInner: React.FC<InventoryManagerProps> = ({
     getInventoryModalSize,
     getTabStyle,
     getResponsiveSpacing,
-    getResponsiveFontSize
+    getResponsiveFontSize,
   } = useResponsiveInventory();
   const { navigationState, navigateToTab, consumePendingAction } = useInventoryNavigation();
 
   // Combat restrictions
   const combatRestrictions = useCombatInventoryRestrictions({
-    allowStatsView: true,     // Allow checking stats during combat
+    allowStatsView: true, // Allow checking stats during combat
     allowEquipmentView: false, // Prevent equipment changes during combat
-    allowCreatureView: false,  // Prevent creature management during combat
+    allowCreatureView: false, // Prevent creature management during combat
     allowedConsumableTypes: ['healing', 'mana', 'buff', 'debuff', 'combat'],
-    enableEmergencyHealing: true
+    enableEmergencyHealing: true,
   });
 
   // Game pause functionality
-  const {
-    pauseForInventory,
-    resumeFromInventory,
-    shouldPauseForInventory,
-    isInventoryPaused
-  } = useInventoryPause();
+  const { pauseForInventory, resumeFromInventory, shouldPauseForInventory, isInventoryPaused } =
+    useInventoryPause();
 
   // Animation and feedback system
   const {
@@ -122,7 +120,7 @@ const InventoryManagerInner: React.FC<InventoryManagerProps> = ({
     triggerUseItem,
     triggerDeleteItem,
     triggerSaveLoadout,
-    triggerAutoSort
+    triggerAutoSort,
   } = useInventoryAnimations();
 
   const activeTab = navigationState.currentTab;
@@ -231,7 +229,7 @@ const InventoryManagerInner: React.FC<InventoryManagerProps> = ({
     onSellItem: combatRestrictions.isInCombat ? undefined : handleSellItem, // Disable during combat
     onRepairAll: combatRestrictions.isInCombat ? undefined : handleRepairAll, // Disable during combat
     onFeedCreatures: combatRestrictions.isInCombat ? undefined : handleFeedCreatures, // Disable during combat
-    disabled: showKeyboardHelp // Disable shortcuts when help is open
+    disabled: showKeyboardHelp, // Disable shortcuts when help is open
   });
 
   // Handle help toggle (? key)
@@ -273,8 +271,9 @@ const InventoryManagerInner: React.FC<InventoryManagerProps> = ({
     switch (tabId) {
       case 'equipment':
         // Count equipped items
-        const equippedCount = Object.values(inventoryState?.equipped || {})
-          .filter(item => item !== null).length;
+        const equippedCount = Object.values(inventoryState?.equipped || {}).filter(
+          item => item !== null
+        ).length;
         return equippedCount > 0 ? equippedCount.toString() : undefined;
 
       case 'items':
@@ -320,9 +319,9 @@ const InventoryManagerInner: React.FC<InventoryManagerProps> = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: layoutConfig.modalPadding
+          padding: layoutConfig.modalPadding,
         }}
-        onClick={(e) => {
+        onClick={e => {
           if (e.target === e.currentTarget) {
             handleClose();
           }
@@ -330,30 +329,32 @@ const InventoryManagerInner: React.FC<InventoryManagerProps> = ({
       >
         {/* DEBUG: Component identifier */}
         {process.env.NODE_ENV === 'development' && (
-          <div style={{
-            position: 'absolute',
-            top: '10px',
-            left: '10px',
-            background: 'rgba(0, 255, 0, 0.9)',
-            color: 'black',
-            padding: '6px 12px',
-            fontSize: '0.75rem',
-            fontWeight: 'bold',
-            borderRadius: '6px',
-            zIndex: 10001,
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
-          }}>
+          <div
+            style={{
+              position: 'absolute',
+              top: '10px',
+              left: '10px',
+              background: 'rgba(0, 255, 0, 0.9)',
+              color: 'black',
+              padding: '6px 12px',
+              fontSize: '0.75rem',
+              fontWeight: 'bold',
+              borderRadius: '6px',
+              zIndex: 10001,
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
+            }}
+          >
             ✓ InventoryManager (FULL - WITH CREATURES TAB)
           </div>
         )}
         <motion.div
-          className="inventory-container"
+          className='inventory-container'
           initial={{ scale: 0.9, y: 20 }}
           animate={{
             scale: isClosing ? 0.9 : 1,
-            y: isClosing ? 20 : 0
+            y: isClosing ? 20 : 0,
           }}
-          transition={{ duration: 0.3, ease: "easeOut" }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
           style={{
             background: 'linear-gradient(135deg, #1a1a2e, #16213e, #0f3460)',
             borderRadius: getInventoryModalSize().borderRadius,
@@ -366,31 +367,37 @@ const InventoryManagerInner: React.FC<InventoryManagerProps> = ({
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
-            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)'
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
           }}
-          onClick={(e) => e.stopPropagation()}
+          onClick={e => e.stopPropagation()}
         >
           {/* Header with close button */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '1.5rem 2rem',
-            background: 'rgba(0, 0, 0, 0.3)',
-            borderBottom: '1px solid rgba(79, 195, 247, 0.2)'
-          }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '1.5rem 2rem',
+              background: 'rgba(0, 0, 0, 0.3)',
+              borderBottom: '1px solid rgba(79, 195, 247, 0.2)',
+            }}
+          >
             <div style={{ flex: 1 }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '1rem'
-              }}>
-                <h1 style={{
-                  margin: 0,
-                  fontSize: getResponsiveFontSize(2),
-                  color: '#4fc3f7',
-                  fontWeight: 'bold'
-                }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '1rem',
+                }}
+              >
+                <h1
+                  style={{
+                    margin: 0,
+                    fontSize: getResponsiveFontSize(2),
+                    color: '#4fc3f7',
+                    fontWeight: 'bold',
+                  }}
+                >
                   Inventory
                 </h1>
 
@@ -398,18 +405,20 @@ const InventoryManagerInner: React.FC<InventoryManagerProps> = ({
                 {isInventoryPaused && (
                   <InventoryPauseIndicator
                     isPaused={isInventoryPaused}
-                    position="header"
+                    position='header'
                     compact={isMobile}
                   />
                 )}
               </div>
 
               {activeTabConfig && (
-                <p style={{
-                  margin: '0.5rem 0 0',
-                  color: 'rgba(244, 244, 244, 0.8)',
-                  fontSize: '0.9rem'
-                }}>
+                <p
+                  style={{
+                    margin: '0.5rem 0 0',
+                    color: 'rgba(244, 244, 244, 0.8)',
+                    fontSize: '0.9rem',
+                  }}
+                >
                   {activeTabConfig.description}
                   {isInventoryPaused && !isMobile && (
                     <span style={{ color: '#ffd700', marginLeft: '0.5rem' }}>
@@ -435,7 +444,7 @@ const InventoryManagerInner: React.FC<InventoryManagerProps> = ({
                 justifyContent: 'center',
                 color: '#f4f4f4',
                 cursor: 'pointer',
-                fontSize: '1.2rem'
+                fontSize: '1.2rem',
               }}
             >
               ✕
@@ -443,18 +452,21 @@ const InventoryManagerInner: React.FC<InventoryManagerProps> = ({
           </div>
 
           {/* Tab Navigation */}
-          <div style={{
-            display: 'flex',
-            background: 'rgba(0, 0, 0, 0.2)',
-            borderBottom: '1px solid rgba(79, 195, 247, 0.2)',
-            overflowX: 'auto',
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none'
-          }}>
+          <div
+            style={{
+              display: 'flex',
+              background: 'rgba(0, 0, 0, 0.2)',
+              borderBottom: '1px solid rgba(79, 195, 247, 0.2)',
+              overflowX: 'auto',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+            }}
+          >
             {INVENTORY_TABS.map((tab, index) => {
               const isActive = activeTab === tab.id;
               const badge = getTabBadge(tab.id);
-              const isTabRestricted = combatRestrictions.isInCombat && !isTabAllowedInCombat(tab.id, combatRestrictions);
+              const isTabRestricted =
+                combatRestrictions.isInCombat && !isTabAllowedInCombat(tab.id, combatRestrictions);
               const tabStyle = getTabStyle();
 
               return (
@@ -465,15 +477,23 @@ const InventoryManagerInner: React.FC<InventoryManagerProps> = ({
                       navigateToTab(tab.id);
                     }
                   }}
-                  whileHover={!isTabRestricted ? { backgroundColor: 'rgba(79, 195, 247, 0.1)' } : {}}
+                  whileHover={
+                    !isTabRestricted ? { backgroundColor: 'rgba(79, 195, 247, 0.1)' } : {}
+                  }
                   whileTap={!isTabRestricted ? { scale: 0.95 } : {}}
-                  title={isTabRestricted ? `${tab.name} is restricted during combat` : tab.description}
+                  title={
+                    isTabRestricted ? `${tab.name} is restricted during combat` : tab.description
+                  }
                   style={{
                     background: isActive ? 'rgba(79, 195, 247, 0.2)' : 'transparent',
                     border: 'none',
                     borderBottom: isActive ? '2px solid #4fc3f7' : '2px solid transparent',
                     padding: tabStyle.padding,
-                    color: isTabRestricted ? 'rgba(244, 244, 244, 0.4)' : isActive ? '#4fc3f7' : '#f4f4f4',
+                    color: isTabRestricted
+                      ? 'rgba(244, 244, 244, 0.4)'
+                      : isActive
+                        ? '#4fc3f7'
+                        : '#f4f4f4',
                     cursor: isTabRestricted ? 'not-allowed' : 'pointer',
                     display: 'flex',
                     alignItems: 'center',
@@ -484,59 +504,65 @@ const InventoryManagerInner: React.FC<InventoryManagerProps> = ({
                     position: 'relative',
                     minWidth: 'fit-content',
                     whiteSpace: 'nowrap',
-                    opacity: isTabRestricted ? 0.6 : 1
+                    opacity: isTabRestricted ? 0.6 : 1,
                   }}
                 >
-                  <span style={{ fontSize: tabStyle.iconSize }}>
-                    {tab.icon}
-                  </span>
+                  <span style={{ fontSize: tabStyle.iconSize }}>{tab.icon}</span>
 
                   {tabStyle.showLabels && <span>{tab.name}</span>}
 
                   {tabStyle.showShortcuts && (
-                    <span style={{
-                      fontSize: '0.75rem',
-                      opacity: 0.6,
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      padding: '0.2rem 0.4rem',
-                      borderRadius: '4px'
-                    }}>
+                    <span
+                      style={{
+                        fontSize: '0.75rem',
+                        opacity: 0.6,
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        padding: '0.2rem 0.4rem',
+                        borderRadius: '4px',
+                      }}
+                    >
                       {tab.shortcut}
                     </span>
                   )}
 
                   {/* Badge or restriction indicator */}
                   {isTabRestricted ? (
-                    <span style={{
-                      position: 'absolute',
-                      top: '0.5rem',
-                      right: '0.5rem',
-                      background: '#dc2626',
-                      color: '#ffffff',
-                      fontSize: '0.6rem',
-                      fontWeight: 'bold',
-                      padding: '0.2rem 0.3rem',
-                      borderRadius: '8px',
-                      lineHeight: 1
-                    }}>
+                    <span
+                      style={{
+                        position: 'absolute',
+                        top: '0.5rem',
+                        right: '0.5rem',
+                        background: '#dc2626',
+                        color: '#ffffff',
+                        fontSize: '0.6rem',
+                        fontWeight: 'bold',
+                        padding: '0.2rem 0.3rem',
+                        borderRadius: '8px',
+                        lineHeight: 1,
+                      }}
+                    >
                       🚫
                     </span>
-                  ) : badge && (
-                    <span style={{
-                      position: 'absolute',
-                      top: '0.5rem',
-                      right: '0.5rem',
-                      background: '#4fc3f7',
-                      color: '#1a1a2e',
-                      fontSize: '0.7rem',
-                      fontWeight: 'bold',
-                      padding: '0.2rem 0.4rem',
-                      borderRadius: '10px',
-                      minWidth: '18px',
-                      textAlign: 'center'
-                    }}>
-                      {badge}
-                    </span>
+                  ) : (
+                    badge && (
+                      <span
+                        style={{
+                          position: 'absolute',
+                          top: '0.5rem',
+                          right: '0.5rem',
+                          background: '#4fc3f7',
+                          color: '#1a1a2e',
+                          fontSize: '0.7rem',
+                          fontWeight: 'bold',
+                          padding: '0.2rem 0.4rem',
+                          borderRadius: '10px',
+                          minWidth: '18px',
+                          textAlign: 'center',
+                        }}
+                      >
+                        {badge}
+                      </span>
+                    )
                   )}
                 </motion.button>
               );
@@ -544,13 +570,15 @@ const InventoryManagerInner: React.FC<InventoryManagerProps> = ({
           </div>
 
           {/* Tab Content */}
-          <div style={{
-            flex: 1,
-            position: 'relative',
-            overflow: 'hidden',
-            display: 'flex',
-            flexDirection: 'column'
-          }}>
+          <div
+            style={{
+              flex: 1,
+              position: 'relative',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
             {/* Combat Restriction Banner */}
             {combatRestrictions.isInCombat && !combatBannerDismissed && (
               <div style={{ padding: '1rem 2rem 0' }}>
@@ -563,30 +591,32 @@ const InventoryManagerInner: React.FC<InventoryManagerProps> = ({
               </div>
             )}
 
-            <div style={{
-              flex: 1,
-              overflow: 'hidden'
-            }}>
-              <AnimatePresence mode="wait">
+            <div
+              style={{
+                flex: 1,
+                overflow: 'hidden',
+              }}
+            >
+              <AnimatePresence mode='wait'>
                 <motion.div
                   key={activeTab}
                   variants={animations.tabEntry}
-                  initial="hidden"
-                  animate="visible"
-                  exit="exit"
+                  initial='hidden'
+                  animate='visible'
+                  exit='exit'
                   transition={{
                     duration: 0.4,
-                    ease: [0.4, 0, 0.2, 1] // Custom easing for smooth feel
+                    ease: [0.4, 0, 0.2, 1], // Custom easing for smooth feel
                   }}
                   style={{
                     width: '100%',
                     height: '100%',
-                    overflow: 'auto'
+                    overflow: 'auto',
                   }}
                 >
                   {ActiveComponent && (
                     <ActiveComponent
-                      className="inventory-tab-content"
+                      className='inventory-tab-content'
                       onClose={handleClose}
                       combatRestrictions={combatRestrictions}
                       animations={animations} // Pass animations to child components
@@ -622,16 +652,18 @@ const InventoryManagerInner: React.FC<InventoryManagerProps> = ({
 
           {/* Footer with keyboard shortcuts hint */}
           {!isMobile && (
-            <div style={{
-              padding: '0.75rem 2rem',
-              background: 'rgba(0, 0, 0, 0.3)',
-              borderTop: '1px solid rgba(79, 195, 247, 0.2)',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              fontSize: '0.8rem',
-              color: 'rgba(244, 244, 244, 0.6)'
-            }}>
+            <div
+              style={{
+                padding: '0.75rem 2rem',
+                background: 'rgba(0, 0, 0, 0.3)',
+                borderTop: '1px solid rgba(79, 195, 247, 0.2)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                fontSize: '0.8rem',
+                color: 'rgba(244, 244, 244, 0.6)',
+              }}
+            >
               <div>
                 {combatRestrictions.isInCombat ? (
                   <span style={{ color: '#dc2626' }}>
@@ -642,7 +674,10 @@ const InventoryManagerInner: React.FC<InventoryManagerProps> = ({
                     ⏸️ Game Paused: Exploration timers and auto-save suspended
                   </span>
                 ) : (
-                  <>Press <strong>E</strong>, <strong>I</strong>, <strong>C</strong>, or <strong>S</strong> to switch tabs</>
+                  <>
+                    Press <strong>E</strong>, <strong>I</strong>, <strong>C</strong>, or{' '}
+                    <strong>S</strong> to switch tabs
+                  </>
                 )}
               </div>
               <div style={{ display: 'flex', gap: '1rem' }}>
@@ -679,7 +714,7 @@ const InventoryManagerInner: React.FC<InventoryManagerProps> = ({
 };
 
 // Main component that provides navigation context
-const InventoryManager: React.FC<InventoryManagerProps> = (props) => {
+const InventoryManager: React.FC<InventoryManagerProps> = props => {
   return (
     <InventoryNavigationProvider initialTab={props.initialTab}>
       <InventoryManagerInner {...props} />

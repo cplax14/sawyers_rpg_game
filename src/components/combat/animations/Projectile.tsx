@@ -28,7 +28,7 @@ export const Projectile: React.FC<ProjectileProps> = ({
   size = 12,
   duration = 600,
   glowIntensity = 1.0,
-  onComplete
+  onComplete,
 }) => {
   const glowColor = color;
   const glowSize = size * 2 * glowIntensity;
@@ -41,21 +41,21 @@ export const Projectile: React.FC<ProjectileProps> = ({
           x: startX,
           y: startY,
           scale: 0,
-          opacity: 0
+          opacity: 0,
         }}
         animate={{
           x: endX,
           y: endY,
           scale: 1,
-          opacity: [0, 1, 1, 0]
+          opacity: [0, 1, 1, 0],
         }}
         transition={{
           duration: duration / 1000,
-          ease: "easeInOut",
+          ease: 'easeInOut',
           opacity: {
             times: [0, 0.1, 0.9, 1],
-            duration: duration / 1000
-          }
+            duration: duration / 1000,
+          },
         }}
         onAnimationComplete={onComplete}
         style={{
@@ -66,7 +66,7 @@ export const Projectile: React.FC<ProjectileProps> = ({
           backgroundColor: color,
           boxShadow: `0 0 ${glowSize}px ${glowColor}, 0 0 ${glowSize * 2}px ${glowColor}`,
           pointerEvents: 'none',
-          zIndex: 101
+          zIndex: 101,
         }}
       />
 
@@ -78,18 +78,18 @@ export const Projectile: React.FC<ProjectileProps> = ({
             x: startX,
             y: startY,
             scale: 0,
-            opacity: 0
+            opacity: 0,
           }}
           animate={{
             x: endX,
             y: endY,
             scale: [0, 0.6, 0],
-            opacity: [0, 0.8, 0]
+            opacity: [0, 0.8, 0],
           }}
           transition={{
             duration: duration / 1000,
             delay: i * 0.05,
-            ease: "easeInOut"
+            ease: 'easeInOut',
           }}
           style={{
             position: 'absolute',
@@ -99,7 +99,7 @@ export const Projectile: React.FC<ProjectileProps> = ({
             backgroundColor: glowColor,
             filter: 'blur(2px)',
             pointerEvents: 'none',
-            zIndex: 100
+            zIndex: 100,
           }}
         />
       ))}
@@ -110,30 +110,28 @@ export const Projectile: React.FC<ProjectileProps> = ({
           x: startX,
           y: startY,
           scaleX: 0,
-          opacity: 0
+          opacity: 0,
         }}
         animate={{
           x: [startX, endX],
           y: [startY, endY],
           scaleX: [0, 1, 0],
-          opacity: [0, 0.4, 0]
+          opacity: [0, 0.4, 0],
         }}
         transition={{
           duration: duration / 1000,
-          ease: "linear"
+          ease: 'linear',
         }}
         style={{
           position: 'absolute',
-          width: Math.sqrt(
-            Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2)
-          ),
+          width: Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2)),
           height: 2,
           background: `linear-gradient(90deg, transparent, ${glowColor}, transparent)`,
           transformOrigin: 'left center',
           transform: `rotate(${Math.atan2(endY - startY, endX - startX)}rad)`,
           pointerEvents: 'none',
           zIndex: 99,
-          filter: 'blur(1px)'
+          filter: 'blur(1px)',
         }}
       />
     </>

@@ -59,7 +59,7 @@ const DEFAULT_CONFIG: OfflineQueueConfig = {
   enablePersistence: true,
   storageKey: 'cloud_save_offline_queue',
   processingConcurrency: 3,
-  autoProcessOnline: true
+  autoProcessOnline: true,
 };
 
 /**
@@ -89,7 +89,7 @@ export class OfflineQueueManager {
 
     // Listen to network status changes
     if (this.config.autoProcessOnline) {
-      this.networkStatusUnsubscribe = networkStatusManager.addListener((status) => {
+      this.networkStatusUnsubscribe = networkStatusManager.addListener(status => {
         if (status.isOnline && this.queue.size > 0) {
           console.log('Network online, processing offline queue...');
           this.processQueue();
@@ -109,7 +109,7 @@ export class OfflineQueueManager {
             timestamp: new Date(op.timestamp),
             onSuccess: undefined, // Callbacks can't be serialized
             onError: undefined,
-            onProgress: undefined
+            onProgress: undefined,
           };
           this.queue.set(operation.id, operation);
         });
@@ -130,7 +130,7 @@ export class OfflineQueueManager {
         // Remove non-serializable callbacks
         onSuccess: undefined,
         onError: undefined,
-        onProgress: undefined
+        onProgress: undefined,
       }));
 
       localStorage.setItem(this.config.storageKey, JSON.stringify(operations));
@@ -197,7 +197,7 @@ export class OfflineQueueManager {
       metadata: options.metadata,
       onSuccess: options.onSuccess,
       onError: options.onError,
-      onProgress: options.onProgress
+      onProgress: options.onProgress,
     };
 
     this.queue.set(operationId, operation);
@@ -263,7 +263,9 @@ export class OfflineQueueManager {
       failedOperations: failed.length,
       completedOperations: 0, // Completed operations are removed from queue
       isProcessing: this.isProcessing,
-      nextProcessTime: this.isProcessing ? undefined : new Date(Date.now() + this.config.retryDelay)
+      nextProcessTime: this.isProcessing
+        ? undefined
+        : new Date(Date.now() + this.config.retryDelay),
     };
   }
 
@@ -349,12 +351,14 @@ export class OfflineQueueManager {
       this.dequeue(operation.id);
 
       console.log(`Successfully processed ${operation.type} operation:`, operation.id);
-
     } catch (error) {
       operation.retryCount++;
       const cloudError = convertFirebaseError(error);
 
-      console.warn(`Operation ${operation.id} failed (attempt ${operation.retryCount}/${operation.maxRetries}):`, cloudError.message);
+      console.warn(
+        `Operation ${operation.id} failed (attempt ${operation.retryCount}/${operation.maxRetries}):`,
+        cloudError.message
+      );
 
       if (operation.retryCount >= operation.maxRetries) {
         // Max retries reached, notify error and remove from queue
@@ -410,7 +414,13 @@ export class OfflineQueueManager {
     // Get user from auth (this would come from Firebase Auth)
     const user = { uid: operation.metadata?.userId } as any;
 
-    const result = await cloudStorage.saveToCloud(user, slotNumber, saveName, gameState, screenshot);
+    const result = await cloudStorage.saveToCloud(
+      user,
+      slotNumber,
+      saveName,
+      gameState,
+      screenshot
+    );
 
     if (!result.success) {
       throw new Error(result.error?.message || 'Save operation failed');
@@ -499,8 +509,7 @@ export class OfflineQueueManager {
    * Clear failed operations from queue
    */
   clearFailed(): void {
-    const failedOps = Array.from(this.queue.values())
-      .filter(op => op.retryCount >= op.maxRetries);
+    const failedOps = Array.from(this.queue.values()).filter(op => op.retryCount >= op.maxRetries);
 
     failedOps.forEach(op => this.queue.delete(op.id));
 
@@ -514,8 +523,7 @@ export class OfflineQueueManager {
    * Retry failed operations
    */
   retryFailed(): void {
-    const failedOps = Array.from(this.queue.values())
-      .filter(op => op.retryCount >= op.maxRetries);
+    const failedOps = Array.from(this.queue.values()).filter(op => op.retryCount >= op.maxRetries);
 
     failedOps.forEach(op => {
       op.retryCount = 0; // Reset retry count

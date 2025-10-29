@@ -35,7 +35,7 @@ const mockUseReactGame = jest.fn();
 // Mock Button component
 jest.mock('../atoms/Button', () => ({
   Button: ({ children, onClick, ...props }: any) => (
-    <button onClick={onClick} data-testid="continue-button" {...props}>
+    <button onClick={onClick} data-testid='continue-button' {...props}>
       {children}
     </button>
   ),
@@ -56,7 +56,7 @@ const createMockState = (overrides: any = {}) => ({
     maxHp: 100,
     mp: 50,
     maxMp: 50,
-    ...overrides.player
+    ...overrides.player,
   },
   showVictoryModal: true,
   lastCombatRewards: {
@@ -66,10 +66,10 @@ const createMockState = (overrides: any = {}) => ({
     didLevelUp: false,
     previousLevel: 5,
     newLevel: 5,
-    ...overrides.lastCombatRewards
+    ...overrides.lastCombatRewards,
   },
   capturedMonsters: overrides.capturedMonsters || [],
-  ...overrides
+  ...overrides,
 });
 
 // Helper to create mock context return value
@@ -97,8 +97,8 @@ describe('VictoryModal - Level-Up Banner Display', () => {
         items: [],
         didLevelUp: true,
         previousLevel: 5,
-        newLevel: 6
-      }
+        newLevel: 6,
+      },
     });
 
     mockUseReactGame.mockReturnValue(mockContext);
@@ -120,8 +120,8 @@ describe('VictoryModal - Level-Up Banner Display', () => {
         items: [],
         didLevelUp: false,
         previousLevel: 5,
-        newLevel: 5
-      }
+        newLevel: 5,
+      },
     });
 
     mockUseReactGame.mockReturnValue(mockContext);
@@ -137,7 +137,7 @@ describe('VictoryModal - Level-Up Banner Display', () => {
     // Arrange - Level up from 10 to 11
     const mockContext = createMockContext({
       player: {
-        level: 11
+        level: 11,
       },
       lastCombatRewards: {
         experience: 200,
@@ -145,8 +145,8 @@ describe('VictoryModal - Level-Up Banner Display', () => {
         items: [],
         didLevelUp: true,
         previousLevel: 10,
-        newLevel: 11
-      }
+        newLevel: 11,
+      },
     });
 
     mockUseReactGame.mockReturnValue(mockContext);
@@ -163,7 +163,7 @@ describe('VictoryModal - Level-Up Banner Display', () => {
     // Arrange - Level up from 5 to 8 (gained 3 levels)
     const mockContext = createMockContext({
       player: {
-        level: 8
+        level: 8,
       },
       lastCombatRewards: {
         experience: 500,
@@ -171,8 +171,8 @@ describe('VictoryModal - Level-Up Banner Display', () => {
         items: [],
         didLevelUp: true,
         previousLevel: 5,
-        newLevel: 8
-      }
+        newLevel: 8,
+      },
     });
 
     mockUseReactGame.mockReturnValue(mockContext);
@@ -189,7 +189,7 @@ describe('VictoryModal - Level-Up Banner Display', () => {
     // Arrange
     const mockContext = createMockContext({
       player: {
-        level: 7
+        level: 7,
       },
       lastCombatRewards: {
         experience: 150,
@@ -197,8 +197,8 @@ describe('VictoryModal - Level-Up Banner Display', () => {
         items: [],
         didLevelUp: true,
         previousLevel: 6,
-        newLevel: undefined // Not provided
-      }
+        newLevel: undefined, // Not provided
+      },
     });
 
     mockUseReactGame.mockReturnValue(mockContext);
@@ -228,8 +228,8 @@ describe('VictoryModal - Reward Display', () => {
         experience: 75,
         gold: 40,
         items: [],
-        didLevelUp: false
-      }
+        didLevelUp: false,
+      },
     });
 
     mockUseReactGame.mockReturnValue(mockContext);
@@ -248,8 +248,8 @@ describe('VictoryModal - Reward Display', () => {
         experience: 100,
         gold: 85,
         items: [],
-        didLevelUp: false
-      }
+        didLevelUp: false,
+      },
     });
 
     mockUseReactGame.mockReturnValue(mockContext);
@@ -268,11 +268,25 @@ describe('VictoryModal - Reward Display', () => {
         experience: 100,
         gold: 50,
         items: [
-          { id: 'potion', name: 'Health Potion', quantity: 2, type: 'consumable', icon: '🧪', rarity: 'common' },
-          { id: 'sword', name: 'Iron Sword', quantity: 1, type: 'weapon', icon: '⚔️', rarity: 'uncommon' }
+          {
+            id: 'potion',
+            name: 'Health Potion',
+            quantity: 2,
+            type: 'consumable',
+            icon: '🧪',
+            rarity: 'common',
+          },
+          {
+            id: 'sword',
+            name: 'Iron Sword',
+            quantity: 1,
+            type: 'weapon',
+            icon: '⚔️',
+            rarity: 'uncommon',
+          },
         ],
-        didLevelUp: false
-      }
+        didLevelUp: false,
+      },
     });
 
     mockUseReactGame.mockReturnValue(mockContext);
@@ -291,10 +305,17 @@ describe('VictoryModal - Reward Display', () => {
         experience: 100,
         gold: 50,
         items: [
-          { id: 'potion', name: 'Health Potion', quantity: 1, type: 'consumable', icon: '🧪', rarity: 'common' }
+          {
+            id: 'potion',
+            name: 'Health Potion',
+            quantity: 1,
+            type: 'consumable',
+            icon: '🧪',
+            rarity: 'common',
+          },
         ],
-        didLevelUp: false
-      }
+        didLevelUp: false,
+      },
     });
 
     mockUseReactGame.mockReturnValue(mockContext);
@@ -313,10 +334,17 @@ describe('VictoryModal - Reward Display', () => {
         experience: 100,
         gold: 50,
         items: [
-          { id: 'potion', name: 'Health Potion', quantity: 3, type: 'consumable', icon: '🧪', rarity: 'common' }
+          {
+            id: 'potion',
+            name: 'Health Potion',
+            quantity: 3,
+            type: 'consumable',
+            icon: '🧪',
+            rarity: 'common',
+          },
         ],
-        didLevelUp: false
-      }
+        didLevelUp: false,
+      },
     });
 
     mockUseReactGame.mockReturnValue(mockContext);
@@ -336,8 +364,8 @@ describe('VictoryModal - Reward Display', () => {
         experience: 100,
         gold: 50,
         items: [],
-        didLevelUp: false
-      }
+        didLevelUp: false,
+      },
     });
 
     mockUseReactGame.mockReturnValue(mockContext);
@@ -356,8 +384,8 @@ describe('VictoryModal - Reward Display', () => {
         experience: 0,
         gold: 0,
         items: [],
-        didLevelUp: false
-      }
+        didLevelUp: false,
+      },
     });
 
     mockUseReactGame.mockReturnValue(mockContext);
@@ -383,7 +411,7 @@ describe('VictoryModal - Visibility', () => {
   it('should render when showVictoryModal is true', () => {
     // Arrange
     const mockContext = createMockContext({
-      showVictoryModal: true
+      showVictoryModal: true,
     });
 
     mockUseReactGame.mockReturnValue(mockContext);
@@ -398,7 +426,7 @@ describe('VictoryModal - Visibility', () => {
   it('should NOT render when showVictoryModal is false', () => {
     // Arrange
     const mockContext = createMockContext({
-      showVictoryModal: false
+      showVictoryModal: false,
     });
 
     mockUseReactGame.mockReturnValue(mockContext);
@@ -414,7 +442,7 @@ describe('VictoryModal - Visibility', () => {
     // Arrange
     const mockContext = createMockContext({
       showVictoryModal: true,
-      lastCombatRewards: null
+      lastCombatRewards: null,
     });
 
     mockUseReactGame.mockReturnValue(mockContext);
@@ -429,7 +457,7 @@ describe('VictoryModal - Visibility', () => {
   it('should respect isVisible prop when provided', () => {
     // Arrange
     const mockContext = createMockContext({
-      showVictoryModal: false // State says false
+      showVictoryModal: false, // State says false
     });
 
     mockUseReactGame.mockReturnValue(mockContext);
@@ -524,12 +552,19 @@ describe('VictoryModal - Combined Scenarios', () => {
         experience: 150,
         gold: 75,
         items: [
-          { id: 'potion', name: 'Health Potion', quantity: 2, type: 'consumable', icon: '🧪', rarity: 'common' }
+          {
+            id: 'potion',
+            name: 'Health Potion',
+            quantity: 2,
+            type: 'consumable',
+            icon: '🧪',
+            rarity: 'common',
+          },
         ],
         didLevelUp: true,
         previousLevel: 9,
-        newLevel: 10
-      }
+        newLevel: 10,
+      },
     });
 
     mockUseReactGame.mockReturnValue(mockContext);
@@ -554,16 +589,16 @@ describe('VictoryModal - Combined Scenarios', () => {
         gold: 50,
         items: [],
         capturedMonsterId: 'monster-123',
-        didLevelUp: false
+        didLevelUp: false,
       },
       capturedMonsters: [
         {
           id: 'monster-123',
           name: 'Slime',
           level: 3,
-          species: 'slime'
-        }
-      ]
+          species: 'slime',
+        },
+      ],
     });
 
     mockUseReactGame.mockReturnValue(mockContext);
@@ -581,7 +616,7 @@ describe('VictoryModal - Combined Scenarios', () => {
     // Arrange
     const mockContext = createMockContext({
       player: {
-        level: 5
+        level: 5,
       },
       lastCombatRewards: {
         experience: 150,
@@ -590,16 +625,16 @@ describe('VictoryModal - Combined Scenarios', () => {
         capturedMonsterId: 'monster-456',
         didLevelUp: true,
         previousLevel: 4,
-        newLevel: 5
+        newLevel: 5,
       },
       capturedMonsters: [
         {
           id: 'monster-456',
           name: 'Goblin',
           level: 5,
-          species: 'goblin'
-        }
-      ]
+          species: 'goblin',
+        },
+      ],
     });
 
     mockUseReactGame.mockReturnValue(mockContext);
@@ -632,8 +667,8 @@ describe('VictoryModal - Edge Cases', () => {
         experience: 999999,
         gold: 999999,
         items: [],
-        didLevelUp: false
-      }
+        didLevelUp: false,
+      },
     });
 
     mockUseReactGame.mockReturnValue(mockContext);
@@ -654,7 +689,7 @@ describe('VictoryModal - Edge Cases', () => {
       quantity: 1,
       type: 'consumable' as const,
       icon: '📦',
-      rarity: 'common'
+      rarity: 'common',
     }));
 
     const mockContext = createMockContext({
@@ -662,8 +697,8 @@ describe('VictoryModal - Edge Cases', () => {
         experience: 100,
         gold: 50,
         items: manyItems,
-        didLevelUp: false
-      }
+        didLevelUp: false,
+      },
     });
 
     mockUseReactGame.mockReturnValue(mockContext);
@@ -683,9 +718,9 @@ describe('VictoryModal - Edge Cases', () => {
         gold: 50,
         items: [],
         capturedMonsterId: 'non-existent-id',
-        didLevelUp: false
+        didLevelUp: false,
       },
-      capturedMonsters: [] // Empty array
+      capturedMonsters: [], // Empty array
     });
 
     mockUseReactGame.mockReturnValue(mockContext);

@@ -51,7 +51,7 @@ export const RETRY_CONFIGS = {
     maxDelay: 10000,
     backoffMultiplier: 2,
     enableJitter: true,
-    jitterFactor: 0.1
+    jitterFactor: 0.1,
   },
   // Critical operations (authentication, save operations)
   critical: {
@@ -60,7 +60,7 @@ export const RETRY_CONFIGS = {
     maxDelay: 8000,
     backoffMultiplier: 1.5,
     enableJitter: true,
-    jitterFactor: 0.2
+    jitterFactor: 0.2,
   },
   // Background operations (sync, cleanup)
   background: {
@@ -69,7 +69,7 @@ export const RETRY_CONFIGS = {
     maxDelay: 15000,
     backoffMultiplier: 2.5,
     enableJitter: true,
-    jitterFactor: 0.3
+    jitterFactor: 0.3,
   },
   // Quick operations (status checks, lightweight requests)
   quick: {
@@ -78,8 +78,8 @@ export const RETRY_CONFIGS = {
     maxDelay: 2000,
     backoffMultiplier: 2,
     enableJitter: false,
-    jitterFactor: 0
-  }
+    jitterFactor: 0,
+  },
 } as const;
 
 /**
@@ -154,7 +154,7 @@ export class RetryManager {
   ): Promise<RetryResult<T>> {
     const finalConfig: RetryConfig = {
       ...this.defaultConfig,
-      ...config
+      ...config,
     };
 
     const attempts: RetryAttempt[] = [];
@@ -170,16 +170,15 @@ export class RetryManager {
           result,
           attempts: attempt + 1,
           totalDelay: Date.now() - startTime,
-          lastAttemptTime: new Date()
+          lastAttemptTime: new Date(),
         };
-
       } catch (error) {
         lastError = error;
         const attemptInfo: RetryAttempt = {
           attemptNumber: attempt + 1,
           timestamp: new Date(),
           error,
-          delay: 0
+          delay: 0,
         };
 
         // Check if we should retry this error
@@ -213,7 +212,7 @@ export class RetryManager {
       error: lastError,
       attempts: attempts.length,
       totalDelay: Date.now() - startTime,
-      lastAttemptTime: new Date()
+      lastAttemptTime: new Date(),
     };
   }
 
@@ -283,8 +282,7 @@ export class RetryManager {
    */
   private calculateDelay(attempt: number, config: RetryConfig): number {
     // Exponential backoff: delay = initialDelay * (backoffMultiplier ^ (attempt - 1))
-    const exponentialDelay = config.initialDelay *
-      Math.pow(config.backoffMultiplier, attempt - 1);
+    const exponentialDelay = config.initialDelay * Math.pow(config.backoffMultiplier, attempt - 1);
 
     // Apply maximum delay cap
     let delay = Math.min(exponentialDelay, config.maxDelay);
@@ -315,7 +313,7 @@ export class RetryManager {
   ): RetryConfig {
     return {
       ...RETRY_CONFIGS[type],
-      ...overrides
+      ...overrides,
     };
   }
 }
@@ -327,10 +325,7 @@ export const retry = {
   /**
    * Retry network operations (Firebase, HTTP requests)
    */
-  network: async <T>(
-    operation: () => Promise<T>,
-    config?: Partial<RetryConfig>
-  ): Promise<T> => {
+  network: async <T>(operation: () => Promise<T>, config?: Partial<RetryConfig>): Promise<T> => {
     const retryManager = new RetryManager(RETRY_CONFIGS.network);
     const result = await retryManager.executeWithRetry(operation, config);
 
@@ -344,10 +339,7 @@ export const retry = {
   /**
    * Retry critical operations (authentication, saves)
    */
-  critical: async <T>(
-    operation: () => Promise<T>,
-    config?: Partial<RetryConfig>
-  ): Promise<T> => {
+  critical: async <T>(operation: () => Promise<T>, config?: Partial<RetryConfig>): Promise<T> => {
     const retryManager = new RetryManager(RETRY_CONFIGS.critical);
     const result = await retryManager.executeWithRetry(operation, config);
 
@@ -361,10 +353,7 @@ export const retry = {
   /**
    * Retry background operations (sync, cleanup)
    */
-  background: async <T>(
-    operation: () => Promise<T>,
-    config?: Partial<RetryConfig>
-  ): Promise<T> => {
+  background: async <T>(operation: () => Promise<T>, config?: Partial<RetryConfig>): Promise<T> => {
     const retryManager = new RetryManager(RETRY_CONFIGS.background);
     const result = await retryManager.executeWithRetry(operation, config);
 
@@ -378,10 +367,7 @@ export const retry = {
   /**
    * Retry quick operations (status checks)
    */
-  quick: async <T>(
-    operation: () => Promise<T>,
-    config?: Partial<RetryConfig>
-  ): Promise<T> => {
+  quick: async <T>(operation: () => Promise<T>, config?: Partial<RetryConfig>): Promise<T> => {
     const retryManager = new RetryManager(RETRY_CONFIGS.quick);
     const result = await retryManager.executeWithRetry(operation, config);
 
@@ -390,7 +376,7 @@ export const retry = {
     }
 
     throw result.error;
-  }
+  },
 };
 
 /**

@@ -29,7 +29,7 @@ export const useCombatInventoryRestrictions = (
     allowStatsView = true,
     allowCreatureView = false,
     allowedConsumableTypes = ['healing', 'mana', 'buff', 'debuff'],
-    enableEmergencyHealing = true
+    enableEmergencyHealing = true,
   } = options;
 
   const restrictions = useMemo((): CombatRestrictions => {
@@ -41,7 +41,7 @@ export const useCombatInventoryRestrictions = (
         restrictedTabs: [],
         restrictedMessage: '',
         allowedItemTypes: [],
-        restrictedActions: []
+        restrictedActions: [],
       };
     }
 
@@ -96,7 +96,7 @@ export const useCombatInventoryRestrictions = (
       'capture_creature',
       'auto_sort',
       'repair',
-      'upgrade'
+      'upgrade',
     ];
 
     // Add equipment restrictions if equipment tab is restricted
@@ -115,7 +115,7 @@ export const useCombatInventoryRestrictions = (
       restrictedTabs,
       restrictedMessage,
       allowedItemTypes,
-      restrictedActions
+      restrictedActions,
     };
   }, [
     isInCombat,
@@ -124,7 +124,7 @@ export const useCombatInventoryRestrictions = (
     allowStatsView,
     allowCreatureView,
     allowedConsumableTypes,
-    enableEmergencyHealing
+    enableEmergencyHealing,
   ]);
 
   return restrictions;
@@ -162,13 +162,19 @@ export const getRestrictedTabMessage = (
   }
 
   const messages = {
-    equipment: '⚔️ Equipment changes are not allowed during combat! Focus on using consumable items to survive the battle.',
-    creatures: '🐉 Creature management is restricted during combat! You cannot summon, feed, or manage your creatures while fighting.',
+    equipment:
+      '⚔️ Equipment changes are not allowed during combat! Focus on using consumable items to survive the battle.',
+    creatures:
+      '🐉 Creature management is restricted during combat! You cannot summon, feed, or manage your creatures while fighting.',
     stats: '📊 Character statistics are read-only during combat. Focus on the battle at hand!',
-    items: '🎒 Item usage is restricted during combat. Only healing and combat items are available.'
+    items:
+      '🎒 Item usage is restricted during combat. Only healing and combat items are available.',
   };
 
-  return messages[tab] || `${tab.charAt(0).toUpperCase() + tab.slice(1)} access is restricted during combat.`;
+  return (
+    messages[tab] ||
+    `${tab.charAt(0).toUpperCase() + tab.slice(1)} access is restricted during combat.`
+  );
 };
 
 export const getCombatItemCategories = (restrictions: CombatRestrictions) => {

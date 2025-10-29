@@ -32,7 +32,7 @@ export const useSmartSave = (config: Partial<SmartSaveConfig> = {}) => {
     autoFallback: true,
     requireConfirmation: false,
     syncWhenRestored: true,
-    ...config
+    ...config,
   };
 
   const [lastSaveAttempt, setLastSaveAttempt] = useState<Date | null>(null);
@@ -41,13 +41,7 @@ export const useSmartSave = (config: Partial<SmartSaveConfig> = {}) => {
   const { mode, isCapabilityAvailable } = useServiceMode();
   const { isAuthenticated } = useAuth();
   const { saveGame: saveLocal, loadGame: loadLocal, getSaveSlots } = useSaveSystem();
-  const {
-    backupToCloud,
-    restoreFromCloud,
-    syncSlot,
-    isOnline,
-    syncInProgress
-  } = useCloudSave();
+  const { backupToCloud, restoreFromCloud, syncSlot, isOnline, syncInProgress } = useCloudSave();
 
   // Monitor service mode changes to handle pending saves
   useEffect(() => {
@@ -66,267 +60,285 @@ export const useSmartSave = (config: Partial<SmartSaveConfig> = {}) => {
   /**
    * Smart save operation that chooses the best available method
    */
-  const smartSave = useCallback(async (
-    slotNumber: number,
-    saveName: string,
-    gameState: ReactGameState,
-    options: {
-      forceLocal?: boolean;
-      forceCloud?: boolean;
-      skipFallback?: boolean;
-    } = {}
-  ): Promise<SmartSaveResult> => {
-    setLastSaveAttempt(new Date());
+  const smartSave = useCallback(
+    async (
+      slotNumber: number,
+      saveName: string,
+      gameState: ReactGameState,
+      options: {
+        forceLocal?: boolean;
+        forceCloud?: boolean;
+        skipFallback?: boolean;
+      } = {}
+    ): Promise<SmartSaveResult> => {
+      setLastSaveAttempt(new Date());
 
-    // Determine save strategy based on service mode and options
-    const canUseCloud = isCapabilityAvailable('cloud_save') &&
-                       isAuthenticated &&
-                       isOnline &&
-                       !options.forceLocal;
+      // Determine save strategy based on service mode and options
+      const canUseCloud =
+        isCapabilityAvailable('cloud_save') && isAuthenticated && isOnline && !options.forceLocal;
 
-    const shouldUseCloud = canUseCloud &&
-                          (defaultConfig.preferCloud || options.forceCloud) &&
-                          mode !== ServiceMode.LOCAL_ONLY;
+      const shouldUseCloud =
+        canUseCloud &&
+        (defaultConfig.preferCloud || options.forceCloud) &&
+        mode !== ServiceMode.LOCAL_ONLY;
 
-    try {
-      if (shouldUseCloud) {
-        // Attempt cloud save first
-        try {
-          const cloudResult = await backupToCloud(slotNumber, saveName);
+      try {
+        if (shouldUseCloud) {
+          // Attempt cloud save first
+          try {
+            const cloudResult = await backupToCloud(slotNumber, saveName);
 
-          if (cloudResult.success) {
-            // Also save locally as backup
-            await saveLocal(slotNumber, saveName, gameState);
+            if (cloudResult.success) {
+              // Also save locally as backup
+              await saveLocal(slotNumber, saveName, gameState);
 
-            return {
-              success: true,
-              savedTo: 'both',
-              message: 'Saved to cloud and local storage',
-              fallbackUsed: false
-            };
-          } else {
-            // Cloud save failed, fall back to local if allowed
+              return {
+                success: true,
+                savedTo: 'both',
+                message: 'Saved to cloud and local storage',
+                fallbackUsed: false,
+              };
+            } else {
+              // Cloud save failed, fall back to local if allowed
+              if (defaultConfig.autoFallback && !options.skipFallback) {
+                await saveLocal(slotNumber, saveName, gameState);
+
+                // Queue for later cloud sync
+                serviceModeManager.queuePendingSync('save', {
+                  slotNumber,
+                  saveName,
+                  gameState,
+                });
+
+                setPendingCloudSaves(prev => [
+                  ...prev.filter(slot => slot !== slotNumber),
+                  slotNumber,
+                ]);
+
+                return {
+                  success: true,
+                  savedTo: 'local',
+                  message: 'Saved locally (cloud unavailable, will sync when restored)',
+                  fallbackUsed: true,
+                  error: cloudResult.error
+                    ? {
+                        code: cloudResult.error.code as CloudErrorCode,
+                        message: cloudResult.error.message,
+                        severity: 'medium' as any,
+                        retryable: true,
+                        userMessage: 'Cloud save failed, saved locally instead',
+                        timestamp: new Date(),
+                      }
+                    : undefined,
+                };
+              } else {
+                return {
+                  success: false,
+                  savedTo: 'local',
+                  message: 'Cloud save failed and fallback disabled',
+                  error: cloudResult.error
+                    ? {
+                        code: cloudResult.error.code as CloudErrorCode,
+                        message: cloudResult.error.message,
+                        severity: 'high' as any,
+                        retryable: true,
+                        userMessage: cloudResult.error.message,
+                        timestamp: new Date(),
+                      }
+                    : undefined,
+                };
+              }
+            }
+          } catch (cloudError) {
+            // Handle cloud save exception
             if (defaultConfig.autoFallback && !options.skipFallback) {
               await saveLocal(slotNumber, saveName, gameState);
 
-              // Queue for later cloud sync
               serviceModeManager.queuePendingSync('save', {
                 slotNumber,
                 saveName,
-                gameState
+                gameState,
               });
 
-              setPendingCloudSaves(prev => [...prev.filter(slot => slot !== slotNumber), slotNumber]);
+              setPendingCloudSaves(prev => [
+                ...prev.filter(slot => slot !== slotNumber),
+                slotNumber,
+              ]);
 
               return {
                 success: true,
                 savedTo: 'local',
-                message: 'Saved locally (cloud unavailable, will sync when restored)',
+                message: 'Saved locally (cloud error, will sync when restored)',
                 fallbackUsed: true,
-                error: cloudResult.error ? {
-                  code: cloudResult.error.code as CloudErrorCode,
-                  message: cloudResult.error.message,
+                error: {
+                  code: CloudErrorCode.OPERATION_FAILED,
+                  message: cloudError instanceof Error ? cloudError.message : 'Unknown cloud error',
                   severity: 'medium' as any,
                   retryable: true,
-                  userMessage: 'Cloud save failed, saved locally instead',
-                  timestamp: new Date()
-                } : undefined
+                  userMessage: 'Cloud save failed due to error, saved locally instead',
+                  timestamp: new Date(),
+                },
               };
             } else {
-              return {
-                success: false,
-                savedTo: 'local',
-                message: 'Cloud save failed and fallback disabled',
-                error: cloudResult.error ? {
-                  code: cloudResult.error.code as CloudErrorCode,
-                  message: cloudResult.error.message,
-                  severity: 'high' as any,
-                  retryable: true,
-                  userMessage: cloudResult.error.message,
-                  timestamp: new Date()
-                } : undefined
-              };
+              throw cloudError;
             }
           }
-        } catch (cloudError) {
-          // Handle cloud save exception
-          if (defaultConfig.autoFallback && !options.skipFallback) {
-            await saveLocal(slotNumber, saveName, gameState);
+        } else {
+          // Save locally only
+          await saveLocal(slotNumber, saveName, gameState);
 
-            serviceModeManager.queuePendingSync('save', {
-              slotNumber,
-              saveName,
-              gameState
-            });
+          const reason = !canUseCloud
+            ? isAuthenticated
+              ? 'Cloud service unavailable'
+              : 'Not signed in'
+            : 'Local save requested';
 
-            setPendingCloudSaves(prev => [...prev.filter(slot => slot !== slotNumber), slotNumber]);
-
-            return {
-              success: true,
-              savedTo: 'local',
-              message: 'Saved locally (cloud error, will sync when restored)',
-              fallbackUsed: true,
-              error: {
-                code: CloudErrorCode.OPERATION_FAILED,
-                message: cloudError instanceof Error ? cloudError.message : 'Unknown cloud error',
-                severity: 'medium' as any,
-                retryable: true,
-                userMessage: 'Cloud save failed due to error, saved locally instead',
-                timestamp: new Date()
-              }
-            };
-          } else {
-            throw cloudError;
-          }
+          return {
+            success: true,
+            savedTo: 'local',
+            message: `Saved locally (${reason})`,
+            fallbackUsed: false,
+          };
         }
-      } else {
-        // Save locally only
-        await saveLocal(slotNumber, saveName, gameState);
-
-        const reason = !canUseCloud ?
-          (isAuthenticated ? 'Cloud service unavailable' : 'Not signed in') :
-          'Local save requested';
-
+      } catch (error) {
         return {
-          success: true,
+          success: false,
           savedTo: 'local',
-          message: `Saved locally (${reason})`,
-          fallbackUsed: false
+          message: error instanceof Error ? error.message : 'Save operation failed',
+          error: {
+            code: CloudErrorCode.OPERATION_FAILED,
+            message: error instanceof Error ? error.message : 'Unknown error',
+            severity: 'high' as any,
+            retryable: true,
+            userMessage: 'Save operation failed',
+            timestamp: new Date(),
+          },
         };
       }
-    } catch (error) {
-      return {
-        success: false,
-        savedTo: 'local',
-        message: error instanceof Error ? error.message : 'Save operation failed',
-        error: {
-          code: CloudErrorCode.OPERATION_FAILED,
-          message: error instanceof Error ? error.message : 'Unknown error',
-          severity: 'high' as any,
-          retryable: true,
-          userMessage: 'Save operation failed',
-          timestamp: new Date()
-        }
-      };
-    }
-  }, [
-    mode,
-    isCapabilityAvailable,
-    isAuthenticated,
-    isOnline,
-    defaultConfig,
-    backupToCloud,
-    saveLocal
-  ]);
+    },
+    [
+      mode,
+      isCapabilityAvailable,
+      isAuthenticated,
+      isOnline,
+      defaultConfig,
+      backupToCloud,
+      saveLocal,
+    ]
+  );
 
   /**
    * Smart load operation that chooses the best available source
    */
-  const smartLoad = useCallback(async (
-    slotNumber: number,
-    options: {
-      preferCloud?: boolean;
-      fallbackToLocal?: boolean;
-    } = {}
-  ): Promise<{
-    success: boolean;
-    gameState?: ReactGameState;
-    loadedFrom: 'cloud' | 'local';
-    message: string;
-    error?: CloudError;
-  }> => {
-    const canUseCloud = isCapabilityAvailable('cloud_load') &&
-                       isAuthenticated &&
-                       isOnline;
+  const smartLoad = useCallback(
+    async (
+      slotNumber: number,
+      options: {
+        preferCloud?: boolean;
+        fallbackToLocal?: boolean;
+      } = {}
+    ): Promise<{
+      success: boolean;
+      gameState?: ReactGameState;
+      loadedFrom: 'cloud' | 'local';
+      message: string;
+      error?: CloudError;
+    }> => {
+      const canUseCloud = isCapabilityAvailable('cloud_load') && isAuthenticated && isOnline;
 
-    const shouldTryCloud = canUseCloud &&
-                          (options.preferCloud ?? defaultConfig.preferCloud) &&
-                          mode !== ServiceMode.LOCAL_ONLY;
+      const shouldTryCloud =
+        canUseCloud &&
+        (options.preferCloud ?? defaultConfig.preferCloud) &&
+        mode !== ServiceMode.LOCAL_ONLY;
 
-    try {
-      if (shouldTryCloud) {
-        // Try cloud load first
-        try {
-          const cloudResult = await restoreFromCloud(slotNumber);
+      try {
+        if (shouldTryCloud) {
+          // Try cloud load first
+          try {
+            const cloudResult = await restoreFromCloud(slotNumber);
 
-          if (cloudResult.success && cloudResult.data) {
-            return {
-              success: true,
-              gameState: cloudResult.data.gameState as ReactGameState,
-              loadedFrom: 'cloud',
-              message: 'Loaded from cloud storage'
-            };
-          } else {
-            // Cloud load failed, try local if fallback enabled
+            if (cloudResult.success && cloudResult.data) {
+              return {
+                success: true,
+                gameState: cloudResult.data.gameState as ReactGameState,
+                loadedFrom: 'cloud',
+                message: 'Loaded from cloud storage',
+              };
+            } else {
+              // Cloud load failed, try local if fallback enabled
+              if (options.fallbackToLocal !== false) {
+                const localGameState = await loadLocal(slotNumber);
+                return {
+                  success: true,
+                  gameState: localGameState,
+                  loadedFrom: 'local',
+                  message: 'Loaded from local storage (cloud unavailable)',
+                };
+              } else {
+                return {
+                  success: false,
+                  loadedFrom: 'cloud',
+                  message: 'Cloud load failed and local fallback disabled',
+                };
+              }
+            }
+          } catch (cloudError) {
+            // Cloud load exception, try local if fallback enabled
             if (options.fallbackToLocal !== false) {
               const localGameState = await loadLocal(slotNumber);
               return {
                 success: true,
                 gameState: localGameState,
                 loadedFrom: 'local',
-                message: 'Loaded from local storage (cloud unavailable)'
+                message: 'Loaded from local storage (cloud error)',
               };
             } else {
-              return {
-                success: false,
-                loadedFrom: 'cloud',
-                message: 'Cloud load failed and local fallback disabled'
-              };
+              throw cloudError;
             }
           }
-        } catch (cloudError) {
-          // Cloud load exception, try local if fallback enabled
-          if (options.fallbackToLocal !== false) {
-            const localGameState = await loadLocal(slotNumber);
-            return {
-              success: true,
-              gameState: localGameState,
-              loadedFrom: 'local',
-              message: 'Loaded from local storage (cloud error)'
-            };
-          } else {
-            throw cloudError;
-          }
+        } else {
+          // Load locally only
+          const localGameState = await loadLocal(slotNumber);
+
+          const reason = !canUseCloud
+            ? isAuthenticated
+              ? 'Cloud service unavailable'
+              : 'Not signed in'
+            : 'Local load requested';
+
+          return {
+            success: true,
+            gameState: localGameState,
+            loadedFrom: 'local',
+            message: `Loaded from local storage (${reason})`,
+          };
         }
-      } else {
-        // Load locally only
-        const localGameState = await loadLocal(slotNumber);
-
-        const reason = !canUseCloud ?
-          (isAuthenticated ? 'Cloud service unavailable' : 'Not signed in') :
-          'Local load requested';
-
+      } catch (error) {
         return {
-          success: true,
-          gameState: localGameState,
+          success: false,
           loadedFrom: 'local',
-          message: `Loaded from local storage (${reason})`
+          message: error instanceof Error ? error.message : 'Load operation failed',
+          error: {
+            code: CloudErrorCode.OPERATION_FAILED,
+            message: error instanceof Error ? error.message : 'Unknown error',
+            severity: 'high' as any,
+            retryable: true,
+            userMessage: 'Load operation failed',
+            timestamp: new Date(),
+          },
         };
       }
-    } catch (error) {
-      return {
-        success: false,
-        loadedFrom: 'local',
-        message: error instanceof Error ? error.message : 'Load operation failed',
-        error: {
-          code: CloudErrorCode.OPERATION_FAILED,
-          message: error instanceof Error ? error.message : 'Unknown error',
-          severity: 'high' as any,
-          retryable: true,
-          userMessage: 'Load operation failed',
-          timestamp: new Date()
-        }
-      };
-    }
-  }, [
-    mode,
-    isCapabilityAvailable,
-    isAuthenticated,
-    isOnline,
-    defaultConfig.preferCloud,
-    restoreFromCloud,
-    loadLocal
-  ]);
+    },
+    [
+      mode,
+      isCapabilityAvailable,
+      isAuthenticated,
+      isOnline,
+      defaultConfig.preferCloud,
+      restoreFromCloud,
+      loadLocal,
+    ]
+  );
 
   /**
    * Process pending cloud saves when service is restored
@@ -398,7 +410,7 @@ export const useSmartSave = (config: Partial<SmartSaveConfig> = {}) => {
       pendingCloudSaves: pendingCloudSaves.length,
       lastSaveAttempt,
       serviceMode: mode,
-      syncInProgress
+      syncInProgress,
     };
   }, [
     isCapabilityAvailable,
@@ -408,7 +420,7 @@ export const useSmartSave = (config: Partial<SmartSaveConfig> = {}) => {
     pendingCloudSaves.length,
     lastSaveAttempt,
     mode,
-    syncInProgress
+    syncInProgress,
   ]);
 
   return {
@@ -418,6 +430,6 @@ export const useSmartSave = (config: Partial<SmartSaveConfig> = {}) => {
     getSaveStatus,
     pendingCloudSaves: pendingCloudSaves.length,
     canUseCloud: isCapabilityAvailable('cloud_save') && isAuthenticated && isOnline,
-    serviceMode: mode
+    serviceMode: mode,
   };
 };

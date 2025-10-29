@@ -47,7 +47,7 @@ export class SaveRecoveryManager {
       operationTimeout: 30000, // 30 seconds
       recoveryStorageKey: 'sawyers_rpg_save_recovery',
       cleanupInterval: 60000, // 1 minute
-      ...config
+      ...config,
     };
 
     this.loadOperationsFromStorage();
@@ -66,7 +66,7 @@ export class SaveRecoveryManager {
       totalPlayTime: gameState.totalPlayTime,
       inventoryCount: gameState.inventory.length,
       monstersCount: gameState.capturedMonsters.length,
-      questsCount: gameState.completedQuests.length
+      questsCount: gameState.completedQuests.length,
     };
 
     return btoa(JSON.stringify(hashData));
@@ -75,7 +75,11 @@ export class SaveRecoveryManager {
   /**
    * Start tracking a save operation
    */
-  startSaveOperation(slotNumber: number, saveName: string, gameState: ReactGameState): SaveOperation {
+  startSaveOperation(
+    slotNumber: number,
+    saveName: string,
+    gameState: ReactGameState
+  ): SaveOperation {
     const operation: SaveOperation = {
       id: `save_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       timestamp: Date.now(),
@@ -84,7 +88,7 @@ export class SaveRecoveryManager {
       status: 'pending',
       gameStateHash: this.createGameStateHash(gameState),
       retryCount: 0,
-      startTime: Date.now()
+      startTime: Date.now(),
     };
 
     this.operations.set(operation.id, operation);
@@ -149,7 +153,7 @@ export class SaveRecoveryManager {
       // Check if operation has been running too long
       if (
         (operation.status === 'pending' || operation.status === 'in_progress') &&
-        (now - operation.startTime) > this.config.operationTimeout
+        now - operation.startTime > this.config.operationTimeout
       ) {
         operation.status = 'interrupted';
         interrupted.push(operation);
@@ -194,7 +198,7 @@ export class SaveRecoveryManager {
       hasRecoverableData: interruptedOperations.length > 0,
       interruptedOperations,
       lastKnownGoodSave,
-      recommendedAction
+      recommendedAction,
     };
   }
 
@@ -228,7 +232,7 @@ export class SaveRecoveryManager {
 
     for (const [id, operation] of this.operations.entries()) {
       // Remove old completed operations
-      if (operation.status === 'completed' && (now - operation.timestamp) > maxAge) {
+      if (operation.status === 'completed' && now - operation.timestamp > maxAge) {
         this.operations.delete(id);
       }
 
@@ -236,7 +240,7 @@ export class SaveRecoveryManager {
       if (
         operation.status === 'failed' &&
         operation.retryCount >= this.config.maxRetries &&
-        (now - operation.timestamp) > maxAge
+        now - operation.timestamp > maxAge
       ) {
         this.operations.delete(id);
       }
@@ -260,7 +264,9 @@ export class SaveRecoveryManager {
     const completed = operations.filter(op => op.status === 'completed').length;
     const failed = operations.filter(op => op.status === 'failed').length;
     const interrupted = operations.filter(op => op.status === 'interrupted').length;
-    const pending = operations.filter(op => op.status === 'pending' || op.status === 'in_progress').length;
+    const pending = operations.filter(
+      op => op.status === 'pending' || op.status === 'in_progress'
+    ).length;
 
     const total = operations.length;
     const successRate = total > 0 ? (completed / total) * 100 : 100;
@@ -271,7 +277,7 @@ export class SaveRecoveryManager {
       failed,
       interrupted,
       pending,
-      successRate
+      successRate,
     };
   }
 
@@ -346,7 +352,9 @@ export class SaveRecoveryManager {
 /**
  * Create a default save recovery manager
  */
-export const createSaveRecoveryManager = (config?: Partial<SaveRecoveryConfig>): SaveRecoveryManager => {
+export const createSaveRecoveryManager = (
+  config?: Partial<SaveRecoveryConfig>
+): SaveRecoveryManager => {
   return new SaveRecoveryManager(config);
 };
 
@@ -369,12 +377,18 @@ export const SaveRecoveryUtils = {
    */
   getStatusColor(status: SaveOperation['status']): string {
     switch (status) {
-      case 'completed': return '#51cf66';
-      case 'failed': return '#ff6b6b';
-      case 'interrupted': return '#ffa500';
-      case 'in_progress': return '#4ecdc4';
-      case 'pending': return '#999999';
-      default: return '#666666';
+      case 'completed':
+        return '#51cf66';
+      case 'failed':
+        return '#ff6b6b';
+      case 'interrupted':
+        return '#ffa500';
+      case 'in_progress':
+        return '#4ecdc4';
+      case 'pending':
+        return '#999999';
+      default:
+        return '#666666';
     }
   },
 
@@ -383,12 +397,18 @@ export const SaveRecoveryUtils = {
    */
   getStatusText(status: SaveOperation['status']): string {
     switch (status) {
-      case 'pending': return 'Pending';
-      case 'in_progress': return 'In Progress';
-      case 'completed': return 'Completed';
-      case 'failed': return 'Failed';
-      case 'interrupted': return 'Interrupted';
-      default: return 'Unknown';
+      case 'pending':
+        return 'Pending';
+      case 'in_progress':
+        return 'In Progress';
+      case 'completed':
+        return 'Completed';
+      case 'failed':
+        return 'Failed';
+      case 'interrupted':
+        return 'Interrupted';
+      default:
+        return 'Unknown';
     }
-  }
+  },
 };

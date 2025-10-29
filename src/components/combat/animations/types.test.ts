@@ -18,7 +18,7 @@ import {
   HOLY_COLORS,
   ARCANE_COLORS,
   POISON_COLORS,
-  ELEMENT_COLORS
+  ELEMENT_COLORS,
 } from './types';
 
 describe('Animation Types', () => {
@@ -29,7 +29,7 @@ describe('Animation Types', () => {
         cast: 200,
         travel: 600,
         impact: 200,
-        total: 1400
+        total: 1400,
       };
       expect(timings).toBeDefined();
       expect(timings.total).toBe(1400);
@@ -42,7 +42,7 @@ describe('Animation Types', () => {
         endX: 200,
         endY: 200,
         color: '#8b5cf6',
-        glowColor: '#a78bfa'
+        glowColor: '#a78bfa',
       };
       expect(config).toBeDefined();
       expect(config.startX).toBe(100);
@@ -56,7 +56,7 @@ describe('Animation Types', () => {
         endY: 200,
         color: '#8b5cf6',
         glowColor: '#a78bfa',
-        size: 20
+        size: 20,
       };
       expect(config.size).toBe(20);
     });
@@ -65,7 +65,7 @@ describe('Animation Types', () => {
       const config: ImpactConfig = {
         x: 200,
         y: 200,
-        damage: 50
+        damage: 50,
       };
       expect(config).toBeDefined();
       expect(config.damage).toBe(50);
@@ -77,7 +77,7 @@ describe('Animation Types', () => {
         y: 200,
         damage: 75,
         isCritical: true,
-        element: 'fire'
+        element: 'fire',
       };
       expect(config.isCritical).toBe(true);
       expect(config.element).toBe('fire');
@@ -88,7 +88,7 @@ describe('Animation Types', () => {
         count: 20,
         color: '#ff0000',
         size: 6,
-        spread: 100
+        spread: 100,
       };
       expect(config).toBeDefined();
       expect(config.count).toBe(20);
@@ -102,7 +102,7 @@ describe('Animation Types', () => {
         endX: 200,
         endY: 150,
         color: '#ff0000',
-        duration: 600
+        duration: 600,
       };
       expect(config).toBeDefined();
       expect(config.slashType).toBe('slash');
@@ -118,7 +118,7 @@ describe('Animation Types', () => {
           endX: 200,
           endY: 150,
           color: '#ff0000',
-          duration: 600
+          duration: 600,
         };
         expect(config.slashType).toBe(type);
       });
@@ -133,7 +133,7 @@ describe('Animation Types', () => {
         endY: 150,
         color: '#ff0000',
         duration: 600,
-        trailWidth: 8
+        trailWidth: 8,
       };
       expect(config.trailWidth).toBe(8);
     });
@@ -145,7 +145,7 @@ describe('Animation Types', () => {
         radius: 80,
         color: '#ff6b35',
         expandDuration: 600,
-        fadeDuration: 400
+        fadeDuration: 400,
       };
       expect(config).toBeDefined();
       expect(config.radius).toBe(80);
@@ -159,7 +159,7 @@ describe('Animation Types', () => {
         color: '#ff6b35',
         expandDuration: 600,
         fadeDuration: 400,
-        particleCount: 30
+        particleCount: 30,
       };
       expect(config.particleCount).toBe(30);
     });
@@ -170,7 +170,7 @@ describe('Animation Types', () => {
         targetY: 150,
         auraColor: '#ffd700',
         pulseSpeed: 2,
-        particles: true
+        particles: true,
       };
       expect(config).toBeDefined();
       expect(config.particles).toBe(true);
@@ -184,7 +184,7 @@ describe('Animation Types', () => {
         pulseSpeed: 2,
         particles: true,
         intensity: 0.8,
-        persistent: false
+        persistent: false,
       };
       expect(config.intensity).toBe(0.8);
       expect(config.persistent).toBe(false);
@@ -196,7 +196,7 @@ describe('Animation Types', () => {
         targetY: 150,
         statusType: 'poison',
         color: '#8bc34a',
-        duration: 2000
+        duration: 2000,
       };
       expect(config).toBeDefined();
       expect(config.statusType).toBe('poison');
@@ -208,7 +208,7 @@ describe('Animation Types', () => {
         'sleep',
         'silence',
         'slow',
-        'stun'
+        'stun',
       ];
       statusTypes.forEach(type => {
         const config: DebuffAnimationConfig = {
@@ -216,7 +216,7 @@ describe('Animation Types', () => {
           targetY: 150,
           statusType: type,
           color: '#8bc34a',
-          duration: 2000
+          duration: 2000,
         };
         expect(config.statusType).toBe(type);
       });
@@ -229,7 +229,7 @@ describe('Animation Types', () => {
         statusType: 'poison',
         color: '#8bc34a',
         duration: 2000,
-        intensity: 0.7
+        intensity: 0.7,
       };
       expect(config.intensity).toBe(0.7);
     });
@@ -278,13 +278,16 @@ describe('Animation Types', () => {
         cast: 200,
         travel: 600,
         impact: 200,
-        total: 1400
+        total: 1400,
       });
     });
 
     it('should have MAGIC_BOLT_TIMINGS total equal to sum of phases', () => {
-      const sum = MAGIC_BOLT_TIMINGS.charge + MAGIC_BOLT_TIMINGS.cast +
-                  MAGIC_BOLT_TIMINGS.travel + MAGIC_BOLT_TIMINGS.impact;
+      const sum =
+        MAGIC_BOLT_TIMINGS.charge +
+        MAGIC_BOLT_TIMINGS.cast +
+        MAGIC_BOLT_TIMINGS.travel +
+        MAGIC_BOLT_TIMINGS.impact;
       expect(MAGIC_BOLT_TIMINGS.total).toBe(sum);
     });
   });
@@ -298,7 +301,7 @@ describe('Animation Types', () => {
       expect(SPRING_CONFIG.smooth).toEqual({
         type: 'spring',
         stiffness: 100,
-        damping: 15
+        damping: 15,
       });
     });
 
@@ -306,7 +309,7 @@ describe('Animation Types', () => {
       expect(SPRING_CONFIG.bouncy).toEqual({
         type: 'spring',
         stiffness: 300,
-        damping: 20
+        damping: 20,
       });
     });
 
@@ -314,7 +317,7 @@ describe('Animation Types', () => {
       expect(SPRING_CONFIG.stiff).toEqual({
         type: 'spring',
         stiffness: 400,
-        damping: 25
+        damping: 25,
       });
     });
 
@@ -472,7 +475,7 @@ describe('Animation Types', () => {
       expect(ELEMENT_COLORS.arcane).toEqual({
         primary: '#8b5cf6',
         glow: '#a78bfa',
-        particles: '#c4b5fd'
+        particles: '#c4b5fd',
       });
     });
 
@@ -480,7 +483,7 @@ describe('Animation Types', () => {
       expect(ELEMENT_COLORS.fire).toEqual({
         primary: '#f59e0b',
         glow: '#fbbf24',
-        particles: '#fcd34d'
+        particles: '#fcd34d',
       });
     });
 
@@ -488,7 +491,7 @@ describe('Animation Types', () => {
       expect(ELEMENT_COLORS.ice).toEqual({
         primary: '#3b82f6',
         glow: '#60a5fa',
-        particles: '#93c5fd'
+        particles: '#93c5fd',
       });
     });
 
@@ -496,7 +499,7 @@ describe('Animation Types', () => {
       expect(ELEMENT_COLORS.lightning).toEqual({
         primary: '#eab308',
         glow: '#facc15',
-        particles: '#fde047'
+        particles: '#fde047',
       });
     });
 
@@ -517,7 +520,14 @@ describe('Animation Types', () => {
     it('should have all color values as valid hex colors', () => {
       const hexColorPattern = /^#[0-9a-fA-F]{6}$/;
 
-      [FIRE_COLORS, ICE_COLORS, LIGHTNING_COLORS, HOLY_COLORS, ARCANE_COLORS, POISON_COLORS].forEach(palette => {
+      [
+        FIRE_COLORS,
+        ICE_COLORS,
+        LIGHTNING_COLORS,
+        HOLY_COLORS,
+        ARCANE_COLORS,
+        POISON_COLORS,
+      ].forEach(palette => {
         expect(palette.primary).toMatch(hexColorPattern);
         expect(palette.secondary).toMatch(hexColorPattern);
         expect(palette.accent).toMatch(hexColorPattern);

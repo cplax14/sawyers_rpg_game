@@ -255,10 +255,11 @@ export const BreedingRecipeBook: React.FC<BreedingRecipeBookProps> = ({
     // Apply search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(recipe =>
-        recipe.name.toLowerCase().includes(query) ||
-        recipe.description.toLowerCase().includes(query) ||
-        recipe.offspringSpecies.toLowerCase().includes(query)
+      filtered = filtered.filter(
+        recipe =>
+          recipe.name.toLowerCase().includes(query) ||
+          recipe.description.toLowerCase().includes(query) ||
+          recipe.offspringSpecies.toLowerCase().includes(query)
       );
     }
 
@@ -279,19 +280,25 @@ export const BreedingRecipeBook: React.FC<BreedingRecipeBookProps> = ({
   }, [recipes.length, discoveredRecipes.length]);
 
   // Check if recipe is unlocked
-  const isRecipeUnlocked = useCallback((recipe: BreedingRecipe): boolean => {
-    // Check if discovered
-    if (!discoveredRecipes.includes(recipe.id)) return false;
+  const isRecipeUnlocked = useCallback(
+    (recipe: BreedingRecipe): boolean => {
+      // Check if discovered
+      if (!discoveredRecipes.includes(recipe.id)) return false;
 
-    // Check unlock requirements
-    if (recipe.unlockRequirements) {
-      if (recipe.unlockRequirements.minPlayerLevel && playerLevel < recipe.unlockRequirements.minPlayerLevel) {
-        return false;
+      // Check unlock requirements
+      if (recipe.unlockRequirements) {
+        if (
+          recipe.unlockRequirements.minPlayerLevel &&
+          playerLevel < recipe.unlockRequirements.minPlayerLevel
+        ) {
+          return false;
+        }
       }
-    }
 
-    return true;
-  }, [discoveredRecipes, playerLevel]);
+      return true;
+    },
+    [discoveredRecipes, playerLevel]
+  );
 
   return (
     <div style={recipeBookStyles.container}>
@@ -318,7 +325,14 @@ export const BreedingRecipeBook: React.FC<BreedingRecipeBookProps> = ({
             {discoveryProgress > 15 && `${discoveryProgress}%`}
           </motion.div>
         </div>
-        <p style={{ textAlign: 'center', marginTop: '0.5rem', fontSize: '0.85rem', color: '#94a3b8' }}>
+        <p
+          style={{
+            textAlign: 'center',
+            marginTop: '0.5rem',
+            fontSize: '0.85rem',
+            color: '#94a3b8',
+          }}
+        >
           {discoveredRecipes.length} / {recipes.length} Recipes Discovered
         </p>
       </div>
@@ -326,10 +340,10 @@ export const BreedingRecipeBook: React.FC<BreedingRecipeBookProps> = ({
       {/* Search */}
       <div style={recipeBookStyles.searchContainer}>
         <input
-          type="text"
-          placeholder="Search recipes..."
+          type='text'
+          placeholder='Search recipes...'
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={e => setSearchQuery(e.target.value)}
           style={recipeBookStyles.searchInput}
         />
         <span style={recipeBookStyles.searchIcon}>🔍</span>
@@ -377,12 +391,12 @@ export const BreedingRecipeBook: React.FC<BreedingRecipeBookProps> = ({
           </div>
         </div>
       ) : (
-        <div style={{
-          ...recipeBookStyles.recipeGrid,
-          gridTemplateColumns: isMobile
-            ? '1fr'
-            : 'repeat(auto-fill, minmax(300px, 1fr))',
-        }}>
+        <div
+          style={{
+            ...recipeBookStyles.recipeGrid,
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(300px, 1fr))',
+          }}
+        >
           <AnimatePresence>
             {filteredRecipes.map((recipe, index) => {
               const isUnlocked = isRecipeUnlocked(recipe);
@@ -420,7 +434,9 @@ export const BreedingRecipeBook: React.FC<BreedingRecipeBookProps> = ({
 
                   {/* Description */}
                   <div style={recipeBookStyles.recipeDescription}>
-                    {isDiscovered ? recipe.description : 'Breed different creature combinations to discover this recipe.'}
+                    {isDiscovered
+                      ? recipe.description
+                      : 'Breed different creature combinations to discover this recipe.'}
                   </div>
 
                   {/* Parent Combination */}
@@ -448,7 +464,9 @@ export const BreedingRecipeBook: React.FC<BreedingRecipeBookProps> = ({
                         {recipe.materials.map((material, idx) => (
                           <div key={idx} style={recipeBookStyles.materialItem}>
                             <span style={recipeBookStyles.materialName}>{material.name}</span>
-                            <span style={recipeBookStyles.materialQuantity}>×{material.quantity}</span>
+                            <span style={recipeBookStyles.materialQuantity}>
+                              ×{material.quantity}
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -463,7 +481,10 @@ export const BreedingRecipeBook: React.FC<BreedingRecipeBookProps> = ({
                         {recipe.guaranteedBonuses.statMultiplier && (
                           <div style={recipeBookStyles.bonusItem}>
                             <span style={recipeBookStyles.bonusIcon}>📈</span>
-                            <span>+{((recipe.guaranteedBonuses.statMultiplier - 1) * 100).toFixed(0)}% Stats</span>
+                            <span>
+                              +{((recipe.guaranteedBonuses.statMultiplier - 1) * 100).toFixed(0)}%
+                              Stats
+                            </span>
                           </div>
                         )}
                         {recipe.guaranteedBonuses.minRarity && (
@@ -472,21 +493,23 @@ export const BreedingRecipeBook: React.FC<BreedingRecipeBookProps> = ({
                             <span>Minimum {recipe.guaranteedBonuses.minRarity} Rarity</span>
                           </div>
                         )}
-                        {recipe.guaranteedBonuses.guaranteedAbilities && recipe.guaranteedBonuses.guaranteedAbilities.length > 0 && (
-                          <div style={recipeBookStyles.bonusItem}>
-                            <span style={recipeBookStyles.bonusIcon}>⚡</span>
-                            <span>{recipe.guaranteedBonuses.guaranteedAbilities.length} Special Abilities</span>
-                          </div>
-                        )}
+                        {recipe.guaranteedBonuses.guaranteedAbilities &&
+                          recipe.guaranteedBonuses.guaranteedAbilities.length > 0 && (
+                            <div style={recipeBookStyles.bonusItem}>
+                              <span style={recipeBookStyles.bonusIcon}>⚡</span>
+                              <span>
+                                {recipe.guaranteedBonuses.guaranteedAbilities.length} Special
+                                Abilities
+                              </span>
+                            </div>
+                          )}
                       </div>
                     </div>
                   )}
 
                   {/* Hint for locked recipes */}
                   {!isDiscovered && recipe.hint && (
-                    <div style={recipeBookStyles.hintText}>
-                      💡 {recipe.hint}
-                    </div>
+                    <div style={recipeBookStyles.hintText}>💡 {recipe.hint}</div>
                   )}
                 </motion.div>
               );

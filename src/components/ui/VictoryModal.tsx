@@ -36,12 +36,18 @@ const VictoryModal: React.FC<VictoryModalProps> = ({ isVisible, onClose }) => {
 
   const getRarityColor = (rarity: string) => {
     switch (rarity) {
-      case 'legendary': return '#ff6b35';
-      case 'epic': return '#9d4edd';
-      case 'rare': return '#3b82f6';
-      case 'uncommon': return '#10b981';
-      case 'common': return '#6b7280';
-      default: return '#6b7280';
+      case 'legendary':
+        return '#ff6b35';
+      case 'epic':
+        return '#9d4edd';
+      case 'rare':
+        return '#3b82f6';
+      case 'uncommon':
+        return '#10b981';
+      case 'common':
+        return '#6b7280';
+      default:
+        return '#6b7280';
     }
   };
 
@@ -56,7 +62,7 @@ const VictoryModal: React.FC<VictoryModalProps> = ({ isVisible, onClose }) => {
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 1000,
-    animation: 'fadeIn 0.3s ease-out'
+    animation: 'fadeIn 0.3s ease-out',
   };
 
   const contentStyle: React.CSSProperties = {
@@ -70,7 +76,7 @@ const VictoryModal: React.FC<VictoryModalProps> = ({ isVisible, onClose }) => {
     textAlign: 'center',
     position: 'relative',
     boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)',
-    animation: 'slideUp 0.3s ease-out'
+    animation: 'slideUp 0.3s ease-out',
   };
 
   const titleStyle: React.CSSProperties = {
@@ -78,14 +84,14 @@ const VictoryModal: React.FC<VictoryModalProps> = ({ isVisible, onClose }) => {
     fontWeight: 'bold',
     color: '#d4af37',
     marginBottom: '1.5rem',
-    textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)'
+    textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
   };
 
   const rewardSectionStyle: React.CSSProperties = {
     background: 'rgba(255, 255, 255, 0.1)',
     borderRadius: '12px',
     padding: '1.5rem',
-    marginBottom: '1.5rem'
+    marginBottom: '1.5rem',
   };
 
   const rewardItemStyle: React.CSSProperties = {
@@ -94,14 +100,14 @@ const VictoryModal: React.FC<VictoryModalProps> = ({ isVisible, onClose }) => {
     alignItems: 'center',
     padding: '0.5rem 0',
     borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
-    fontSize: '1.2rem'
+    fontSize: '1.2rem',
   };
 
   const itemsGridStyle: React.CSSProperties = {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
     gap: '1rem',
-    marginTop: '1rem'
+    marginTop: '1rem',
   };
 
   const itemCardStyle: React.CSSProperties = {
@@ -110,7 +116,7 @@ const VictoryModal: React.FC<VictoryModalProps> = ({ isVisible, onClose }) => {
     borderRadius: '8px',
     padding: '0.75rem',
     textAlign: 'center',
-    transition: 'transform 0.2s ease'
+    transition: 'transform 0.2s ease',
   };
 
   return (
@@ -137,7 +143,9 @@ const VictoryModal: React.FC<VictoryModalProps> = ({ isVisible, onClose }) => {
             <div style={{ marginTop: '1rem' }}>
               <div style={rewardItemStyle}>
                 <span>🎒 Items Found:</span>
-                <span style={{ color: '#8b5cf6', fontWeight: 'bold' }}>{items.length} item{items.length > 1 ? 's' : ''}</span>
+                <span style={{ color: '#8b5cf6', fontWeight: 'bold' }}>
+                  {items.length} item{items.length > 1 ? 's' : ''}
+                </span>
               </div>
 
               <div style={itemsGridStyle}>
@@ -146,22 +154,20 @@ const VictoryModal: React.FC<VictoryModalProps> = ({ isVisible, onClose }) => {
                     key={`${item.id}-${index}`}
                     style={{
                       ...itemCardStyle,
-                      borderColor: getRarityColor(item.rarity)
+                      borderColor: getRarityColor(item.rarity),
                     }}
                   >
-                    <div style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>
-                      {item.icon}
-                    </div>
-                    <div style={{
-                      fontSize: '0.9rem',
-                      fontWeight: 'bold',
-                      color: getRarityColor(item.rarity)
-                    }}>
+                    <div style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>{item.icon}</div>
+                    <div
+                      style={{
+                        fontSize: '0.9rem',
+                        fontWeight: 'bold',
+                        color: getRarityColor(item.rarity),
+                      }}
+                    >
                       {item.name}
                     </div>
-                    <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
-                      x{item.quantity}
-                    </div>
+                    <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>x{item.quantity}</div>
                   </div>
                 ))}
               </div>
@@ -170,18 +176,21 @@ const VictoryModal: React.FC<VictoryModalProps> = ({ isVisible, onClose }) => {
         </div>
 
         {lastCapturedMonster && (
-          <div style={{
-            background: 'linear-gradient(45deg, #8b5cf6, #7c3aed)',
-            borderRadius: '12px',
-            padding: '1rem',
-            marginBottom: '1.5rem',
-            border: '2px solid #d4af37'
-          }}>
+          <div
+            style={{
+              background: 'linear-gradient(45deg, #8b5cf6, #7c3aed)',
+              borderRadius: '12px',
+              padding: '1rem',
+              marginBottom: '1.5rem',
+              border: '2px solid #d4af37',
+            }}
+          >
             <h3 style={{ color: '#fff', margin: '0 0 0.5rem 0', fontSize: '1.3rem' }}>
               🎉 Monster Captured! 🎉
             </h3>
             <p style={{ margin: 0, color: '#f0f9ff', fontSize: '1.1rem' }}>
-              <strong>{lastCapturedMonster.name}</strong> (Level {lastCapturedMonster.level}) has been added to your collection!
+              <strong>{lastCapturedMonster.name}</strong> (Level {lastCapturedMonster.level}) has
+              been added to your collection!
             </p>
             <p style={{ margin: '0.5rem 0 0 0', color: '#e0e7ff', fontSize: '0.9rem' }}>
               Check the Creatures tab to view your new companion
@@ -190,32 +199,35 @@ const VictoryModal: React.FC<VictoryModalProps> = ({ isVisible, onClose }) => {
         )}
 
         {state.lastCombatRewards?.didLevelUp && (
-          <div style={{
-            background: 'linear-gradient(45deg, #10b981, #059669)',
-            borderRadius: '12px',
-            padding: '1rem',
-            marginBottom: '1.5rem',
-            border: '2px solid #d4af37'
-          }}>
+          <div
+            style={{
+              background: 'linear-gradient(45deg, #10b981, #059669)',
+              borderRadius: '12px',
+              padding: '1rem',
+              marginBottom: '1.5rem',
+              border: '2px solid #d4af37',
+            }}
+          >
             <h3 style={{ color: '#fff', margin: '0 0 0.5rem 0', fontSize: '1.3rem' }}>
               ⭐ Level Up! ⭐
             </h3>
             <p style={{ margin: 0, color: '#f0f9ff' }}>
-              Congratulations! You reached level {state.lastCombatRewards.newLevel || state.player?.level}!
+              Congratulations! You reached level{' '}
+              {state.lastCombatRewards.newLevel || state.player?.level}!
             </p>
           </div>
         )}
 
         <Button
-          variant="primary"
-          size="lg"
+          variant='primary'
+          size='lg'
           onClick={handleClose}
           style={{
             backgroundColor: '#d4af37',
             color: '#1a1a2e',
             fontWeight: 'bold',
             padding: '0.75rem 2rem',
-            fontSize: '1.1rem'
+            fontSize: '1.1rem',
           }}
         >
           Continue Adventure

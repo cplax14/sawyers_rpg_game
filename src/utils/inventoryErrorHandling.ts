@@ -47,7 +47,10 @@ export function createUserFriendlyError(
   }
 
   // Handle InventoryError enum
-  if (typeof error === 'string' && Object.values(InventoryError).includes(error as InventoryError)) {
+  if (
+    typeof error === 'string' &&
+    Object.values(InventoryError).includes(error as InventoryError)
+  ) {
     return createInventoryErrorMessage(error as InventoryError, context);
   }
 
@@ -62,10 +65,10 @@ export function createUserFriendlyError(
           label: 'Retry',
           action: () => window.location.reload(),
           type: 'primary',
-          icon: '🔄'
-        }
+          icon: '🔄',
+        },
       ],
-      icon: '⚠️'
+      icon: '⚠️',
     };
   }
 
@@ -74,7 +77,7 @@ export function createUserFriendlyError(
     title: 'Unknown Error',
     message: 'An unexpected error occurred. Please try again.',
     severity: 'error',
-    icon: '❓'
+    icon: '❓',
   };
 }
 
@@ -84,7 +87,7 @@ function createInventoryExceptionMessage(
 ): UserFriendlyError {
   return createInventoryErrorMessage(exception.errorCode, {
     ...context,
-    ...exception.context
+    ...exception.context,
   });
 }
 
@@ -106,12 +109,12 @@ function createInventoryErrorMessage(
             label: 'Refresh Inventory',
             action: () => window.location.reload(),
             type: 'primary',
-            icon: '🔄'
-          }
+            icon: '🔄',
+          },
         ],
         icon: '🔍',
         autoDismiss: true,
-        duration: 5000
+        duration: 5000,
       };
 
     case InventoryError.INVENTORY_FULL:
@@ -127,7 +130,7 @@ function createInventoryErrorMessage(
               console.log('Opening inventory management');
             },
             type: 'primary',
-            icon: '📦'
+            icon: '📦',
           },
           {
             label: 'Auto-Sort',
@@ -136,10 +139,10 @@ function createInventoryErrorMessage(
               console.log('Auto-sorting inventory');
             },
             type: 'secondary',
-            icon: '🔧'
-          }
+            icon: '🔧',
+          },
         ],
-        icon: '📦'
+        icon: '📦',
       };
 
     case InventoryError.INVALID_QUANTITY:
@@ -154,12 +157,12 @@ function createInventoryErrorMessage(
               console.log('Checking available quantity');
             },
             type: 'primary',
-            icon: '🔢'
-          }
+            icon: '🔢',
+          },
         ],
         icon: '🔢',
         autoDismiss: true,
-        duration: 4000
+        duration: 4000,
       };
 
     case InventoryError.STACK_SIZE_EXCEEDED:
@@ -174,12 +177,12 @@ function createInventoryErrorMessage(
               console.log('Opening stack splitting interface');
             },
             type: 'primary',
-            icon: '✂️'
-          }
+            icon: '✂️',
+          },
         ],
         icon: '📚',
         autoDismiss: true,
-        duration: 6000
+        duration: 6000,
       };
 
     case InventoryError.INVALID_OPERATION:
@@ -194,10 +197,10 @@ function createInventoryErrorMessage(
               console.log('Retrying operation');
             },
             type: 'primary',
-            icon: '🔄'
-          }
+            icon: '🔄',
+          },
         ],
-        icon: '🚫'
+        icon: '🚫',
       };
 
     case InventoryError.PERMISSION_DENIED:
@@ -212,10 +215,10 @@ function createInventoryErrorMessage(
               console.log('Showing permission requirements');
             },
             type: 'primary',
-            icon: '📋'
-          }
+            icon: '📋',
+          },
         ],
-        icon: '🔒'
+        icon: '🔒',
       };
 
     case InventoryError.CONTAINER_LOCKED:
@@ -230,12 +233,12 @@ function createInventoryErrorMessage(
               console.log('Looking for unlock requirements');
             },
             type: 'primary',
-            icon: '🗝️'
-          }
+            icon: '🗝️',
+          },
         ],
         icon: '🔐',
         autoDismiss: true,
-        duration: 5000
+        duration: 5000,
       };
 
     case InventoryError.WEIGHT_LIMIT_EXCEEDED:
@@ -250,7 +253,7 @@ function createInventoryErrorMessage(
               console.log('Opening weight management');
             },
             type: 'primary',
-            icon: '⚖️'
+            icon: '⚖️',
           },
           {
             label: 'Drop Items',
@@ -258,10 +261,10 @@ function createInventoryErrorMessage(
               console.log('Opening item dropping interface');
             },
             type: 'secondary',
-            icon: '📤'
-          }
+            icon: '📤',
+          },
         ],
-        icon: '⚖️'
+        icon: '⚖️',
       };
 
     default:
@@ -269,7 +272,7 @@ function createInventoryErrorMessage(
         title: 'Inventory Error',
         message: 'An inventory-related error occurred. Please try again.',
         severity: 'error',
-        icon: '❗'
+        icon: '❗',
       };
   }
 }
@@ -281,22 +284,16 @@ export function getErrorSeverity(
   errorCode: InventoryError,
   context: ErrorContext = {}
 ): 'error' | 'warning' | 'info' {
-  const criticalErrors = [
-    InventoryError.INVALID_OPERATION,
-    InventoryError.PERMISSION_DENIED
-  ];
+  const criticalErrors = [InventoryError.INVALID_OPERATION, InventoryError.PERMISSION_DENIED];
 
   const warningErrors = [
     InventoryError.INVENTORY_FULL,
     InventoryError.WEIGHT_LIMIT_EXCEEDED,
     InventoryError.CONTAINER_LOCKED,
-    InventoryError.INVALID_QUANTITY
+    InventoryError.INVALID_QUANTITY,
   ];
 
-  const infoErrors = [
-    InventoryError.STACK_SIZE_EXCEEDED,
-    InventoryError.ITEM_NOT_FOUND
-  ];
+  const infoErrors = [InventoryError.STACK_SIZE_EXCEEDED, InventoryError.ITEM_NOT_FOUND];
 
   if (criticalErrors.includes(errorCode)) return 'error';
   if (warningErrors.includes(errorCode)) return 'warning';
@@ -317,24 +314,24 @@ export function getContextualHelp(
   switch (errorCode) {
     case InventoryError.INVENTORY_FULL:
       if (playerLevel < 5) {
-        return "Tip: You can increase your inventory size by leveling up or finding bags and containers!";
+        return 'Tip: You can increase your inventory size by leveling up or finding bags and containers!';
       }
-      return "Try selling items to merchants or storing them in chests to free up space.";
+      return 'Try selling items to merchants or storing them in chests to free up space.';
 
     case InventoryError.WEIGHT_LIMIT_EXCEEDED:
       if (playerLevel < 10) {
-        return "Tip: Increase your Strength stat to carry more items, or consider using pack animals!";
+        return 'Tip: Increase your Strength stat to carry more items, or consider using pack animals!';
       }
-      return "Consider upgrading your equipment with weight reduction enchantments.";
+      return 'Consider upgrading your equipment with weight reduction enchantments.';
 
     case InventoryError.STACK_SIZE_EXCEEDED:
-      return "Some items have maximum stack sizes. Use multiple stacks or store excess in containers.";
+      return 'Some items have maximum stack sizes. Use multiple stacks or store excess in containers.';
 
     case InventoryError.PERMISSION_DENIED:
-      return "Check if you meet the level requirements or have completed necessary quests.";
+      return 'Check if you meet the level requirements or have completed necessary quests.';
 
     case InventoryError.CONTAINER_LOCKED:
-      return "Look for keys, solve puzzles, or meet unlock conditions to access locked containers.";
+      return 'Look for keys, solve puzzles, or meet unlock conditions to access locked containers.';
 
     default:
       return null;
@@ -371,7 +368,7 @@ class ErrorTracker {
         errorCode,
         frequency: 1,
         lastOccurrence: Date.now(),
-        context: [context]
+        context: [context],
       });
     }
   }
@@ -387,7 +384,7 @@ class ErrorTracker {
   }
 
   getRecentErrors(hours = 24): ErrorAnalytics[] {
-    const cutoff = Date.now() - (hours * 60 * 60 * 1000);
+    const cutoff = Date.now() - hours * 60 * 60 * 1000;
     return this.getAnalytics()
       .filter(error => error.lastOccurrence > cutoff)
       .sort((a, b) => b.lastOccurrence - a.lastOccurrence);

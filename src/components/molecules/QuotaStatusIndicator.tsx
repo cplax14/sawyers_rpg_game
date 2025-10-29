@@ -37,7 +37,7 @@ export const QuotaStatusIndicator: React.FC<QuotaStatusIndicatorProps> = ({
   compact = false,
   className = '',
   onManageClick,
-  onCleanupClick
+  onCleanupClick,
 }) => {
   const [showBreakdown, setShowBreakdown] = useState(false);
 
@@ -48,10 +48,10 @@ export const QuotaStatusIndicator: React.FC<QuotaStatusIndicatorProps> = ({
     getUsageColor,
     getUsageIcon,
     getSuggestions,
-    checkQuota
+    checkQuota,
   } = useQuotaMonitor(user, cloudStorage, {
     autoStart: true,
-    enableDebugLogging: true
+    enableDebugLogging: true,
   });
 
   const handleRefresh = async () => {
@@ -61,14 +61,16 @@ export const QuotaStatusIndicator: React.FC<QuotaStatusIndicatorProps> = ({
   if (!quotaStatus && !isMonitoring) {
     return (
       <div className={`quota-status-indicator unavailable ${className}`}>
-        <div style={{
-          padding: compact ? '8px' : '12px',
-          background: 'rgba(0, 0, 0, 0.1)',
-          borderRadius: '8px',
-          color: '#999999',
-          fontSize: compact ? '0.8rem' : '0.9rem',
-          textAlign: 'center'
-        }}>
+        <div
+          style={{
+            padding: compact ? '8px' : '12px',
+            background: 'rgba(0, 0, 0, 0.1)',
+            borderRadius: '8px',
+            color: '#999999',
+            fontSize: compact ? '0.8rem' : '0.9rem',
+            textAlign: 'center',
+          }}
+        >
           Storage monitoring unavailable
         </div>
       </div>
@@ -78,18 +80,20 @@ export const QuotaStatusIndicator: React.FC<QuotaStatusIndicatorProps> = ({
   if (!quotaStatus) {
     return (
       <div className={`quota-status-indicator loading ${className}`}>
-        <div style={{
-          padding: compact ? '8px' : '12px',
-          background: 'rgba(0, 0, 0, 0.1)',
-          borderRadius: '8px',
-          color: '#cccccc',
-          fontSize: compact ? '0.8rem' : '0.9rem',
-          textAlign: 'center',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '8px'
-        }}>
+        <div
+          style={{
+            padding: compact ? '8px' : '12px',
+            background: 'rgba(0, 0, 0, 0.1)',
+            borderRadius: '8px',
+            color: '#cccccc',
+            fontSize: compact ? '0.8rem' : '0.9rem',
+            textAlign: 'center',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+          }}
+        >
           <div>⏳</div>
           <div>Checking storage usage...</div>
         </div>
@@ -103,14 +107,14 @@ export const QuotaStatusIndicator: React.FC<QuotaStatusIndicatorProps> = ({
     borderRadius: '12px',
     border: `2px solid ${getUsageColor()}`,
     color: '#ffffff',
-    maxWidth: compact ? '300px' : '400px'
+    maxWidth: compact ? '300px' : '400px',
   };
 
   const headerStyle: React.CSSProperties = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: showDetails || showActions ? (compact ? '8px' : '12px') : '0'
+    marginBottom: showDetails || showActions ? (compact ? '8px' : '12px') : '0',
   };
 
   const titleStyle: React.CSSProperties = {
@@ -120,7 +124,7 @@ export const QuotaStatusIndicator: React.FC<QuotaStatusIndicatorProps> = ({
     margin: 0,
     display: 'flex',
     alignItems: 'center',
-    gap: '6px'
+    gap: '6px',
   };
 
   const usageBarStyle: React.CSSProperties = {
@@ -129,14 +133,14 @@ export const QuotaStatusIndicator: React.FC<QuotaStatusIndicatorProps> = ({
     background: 'rgba(0, 0, 0, 0.3)',
     borderRadius: '3px',
     overflow: 'hidden',
-    marginBottom: compact ? '6px' : '8px'
+    marginBottom: compact ? '6px' : '8px',
   };
 
   const usageFillStyle: React.CSSProperties = {
     height: '100%',
     background: `linear-gradient(90deg, ${getUsageColor()}, ${getUsageColor()}aa)`,
     borderRadius: '3px',
-    transition: 'width 0.3s ease'
+    transition: 'width 0.3s ease',
   };
 
   const suggestions = getSuggestions();
@@ -151,16 +155,9 @@ export const QuotaStatusIndicator: React.FC<QuotaStatusIndicatorProps> = ({
     >
       {/* Header */}
       <div style={headerStyle}>
-        <h4 style={titleStyle}>
-          {getUsageIcon()} Storage Usage
-        </h4>
+        <h4 style={titleStyle}>{getUsageIcon()} Storage Usage</h4>
         {!compact && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleRefresh}
-            title="Refresh storage usage"
-          >
+          <Button variant='ghost' size='sm' onClick={handleRefresh} title='Refresh storage usage'>
             🔄
           </Button>
         )}
@@ -176,36 +173,44 @@ export const QuotaStatusIndicator: React.FC<QuotaStatusIndicatorProps> = ({
       </div>
 
       {/* Usage Info */}
-      <div style={{
-        fontSize: compact ? '0.75rem' : '0.85rem',
-        color: '#cccccc',
-        marginBottom: showDetails ? (compact ? '6px' : '8px') : '0'
-      }}>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '4px'
-        }}>
+      <div
+        style={{
+          fontSize: compact ? '0.75rem' : '0.85rem',
+          color: '#cccccc',
+          marginBottom: showDetails ? (compact ? '6px' : '8px') : '0',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '4px',
+          }}
+        >
           <span>{formatBytes(quotaStatus.usedBytes)} used</span>
           <span>{quotaStatus.usagePercentage}%</span>
         </div>
-        <div style={{
-          fontSize: compact ? '0.7rem' : '0.8rem',
-          color: '#999999'
-        }}>
+        <div
+          style={{
+            fontSize: compact ? '0.7rem' : '0.8rem',
+            color: '#999999',
+          }}
+        >
           {formatBytes(quotaStatus.availableBytes)} of {formatBytes(quotaStatus.maxBytes)} available
         </div>
       </div>
 
       {/* Status Message */}
       {!compact && (
-        <div style={{
-          fontSize: '0.8rem',
-          color: getUsageColor(),
-          marginBottom: showDetails ? '12px' : '8px',
-          fontWeight: quotaStatus.status !== 'normal' ? 'bold' : 'normal'
-        }}>
+        <div
+          style={{
+            fontSize: '0.8rem',
+            color: getUsageColor(),
+            marginBottom: showDetails ? '12px' : '8px',
+            fontWeight: quotaStatus.status !== 'normal' ? 'bold' : 'normal',
+          }}
+        >
           {quotaStatus.message}
         </div>
       )}
@@ -217,8 +222,8 @@ export const QuotaStatusIndicator: React.FC<QuotaStatusIndicatorProps> = ({
           {quotaStatus.totalSaves > 0 && (
             <div style={{ marginBottom: '8px' }}>
               <Button
-                variant="ghost"
-                size="sm"
+                variant='ghost'
+                size='sm'
                 onClick={() => setShowBreakdown(!showBreakdown)}
                 style={{ fontSize: '0.8rem' }}
               >
@@ -241,66 +246,76 @@ export const QuotaStatusIndicator: React.FC<QuotaStatusIndicatorProps> = ({
                   borderRadius: '6px',
                   padding: '8px',
                   maxHeight: '150px',
-                  overflowY: 'auto'
+                  overflowY: 'auto',
                 }}
               >
                 {quotaStatus.saveBreakdown
                   .sort((a, b) => b.sizeBytes - a.sizeBytes)
                   .map((save, index) => (
-                  <div
-                    key={save.slotNumber}
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      padding: '4px 0',
-                      borderBottom: index < quotaStatus.saveBreakdown.length - 1 ?
-                        '1px solid rgba(255, 255, 255, 0.1)' : 'none',
-                      fontSize: '0.75rem'
-                    }}
-                  >
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{
-                        color: '#ffffff',
-                        fontWeight: 'bold',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap'
-                      }}>
-                        Slot {save.slotNumber}: {save.saveName}
+                    <div
+                      key={save.slotNumber}
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        padding: '4px 0',
+                        borderBottom:
+                          index < quotaStatus.saveBreakdown.length - 1
+                            ? '1px solid rgba(255, 255, 255, 0.1)'
+                            : 'none',
+                        fontSize: '0.75rem',
+                      }}
+                    >
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div
+                          style={{
+                            color: '#ffffff',
+                            fontWeight: 'bold',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          Slot {save.slotNumber}: {save.saveName}
+                        </div>
+                        <div style={{ color: '#999999' }}>
+                          {save.createdAt.toLocaleDateString()}
+                        </div>
                       </div>
-                      <div style={{ color: '#999999' }}>
-                        {save.createdAt.toLocaleDateString()}
+                      <div
+                        style={{
+                          color: '#cccccc',
+                          fontWeight: 'bold',
+                          marginLeft: '8px',
+                        }}
+                      >
+                        {formatBytes(save.sizeBytes)}
                       </div>
                     </div>
-                    <div style={{
-                      color: '#cccccc',
-                      fontWeight: 'bold',
-                      marginLeft: '8px'
-                    }}>
-                      {formatBytes(save.sizeBytes)}
-                    </div>
-                  </div>
-                ))}
+                  ))}
               </motion.div>
             )}
           </AnimatePresence>
 
           {/* Suggestions */}
           {suggestions.length > 0 && (
-            <div style={{
-              marginBottom: '12px',
-              background: 'rgba(255, 193, 7, 0.1)',
-              border: '1px solid rgba(255, 193, 7, 0.3)',
-              borderRadius: '6px',
-              padding: '8px'
-            }}>
-              <div style={{
-                color: '#ffd43b',
-                fontSize: '0.8rem',
-                fontWeight: 'bold',
-                marginBottom: '4px'
-              }}>
+            <div
+              style={{
+                marginBottom: '12px',
+                background: 'rgba(255, 193, 7, 0.1)',
+                border: '1px solid rgba(255, 193, 7, 0.3)',
+                borderRadius: '6px',
+                padding: '8px',
+              }}
+            >
+              <div
+                style={{
+                  color: '#ffd43b',
+                  fontSize: '0.8rem',
+                  fontWeight: 'bold',
+                  marginBottom: '4px',
+                }}
+              >
                 💡 Suggestions:
               </div>
               {suggestions.map((suggestion, index) => (
@@ -309,7 +324,7 @@ export const QuotaStatusIndicator: React.FC<QuotaStatusIndicatorProps> = ({
                   style={{
                     color: '#ffd43b',
                     fontSize: '0.75rem',
-                    marginBottom: index < suggestions.length - 1 ? '2px' : '0'
+                    marginBottom: index < suggestions.length - 1 ? '2px' : '0',
                   }}
                 >
                   • {suggestion}
@@ -321,54 +336,52 @@ export const QuotaStatusIndicator: React.FC<QuotaStatusIndicatorProps> = ({
       )}
 
       {/* Action Buttons */}
-      {showActions && (quotaStatus.status === 'warning' || quotaStatus.status === 'critical' || quotaStatus.status === 'exceeded') && (
-        <div style={{
-          display: 'flex',
-          gap: '8px',
-          marginTop: '8px'
-        }}>
-          {quotaStatus.status === 'exceeded' || quotaStatus.status === 'critical' ? (
-            <>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={onCleanupClick}
-                style={{
-                  background: 'linear-gradient(45deg, #ff6b6b, #ee5a52)',
-                  flex: 1
-                }}
-              >
-                Clean Up Now
+      {showActions &&
+        (quotaStatus.status === 'warning' ||
+          quotaStatus.status === 'critical' ||
+          quotaStatus.status === 'exceeded') && (
+          <div
+            style={{
+              display: 'flex',
+              gap: '8px',
+              marginTop: '8px',
+            }}
+          >
+            {quotaStatus.status === 'exceeded' || quotaStatus.status === 'critical' ? (
+              <>
+                <Button
+                  variant='primary'
+                  size='sm'
+                  onClick={onCleanupClick}
+                  style={{
+                    background: 'linear-gradient(45deg, #ff6b6b, #ee5a52)',
+                    flex: 1,
+                  }}
+                >
+                  Clean Up Now
+                </Button>
+                <Button variant='secondary' size='sm' onClick={onManageClick}>
+                  Manage
+                </Button>
+              </>
+            ) : (
+              <Button variant='secondary' size='sm' onClick={onManageClick} style={{ flex: 1 }}>
+                Manage Saves
               </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={onManageClick}
-              >
-                Manage
-              </Button>
-            </>
-          ) : (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={onManageClick}
-              style={{ flex: 1 }}
-            >
-              Manage Saves
-            </Button>
-          )}
-        </div>
-      )}
+            )}
+          </div>
+        )}
 
       {/* Last Updated */}
       {!compact && (
-        <div style={{
-          fontSize: '0.7rem',
-          color: '#777777',
-          textAlign: 'right',
-          marginTop: '8px'
-        }}>
+        <div
+          style={{
+            fontSize: '0.7rem',
+            color: '#777777',
+            textAlign: 'right',
+            marginTop: '8px',
+          }}
+        >
           Updated: {quotaStatus.lastChecked.toLocaleTimeString()}
         </div>
       )}

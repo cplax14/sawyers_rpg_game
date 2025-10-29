@@ -457,9 +457,7 @@ describe('BreedingInterface', () => {
     it('should handle missing required materials', () => {
       (breedingEngine.calculateBreedingCost as jest.Mock).mockReturnValue({
         goldAmount: 5000,
-        materials: [
-          { itemId: 'dragon_scale', quantity: 5, name: 'Dragon Scale' },
-        ],
+        materials: [{ itemId: 'dragon_scale', quantity: 5, name: 'Dragon Scale' }],
         costBreakdown: {
           baseCost: 1800,
           rarityMultiplier: 2,
@@ -492,7 +490,9 @@ describe('BreedingInterface', () => {
         capturedMonsters: [mockCreature1, mockCreature2] as EnhancedCreature[],
       });
 
-      const { rerender } = renderWithGameContext(<BreedingInterface />, { contextValue: mockContext });
+      const { rerender } = renderWithGameContext(<BreedingInterface />, {
+        contextValue: mockContext,
+      });
 
       // Cost calculation should be memoized and not recalculate on irrelevant updates
       rerender(<BreedingInterface />);

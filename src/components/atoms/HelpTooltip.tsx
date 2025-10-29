@@ -25,7 +25,7 @@ export const HelpTooltip: React.FC<HelpTooltipProps> = ({
   maxWidth = 250,
   icon = '❓',
   className,
-  style
+  style,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
 
@@ -46,18 +46,42 @@ export const HelpTooltip: React.FC<HelpTooltipProps> = ({
       position: 'absolute',
       zIndex: 1000,
       maxWidth: `${maxWidth}px`,
-      pointerEvents: 'none'
+      pointerEvents: 'none',
     };
 
     switch (position) {
       case 'top':
-        return { ...base, bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: '8px' };
+        return {
+          ...base,
+          bottom: '100%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          marginBottom: '8px',
+        };
       case 'bottom':
-        return { ...base, top: '100%', left: '50%', transform: 'translateX(-50%)', marginTop: '8px' };
+        return {
+          ...base,
+          top: '100%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          marginTop: '8px',
+        };
       case 'left':
-        return { ...base, right: '100%', top: '50%', transform: 'translateY(-50%)', marginRight: '8px' };
+        return {
+          ...base,
+          right: '100%',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          marginRight: '8px',
+        };
       case 'right':
-        return { ...base, left: '100%', top: '50%', transform: 'translateY(-50%)', marginLeft: '8px' };
+        return {
+          ...base,
+          left: '100%',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          marginLeft: '8px',
+        };
       default:
         return base;
     }
@@ -68,7 +92,7 @@ export const HelpTooltip: React.FC<HelpTooltipProps> = ({
       position: 'absolute',
       width: 0,
       height: 0,
-      border: '6px solid transparent'
+      border: '6px solid transparent',
     };
 
     switch (position) {
@@ -78,7 +102,7 @@ export const HelpTooltip: React.FC<HelpTooltipProps> = ({
           top: '100%',
           left: '50%',
           transform: 'translateX(-50%)',
-          borderTopColor: '#1f2937'
+          borderTopColor: '#1f2937',
         };
       case 'bottom':
         return {
@@ -86,7 +110,7 @@ export const HelpTooltip: React.FC<HelpTooltipProps> = ({
           bottom: '100%',
           left: '50%',
           transform: 'translateX(-50%)',
-          borderBottomColor: '#1f2937'
+          borderBottomColor: '#1f2937',
         };
       case 'left':
         return {
@@ -94,7 +118,7 @@ export const HelpTooltip: React.FC<HelpTooltipProps> = ({
           left: '100%',
           top: '50%',
           transform: 'translateY(-50%)',
-          borderLeftColor: '#1f2937'
+          borderLeftColor: '#1f2937',
         };
       case 'right':
         return {
@@ -102,26 +126,29 @@ export const HelpTooltip: React.FC<HelpTooltipProps> = ({
           right: '100%',
           top: '50%',
           transform: 'translateY(-50%)',
-          borderRightColor: '#1f2937'
+          borderRightColor: '#1f2937',
         };
       default:
         return arrowBase;
     }
   };
 
-  const triggerProps = trigger === 'hover' ? {
-    onMouseEnter: showTooltip,
-    onMouseLeave: hideTooltip
-  } : {
-    onClick: toggleTooltip
-  };
+  const triggerProps =
+    trigger === 'hover'
+      ? {
+          onMouseEnter: showTooltip,
+          onMouseLeave: hideTooltip,
+        }
+      : {
+          onClick: toggleTooltip,
+        };
 
   return (
     <div
       style={{
         position: 'relative',
         display: 'inline-block',
-        ...style
+        ...style,
       }}
       className={className}
       {...triggerProps}
@@ -139,7 +166,7 @@ export const HelpTooltip: React.FC<HelpTooltipProps> = ({
           color: 'white',
           fontSize: '10px',
           cursor: 'pointer',
-          transition: 'all 0.2s ease'
+          transition: 'all 0.2s ease',
         }}
       >
         {icon}
@@ -164,7 +191,7 @@ export const HelpTooltip: React.FC<HelpTooltipProps> = ({
                 fontSize: '12px',
                 lineHeight: '1.4',
                 boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
-                border: '1px solid #374151'
+                border: '1px solid #374151',
               }}
             >
               {title && (
@@ -172,7 +199,7 @@ export const HelpTooltip: React.FC<HelpTooltipProps> = ({
                   style={{
                     fontWeight: 'bold',
                     marginBottom: '4px',
-                    color: '#f9fafb'
+                    color: '#f9fafb',
                   }}
                 >
                   {title}

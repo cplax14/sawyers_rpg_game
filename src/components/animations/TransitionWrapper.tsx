@@ -57,52 +57,53 @@ const TransitionWrapper: React.FC<TransitionWrapperProps> = ({
   onAnimationComplete,
   onLayoutAnimationStart,
   onLayoutAnimationComplete,
-  children
+  children,
 }) => {
-  const { shouldReduceAnimations, getOptimalAnimationDuration, getOptimalAnimationQuality } = usePerformanceAwareAnimation();
+  const { shouldReduceAnimations, getOptimalAnimationDuration, getOptimalAnimationQuality } =
+    usePerformanceAwareAnimation();
 
   // Built-in transition presets
   const transitionPresets: Record<TransitionType, AnimationVariant> = {
     fade: {
       initial: { opacity: 0 },
       animate: { opacity: 1 },
-      exit: { opacity: 0 }
+      exit: { opacity: 0 },
     },
     slide: {
       initial: { x: -100, opacity: 0 },
       animate: { x: 0, opacity: 1 },
-      exit: { x: 100, opacity: 0 }
+      exit: { x: 100, opacity: 0 },
     },
     slideUp: {
       initial: { y: 100, opacity: 0 },
       animate: { y: 0, opacity: 1 },
-      exit: { y: -100, opacity: 0 }
+      exit: { y: -100, opacity: 0 },
     },
     slideDown: {
       initial: { y: -100, opacity: 0 },
       animate: { y: 0, opacity: 1 },
-      exit: { y: 100, opacity: 0 }
+      exit: { y: 100, opacity: 0 },
     },
     scale: {
       initial: { scale: 0.8, opacity: 0 },
       animate: { scale: 1, opacity: 1 },
-      exit: { scale: 0.8, opacity: 0 }
+      exit: { scale: 0.8, opacity: 0 },
     },
     scaleUp: {
       initial: { scale: 0, opacity: 0 },
       animate: { scale: 1, opacity: 1 },
-      exit: { scale: 0, opacity: 0 }
+      exit: { scale: 0, opacity: 0 },
     },
     rotate: {
       initial: { rotate: -180, opacity: 0 },
       animate: { rotate: 0, opacity: 1 },
-      exit: { rotate: 180, opacity: 0 }
+      exit: { rotate: 180, opacity: 0 },
     },
     flip: {
       initial: { rotateY: -90, opacity: 0 },
       animate: { rotateY: 0, opacity: 1 },
-      exit: { rotateY: 90, opacity: 0 }
-    }
+      exit: { rotateY: 90, opacity: 0 },
+    },
   };
 
   // Determine which animation to use
@@ -115,15 +116,18 @@ const TransitionWrapper: React.FC<TransitionWrapperProps> = ({
     const optimized = { ...animation };
 
     // Check for reduced motion preference
-    const shouldReduce = reduceMotion ?? (shouldReduceAnimations ||
-      (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches));
+    const shouldReduce =
+      reduceMotion ??
+      (shouldReduceAnimations ||
+        (typeof window !== 'undefined' &&
+          window.matchMedia('(prefers-reduced-motion: reduce)').matches));
 
     if (shouldReduce) {
       // Simplified animations for reduced motion
       return {
         initial: { opacity: 0 },
         animate: { opacity: 1 },
-        exit: { opacity: 0 }
+        exit: { opacity: 0 },
       };
     }
 
@@ -134,7 +138,7 @@ const TransitionWrapper: React.FC<TransitionWrapperProps> = ({
     const transition = {
       duration: optimizedDuration,
       delay,
-      ease: easing as any
+      ease: easing as any,
     };
 
     // Apply quality optimizations
@@ -165,15 +169,27 @@ const TransitionWrapper: React.FC<TransitionWrapperProps> = ({
     }
 
     return optimized;
-  }, [animation, enablePerformanceOptimization, reduceMotion, shouldReduceAnimations, getOptimalAnimationDuration, getOptimalAnimationQuality, duration, delay, easing]);
+  }, [
+    animation,
+    enablePerformanceOptimization,
+    reduceMotion,
+    shouldReduceAnimations,
+    getOptimalAnimationDuration,
+    getOptimalAnimationQuality,
+    duration,
+    delay,
+    easing,
+  ]);
 
   // Handle layout animations
-  const layoutProps = layout ? {
-    layout: true,
-    layoutId,
-    onLayoutAnimationStart,
-    onLayoutAnimationComplete
-  } : {};
+  const layoutProps = layout
+    ? {
+        layout: true,
+        layoutId,
+        onLayoutAnimationStart,
+        onLayoutAnimationComplete,
+      }
+    : {};
 
   const MotionDiv = motion.div;
 

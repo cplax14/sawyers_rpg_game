@@ -56,10 +56,18 @@ interface CombatAction {
   icon: string;
 }
 
-export const Combat: React.FC<CombatProps> = ({
-  className
-}) => {
-  const { state, endCombat, setCurrentScreen, addExperience: addExp, addGold: addPlayerGold, generateCombatRewards, updateStoryFlags, captureMonster, addBreedingMaterial } = useReactGame();
+export const Combat: React.FC<CombatProps> = ({ className }) => {
+  const {
+    state,
+    endCombat,
+    setCurrentScreen,
+    addExperience: addExp,
+    addGold: addPlayerGold,
+    generateCombatRewards,
+    updateStoryFlags,
+    captureMonster,
+    addBreedingMaterial,
+  } = useReactGame();
   const isMobile = useIsMobile();
 
   const player = state.player;
@@ -97,17 +105,17 @@ export const Combat: React.FC<CombatProps> = ({
       name: currentEncounter.species.replace(/_/g, ' '),
       species: currentEncounter.species,
       level: currentEncounter.level,
-      hp: Math.floor((25 + (currentEncounter.level * 8)) * hpMultiplier), // Reduced from 50 + level*10
-      maxHp: Math.floor((25 + (currentEncounter.level * 8)) * hpMultiplier),
-      mp: 15 + (currentEncounter.level * 3),
-      maxMp: 15 + (currentEncounter.level * 3),
+      hp: Math.floor((25 + currentEncounter.level * 8) * hpMultiplier), // Reduced from 50 + level*10
+      maxHp: Math.floor((25 + currentEncounter.level * 8) * hpMultiplier),
+      mp: 15 + currentEncounter.level * 3,
+      maxMp: 15 + currentEncounter.level * 3,
       baseStats: {
         attack: Math.floor((6 + currentEncounter.level * 1.5) * attackMultiplier), // Reduced from 8 + level*2
         defense: 3 + Math.floor(currentEncounter.level * 0.8), // Reduced from 5 + level
         magicAttack: Math.floor((5 + currentEncounter.level * 1.2) * attackMultiplier),
         magicDefense: 2 + Math.floor(currentEncounter.level * 0.7),
         speed: 5 + currentEncounter.level,
-        accuracy: 75 // Reduced from 85
+        accuracy: 75, // Reduced from 85
       },
       currentStats: {
         attack: Math.floor((6 + currentEncounter.level * 1.5) * attackMultiplier),
@@ -115,7 +123,7 @@ export const Combat: React.FC<CombatProps> = ({
         magicAttack: Math.floor((5 + currentEncounter.level * 1.2) * attackMultiplier),
         magicDefense: 2 + Math.floor(currentEncounter.level * 0.7),
         speed: 5 + currentEncounter.level,
-        accuracy: 75
+        accuracy: 75,
       },
       types: [currentEncounter.species.includes('fire') ? 'fire' : 'normal'],
       rarity: 'common' as const,
@@ -127,7 +135,7 @@ export const Combat: React.FC<CombatProps> = ({
       areas: [],
       evolvesTo: [],
       isWild: true,
-      friendship: 0
+      friendship: 0,
     };
   }, [currentEncounter]);
 
@@ -137,14 +145,16 @@ export const Combat: React.FC<CombatProps> = ({
     playerHp: player?.hp || 100,
     enemyHp: enemy?.hp || 50,
     playerMp: player?.mp || 50,
-    battleLog: [{
-      id: 'battle_start',
-      message: `Battle begins! ${enemy?.name || 'Wild monster'} appears!`,
-      type: 'system',
-      timestamp: Date.now()
-    }],
+    battleLog: [
+      {
+        id: 'battle_start',
+        message: `Battle begins! ${enemy?.name || 'Wild monster'} appears!`,
+        type: 'system',
+        timestamp: Date.now(),
+      },
+    ],
     isAnimating: false,
-    actionMode: 'main'
+    actionMode: 'main',
   });
 
   const [activeAnimation, setActiveAnimation] = useState<{
@@ -174,7 +184,7 @@ export const Combat: React.FC<CombatProps> = ({
         level: enemy.level,
         experience: enemy.experience,
         gold: enemy.gold,
-        name: enemy.name
+        name: enemy.name,
       };
     }
   }, [currentEncounter, enemy]);
@@ -205,15 +215,17 @@ export const Combat: React.FC<CombatProps> = ({
 
     if (!SpellData || !player || !player.spells || player.spells.length === 0) {
       // Fallback to basic spell if no spell data available
-      return [{
-        id: 'magic_bolt',
-        name: 'Magic Bolt',
-        mpCost: 8,
-        damage: (player?.baseStats.magicAttack || 10) + (player && player.level <= 3 ? 6 : 0),
-        type: 'offensive' as const,
-        element: 'arcane',
-        description: 'A magical energy attack'
-      }];
+      return [
+        {
+          id: 'magic_bolt',
+          name: 'Magic Bolt',
+          mpCost: 8,
+          damage: (player?.baseStats.magicAttack || 10) + (player && player.level <= 3 ? 6 : 0),
+          type: 'offensive' as const,
+          element: 'arcane',
+          description: 'A magical energy attack',
+        },
+      ];
     }
 
     // Map player's spell IDs to full spell objects from SpellData
@@ -235,11 +247,15 @@ export const Combat: React.FC<CombatProps> = ({
             ? spellData.power + (player.baseStats.magicAttack || 10) * 0.5
             : undefined,
           healing: spellData.effects?.find((e: any) => e.type === 'heal')?.power
-            ? spellData.effects.find((e: any) => e.type === 'heal').power + (player.baseStats.magicAttack || 10) * 0.3
+            ? spellData.effects.find((e: any) => e.type === 'heal').power +
+              (player.baseStats.magicAttack || 10) * 0.3
             : undefined,
-          type: (spellData.type === 'healing' || spellData.type === 'support') ? 'defensive' as const : 'offensive' as const,
+          type:
+            spellData.type === 'healing' || spellData.type === 'support'
+              ? ('defensive' as const)
+              : ('offensive' as const),
           element: spellData.element || 'arcane',
-          description: spellData.description
+          description: spellData.description,
         };
       })
       .filter(spell => spell !== null && spell.mpCost <= combatState.playerMp);
@@ -255,9 +271,7 @@ export const Combat: React.FC<CombatProps> = ({
 
       // Check if item has combat-useful effects
       if (item.effects) {
-        return item.effects.some(effect =>
-          ['heal', 'restore', 'buff'].includes(effect.type)
-        );
+        return item.effects.some(effect => ['heal', 'restore', 'buff'].includes(effect.type));
       }
 
       return false;
@@ -273,7 +287,7 @@ export const Combat: React.FC<CombatProps> = ({
     if (!playerEl || !enemyEl) {
       return {
         casterPosition: { x: 200, y: 400 },
-        targetPosition: { x: 600, y: 250 }
+        targetPosition: { x: 600, y: 250 },
       };
     }
 
@@ -283,34 +297,40 @@ export const Combat: React.FC<CombatProps> = ({
     return {
       casterPosition: {
         x: playerRect.left + playerRect.width / 2,
-        y: playerRect.top + playerRect.height / 2
+        y: playerRect.top + playerRect.height / 2,
       },
       targetPosition: {
         x: enemyRect.left + enemyRect.width / 2,
-        y: enemyRect.top + enemyRect.height / 2
-      }
+        y: enemyRect.top + enemyRect.height / 2,
+      },
     };
   }, []);
 
   const addBattleLog = useCallback((message: string, type: BattleLogEntry['type'] = 'action') => {
     setCombatState(prev => ({
       ...prev,
-      battleLog: [...prev.battleLog, {
-        id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, // Unique ID with timestamp and random string
-        message,
-        type,
-        timestamp: Date.now()
-      }].slice(-10) // Keep last 10 entries
+      battleLog: [
+        ...prev.battleLog,
+        {
+          id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, // Unique ID with timestamp and random string
+          message,
+          type,
+          timestamp: Date.now(),
+        },
+      ].slice(-10), // Keep last 10 entries
     }));
   }, []);
 
-  const calculateDamage = useCallback((baseDamage: number, attackerLevel: number, defenderDefense: number): number => {
-    const levelMultiplier = 1 + (attackerLevel - 1) * 0.1;
-    const defenseReduction = Math.max(0.1, 1 - (defenderDefense * 0.02));
-    const variance = 0.85 + Math.random() * 0.3; // 85% - 115% variance
+  const calculateDamage = useCallback(
+    (baseDamage: number, attackerLevel: number, defenderDefense: number): number => {
+      const levelMultiplier = 1 + (attackerLevel - 1) * 0.1;
+      const defenseReduction = Math.max(0.1, 1 - defenderDefense * 0.02);
+      const variance = 0.85 + Math.random() * 0.3; // 85% - 115% variance
 
-    return Math.max(1, Math.floor(baseDamage * levelMultiplier * defenseReduction * variance));
-  }, []);
+      return Math.max(1, Math.floor(baseDamage * levelMultiplier * defenseReduction * variance));
+    },
+    []
+  );
 
   // Execute Attack Action
   const executeAttack = useCallback(async () => {
@@ -327,16 +347,16 @@ export const Combat: React.FC<CombatProps> = ({
       const baseDamage = weaponDamage + Math.floor(Math.random() * 6) - 2; // +/- 2 variance
       const damage = calculateDamage(baseDamage, playerLevel, enemy?.currentStats.defense || 5);
 
-      const weaponName = player?.equipment?.weapon ?
-        inventory.find(item => item.id === player.equipment.weapon)?.name || 'weapon' :
-        'fists';
+      const weaponName = player?.equipment?.weapon
+        ? inventory.find(item => item.id === player.equipment.weapon)?.name || 'weapon'
+        : 'fists';
 
       addBattleLog(`You attack with ${weaponName} for ${damage} damage!`, 'action');
 
       setCombatState(prev => ({
         ...prev,
         enemyHp: Math.max(0, prev.enemyHp - damage),
-        phase: prev.enemyHp - damage <= 0 ? 'victory' : 'enemy-turn'
+        phase: prev.enemyHp - damage <= 0 ? 'victory' : 'enemy-turn',
       }));
     } else {
       addBattleLog('Your attack missed!', 'action');
@@ -345,174 +365,199 @@ export const Combat: React.FC<CombatProps> = ({
 
     await new Promise(resolve => setTimeout(resolve, 1000));
     setCombatState(prev => ({ ...prev, isAnimating: false }));
-  }, [combatState, addBattleLog, calculateDamage, playerLevel, enemy, getPlayerWeaponDamage, player, inventory]);
+  }, [
+    combatState,
+    addBattleLog,
+    calculateDamage,
+    playerLevel,
+    enemy,
+    getPlayerWeaponDamage,
+    player,
+    inventory,
+  ]);
 
   // Execute Magic Action
-  const executeMagic = useCallback(async (spell: any) => {
-    if (combatState.isAnimating || combatState.phase !== 'player-turn') return;
+  const executeMagic = useCallback(
+    async (spell: any) => {
+      if (combatState.isAnimating || combatState.phase !== 'player-turn') return;
 
-    setCombatState(prev => ({ ...prev, isAnimating: true }));
+      setCombatState(prev => ({ ...prev, isAnimating: true }));
 
-    // Check MP cost
-    if (combatState.playerMp < spell.mpCost) {
-      addBattleLog('Not enough MP!', 'system');
-      setCombatState(prev => ({ ...prev, isAnimating: false }));
-      return;
-    }
-
-    if (spell.type === 'offensive') {
-      // Calculate accuracy
-      const accuracy = 85 + (player?.baseStats.accuracy || 85) - 85;
-      const accuracyRoll = Math.random() * 100;
-
-      if (accuracyRoll <= accuracy) {
-        // Calculate damage with variance
-        const baseDamage = spell.damage + Math.floor(Math.random() * 8);
-        const normalDamage = calculateDamage(baseDamage, playerLevel, enemy?.currentStats.magicDefense || 3);
-
-        // Critical hit chance (15%)
-        const isCritical = Math.random() < 0.15;
-        const damage = isCritical ? Math.floor(normalDamage * 1.5) : normalDamage;
-
-        // Get animation positions from DOM elements
-        const positions = getAnimationPositions();
-
-        // Trigger animation with proper positions and spell ID
-        setActiveAnimation({
-          spellId: spell.id, // Use spell ID for registry lookup
-          damage,
-          isCritical,
-          element: spell.element || 'arcane',
-          casterX: positions.casterPosition.x,
-          casterY: positions.casterPosition.y,
-          targetX: positions.targetPosition.x,
-          targetY: positions.targetPosition.y
-        });
-
-        // Wait for animation AND damage number to complete
-        // Spell animation: 1150ms (to impact)
-        // Damage number: 1250ms (appear + hold + fade)
-        // Total: 2400ms + 100ms buffer = 2500ms
-        await new Promise(resolve => setTimeout(resolve, 2500));
-
-        // Add battle log AFTER animation
-        addBattleLog(
-          `You cast ${spell.name} for ${damage} magic damage!${isCritical ? ' CRITICAL HIT!' : ''}`,
-          'action'
-        );
-
-        // Apply damage and update state
-        setCombatState(prev => ({
-          ...prev,
-          enemyHp: Math.max(0, prev.enemyHp - damage),
-          playerMp: Math.max(0, prev.playerMp - spell.mpCost),
-          phase: prev.enemyHp - damage <= 0 ? 'victory' : 'enemy-turn'
-        }));
-
-        // Clear animation
-        setActiveAnimation(null);
-      } else {
-        // Spell missed - show animation with miss indicator
-        // Get animation positions from DOM elements
-        const positions = getAnimationPositions();
-
-        // Trigger animation with missed flag
-        setActiveAnimation({
-          spellId: spell.id, // Use spell ID for registry lookup
-          damage: 0,
-          isCritical: false,
-          element: spell.element || 'arcane',
-          casterX: positions.casterPosition.x,
-          casterY: positions.casterPosition.y,
-          targetX: positions.targetPosition.x,
-          targetY: positions.targetPosition.y,
-          missed: true // This triggers the miss indicator
-        });
-
-        // Wait for animation AND miss indicator to complete
-        // Spell animation: 1150ms (to impact)
-        // Miss indicator: 1200ms (appear + hold + fade)
-        // Total: 2350ms + 150ms buffer = 2500ms
-        await new Promise(resolve => setTimeout(resolve, 2500));
-
-        // Add battle log AFTER animation
-        addBattleLog(`${spell.name} missed!`, 'action');
-
-        setCombatState(prev => ({
-          ...prev,
-          playerMp: Math.max(0, prev.playerMp - spell.mpCost),
-          phase: 'enemy-turn'
-        }));
-
-        // Clear animation
-        setActiveAnimation(null);
+      // Check MP cost
+      if (combatState.playerMp < spell.mpCost) {
+        addBattleLog('Not enough MP!', 'system');
+        setCombatState(prev => ({ ...prev, isAnimating: false }));
+        return;
       }
-    } else {
-      // Defensive spells (heal, shield) - no animation changes
-      if (spell.id === 'heal') {
-        const healAmount = Math.min(spell.healing, (player?.maxHp || 100) - combatState.playerHp);
-        addBattleLog(`You cast ${spell.name} and recover ${Math.floor(healAmount)} HP!`, 'heal');
 
-        setCombatState(prev => ({
-          ...prev,
-          playerHp: Math.min(player?.maxHp || 100, prev.playerHp + healAmount),
-          playerMp: Math.max(0, prev.playerMp - spell.mpCost),
-          phase: 'enemy-turn'
-        }));
-      } else if (spell.id === 'shield') {
-        addBattleLog(`You cast ${spell.name}! Defense temporarily increased!`, 'action');
+      if (spell.type === 'offensive') {
+        // Calculate accuracy
+        const accuracy = 85 + (player?.baseStats.accuracy || 85) - 85;
+        const accuracyRoll = Math.random() * 100;
 
-        setCombatState(prev => ({
-          ...prev,
-          playerMp: Math.max(0, prev.playerMp - spell.mpCost),
-          phase: 'enemy-turn'
-        }));
-      }
-    }
+        if (accuracyRoll <= accuracy) {
+          // Calculate damage with variance
+          const baseDamage = spell.damage + Math.floor(Math.random() * 8);
+          const normalDamage = calculateDamage(
+            baseDamage,
+            playerLevel,
+            enemy?.currentStats.magicDefense || 3
+          );
 
-    await new Promise(resolve => setTimeout(resolve, 500));
-    setCombatState(prev => ({ ...prev, isAnimating: false }));
-  }, [combatState, addBattleLog, calculateDamage, playerLevel, enemy, player, getAnimationPositions]);
+          // Critical hit chance (15%)
+          const isCritical = Math.random() < 0.15;
+          const damage = isCritical ? Math.floor(normalDamage * 1.5) : normalDamage;
 
-  // Execute Item Usage
-  const executeItemUse = useCallback(async (item: any) => {
-    if (combatState.isAnimating || combatState.phase !== 'player-turn') return;
+          // Get animation positions from DOM elements
+          const positions = getAnimationPositions();
 
-    setCombatState(prev => ({ ...prev, isAnimating: true }));
+          // Trigger animation with proper positions and spell ID
+          setActiveAnimation({
+            spellId: spell.id, // Use spell ID for registry lookup
+            damage,
+            isCritical,
+            element: spell.element || 'arcane',
+            casterX: positions.casterPosition.x,
+            casterY: positions.casterPosition.y,
+            targetX: positions.targetPosition.x,
+            targetY: positions.targetPosition.y,
+          });
 
-    // TODO: Use the item through the inventory system
-    // useItem(item.id);
+          // Wait for animation AND damage number to complete
+          // Spell animation: 1150ms (to impact)
+          // Damage number: 1250ms (appear + hold + fade)
+          // Total: 2400ms + 100ms buffer = 2500ms
+          await new Promise(resolve => setTimeout(resolve, 2500));
 
-    // Apply item effects
-    if (item.effects) {
-      for (const effect of item.effects) {
-        if (effect.type === 'heal') {
-          const healAmount = Math.min(effect.value, (player?.maxHp || 100) - combatState.playerHp);
-          addBattleLog(`You used ${item.name} and recovered ${healAmount} HP!`, 'heal');
+          // Add battle log AFTER animation
+          addBattleLog(
+            `You cast ${spell.name} for ${damage} magic damage!${isCritical ? ' CRITICAL HIT!' : ''}`,
+            'action'
+          );
 
+          // Apply damage and update state
           setCombatState(prev => ({
             ...prev,
-            playerHp: Math.min(player?.maxHp || 100, prev.playerHp + healAmount)
+            enemyHp: Math.max(0, prev.enemyHp - damage),
+            playerMp: Math.max(0, prev.playerMp - spell.mpCost),
+            phase: prev.enemyHp - damage <= 0 ? 'victory' : 'enemy-turn',
           }));
-        } else if (effect.type === 'restore') {
-          const restoreAmount = Math.min(effect.value, (player?.maxMp || 50) - combatState.playerMp);
-          addBattleLog(`You used ${item.name} and recovered ${restoreAmount} MP!`, 'heal');
+
+          // Clear animation
+          setActiveAnimation(null);
+        } else {
+          // Spell missed - show animation with miss indicator
+          // Get animation positions from DOM elements
+          const positions = getAnimationPositions();
+
+          // Trigger animation with missed flag
+          setActiveAnimation({
+            spellId: spell.id, // Use spell ID for registry lookup
+            damage: 0,
+            isCritical: false,
+            element: spell.element || 'arcane',
+            casterX: positions.casterPosition.x,
+            casterY: positions.casterPosition.y,
+            targetX: positions.targetPosition.x,
+            targetY: positions.targetPosition.y,
+            missed: true, // This triggers the miss indicator
+          });
+
+          // Wait for animation AND miss indicator to complete
+          // Spell animation: 1150ms (to impact)
+          // Miss indicator: 1200ms (appear + hold + fade)
+          // Total: 2350ms + 150ms buffer = 2500ms
+          await new Promise(resolve => setTimeout(resolve, 2500));
+
+          // Add battle log AFTER animation
+          addBattleLog(`${spell.name} missed!`, 'action');
 
           setCombatState(prev => ({
             ...prev,
-            playerMp: Math.min(player?.maxMp || 50, prev.playerMp + restoreAmount)
+            playerMp: Math.max(0, prev.playerMp - spell.mpCost),
+            phase: 'enemy-turn',
+          }));
+
+          // Clear animation
+          setActiveAnimation(null);
+        }
+      } else {
+        // Defensive spells (heal, shield) - no animation changes
+        if (spell.id === 'heal') {
+          const healAmount = Math.min(spell.healing, (player?.maxHp || 100) - combatState.playerHp);
+          addBattleLog(`You cast ${spell.name} and recover ${Math.floor(healAmount)} HP!`, 'heal');
+
+          setCombatState(prev => ({
+            ...prev,
+            playerHp: Math.min(player?.maxHp || 100, prev.playerHp + healAmount),
+            playerMp: Math.max(0, prev.playerMp - spell.mpCost),
+            phase: 'enemy-turn',
+          }));
+        } else if (spell.id === 'shield') {
+          addBattleLog(`You cast ${spell.name}! Defense temporarily increased!`, 'action');
+
+          setCombatState(prev => ({
+            ...prev,
+            playerMp: Math.max(0, prev.playerMp - spell.mpCost),
+            phase: 'enemy-turn',
           }));
         }
       }
-    } else {
-      addBattleLog(`You used ${item.name}!`, 'action');
-    }
 
-    setCombatState(prev => ({ ...prev, phase: 'enemy-turn' }));
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setCombatState(prev => ({ ...prev, isAnimating: false }));
+    },
+    [combatState, addBattleLog, calculateDamage, playerLevel, enemy, player, getAnimationPositions]
+  );
 
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setCombatState(prev => ({ ...prev, isAnimating: false }));
-  }, [combatState, addBattleLog, player]);
+  // Execute Item Usage
+  const executeItemUse = useCallback(
+    async (item: any) => {
+      if (combatState.isAnimating || combatState.phase !== 'player-turn') return;
+
+      setCombatState(prev => ({ ...prev, isAnimating: true }));
+
+      // TODO: Use the item through the inventory system
+      // useItem(item.id);
+
+      // Apply item effects
+      if (item.effects) {
+        for (const effect of item.effects) {
+          if (effect.type === 'heal') {
+            const healAmount = Math.min(
+              effect.value,
+              (player?.maxHp || 100) - combatState.playerHp
+            );
+            addBattleLog(`You used ${item.name} and recovered ${healAmount} HP!`, 'heal');
+
+            setCombatState(prev => ({
+              ...prev,
+              playerHp: Math.min(player?.maxHp || 100, prev.playerHp + healAmount),
+            }));
+          } else if (effect.type === 'restore') {
+            const restoreAmount = Math.min(
+              effect.value,
+              (player?.maxMp || 50) - combatState.playerMp
+            );
+            addBattleLog(`You used ${item.name} and recovered ${restoreAmount} MP!`, 'heal');
+
+            setCombatState(prev => ({
+              ...prev,
+              playerMp: Math.min(player?.maxMp || 50, prev.playerMp + restoreAmount),
+            }));
+          }
+        }
+      } else {
+        addBattleLog(`You used ${item.name}!`, 'action');
+      }
+
+      setCombatState(prev => ({ ...prev, phase: 'enemy-turn' }));
+
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setCombatState(prev => ({ ...prev, isAnimating: false }));
+    },
+    [combatState, addBattleLog, player]
+  );
 
   // Execute Capture Action
   const executeCapture = useCallback(async () => {
@@ -522,7 +567,7 @@ export const Combat: React.FC<CombatProps> = ({
 
     // Calculate capture chance based on multiple factors
     const baseCapture = enemy?.captureRate || 30;
-    const healthFactor = (1 - (combatState.enemyHp / (enemy?.maxHp || 1))) * 40; // Up to 40% bonus for low HP
+    const healthFactor = (1 - combatState.enemyHp / (enemy?.maxHp || 1)) * 40; // Up to 40% bonus for low HP
     const levelDifference = Math.max(0, playerLevel - (enemy?.level || 1)) * 5; // 5% per level advantage
     const finalCaptureChance = Math.min(95, baseCapture + healthFactor + levelDifference);
 
@@ -584,37 +629,45 @@ export const Combat: React.FC<CombatProps> = ({
   }, [combatState, addBattleLog, enemy, playerLevel, player]);
 
   // Execute Companion Action
-  const executeCompanionAction = useCallback(async (creature: EnhancedCreature) => {
-    if (combatState.isAnimating || combatState.phase !== 'player-turn') return;
+  const executeCompanionAction = useCallback(
+    async (creature: EnhancedCreature) => {
+      if (combatState.isAnimating || combatState.phase !== 'player-turn') return;
 
-    setCombatState(prev => ({ ...prev, isAnimating: true }));
+      setCombatState(prev => ({ ...prev, isAnimating: true }));
 
-    // Calculate companion damage with creature stats
-    const companionAttack = creature.currentStats?.attack || creature.baseStats?.attack || 10;
-    const companionLevel = creature.level || 1;
-    const accuracy = 85 + (creature.currentStats?.accuracy || creature.baseStats?.accuracy || 85) - 85;
-    const accuracyRoll = Math.random() * 100;
+      // Calculate companion damage with creature stats
+      const companionAttack = creature.currentStats?.attack || creature.baseStats?.attack || 10;
+      const companionLevel = creature.level || 1;
+      const accuracy =
+        85 + (creature.currentStats?.accuracy || creature.baseStats?.accuracy || 85) - 85;
+      const accuracyRoll = Math.random() * 100;
 
-    if (accuracyRoll <= accuracy) {
-      // Calculate damage with variance
-      const baseDamage = companionAttack + Math.floor(Math.random() * 6) - 2;
-      const damage = calculateDamage(baseDamage, companionLevel, enemy?.currentStats.defense || 5);
+      if (accuracyRoll <= accuracy) {
+        // Calculate damage with variance
+        const baseDamage = companionAttack + Math.floor(Math.random() * 6) - 2;
+        const damage = calculateDamage(
+          baseDamage,
+          companionLevel,
+          enemy?.currentStats.defense || 5
+        );
 
-      addBattleLog(`${creature.name} attacks for ${damage} damage!`, 'action');
+        addBattleLog(`${creature.name} attacks for ${damage} damage!`, 'action');
 
-      setCombatState(prev => ({
-        ...prev,
-        enemyHp: Math.max(0, prev.enemyHp - damage),
-        phase: prev.enemyHp - damage <= 0 ? 'victory' : 'enemy-turn'
-      }));
-    } else {
-      addBattleLog(`${creature.name}'s attack missed!`, 'action');
-      setCombatState(prev => ({ ...prev, phase: 'enemy-turn' }));
-    }
+        setCombatState(prev => ({
+          ...prev,
+          enemyHp: Math.max(0, prev.enemyHp - damage),
+          phase: prev.enemyHp - damage <= 0 ? 'victory' : 'enemy-turn',
+        }));
+      } else {
+        addBattleLog(`${creature.name}'s attack missed!`, 'action');
+        setCombatState(prev => ({ ...prev, phase: 'enemy-turn' }));
+      }
 
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setCombatState(prev => ({ ...prev, isAnimating: false }));
-  }, [combatState, addBattleLog, calculateDamage, enemy]);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setCombatState(prev => ({ ...prev, isAnimating: false }));
+    },
+    [combatState, addBattleLog, calculateDamage, enemy]
+  );
 
   const executeEnemyTurn = useCallback(async () => {
     if (!enemy || enemyTurnExecutingRef.current) return;
@@ -659,7 +712,7 @@ export const Combat: React.FC<CombatProps> = ({
       targetX: positions.casterPosition.x, // Player is on the left
       targetY: positions.casterPosition.y,
       animationType: 'enemy-attack',
-      enemySpecies: enemy.species // Pass enemy species for animation lookup
+      enemySpecies: enemy.species, // Pass enemy species for animation lookup
     });
 
     // Wait for animation to complete (similar to spell animation timing)
@@ -681,7 +734,7 @@ export const Combat: React.FC<CombatProps> = ({
       playerHp: Math.max(0, prev.playerHp - damage),
       turn: prev.turn + 1,
       phase: prev.playerHp - damage <= 0 ? 'defeat' : 'player-turn',
-      isAnimating: false
+      isAnimating: false,
     }));
 
     // Clear animation
@@ -699,126 +752,156 @@ export const Combat: React.FC<CombatProps> = ({
   }, [combatState.phase, combatState.isAnimating, executeEnemyTurn]);
 
   // Handle battle end
-  const handleBattleEnd = useCallback((result: 'victory' | 'defeat' | 'fled' | 'captured') => {
-    if (battleEndedRef.current) {
-      return;
-    }
-
-    // Don't process if victory modal is already showing (indicates battle already ended)
-    if (state.showVictoryModal) {
-      return;
-    }
-
-    battleEndedRef.current = true;
-
-    // For victory/capture: Add 2-second delay to let damage animations and numbers finish
-    // This ensures players see the final damage before the modal appears
-    const modalDelay = (result === 'victory' || result === 'captured') ? 2000 : 0;
-
-    if (result === 'victory' || result === 'captured') {
-      // Use captured initial enemy data (prevents null reference)
-      const rewardEnemy = initialEnemyDataRef.current || (enemy ? {
-        species: enemy.species,
-        level: enemy.level,
-        experience: enemy.experience,
-        gold: enemy.gold,
-        name: enemy.name
-      } : (currentEncounter ? {
-        species: currentEncounter.species,
-        level: currentEncounter.level,
-        experience: currentEncounter.level * 12,
-        gold: currentEncounter.level * 6,
-        name: currentEncounter.species.replace(/_/g, ' ')
-      } : null));
-
-      const expGained = rewardEnemy?.experience || 0;
-      const goldGained = rewardEnemy?.gold || 0;
-
-      // Don't process if rewards would be zero (indicates stale call)
-      if (expGained === 0 && goldGained === 0 && (result === 'victory' || result === 'captured')) {
-        battleEndedRef.current = false; // Reset for valid call
+  const handleBattleEnd = useCallback(
+    (result: 'victory' | 'defeat' | 'fled' | 'captured') => {
+      if (battleEndedRef.current) {
         return;
       }
 
-      // NOTE: XP and gold are added by the END_COMBAT reducer action, not here
-      // Removed duplicate addExp/addPlayerGold calls that were causing double-counting
-      console.log('🎯 Combat: Rewards will be added by END_COMBAT reducer:', {
-        expGained,
-        goldGained,
-        playerCurrentXP: player?.experience || 0
-      });
-
-      // Generate rewards to show in battle log (use captured enemy data)
-      const combatRewards = generateCombatRewards(
-        rewardEnemy?.species || 'unknown',
-        rewardEnemy?.level || 1
-      );
-      const rewardItems = combatRewards.items;
-      const breedingMaterialsDropped = combatRewards.breedingMaterials || [];
-      let battleMessage = '';
-
-      // Special message for captures
-      if (result === 'captured') {
-        battleMessage = `🎉 Successfully captured ${enemy?.name || 'monster'}! Added to your collection. `;
+      // Don't process if victory modal is already showing (indicates battle already ended)
+      if (state.showVictoryModal) {
+        return;
       }
 
-      battleMessage += `Gained ${expGained} experience and ${goldGained} gold!`;
-      if (rewardItems.length > 0) {
-        const itemNames = rewardItems.map(item => item.name).join(', ');
-        battleMessage += ` Found: ${itemNames}`;
-      }
+      battleEndedRef.current = true;
 
-      // Add breeding materials to player inventory
-      if (breedingMaterialsDropped.length > 0 && addBreedingMaterial) {
-        breedingMaterialsDropped.forEach(material => {
-          addBreedingMaterial(material.materialId, material.quantity);
+      // For victory/capture: Add 2-second delay to let damage animations and numbers finish
+      // This ensures players see the final damage before the modal appears
+      const modalDelay = result === 'victory' || result === 'captured' ? 2000 : 0;
+
+      if (result === 'victory' || result === 'captured') {
+        // Use captured initial enemy data (prevents null reference)
+        const rewardEnemy =
+          initialEnemyDataRef.current ||
+          (enemy
+            ? {
+                species: enemy.species,
+                level: enemy.level,
+                experience: enemy.experience,
+                gold: enemy.gold,
+                name: enemy.name,
+              }
+            : currentEncounter
+              ? {
+                  species: currentEncounter.species,
+                  level: currentEncounter.level,
+                  experience: currentEncounter.level * 12,
+                  gold: currentEncounter.level * 6,
+                  name: currentEncounter.species.replace(/_/g, ' '),
+                }
+              : null);
+
+        const expGained = rewardEnemy?.experience || 0;
+        const goldGained = rewardEnemy?.gold || 0;
+
+        // Don't process if rewards would be zero (indicates stale call)
+        if (
+          expGained === 0 &&
+          goldGained === 0 &&
+          (result === 'victory' || result === 'captured')
+        ) {
+          battleEndedRef.current = false; // Reset for valid call
+          return;
+        }
+
+        // NOTE: XP and gold are added by the END_COMBAT reducer action, not here
+        // Removed duplicate addExp/addPlayerGold calls that were causing double-counting
+        console.log('🎯 Combat: Rewards will be added by END_COMBAT reducer:', {
+          expGained,
+          goldGained,
+          playerCurrentXP: player?.experience || 0,
         });
 
-        // Add to battle log message
-        const materialNames = breedingMaterialsDropped.map(m => {
-          // Try to get material name from BreedingMaterialData if available
-          const materialData = (window as any).BreedingMaterialData?.materials?.[m.materialId];
-          const materialName = materialData?.name || m.materialId.replace(/_/g, ' ');
-          return `${materialName} x${m.quantity}`;
-        }).join(', ');
-        battleMessage += ` Materials: ${materialNames}`;
+        // Generate rewards to show in battle log (use captured enemy data)
+        const combatRewards = generateCombatRewards(
+          rewardEnemy?.species || 'unknown',
+          rewardEnemy?.level || 1
+        );
+        const rewardItems = combatRewards.items;
+        const breedingMaterialsDropped = combatRewards.breedingMaterials || [];
+        let battleMessage = '';
+
+        // Special message for captures
+        if (result === 'captured') {
+          battleMessage = `🎉 Successfully captured ${enemy?.name || 'monster'}! Added to your collection. `;
+        }
+
+        battleMessage += `Gained ${expGained} experience and ${goldGained} gold!`;
+        if (rewardItems.length > 0) {
+          const itemNames = rewardItems.map(item => item.name).join(', ');
+          battleMessage += ` Found: ${itemNames}`;
+        }
+
+        // Add breeding materials to player inventory
+        if (breedingMaterialsDropped.length > 0 && addBreedingMaterial) {
+          breedingMaterialsDropped.forEach(material => {
+            addBreedingMaterial(material.materialId, material.quantity);
+          });
+
+          // Add to battle log message
+          const materialNames = breedingMaterialsDropped
+            .map(m => {
+              // Try to get material name from BreedingMaterialData if available
+              const materialData = (window as any).BreedingMaterialData?.materials?.[m.materialId];
+              const materialName = materialData?.name || m.materialId.replace(/_/g, ' ');
+              return `${materialName} x${m.quantity}`;
+            })
+            .join(', ');
+          battleMessage += ` Materials: ${materialNames}`;
+        }
+
+        addBattleLog(battleMessage, 'system');
+
+        // Set story flag for first monster encounter (unlocks Grassy Plains)
+        if (!state.storyFlags?.first_monster_encounter) {
+          updateStoryFlags({ first_monster_encounter: true });
+          console.log('🎯 Story Flag Set: first_monster_encounter (unlocks Grassy Plains)');
+        }
+
+        // End combat with proper payload to trigger victory modal
+        // Delay by 2 seconds to ensure animations and damage numbers complete
+        setTimeout(() => {
+          endCombat({
+            experience: expGained,
+            gold: goldGained,
+            items: rewardItems,
+            capturedMonsterId: result === 'captured' ? enemy?.id : undefined,
+          });
+        }, modalDelay);
+      } else {
+        // For defeat and fled - end combat without rewards (no delay needed)
+        setTimeout(() => {
+          endCombat({
+            experience: 0,
+            gold: 0,
+            items: [],
+          });
+        }, modalDelay);
       }
 
-      addBattleLog(battleMessage, 'system');
-
-      // Set story flag for first monster encounter (unlocks Grassy Plains)
-      if (!state.storyFlags?.first_monster_encounter) {
-        updateStoryFlags({ first_monster_encounter: true });
-        console.log('🎯 Story Flag Set: first_monster_encounter (unlocks Grassy Plains)');
-      }
-
-      // End combat with proper payload to trigger victory modal
-      // Delay by 2 seconds to ensure animations and damage numbers complete
-      setTimeout(() => {
-        endCombat({
-          experience: expGained,
-          gold: goldGained,
-          items: rewardItems,
-          capturedMonsterId: result === 'captured' ? enemy?.id : undefined
-        });
-      }, modalDelay);
-    } else {
-      // For defeat and fled - end combat without rewards (no delay needed)
-      setTimeout(() => {
-        endCombat({
-          experience: 0,
-          gold: 0,
-          items: []
-        });
-      }, modalDelay);
-    }
-
-    // Screen navigation is handled by ReactGameContext after victory modal
-  }, [enemy, addExp, addPlayerGold, addBattleLog, endCombat, currentEncounter, state.showVictoryModal, state.storyFlags, updateStoryFlags, captureMonster, generateCombatRewards]);
+      // Screen navigation is handled by ReactGameContext after victory modal
+    },
+    [
+      enemy,
+      addExp,
+      addPlayerGold,
+      addBattleLog,
+      endCombat,
+      currentEncounter,
+      state.showVictoryModal,
+      state.storyFlags,
+      updateStoryFlags,
+      captureMonster,
+      generateCombatRewards,
+    ]
+  );
 
   // Auto-handle battle end states
   useEffect(() => {
-    if (['victory', 'defeat', 'fled', 'captured'].includes(combatState.phase) && !battleEndedRef.current) {
+    if (
+      ['victory', 'defeat', 'fled', 'captured'].includes(combatState.phase) &&
+      !battleEndedRef.current
+    ) {
       // Add a small delay to ensure state is stable
       const timer = setTimeout(() => {
         handleBattleEnd(combatState.phase as any);
@@ -829,7 +912,8 @@ export const Combat: React.FC<CombatProps> = ({
 
   if (!enemy) {
     return (
-      <div className={`combat ${className || ''}`}
+      <div
+        className={`combat ${className || ''}`}
         style={{
           width: '100vw',
           height: '100vh',
@@ -837,12 +921,12 @@ export const Combat: React.FC<CombatProps> = ({
           alignItems: 'center',
           justifyContent: 'center',
           background: 'linear-gradient(135deg, #1a1a2e, #16213e)',
-          color: '#f4f4f4'
+          color: '#f4f4f4',
         }}
       >
         <div style={{ textAlign: 'center' }}>
           <h2>No Enemy Found</h2>
-          <Button variant="primary" onClick={() => setCurrentScreen('area')}>
+          <Button variant='primary' onClick={() => setCurrentScreen('area')}>
             Back to Area
           </Button>
         </div>
@@ -854,7 +938,6 @@ export const Combat: React.FC<CombatProps> = ({
   const enemyHpPercent = (combatState.enemyHp / enemy.maxHp) * 100;
   const playerMpPercent = (combatState.playerMp / (player?.maxMp || 50)) * 100;
 
-
   return (
     <div
       className={`combat ${className || ''}`}
@@ -865,7 +948,7 @@ export const Combat: React.FC<CombatProps> = ({
         color: '#f4f4f4',
         display: 'flex',
         flexDirection: 'column',
-        overflow: 'hidden'
+        overflow: 'hidden',
       }}
     >
       {/* Header */}
@@ -876,31 +959,40 @@ export const Combat: React.FC<CombatProps> = ({
           padding: '1rem 2rem',
           background: 'rgba(0, 0, 0, 0.3)',
           borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-          textAlign: 'center'
+          textAlign: 'center',
         }}
       >
         <h1 style={{ margin: 0, color: '#ff6b6b', fontSize: '2rem' }}>
           Battle! Turn {combatState.turn}
         </h1>
         <p style={{ margin: '0.5rem 0 0', opacity: 0.8 }}>
-          {combatState.phase === 'player-turn' ? 'Your Turn' :
-           combatState.phase === 'enemy-turn' ? 'Enemy Turn' :
-           combatState.phase === 'victory' ? 'Victory!' :
-           combatState.phase === 'defeat' ? 'Defeat!' :
-           combatState.phase === 'fled' ? 'Fled!' :
-           combatState.phase === 'captured' ? 'Captured!' : 'Battle Start'}
+          {combatState.phase === 'player-turn'
+            ? 'Your Turn'
+            : combatState.phase === 'enemy-turn'
+              ? 'Enemy Turn'
+              : combatState.phase === 'victory'
+                ? 'Victory!'
+                : combatState.phase === 'defeat'
+                  ? 'Defeat!'
+                  : combatState.phase === 'fled'
+                    ? 'Fled!'
+                    : combatState.phase === 'captured'
+                      ? 'Captured!'
+                      : 'Battle Start'}
         </p>
       </motion.div>
 
       {/* Battle Arena */}
-      <div style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: isMobile ? 'column' : 'row',
-        position: 'relative',
-        padding: '1rem',
-        gap: '1rem'
-      }}>
+      <div
+        style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: isMobile ? 'column' : 'row',
+          position: 'relative',
+          padding: '1rem',
+          gap: '1rem',
+        }}
+      >
         {/* Player Side */}
         <motion.div
           ref={playerElementRef}
@@ -915,49 +1007,60 @@ export const Combat: React.FC<CombatProps> = ({
             background: 'rgba(0, 100, 200, 0.1)',
             borderRadius: '16px',
             padding: '2rem',
-            border: '2px solid rgba(0, 150, 255, 0.3)'
+            border: '2px solid rgba(0, 150, 255, 0.3)',
           }}
         >
           <div style={{ fontSize: '6rem', marginBottom: '1rem' }}>🤺</div>
           <h2 style={{ margin: '0 0 1rem', color: '#4fc3f7' }}>{player?.name || 'Player'}</h2>
           <div style={{ width: '100%', maxWidth: '200px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+            <div
+              style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}
+            >
               <span>HP</span>
-              <span>{combatState.playerHp}/{player?.maxHp || 100}</span>
+              <span>
+                {combatState.playerHp}/{player?.maxHp || 100}
+              </span>
             </div>
-            <div style={{
-              width: '100%',
-              height: '8px',
-              background: 'rgba(255, 255, 255, 0.2)',
-              borderRadius: '4px',
-              overflow: 'hidden'
-            }}>
+            <div
+              style={{
+                width: '100%',
+                height: '8px',
+                background: 'rgba(255, 255, 255, 0.2)',
+                borderRadius: '4px',
+                overflow: 'hidden',
+              }}
+            >
               <motion.div
                 animate={{ width: `${playerHpPercent}%` }}
                 style={{
                   height: '100%',
-                  background: playerHpPercent > 50 ? '#4caf50' : playerHpPercent > 25 ? '#ff9800' : '#f44336',
-                  borderRadius: '4px'
+                  background:
+                    playerHpPercent > 50 ? '#4caf50' : playerHpPercent > 25 ? '#ff9800' : '#f44336',
+                  borderRadius: '4px',
                 }}
               />
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', margin: '0.5rem 0' }}>
               <span>MP</span>
-              <span>{combatState.playerMp}/{player?.maxMp || 50}</span>
+              <span>
+                {combatState.playerMp}/{player?.maxMp || 50}
+              </span>
             </div>
-            <div style={{
-              width: '100%',
-              height: '6px',
-              background: 'rgba(255, 255, 255, 0.2)',
-              borderRadius: '3px',
-              overflow: 'hidden'
-            }}>
+            <div
+              style={{
+                width: '100%',
+                height: '6px',
+                background: 'rgba(255, 255, 255, 0.2)',
+                borderRadius: '3px',
+                overflow: 'hidden',
+              }}
+            >
               <motion.div
                 animate={{ width: `${playerMpPercent}%` }}
                 style={{
                   height: '100%',
                   background: '#2196f3',
-                  borderRadius: '3px'
+                  borderRadius: '3px',
                 }}
               />
             </div>
@@ -965,14 +1068,16 @@ export const Combat: React.FC<CombatProps> = ({
         </motion.div>
 
         {/* VS Indicator */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: isMobile ? '2rem' : '3rem',
-          color: '#ffd700',
-          textShadow: '0 0 10px rgba(255, 215, 0, 0.5)'
-        }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: isMobile ? '2rem' : '3rem',
+            color: '#ffd700',
+            textShadow: '0 0 10px rgba(255, 215, 0, 0.5)',
+          }}
+        >
           ⚡VS⚡
         </div>
 
@@ -990,13 +1095,15 @@ export const Combat: React.FC<CombatProps> = ({
             background: 'rgba(200, 0, 50, 0.1)',
             borderRadius: '16px',
             padding: '2rem',
-            border: '2px solid rgba(255, 50, 100, 0.3)'
+            border: '2px solid rgba(255, 50, 100, 0.3)',
           }}
         >
           <motion.div
-            animate={combatState.isAnimating && combatState.phase === 'enemy-turn' ?
-              { scale: [1, 1.1, 1], rotate: [0, -5, 5, 0] } :
-              { scale: 1, rotate: 0 }}
+            animate={
+              combatState.isAnimating && combatState.phase === 'enemy-turn'
+                ? { scale: [1, 1.1, 1], rotate: [0, -5, 5, 0] }
+                : { scale: 1, rotate: 0 }
+            }
             style={{ fontSize: '6rem', marginBottom: '1rem' }}
           >
             🐺
@@ -1005,23 +1112,30 @@ export const Combat: React.FC<CombatProps> = ({
             {enemy.name} (Lv.{enemy.level})
           </h2>
           <div style={{ width: '100%', maxWidth: '200px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+            <div
+              style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}
+            >
               <span>HP</span>
-              <span>{combatState.enemyHp}/{enemy.maxHp}</span>
+              <span>
+                {combatState.enemyHp}/{enemy.maxHp}
+              </span>
             </div>
-            <div style={{
-              width: '100%',
-              height: '8px',
-              background: 'rgba(255, 255, 255, 0.2)',
-              borderRadius: '4px',
-              overflow: 'hidden'
-            }}>
+            <div
+              style={{
+                width: '100%',
+                height: '8px',
+                background: 'rgba(255, 255, 255, 0.2)',
+                borderRadius: '4px',
+                overflow: 'hidden',
+              }}
+            >
               <motion.div
                 animate={{ width: `${enemyHpPercent}%` }}
                 style={{
                   height: '100%',
-                  background: enemyHpPercent > 50 ? '#4caf50' : enemyHpPercent > 25 ? '#ff9800' : '#f44336',
-                  borderRadius: '4px'
+                  background:
+                    enemyHpPercent > 50 ? '#4caf50' : enemyHpPercent > 25 ? '#ff9800' : '#f44336',
+                  borderRadius: '4px',
                 }}
               />
             </div>
@@ -1039,22 +1153,24 @@ export const Combat: React.FC<CombatProps> = ({
             style={{
               background: 'rgba(0, 0, 0, 0.4)',
               padding: '1rem',
-              borderTop: '1px solid rgba(255, 255, 255, 0.1)'
+              borderTop: '1px solid rgba(255, 255, 255, 0.1)',
             }}
           >
             {combatState.actionMode === 'main' && (
               <>
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(6, 1fr)',
-                  gap: '0.5rem',
-                  maxWidth: '900px',
-                  margin: '0 auto'
-                }}>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(6, 1fr)',
+                    gap: '0.5rem',
+                    maxWidth: '900px',
+                    margin: '0 auto',
+                  }}
+                >
                   {/* Attack */}
                   <Button
-                    variant="danger"
-                    size="md"
+                    variant='danger'
+                    size='md'
                     disabled={combatState.isAnimating}
                     onClick={executeAttack}
                     style={{
@@ -1063,7 +1179,7 @@ export const Combat: React.FC<CombatProps> = ({
                       alignItems: 'center',
                       gap: '0.25rem',
                       padding: '0.75rem',
-                      minHeight: '80px'
+                      minHeight: '80px',
                     }}
                   >
                     <span style={{ fontSize: '1.5rem' }}>⚔️</span>
@@ -1075,8 +1191,8 @@ export const Combat: React.FC<CombatProps> = ({
 
                   {/* Magic */}
                   <Button
-                    variant="primary"
-                    size="md"
+                    variant='primary'
+                    size='md'
                     disabled={combatState.isAnimating || combatState.playerMp < 8}
                     onClick={() => setCombatState(prev => ({ ...prev, actionMode: 'magic' }))}
                     style={{
@@ -1086,7 +1202,7 @@ export const Combat: React.FC<CombatProps> = ({
                       gap: '0.25rem',
                       padding: '0.75rem',
                       minHeight: '80px',
-                      opacity: combatState.playerMp < 8 ? 0.5 : 1
+                      opacity: combatState.playerMp < 8 ? 0.5 : 1,
                     }}
                   >
                     <span style={{ fontSize: '1.5rem' }}>✨</span>
@@ -1096,8 +1212,8 @@ export const Combat: React.FC<CombatProps> = ({
 
                   {/* Items */}
                   <Button
-                    variant="primary"
-                    size="md"
+                    variant='primary'
+                    size='md'
                     disabled={combatState.isAnimating || getCombatItems().length === 0}
                     onClick={() => setCombatState(prev => ({ ...prev, actionMode: 'items' }))}
                     style={{
@@ -1107,7 +1223,7 @@ export const Combat: React.FC<CombatProps> = ({
                       gap: '0.25rem',
                       padding: '0.75rem',
                       minHeight: '80px',
-                      opacity: getCombatItems().length === 0 ? 0.5 : 1
+                      opacity: getCombatItems().length === 0 ? 0.5 : 1,
                     }}
                   >
                     <span style={{ fontSize: '1.5rem' }}>🎒</span>
@@ -1119,8 +1235,8 @@ export const Combat: React.FC<CombatProps> = ({
 
                   {/* Companions */}
                   <Button
-                    variant="primary"
-                    size="md"
+                    variant='primary'
+                    size='md'
                     disabled={combatState.isAnimating || !activeTeam || activeTeam.length === 0}
                     onClick={() => setCombatState(prev => ({ ...prev, actionMode: 'companions' }))}
                     style={{
@@ -1130,7 +1246,7 @@ export const Combat: React.FC<CombatProps> = ({
                       gap: '0.25rem',
                       padding: '0.75rem',
                       minHeight: '80px',
-                      opacity: (!activeTeam || activeTeam.length === 0) ? 0.5 : 1
+                      opacity: !activeTeam || activeTeam.length === 0 ? 0.5 : 1,
                     }}
                   >
                     <span style={{ fontSize: '1.5rem' }}>🐾</span>
@@ -1142,8 +1258,8 @@ export const Combat: React.FC<CombatProps> = ({
 
                   {/* Capture */}
                   <Button
-                    variant="success"
-                    size="md"
+                    variant='success'
+                    size='md'
                     disabled={combatState.isAnimating}
                     onClick={executeCapture}
                     style={{
@@ -1152,20 +1268,25 @@ export const Combat: React.FC<CombatProps> = ({
                       alignItems: 'center',
                       gap: '0.25rem',
                       padding: '0.75rem',
-                      minHeight: '80px'
+                      minHeight: '80px',
                     }}
                   >
                     <span style={{ fontSize: '1.5rem' }}>🎯</span>
                     <span style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Capture</span>
                     <span style={{ fontSize: '0.7rem', opacity: 0.8 }}>
-                      {Math.min(95, (enemy?.captureRate || 30) + (100 - combatState.enemyHp * 100 / (enemy?.maxHp || 1)) * 0.4)}%
+                      {Math.min(
+                        95,
+                        (enemy?.captureRate || 30) +
+                          (100 - (combatState.enemyHp * 100) / (enemy?.maxHp || 1)) * 0.4
+                      )}
+                      %
                     </span>
                   </Button>
 
                   {/* Flee */}
                   <Button
-                    variant="secondary"
-                    size="md"
+                    variant='secondary'
+                    size='md'
                     disabled={combatState.isAnimating}
                     onClick={executeFlee}
                     style={{
@@ -1174,7 +1295,7 @@ export const Combat: React.FC<CombatProps> = ({
                       alignItems: 'center',
                       gap: '0.25rem',
                       padding: '0.75rem',
-                      minHeight: '80px'
+                      minHeight: '80px',
                     }}
                   >
                     <span style={{ fontSize: '1.5rem' }}>🏃</span>
@@ -1182,12 +1303,14 @@ export const Combat: React.FC<CombatProps> = ({
                     <span style={{ fontSize: '0.7rem', opacity: 0.8 }}>Escape</span>
                   </Button>
                 </div>
-                <p style={{
-                  textAlign: 'center',
-                  margin: '0.5rem 0 0',
-                  fontSize: '0.9rem',
-                  opacity: 0.7
-                }}>
+                <p
+                  style={{
+                    textAlign: 'center',
+                    margin: '0.5rem 0 0',
+                    fontSize: '0.9rem',
+                    opacity: 0.7,
+                  }}
+                >
                   Choose your action
                 </p>
               </>
@@ -1198,25 +1321,27 @@ export const Combat: React.FC<CombatProps> = ({
               <>
                 <div style={{ marginBottom: '1rem' }}>
                   <Button
-                    variant="secondary"
-                    size="sm"
+                    variant='secondary'
+                    size='sm'
                     onClick={() => setCombatState(prev => ({ ...prev, actionMode: 'main' }))}
                   >
                     ← Back
                   </Button>
                 </div>
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
-                  gap: '0.5rem',
-                  maxWidth: '600px',
-                  margin: '0 auto'
-                }}>
-                  {getPlayerSpells().map((spell) => (
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+                    gap: '0.5rem',
+                    maxWidth: '600px',
+                    margin: '0 auto',
+                  }}
+                >
+                  {getPlayerSpells().map(spell => (
                     <Button
                       key={spell.id}
                       variant={spell.type === 'offensive' ? 'danger' : 'success'}
-                      size="md"
+                      size='md'
                       disabled={combatState.isAnimating}
                       onClick={() => {
                         executeMagic(spell);
@@ -1228,25 +1353,25 @@ export const Combat: React.FC<CombatProps> = ({
                         alignItems: 'center',
                         gap: '0.25rem',
                         padding: '0.75rem',
-                        minHeight: '80px'
+                        minHeight: '80px',
                       }}
                     >
                       <span style={{ fontSize: '1.5rem' }}>
                         {spell.type === 'offensive' ? '💥' : '💚'}
                       </span>
                       <span style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>{spell.name}</span>
-                      <span style={{ fontSize: '0.7rem', opacity: 0.8 }}>
-                        {spell.mpCost} MP
-                      </span>
+                      <span style={{ fontSize: '0.7rem', opacity: 0.8 }}>{spell.mpCost} MP</span>
                     </Button>
                   ))}
                 </div>
-                <p style={{
-                  textAlign: 'center',
-                  margin: '0.5rem 0 0',
-                  fontSize: '0.9rem',
-                  opacity: 0.7
-                }}>
+                <p
+                  style={{
+                    textAlign: 'center',
+                    margin: '0.5rem 0 0',
+                    fontSize: '0.9rem',
+                    opacity: 0.7,
+                  }}
+                >
                   Select a spell
                 </p>
               </>
@@ -1257,25 +1382,27 @@ export const Combat: React.FC<CombatProps> = ({
               <>
                 <div style={{ marginBottom: '1rem' }}>
                   <Button
-                    variant="secondary"
-                    size="sm"
+                    variant='secondary'
+                    size='sm'
                     onClick={() => setCombatState(prev => ({ ...prev, actionMode: 'main' }))}
                   >
                     ← Back
                   </Button>
                 </div>
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
-                  gap: '0.5rem',
-                  maxWidth: '600px',
-                  margin: '0 auto'
-                }}>
-                  {getCombatItems().map((item) => (
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+                    gap: '0.5rem',
+                    maxWidth: '600px',
+                    margin: '0 auto',
+                  }}
+                >
+                  {getCombatItems().map(item => (
                     <Button
                       key={item.id}
-                      variant="secondary"
-                      size="md"
+                      variant='secondary'
+                      size='md'
                       disabled={combatState.isAnimating}
                       onClick={() => {
                         executeItemUse(item);
@@ -1287,33 +1414,35 @@ export const Combat: React.FC<CombatProps> = ({
                         alignItems: 'center',
                         gap: '0.25rem',
                         padding: '0.75rem',
-                        minHeight: '80px'
+                        minHeight: '80px',
                       }}
                     >
                       <span style={{ fontSize: '1.5rem' }}>{item.icon}</span>
                       <span style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>{item.name}</span>
-                      <span style={{ fontSize: '0.7rem', opacity: 0.8 }}>
-                        x{item.quantity}
-                      </span>
+                      <span style={{ fontSize: '0.7rem', opacity: 0.8 }}>x{item.quantity}</span>
                     </Button>
                   ))}
                   {getCombatItems().length === 0 && (
-                    <div style={{
-                      gridColumn: '1 / -1',
-                      textAlign: 'center',
-                      padding: '2rem',
-                      color: 'rgba(255, 255, 255, 0.6)'
-                    }}>
+                    <div
+                      style={{
+                        gridColumn: '1 / -1',
+                        textAlign: 'center',
+                        padding: '2rem',
+                        color: 'rgba(255, 255, 255, 0.6)',
+                      }}
+                    >
                       No usable items in combat
                     </div>
                   )}
                 </div>
-                <p style={{
-                  textAlign: 'center',
-                  margin: '0.5rem 0 0',
-                  fontSize: '0.9rem',
-                  opacity: 0.7
-                }}>
+                <p
+                  style={{
+                    textAlign: 'center',
+                    margin: '0.5rem 0 0',
+                    fontSize: '0.9rem',
+                    opacity: 0.7,
+                  }}
+                >
                   Select an item to use
                 </p>
               </>
@@ -1324,25 +1453,27 @@ export const Combat: React.FC<CombatProps> = ({
               <>
                 <div style={{ marginBottom: '1rem' }}>
                   <Button
-                    variant="secondary"
-                    size="sm"
+                    variant='secondary'
+                    size='sm'
                     onClick={() => setCombatState(prev => ({ ...prev, actionMode: 'main' }))}
                   >
                     ← Back
                   </Button>
                 </div>
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
-                  gap: '0.5rem',
-                  maxWidth: '600px',
-                  margin: '0 auto'
-                }}>
-                  {activeTeam?.map((creature) => (
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+                    gap: '0.5rem',
+                    maxWidth: '600px',
+                    margin: '0 auto',
+                  }}
+                >
+                  {activeTeam?.map(creature => (
                     <Button
                       key={creature.id}
-                      variant="primary"
-                      size="md"
+                      variant='primary'
+                      size='md'
                       disabled={combatState.isAnimating}
                       onClick={() => {
                         executeCompanionAction(creature);
@@ -1354,38 +1485,47 @@ export const Combat: React.FC<CombatProps> = ({
                         alignItems: 'center',
                         gap: '0.25rem',
                         padding: '0.75rem',
-                        minHeight: '80px'
+                        minHeight: '80px',
                       }}
                     >
                       <span style={{ fontSize: '1.5rem' }}>
-                        {creature.types?.[0] === 'fire' ? '🔥' :
-                         creature.types?.[0] === 'water' ? '💧' :
-                         creature.types?.[0] === 'earth' ? '🌍' :
-                         creature.types?.[0] === 'air' ? '💨' : '⚡'}
+                        {creature.types?.[0] === 'fire'
+                          ? '🔥'
+                          : creature.types?.[0] === 'water'
+                            ? '💧'
+                            : creature.types?.[0] === 'earth'
+                              ? '🌍'
+                              : creature.types?.[0] === 'air'
+                                ? '💨'
+                                : '⚡'}
                       </span>
-                      <span style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>{creature.name}</span>
-                      <span style={{ fontSize: '0.7rem', opacity: 0.8 }}>
-                        Lv.{creature.level}
+                      <span style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>
+                        {creature.name}
                       </span>
+                      <span style={{ fontSize: '0.7rem', opacity: 0.8 }}>Lv.{creature.level}</span>
                     </Button>
                   )) || []}
                   {(!activeTeam || activeTeam.length === 0) && (
-                    <div style={{
-                      gridColumn: '1 / -1',
-                      textAlign: 'center',
-                      padding: '2rem',
-                      color: 'rgba(255, 255, 255, 0.6)'
-                    }}>
+                    <div
+                      style={{
+                        gridColumn: '1 / -1',
+                        textAlign: 'center',
+                        padding: '2rem',
+                        color: 'rgba(255, 255, 255, 0.6)',
+                      }}
+                    >
                       No companions in your active team
                     </div>
                   )}
                 </div>
-                <p style={{
-                  textAlign: 'center',
-                  margin: '0.5rem 0 0',
-                  fontSize: '0.9rem',
-                  opacity: 0.7
-                }}>
+                <p
+                  style={{
+                    textAlign: 'center',
+                    margin: '0.5rem 0 0',
+                    fontSize: '0.9rem',
+                    opacity: 0.7,
+                  }}
+                >
                   Select a companion to attack
                 </p>
               </>
@@ -1403,12 +1543,12 @@ export const Combat: React.FC<CombatProps> = ({
           padding: '1rem',
           maxHeight: '150px',
           overflowY: 'auto',
-          borderTop: '1px solid rgba(255, 255, 255, 0.1)'
+          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
         }}
       >
         <h3 style={{ margin: '0 0 0.5rem', fontSize: '1.1rem', color: '#ffd700' }}>Battle Log</h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-          {combatState.battleLog.slice(-5).map((entry) => (
+          {combatState.battleLog.slice(-5).map(entry => (
             <motion.div
               key={entry.id}
               initial={{ opacity: 0, x: -20 }}
@@ -1417,16 +1557,23 @@ export const Combat: React.FC<CombatProps> = ({
                 fontSize: '0.9rem',
                 padding: '0.25rem 0.5rem',
                 borderRadius: '4px',
-                background: entry.type === 'damage' ? 'rgba(255, 0, 0, 0.1)' :
-                           entry.type === 'heal' ? 'rgba(0, 255, 0, 0.1)' :
-                           entry.type === 'system' ? 'rgba(255, 215, 0, 0.1)' :
-                           'rgba(255, 255, 255, 0.05)',
+                background:
+                  entry.type === 'damage'
+                    ? 'rgba(255, 0, 0, 0.1)'
+                    : entry.type === 'heal'
+                      ? 'rgba(0, 255, 0, 0.1)'
+                      : entry.type === 'system'
+                        ? 'rgba(255, 215, 0, 0.1)'
+                        : 'rgba(255, 255, 255, 0.05)',
                 borderLeft: `3px solid ${
-                  entry.type === 'damage' ? '#ff4444' :
-                  entry.type === 'heal' ? '#44ff44' :
-                  entry.type === 'system' ? '#ffd700' :
-                  '#888888'
-                }`
+                  entry.type === 'damage'
+                    ? '#ff4444'
+                    : entry.type === 'heal'
+                      ? '#44ff44'
+                      : entry.type === 'system'
+                        ? '#ffd700'
+                        : '#888888'
+                }`,
               }}
             >
               {entry.message}
@@ -1437,19 +1584,21 @@ export const Combat: React.FC<CombatProps> = ({
 
       {/* Loading Overlay */}
       {combatState.isAnimating && (
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.3)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <LoadingSpinner size="large" />
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+          }}
+        >
+          <LoadingSpinner size='large' />
         </div>
       )}
 
@@ -1466,7 +1615,7 @@ export const Combat: React.FC<CombatProps> = ({
             isCritical: activeAnimation.isCritical,
             element: activeAnimation.element,
             missed: activeAnimation.missed,
-            enemySpecies: activeAnimation.enemySpecies
+            enemySpecies: activeAnimation.enemySpecies,
           }}
           animationType={activeAnimation.animationType || 'spell'}
           onComplete={() => {

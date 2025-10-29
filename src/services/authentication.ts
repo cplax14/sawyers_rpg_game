@@ -20,7 +20,7 @@ import {
   onAuthStateChanged,
   getAuth,
   Auth,
-  AuthError
+  AuthError,
 } from 'firebase/auth';
 import { retry } from '../utils/retryManager';
 import { convertFirebaseError, logCloudError, CloudError } from '../utils/cloudErrors';
@@ -84,10 +84,10 @@ export const DEFAULT_AUTH_CONFIG: AuthConfig = {
     requireUppercase: true,
     requireLowercase: true,
     requireNumbers: true,
-    requireSpecialChars: false
+    requireSpecialChars: false,
   },
   autoSignOutAfter: undefined, // Disabled by default
-  enableDebugLogging: false
+  enableDebugLogging: false,
 };
 
 // Authentication event handlers
@@ -112,10 +112,7 @@ export class AuthenticationService {
   private autoSignOutTimer: NodeJS.Timeout | null = null;
   private currentUser: User | null = null;
 
-  constructor(
-    config: Partial<AuthConfig> = {},
-    eventHandlers: AuthEventHandlers = {}
-  ) {
+  constructor(config: Partial<AuthConfig> = {}, eventHandlers: AuthEventHandlers = {}) {
     this.auth = getAuth();
     this.config = { ...DEFAULT_AUTH_CONFIG, ...config };
     this.eventHandlers = eventHandlers;
@@ -127,14 +124,17 @@ export class AuthenticationService {
    * Set up authentication state listener
    */
   private setupAuthStateListener(): void {
-    this.unsubscribeAuthState = onAuthStateChanged(this.auth, (user) => {
+    this.unsubscribeAuthState = onAuthStateChanged(this.auth, user => {
       const wasSignedIn = !!this.currentUser;
       const isSignedIn = !!user;
 
       this.currentUser = user;
 
       if (this.config.enableDebugLogging) {
-        console.log('Auth state changed:', user ? `User ${user.email} signed in` : 'User signed out');
+        console.log(
+          'Auth state changed:',
+          user ? `User ${user.email} signed in` : 'User signed out'
+        );
       }
 
       // Handle sign in
@@ -159,11 +159,7 @@ export class AuthenticationService {
   /**
    * Sign up with email and password
    */
-  async signUp(
-    email: string,
-    password: string,
-    displayName?: string
-  ): Promise<AuthResult> {
+  async signUp(email: string, password: string, displayName?: string): Promise<AuthResult> {
     const operationId = `signup_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const startTime = Date.now();
 
@@ -213,10 +209,9 @@ export class AuthenticationService {
         metadata: {
           operationId,
           timestamp: Date.now(),
-          executionTime: Date.now() - startTime
-        }
+          executionTime: Date.now() - startTime,
+        },
       };
-
     } catch (error) {
       const cloudError = convertFirebaseError(error);
       logCloudError(cloudError, 'signUp');
@@ -232,8 +227,8 @@ export class AuthenticationService {
         metadata: {
           operationId,
           timestamp: Date.now(),
-          executionTime: Date.now() - startTime
-        }
+          executionTime: Date.now() - startTime,
+        },
       };
     }
   }
@@ -273,14 +268,14 @@ export class AuthenticationService {
           error: {
             code: 'email-not-verified',
             message: 'Please verify your email address before signing in',
-            details: { email: user.email }
+            details: { email: user.email },
           },
           requiresEmailVerification: true,
           metadata: {
             operationId,
             timestamp: Date.now(),
-            executionTime: Date.now() - startTime
-          }
+            executionTime: Date.now() - startTime,
+          },
         };
       }
 
@@ -294,10 +289,9 @@ export class AuthenticationService {
         metadata: {
           operationId,
           timestamp: Date.now(),
-          executionTime: Date.now() - startTime
-        }
+          executionTime: Date.now() - startTime,
+        },
       };
-
     } catch (error) {
       const cloudError = convertFirebaseError(error);
       logCloudError(cloudError, 'signIn');
@@ -313,8 +307,8 @@ export class AuthenticationService {
         metadata: {
           operationId,
           timestamp: Date.now(),
-          executionTime: Date.now() - startTime
-        }
+          executionTime: Date.now() - startTime,
+        },
       };
     }
   }
@@ -339,10 +333,9 @@ export class AuthenticationService {
         metadata: {
           operationId,
           timestamp: Date.now(),
-          executionTime: Date.now() - startTime
-        }
+          executionTime: Date.now() - startTime,
+        },
       };
-
     } catch (error) {
       const cloudError = convertFirebaseError(error);
       logCloudError(cloudError, 'signOut');
@@ -354,8 +347,8 @@ export class AuthenticationService {
         metadata: {
           operationId,
           timestamp: Date.now(),
-          executionTime: Date.now() - startTime
-        }
+          executionTime: Date.now() - startTime,
+        },
       };
     }
   }
@@ -384,10 +377,9 @@ export class AuthenticationService {
         metadata: {
           operationId,
           timestamp: Date.now(),
-          executionTime: Date.now() - startTime
-        }
+          executionTime: Date.now() - startTime,
+        },
       };
-
     } catch (error) {
       const cloudError = convertFirebaseError(error);
       logCloudError(cloudError, 'sendPasswordReset');
@@ -399,8 +391,8 @@ export class AuthenticationService {
         metadata: {
           operationId,
           timestamp: Date.now(),
-          executionTime: Date.now() - startTime
-        }
+          executionTime: Date.now() - startTime,
+        },
       };
     }
   }
@@ -435,10 +427,9 @@ export class AuthenticationService {
         metadata: {
           operationId,
           timestamp: Date.now(),
-          executionTime: Date.now() - startTime
-        }
+          executionTime: Date.now() - startTime,
+        },
       };
-
     } catch (error) {
       const cloudError = convertFirebaseError(error);
       logCloudError(cloudError, 'resendEmailVerification');
@@ -450,8 +441,8 @@ export class AuthenticationService {
         metadata: {
           operationId,
           timestamp: Date.now(),
-          executionTime: Date.now() - startTime
-        }
+          executionTime: Date.now() - startTime,
+        },
       };
     }
   }
@@ -485,10 +476,9 @@ export class AuthenticationService {
         metadata: {
           operationId,
           timestamp: Date.now(),
-          executionTime: Date.now() - startTime
-        }
+          executionTime: Date.now() - startTime,
+        },
       };
-
     } catch (error) {
       const cloudError = convertFirebaseError(error);
       logCloudError(cloudError, 'updateUserProfile');
@@ -500,8 +490,8 @@ export class AuthenticationService {
         metadata: {
           operationId,
           timestamp: Date.now(),
-          executionTime: Date.now() - startTime
-        }
+          executionTime: Date.now() - startTime,
+        },
       };
     }
   }
@@ -509,10 +499,7 @@ export class AuthenticationService {
   /**
    * Change user password
    */
-  async changePassword(
-    currentPassword: string,
-    newPassword: string
-  ): Promise<AuthResult> {
+  async changePassword(currentPassword: string, newPassword: string): Promise<AuthResult> {
     const operationId = `changepw_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const startTime = Date.now();
 
@@ -545,10 +532,9 @@ export class AuthenticationService {
         metadata: {
           operationId,
           timestamp: Date.now(),
-          executionTime: Date.now() - startTime
-        }
+          executionTime: Date.now() - startTime,
+        },
       };
-
     } catch (error) {
       const cloudError = convertFirebaseError(error);
       logCloudError(cloudError, 'changePassword');
@@ -560,8 +546,8 @@ export class AuthenticationService {
         metadata: {
           operationId,
           timestamp: Date.now(),
-          executionTime: Date.now() - startTime
-        }
+          executionTime: Date.now() - startTime,
+        },
       };
     }
   }
@@ -569,10 +555,7 @@ export class AuthenticationService {
   /**
    * Change user email
    */
-  async changeEmail(
-    currentPassword: string,
-    newEmail: string
-  ): Promise<AuthResult> {
+  async changeEmail(currentPassword: string, newEmail: string): Promise<AuthResult> {
     const operationId = `changeemail_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const startTime = Date.now();
 
@@ -606,10 +589,9 @@ export class AuthenticationService {
         metadata: {
           operationId,
           timestamp: Date.now(),
-          executionTime: Date.now() - startTime
-        }
+          executionTime: Date.now() - startTime,
+        },
       };
-
     } catch (error) {
       const cloudError = convertFirebaseError(error);
       logCloudError(cloudError, 'changeEmail');
@@ -621,8 +603,8 @@ export class AuthenticationService {
         metadata: {
           operationId,
           timestamp: Date.now(),
-          executionTime: Date.now() - startTime
-        }
+          executionTime: Date.now() - startTime,
+        },
       };
     }
   }
@@ -657,10 +639,9 @@ export class AuthenticationService {
         metadata: {
           operationId,
           timestamp: Date.now(),
-          executionTime: Date.now() - startTime
-        }
+          executionTime: Date.now() - startTime,
+        },
       };
-
     } catch (error) {
       const cloudError = convertFirebaseError(error);
       logCloudError(cloudError, 'deleteAccount');
@@ -672,8 +653,8 @@ export class AuthenticationService {
         metadata: {
           operationId,
           timestamp: Date.now(),
-          executionTime: Date.now() - startTime
-        }
+          executionTime: Date.now() - startTime,
+        },
       };
     }
   }
@@ -699,13 +680,14 @@ export class AuthenticationService {
       emailVerified: currentUser.emailVerified,
       photoURL: currentUser.photoURL || undefined,
       createdAt: new Date(currentUser.metadata.creationTime!),
-      lastLoginAt: currentUser.metadata.lastSignInTime ?
-        new Date(currentUser.metadata.lastSignInTime) : undefined,
+      lastLoginAt: currentUser.metadata.lastSignInTime
+        ? new Date(currentUser.metadata.lastSignInTime)
+        : undefined,
       providerData: currentUser.providerData.map(provider => ({
         providerId: provider.providerId,
         email: provider.email || undefined,
-        displayName: provider.displayName || undefined
-      }))
+        displayName: provider.displayName || undefined,
+      })),
     };
   }
 
@@ -729,12 +711,15 @@ export class AuthenticationService {
   private setupAutoSignOut(): void {
     if (!this.config.autoSignOutAfter) return;
 
-    this.autoSignOutTimer = setTimeout(() => {
-      if (this.config.enableDebugLogging) {
-        console.log('Auto sign-out triggered due to inactivity');
-      }
-      this.signOut();
-    }, this.config.autoSignOutAfter * 60 * 1000);
+    this.autoSignOutTimer = setTimeout(
+      () => {
+        if (this.config.enableDebugLogging) {
+          console.log('Auto sign-out triggered due to inactivity');
+        }
+        this.signOut();
+      },
+      this.config.autoSignOutAfter * 60 * 1000
+    );
   }
 
   /**
@@ -760,7 +745,10 @@ export class AuthenticationService {
   /**
    * Validate sign up input
    */
-  private validateSignUpInput(email: string, password: string): {
+  private validateSignUpInput(
+    email: string,
+    password: string
+  ): {
     isValid: boolean;
     errors: string[];
   } {
@@ -781,7 +769,7 @@ export class AuthenticationService {
 
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -822,7 +810,7 @@ export class AuthenticationService {
 
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
     };
   }
 

@@ -57,7 +57,7 @@ export const generateChecksum = async (data: any): Promise<string> => {
       {
         severity: ErrorSeverity.HIGH,
         retryable: false,
-        debugInfo: { originalError: error }
+        debugInfo: { originalError: error },
       }
     );
   }
@@ -66,10 +66,7 @@ export const generateChecksum = async (data: any): Promise<string> => {
 /**
  * Verify data integrity using checksum comparison
  */
-export const verifyChecksum = async (
-  data: any,
-  expectedChecksum: string
-): Promise<boolean> => {
+export const verifyChecksum = async (data: any, expectedChecksum: string): Promise<boolean> => {
   try {
     const actualChecksum = await generateChecksum(data);
     return actualChecksum === expectedChecksum;
@@ -84,41 +81,30 @@ export const verifyChecksum = async (
  */
 export const DEFAULT_GAME_STATE_SCHEMA: GameStateSchema = {
   version: '1.0.0',
-  requiredFields: [
-    'player',
-    'inventory',
-    'story',
-    'gameFlags',
-    'version',
-    'timestamp'
-  ],
+  requiredFields: ['player', 'inventory', 'story', 'gameFlags', 'version', 'timestamp'],
   fieldTypes: {
-    'player': 'object',
+    player: 'object',
     'player.name': 'string',
     'player.level': 'number',
     'player.experience': 'number',
     'player.currentArea': 'string',
     'player.stats': 'object',
-    'inventory': 'object',
+    inventory: 'object',
     'inventory.items': 'array',
-    'story': 'object',
+    story: 'object',
     'story.currentChapter': 'number',
     'story.completedQuests': 'array',
-    'gameFlags': 'object',
-    'version': 'string',
-    'timestamp': 'string'
+    gameFlags: 'object',
+    version: 'string',
+    timestamp: 'string',
   },
   fieldConstraints: {
     'player.level': { min: 1, max: 999 },
     'player.experience': { min: 0, max: 999999999 },
     'story.currentChapter': { min: 0, max: 100 },
-    'inventory.items': { maxLength: 1000 }
+    'inventory.items': { maxLength: 1000 },
   },
-  deprecatedFields: [
-    'oldPlayerData',
-    'legacyFlags',
-    'tempData'
-  ]
+  deprecatedFields: ['oldPlayerData', 'legacyFlags', 'tempData'],
 };
 
 /**
@@ -147,7 +133,9 @@ export const validateGameStateStructure = (
       const value = getNestedProperty(gameState, fieldPath);
 
       if (value !== undefined && !validateFieldType(value, expectedType)) {
-        errors.push(`Invalid type for field ${fieldPath}: expected ${expectedType}, got ${typeof value}`);
+        errors.push(
+          `Invalid type for field ${fieldPath}: expected ${expectedType}, got ${typeof value}`
+        );
         corruptedFields.push(fieldPath);
       }
     }
@@ -195,16 +183,15 @@ export const validateGameStateStructure = (
       checksum: '', // Will be filled by caller
       errors,
       warnings,
-      corruptedFields: [...new Set(corruptedFields)] // Remove duplicates
+      corruptedFields: [...new Set(corruptedFields)], // Remove duplicates
     };
-
   } catch (error) {
     return {
       isValid: false,
       checksum: '',
       errors: [`Validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`],
       warnings: [],
-      corruptedFields: []
+      corruptedFields: [],
     };
   }
 };
@@ -234,7 +221,7 @@ export const validateDataIntegrity = async (
     const result: DataIntegrityResult = {
       ...structureResult,
       checksum,
-      isValid: structureResult.isValid && checksumValid
+      isValid: structureResult.isValid && checksumValid,
     };
 
     if (!checksumValid) {
@@ -247,12 +234,13 @@ export const validateDataIntegrity = async (
       const recoveryResult = attemptDataRecovery(data, result);
       if (recoveryResult.recovered) {
         result.recoveredData = recoveryResult.data;
-        result.warnings.push('Data recovery attempted - some data may have been restored from defaults');
+        result.warnings.push(
+          'Data recovery attempted - some data may have been restored from defaults'
+        );
       }
     }
 
     return result;
-
   } catch (error) {
     throw createCloudError(
       CloudErrorCode.SAVE_VALIDATION_FAILED,
@@ -260,7 +248,7 @@ export const validateDataIntegrity = async (
       {
         severity: ErrorSeverity.HIGH,
         retryable: false,
-        debugInfo: { originalError: error }
+        debugInfo: { originalError: error },
       }
     );
   }
@@ -322,7 +310,6 @@ export const attemptDataRecovery = (
     }
 
     return { recovered, data: recoveredData };
-
   } catch (error) {
     console.warn('Data recovery failed:', error);
     return { recovered: false, data: corruptedData };
@@ -343,20 +330,22 @@ const getDefaultGameStateValues = (): Record<string, any> => ({
     strength: 10,
     agility: 10,
     intelligence: 10,
-    defense: 10
+    defense: 10,
   },
   'inventory.items': [],
   'story.currentChapter': 0,
   'story.completedQuests': [],
-  'gameFlags': {},
-  'version': '1.0.0',
-  'timestamp': new Date().toISOString()
+  gameFlags: {},
+  version: '1.0.0',
+  timestamp: new Date().toISOString(),
 });
 
 /**
  * Perform deep validation of complex game state structures
  */
-const performDeepValidation = (gameState: any): {
+const performDeepValidation = (
+  gameState: any
+): {
   errors: string[];
   warnings: string[];
   corruptedFields: string[];
@@ -462,11 +451,7 @@ const validateFieldType = (value: any, expectedType: string): boolean => {
   }
 };
 
-const validateFieldConstraints = (
-  value: any,
-  constraints: any,
-  fieldPath: string
-): string[] => {
+const validateFieldConstraints = (value: any, constraints: any, fieldPath: string): string[] => {
   const errors: string[] = [];
 
   if (typeof constraints.min === 'number' && value < constraints.min) {
@@ -477,8 +462,14 @@ const validateFieldConstraints = (
     errors.push(`Field ${fieldPath} value ${value} exceeds maximum ${constraints.max}`);
   }
 
-  if (typeof constraints.maxLength === 'number' && Array.isArray(value) && value.length > constraints.maxLength) {
-    errors.push(`Field ${fieldPath} array length ${value.length} exceeds maximum ${constraints.maxLength}`);
+  if (
+    typeof constraints.maxLength === 'number' &&
+    Array.isArray(value) &&
+    value.length > constraints.maxLength
+  ) {
+    errors.push(
+      `Field ${fieldPath} array length ${value.length} exceeds maximum ${constraints.maxLength}`
+    );
   }
 
   return errors;

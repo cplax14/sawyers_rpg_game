@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Shop Data Test</title>
+</head>
+<body>
+    <h1>Shop Data Loading Test</h1>
+    <div id="output"></div>
+
+    <script src="/data/shops.js"></script>
+    <script src="/data/shop-inventory.js"></script>
+    <script src="/data/areas.js"></script>
+
+    <script>
+        const output = document.getElementById('output');
+
+        // Test 1: Check if ShopData is available
+        if (typeof window.ShopData !== 'undefined') {
+            output.innerHTML += '<p>✅ window.ShopData exists</p>';
+
+            // Count shops
+            const shopCount = Object.keys(window.ShopData).length;
+            output.innerHTML += `<p>📊 Found ${shopCount} shops</p>`;
+
+            // Check mistwood_general_store
+            if (window.ShopData.mistwood_general_store) {
+                output.innerHTML += '<p>✅ mistwood_general_store found</p>';
+                output.innerHTML += `<p>   Name: ${window.ShopData.mistwood_general_store.name}</p>`;
+                output.innerHTML += `<p>   Location: ${window.ShopData.mistwood_general_store.location}</p>`;
+            } else {
+                output.innerHTML += '<p>❌ mistwood_general_store NOT found</p>';
+            }
+        } else {
+            output.innerHTML += '<p>❌ window.ShopData NOT defined</p>';
+        }
+
+        // Test 2: Check if ShopInventoryData is available
+        if (typeof window.ShopInventoryData !== 'undefined') {
+            output.innerHTML += '<p>✅ window.ShopInventoryData exists</p>';
+            const invCount = Object.keys(window.ShopInventoryData).length;
+            output.innerHTML += `<p>📊 Found ${invCount} shop inventories</p>`;
+        } else {
+            output.innerHTML += '<p>❌ window.ShopInventoryData NOT defined</p>';
+        }
+
+        // Test 3: Check starting_village shopIds
+        if (typeof window.AreaData !== 'undefined' && window.AreaData.areas) {
+            const startVillage = window.AreaData.areas.starting_village;
+            if (startVillage) {
+                output.innerHTML += '<p>✅ starting_village found</p>';
+                if (startVillage.shopIds) {
+                    output.innerHTML += '<p>   shopIds: ' + JSON.stringify(startVillage.shopIds) + '</p>';
+                } else {
+                    output.innerHTML += '<p>❌ starting_village has no shopIds</p>';
+                }
+            }
+        }
+    </script>
+</body>
+</html>

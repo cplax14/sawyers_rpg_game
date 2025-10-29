@@ -136,7 +136,7 @@ export enum SaveSyncStatus {
   /** Sync failed */
   SYNC_FAILED = 'sync_failed',
   /** Conflict requires user resolution */
-  CONFLICT = 'conflict'
+  CONFLICT = 'conflict',
 }
 
 export interface SaveOperationOptions {

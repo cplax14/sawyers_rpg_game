@@ -65,11 +65,7 @@ describe('BreedingResultModal', () => {
 
     it('should display success celebration', () => {
       renderWithGameContext(
-        <BreedingResultModal
-          isOpen={true}
-          onClose={mockOnClose}
-          result={successResult}
-        />
+        <BreedingResultModal isOpen={true} onClose={mockOnClose} result={successResult} />
       );
 
       expect(screen.getByText('Breeding Successful!')).toBeInTheDocument();
@@ -78,11 +74,7 @@ describe('BreedingResultModal', () => {
 
     it('should display offspring creature card', () => {
       renderWithGameContext(
-        <BreedingResultModal
-          isOpen={true}
-          onClose={mockOnClose}
-          result={successResult}
-        />
+        <BreedingResultModal isOpen={true} onClose={mockOnClose} result={successResult} />
       );
 
       expect(screen.getByText('Your New Creature')).toBeInTheDocument();
@@ -91,11 +83,7 @@ describe('BreedingResultModal', () => {
 
     it('should display offspring stats', () => {
       renderWithGameContext(
-        <BreedingResultModal
-          isOpen={true}
-          onClose={mockOnClose}
-          result={successResult}
-        />
+        <BreedingResultModal isOpen={true} onClose={mockOnClose} result={successResult} />
       );
 
       expect(screen.getByText('Stats Summary')).toBeInTheDocument();
@@ -106,11 +94,7 @@ describe('BreedingResultModal', () => {
 
     it('should display inherited abilities', () => {
       renderWithGameContext(
-        <BreedingResultModal
-          isOpen={true}
-          onClose={mockOnClose}
-          result={successResult}
-        />
+        <BreedingResultModal isOpen={true} onClose={mockOnClose} result={successResult} />
       );
 
       expect(screen.getByText('Inherited Abilities')).toBeInTheDocument();
@@ -119,11 +103,7 @@ describe('BreedingResultModal', () => {
 
     it('should display success messages', () => {
       renderWithGameContext(
-        <BreedingResultModal
-          isOpen={true}
-          onClose={mockOnClose}
-          result={successResult}
-        />
+        <BreedingResultModal isOpen={true} onClose={mockOnClose} result={successResult} />
       );
 
       expect(screen.getByText('Breeding successful!')).toBeInTheDocument();
@@ -132,11 +112,7 @@ describe('BreedingResultModal', () => {
 
     it('should not display rarity upgrade banner when not upgraded', () => {
       renderWithGameContext(
-        <BreedingResultModal
-          isOpen={true}
-          onClose={mockOnClose}
-          result={successResult}
-        />
+        <BreedingResultModal isOpen={true} onClose={mockOnClose} result={successResult} />
       );
 
       expect(screen.queryByText(/rarity upgraded/i)).not.toBeInTheDocument();
@@ -144,11 +120,7 @@ describe('BreedingResultModal', () => {
 
     it('should animate celebration icon', () => {
       renderWithGameContext(
-        <BreedingResultModal
-          isOpen={true}
-          onClose={mockOnClose}
-          result={successResult}
-        />
+        <BreedingResultModal isOpen={true} onClose={mockOnClose} result={successResult} />
       );
 
       const celebrationIcon = screen.getByText('🎉');
@@ -173,11 +145,7 @@ describe('BreedingResultModal', () => {
 
     it('should display rarity upgrade banner', () => {
       renderWithGameContext(
-        <BreedingResultModal
-          isOpen={true}
-          onClose={mockOnClose}
-          result={upgradedResult}
-        />
+        <BreedingResultModal isOpen={true} onClose={mockOnClose} result={upgradedResult} />
       );
 
       expect(screen.getByText(/rarity upgraded to rare/i)).toBeInTheDocument();
@@ -185,11 +153,7 @@ describe('BreedingResultModal', () => {
 
     it('should display legendary offspring title when upgraded', () => {
       renderWithGameContext(
-        <BreedingResultModal
-          isOpen={true}
-          onClose={mockOnClose}
-          result={upgradedResult}
-        />
+        <BreedingResultModal isOpen={true} onClose={mockOnClose} result={upgradedResult} />
       );
 
       expect(screen.getByText(/legendary offspring/i)).toBeInTheDocument();
@@ -197,11 +161,7 @@ describe('BreedingResultModal', () => {
 
     it('should animate upgrade banner', () => {
       renderWithGameContext(
-        <BreedingResultModal
-          isOpen={true}
-          onClose={mockOnClose}
-          result={upgradedResult}
-        />
+        <BreedingResultModal isOpen={true} onClose={mockOnClose} result={upgradedResult} />
       );
 
       const banner = screen.getByText(/rarity upgraded to rare/i);
@@ -227,11 +187,7 @@ describe('BreedingResultModal', () => {
 
     it('should display failure message', () => {
       renderWithGameContext(
-        <BreedingResultModal
-          isOpen={true}
-          onClose={mockOnClose}
-          result={failedResult}
-        />
+        <BreedingResultModal isOpen={true} onClose={mockOnClose} result={failedResult} />
       );
 
       expect(screen.getByText('Breeding Failed')).toBeInTheDocument();
@@ -240,11 +196,7 @@ describe('BreedingResultModal', () => {
 
     it('should display error message', () => {
       renderWithGameContext(
-        <BreedingResultModal
-          isOpen={true}
-          onClose={mockOnClose}
-          result={failedResult}
-        />
+        <BreedingResultModal isOpen={true} onClose={mockOnClose} result={failedResult} />
       );
 
       expect(screen.getByText('Insufficient gold for breeding')).toBeInTheDocument();
@@ -265,11 +217,7 @@ describe('BreedingResultModal', () => {
 
     it('should not show offspring details on failure', () => {
       renderWithGameContext(
-        <BreedingResultModal
-          isOpen={true}
-          onClose={mockOnClose}
-          result={failedResult}
-        />
+        <BreedingResultModal isOpen={true} onClose={mockOnClose} result={failedResult} />
       );
 
       expect(screen.queryByText('Your New Creature')).not.toBeInTheDocument();
@@ -280,11 +228,7 @@ describe('BreedingResultModal', () => {
       const noErrorResult = { ...failedResult, error: undefined };
 
       renderWithGameContext(
-        <BreedingResultModal
-          isOpen={true}
-          onClose={mockOnClose}
-          result={noErrorResult}
-        />
+        <BreedingResultModal isOpen={true} onClose={mockOnClose} result={noErrorResult} />
       );
 
       expect(screen.getByText(/an unknown error occurred/i)).toBeInTheDocument();
@@ -305,11 +249,7 @@ describe('BreedingResultModal', () => {
 
     it('should display name input field', () => {
       renderWithGameContext(
-        <BreedingResultModal
-          isOpen={true}
-          onClose={mockOnClose}
-          result={successResult}
-        />
+        <BreedingResultModal isOpen={true} onClose={mockOnClose} result={successResult} />
       );
 
       expect(screen.getByPlaceholderText('Enter custom name...')).toBeInTheDocument();
@@ -317,11 +257,7 @@ describe('BreedingResultModal', () => {
 
     it('should pre-fill with offspring name', () => {
       renderWithGameContext(
-        <BreedingResultModal
-          isOpen={true}
-          onClose={mockOnClose}
-          result={successResult}
-        />
+        <BreedingResultModal isOpen={true} onClose={mockOnClose} result={successResult} />
       );
 
       const input = screen.getByPlaceholderText('Enter custom name...') as HTMLInputElement;
@@ -331,11 +267,7 @@ describe('BreedingResultModal', () => {
     it('should update name on input change', async () => {
       const user = userEvent.setup();
       renderWithGameContext(
-        <BreedingResultModal
-          isOpen={true}
-          onClose={mockOnClose}
-          result={successResult}
-        />
+        <BreedingResultModal isOpen={true} onClose={mockOnClose} result={successResult} />
       );
 
       const input = screen.getByPlaceholderText('Enter custom name...') as HTMLInputElement;
@@ -350,11 +282,7 @@ describe('BreedingResultModal', () => {
       const mockContext = createMockGameContext();
 
       renderWithGameContext(
-        <BreedingResultModal
-          isOpen={true}
-          onClose={mockOnClose}
-          result={successResult}
-        />,
+        <BreedingResultModal isOpen={true} onClose={mockOnClose} result={successResult} />,
         { contextValue: mockContext }
       );
 
@@ -373,11 +301,7 @@ describe('BreedingResultModal', () => {
       const mockContext = createMockGameContext();
 
       renderWithGameContext(
-        <BreedingResultModal
-          isOpen={true}
-          onClose={mockOnClose}
-          result={successResult}
-        />,
+        <BreedingResultModal isOpen={true} onClose={mockOnClose} result={successResult} />,
         { contextValue: mockContext }
       );
 
@@ -395,11 +319,7 @@ describe('BreedingResultModal', () => {
       const mockContext = createMockGameContext();
 
       renderWithGameContext(
-        <BreedingResultModal
-          isOpen={true}
-          onClose={mockOnClose}
-          result={successResult}
-        />,
+        <BreedingResultModal isOpen={true} onClose={mockOnClose} result={successResult} />,
         { contextValue: mockContext }
       );
 
@@ -425,11 +345,7 @@ describe('BreedingResultModal', () => {
 
     it('should display Close button', () => {
       renderWithGameContext(
-        <BreedingResultModal
-          isOpen={true}
-          onClose={mockOnClose}
-          result={successResult}
-        />
+        <BreedingResultModal isOpen={true} onClose={mockOnClose} result={successResult} />
       );
 
       expect(screen.getByRole('button', { name: /close/i })).toBeInTheDocument();
@@ -438,11 +354,7 @@ describe('BreedingResultModal', () => {
     it('should call onClose when Close button clicked', async () => {
       const user = userEvent.setup();
       renderWithGameContext(
-        <BreedingResultModal
-          isOpen={true}
-          onClose={mockOnClose}
-          result={successResult}
-        />
+        <BreedingResultModal isOpen={true} onClose={mockOnClose} result={successResult} />
       );
 
       const closeButton = screen.getByRole('button', { name: /close/i });
@@ -513,11 +425,7 @@ describe('BreedingResultModal', () => {
 
     it('should not display action buttons when not provided', () => {
       renderWithGameContext(
-        <BreedingResultModal
-          isOpen={true}
-          onClose={mockOnClose}
-          result={successResult}
-        />
+        <BreedingResultModal isOpen={true} onClose={mockOnClose} result={successResult} />
       );
 
       expect(screen.queryByRole('button', { name: /breed again/i })).not.toBeInTheDocument();
@@ -539,11 +447,7 @@ describe('BreedingResultModal', () => {
 
     it('should not render when isOpen is false', () => {
       renderWithGameContext(
-        <BreedingResultModal
-          isOpen={false}
-          onClose={mockOnClose}
-          result={successResult}
-        />
+        <BreedingResultModal isOpen={false} onClose={mockOnClose} result={successResult} />
       );
 
       expect(screen.queryByText('Breeding Successful!')).not.toBeInTheDocument();
@@ -551,11 +455,7 @@ describe('BreedingResultModal', () => {
 
     it('should render when isOpen is true', () => {
       renderWithGameContext(
-        <BreedingResultModal
-          isOpen={true}
-          onClose={mockOnClose}
-          result={successResult}
-        />
+        <BreedingResultModal isOpen={true} onClose={mockOnClose} result={successResult} />
       );
 
       expect(screen.getByText('Breeding Successful!')).toBeInTheDocument();
@@ -576,11 +476,7 @@ describe('BreedingResultModal', () => {
 
     it('should animate celebration section', () => {
       renderWithGameContext(
-        <BreedingResultModal
-          isOpen={true}
-          onClose={mockOnClose}
-          result={successResult}
-        />
+        <BreedingResultModal isOpen={true} onClose={mockOnClose} result={successResult} />
       );
 
       expect(screen.getByText('🎉')).toBeInTheDocument();
@@ -588,11 +484,7 @@ describe('BreedingResultModal', () => {
 
     it('should stagger ability animations', async () => {
       renderWithGameContext(
-        <BreedingResultModal
-          isOpen={true}
-          onClose={mockOnClose}
-          result={successResult}
-        />
+        <BreedingResultModal isOpen={true} onClose={mockOnClose} result={successResult} />
       );
 
       await waitFor(() => {
@@ -603,11 +495,7 @@ describe('BreedingResultModal', () => {
 
     it('should stagger message animations', async () => {
       renderWithGameContext(
-        <BreedingResultModal
-          isOpen={true}
-          onClose={mockOnClose}
-          result={successResult}
-        />
+        <BreedingResultModal isOpen={true} onClose={mockOnClose} result={successResult} />
       );
 
       await waitFor(() => {
@@ -630,11 +518,7 @@ describe('BreedingResultModal', () => {
       };
 
       renderWithGameContext(
-        <BreedingResultModal
-          isOpen={true}
-          onClose={mockOnClose}
-          result={noAbilitiesResult}
-        />
+        <BreedingResultModal isOpen={true} onClose={mockOnClose} result={noAbilitiesResult} />
       );
 
       expect(screen.queryByText('Inherited Abilities')).not.toBeInTheDocument();
@@ -653,11 +537,7 @@ describe('BreedingResultModal', () => {
       };
 
       renderWithGameContext(
-        <BreedingResultModal
-          isOpen={true}
-          onClose={mockOnClose}
-          result={noMessagesResult}
-        />
+        <BreedingResultModal isOpen={true} onClose={mockOnClose} result={noMessagesResult} />
       );
 
       // Should still render successfully
@@ -677,11 +557,7 @@ describe('BreedingResultModal', () => {
       };
 
       renderWithGameContext(
-        <BreedingResultModal
-          isOpen={true}
-          onClose={mockOnClose}
-          result={maxGenResult}
-        />
+        <BreedingResultModal isOpen={true} onClose={mockOnClose} result={maxGenResult} />
       );
 
       expect(screen.getByText('Gen 5')).toBeInTheDocument();
@@ -702,11 +578,7 @@ describe('BreedingResultModal', () => {
 
     it('should have proper modal title', () => {
       renderWithGameContext(
-        <BreedingResultModal
-          isOpen={true}
-          onClose={mockOnClose}
-          result={successResult}
-        />
+        <BreedingResultModal isOpen={true} onClose={mockOnClose} result={successResult} />
       );
 
       expect(screen.getByText('Breeding Successful!')).toBeInTheDocument();
@@ -714,11 +586,7 @@ describe('BreedingResultModal', () => {
 
     it('should have accessible name input', () => {
       renderWithGameContext(
-        <BreedingResultModal
-          isOpen={true}
-          onClose={mockOnClose}
-          result={successResult}
-        />
+        <BreedingResultModal isOpen={true} onClose={mockOnClose} result={successResult} />
       );
 
       const input = screen.getByPlaceholderText('Enter custom name...');

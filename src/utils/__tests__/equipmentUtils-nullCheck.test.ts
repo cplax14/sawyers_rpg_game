@@ -18,17 +18,11 @@ describe('checkEquipmentCompatibility - null/undefined handling', () => {
     magicAttack: 10,
     magicDefense: 10,
     speed: 10,
-    accuracy: 85
+    accuracy: 85,
   };
 
   it('should handle null item gracefully', () => {
-    const result = checkEquipmentCompatibility(
-      null,
-      'weapon',
-      5,
-      'warrior',
-      mockPlayerStats
-    );
+    const result = checkEquipmentCompatibility(null, 'weapon', 5, 'warrior', mockPlayerStats);
 
     expect(result).toBeDefined();
     expect(result.canEquip).toBe(false);
@@ -38,13 +32,7 @@ describe('checkEquipmentCompatibility - null/undefined handling', () => {
   });
 
   it('should handle undefined item gracefully', () => {
-    const result = checkEquipmentCompatibility(
-      undefined,
-      'weapon',
-      5,
-      'warrior',
-      mockPlayerStats
-    );
+    const result = checkEquipmentCompatibility(undefined, 'weapon', 5, 'warrior', mockPlayerStats);
 
     expect(result).toBeDefined();
     expect(result.canEquip).toBe(false);
@@ -63,7 +51,7 @@ describe('checkEquipmentCompatibility - null/undefined handling', () => {
       rarity: 'common' as const,
       value: 100,
       equipmentSlot: 'weapon' as const,
-      statModifiers: {}
+      statModifiers: {},
     };
 
     const result = checkEquipmentCompatibility(
@@ -91,7 +79,7 @@ describe('checkEquipmentCompatibility - null/undefined handling', () => {
       rarity: 'common' as const,
       value: 100,
       equipmentSlot: 'weapon' as const,
-      statModifiers: {}
+      statModifiers: {},
     };
 
     const result = checkEquipmentCompatibility(
@@ -119,16 +107,10 @@ describe('checkEquipmentCompatibility - null/undefined handling', () => {
       rarity: 'common' as const,
       value: 100,
       equipmentSlot: null as any,
-      statModifiers: {}
+      statModifiers: {},
     };
 
-    const result = checkEquipmentCompatibility(
-      mockItem,
-      'weapon',
-      5,
-      'warrior',
-      mockPlayerStats
-    );
+    const result = checkEquipmentCompatibility(mockItem, 'weapon', 5, 'warrior', mockPlayerStats);
 
     expect(result).toBeDefined();
     // Should return early with slot mismatch since itemSlot is falsy
@@ -145,17 +127,11 @@ describe('checkEquipmentCompatibility - null/undefined handling', () => {
       rarity: 'common' as const,
       value: 100,
       // equipmentSlot is undefined
-      statModifiers: {}
+      statModifiers: {},
     } as any;
 
     expect(() => {
-      checkEquipmentCompatibility(
-        mockItem,
-        'weapon',
-        5,
-        'warrior',
-        mockPlayerStats
-      );
+      checkEquipmentCompatibility(mockItem, 'weapon', 5, 'warrior', mockPlayerStats);
     }).not.toThrow();
   });
 
@@ -170,17 +146,11 @@ describe('checkEquipmentCompatibility - null/undefined handling', () => {
       value: 100,
       equipmentSlot: 'weapon' as const,
       statModifiers: {
-        attack: { value: 5, type: 'flat' as const }
-      }
+        attack: { value: 5, type: 'flat' as const },
+      },
     };
 
-    const result = checkEquipmentCompatibility(
-      mockItem,
-      'weapon',
-      5,
-      'warrior',
-      mockPlayerStats
-    );
+    const result = checkEquipmentCompatibility(mockItem, 'weapon', 5, 'warrior', mockPlayerStats);
 
     expect(result).toBeDefined();
     expect(result.canEquip).toBe(true);
@@ -193,7 +163,7 @@ describe('checkEquipmentCompatibility - null/undefined handling', () => {
     const result = checkEquipmentCompatibility(
       null,
       'armor', // Valid slot
-      10,      // Valid level
+      10, // Valid level
       'warrior', // Valid class
       mockPlayerStats
     );

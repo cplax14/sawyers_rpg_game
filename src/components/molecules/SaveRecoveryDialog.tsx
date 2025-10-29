@@ -24,7 +24,7 @@ export const SaveRecoveryDialog: React.FC<SaveRecoveryDialogProps> = ({
   isOpen,
   onClose,
   onRecoveryComplete,
-  className = ''
+  className = '',
 }) => {
   const {
     recoveryInfo,
@@ -34,7 +34,7 @@ export const SaveRecoveryDialog: React.FC<SaveRecoveryDialogProps> = ({
     getOperationStats,
     formatOperationDuration,
     getOperationStatusColor,
-    getOperationStatusText
+    getOperationStatusText,
   } = useSaveRecovery();
 
   const { isMobile } = useResponsive();
@@ -43,24 +43,27 @@ export const SaveRecoveryDialog: React.FC<SaveRecoveryDialogProps> = ({
   const [retryingOperations, setRetryingOperations] = useState<Set<string>>(new Set());
   const [showDetails, setShowDetails] = useState(false);
 
-  const handleRetryOperation = useCallback(async (operation: SaveOperation) => {
-    setRetryingOperations(prev => new Set([...prev, operation.id]));
+  const handleRetryOperation = useCallback(
+    async (operation: SaveOperation) => {
+      setRetryingOperations(prev => new Set([...prev, operation.id]));
 
-    try {
-      const result = await retryOperation(operation.id);
-      if (result) {
-        console.log('Retried operation:', result.id);
+      try {
+        const result = await retryOperation(operation.id);
+        if (result) {
+          console.log('Retried operation:', result.id);
+        }
+      } catch (error) {
+        console.error('Failed to retry operation:', error);
+      } finally {
+        setRetryingOperations(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(operation.id);
+          return newSet;
+        });
       }
-    } catch (error) {
-      console.error('Failed to retry operation:', error);
-    } finally {
-      setRetryingOperations(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(operation.id);
-        return newSet;
-      });
-    }
-  }, [retryOperation]);
+    },
+    [retryOperation]
+  );
 
   const handleRetryAll = useCallback(async () => {
     const retriableOps = recoveryInfo.interruptedOperations.filter(
@@ -101,7 +104,7 @@ export const SaveRecoveryDialog: React.FC<SaveRecoveryDialogProps> = ({
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 1000,
-    padding: isMobile ? '16px' : '20px'
+    padding: isMobile ? '16px' : '20px',
   };
 
   const dialogStyle: React.CSSProperties = {
@@ -112,25 +115,25 @@ export const SaveRecoveryDialog: React.FC<SaveRecoveryDialogProps> = ({
     maxWidth: isMobile ? '100%' : '600px',
     maxHeight: '80vh',
     overflowY: 'auto',
-    width: '100%'
+    width: '100%',
   };
 
   const headerStyle: React.CSSProperties = {
     display: 'flex',
     alignItems: 'center',
     gap: '12px',
-    marginBottom: '16px'
+    marginBottom: '16px',
   };
 
   const titleStyle: React.CSSProperties = {
     color: '#ff6b6b',
     fontSize: isMobile ? '1.2rem' : '1.4rem',
     fontWeight: 'bold',
-    margin: 0
+    margin: 0,
   };
 
   const contentStyle: React.CSSProperties = {
-    marginBottom: '20px'
+    marginBottom: '20px',
   };
 
   const operationStyle: React.CSSProperties = {
@@ -138,14 +141,14 @@ export const SaveRecoveryDialog: React.FC<SaveRecoveryDialogProps> = ({
     borderRadius: '8px',
     padding: '12px',
     marginBottom: '8px',
-    border: '1px solid rgba(255, 255, 255, 0.1)'
+    border: '1px solid rgba(255, 255, 255, 0.1)',
   };
 
   const actionsStyle: React.CSSProperties = {
     display: 'flex',
     gap: '12px',
     justifyContent: 'flex-end',
-    flexWrap: isMobile ? 'wrap' : 'nowrap'
+    flexWrap: isMobile ? 'wrap' : 'nowrap',
   };
 
   const statsStyle: React.CSSProperties = {
@@ -154,7 +157,7 @@ export const SaveRecoveryDialog: React.FC<SaveRecoveryDialogProps> = ({
     padding: '10px',
     marginBottom: '16px',
     fontSize: '0.85rem',
-    color: '#cccccc'
+    color: '#cccccc',
   };
 
   return (
@@ -186,30 +189,28 @@ export const SaveRecoveryDialog: React.FC<SaveRecoveryDialogProps> = ({
               {recoveryInfo.recommendedAction === 'retry'
                 ? 'We recommend retrying these operations.'
                 : recoveryInfo.recommendedAction === 'recover'
-                ? 'We recommend recovering from your last known good save.'
-                : 'Please choose how to proceed.'
-              }
+                  ? 'We recommend recovering from your last known good save.'
+                  : 'Please choose how to proceed.'}
             </p>
 
             {/* Statistics */}
             <div style={statsStyle}>
-              <strong>Save Statistics:</strong> {stats.completed} completed, {stats.failed} failed, {stats.interrupted} interrupted
-              {stats.total > 0 && (
-                <span> • Success Rate: {stats.successRate.toFixed(1)}%</span>
-              )}
+              <strong>Save Statistics:</strong> {stats.completed} completed, {stats.failed} failed,{' '}
+              {stats.interrupted} interrupted
+              {stats.total > 0 && <span> • Success Rate: {stats.successRate.toFixed(1)}%</span>}
             </div>
 
             {/* Operations List */}
             <div style={{ marginBottom: '16px' }}>
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '8px'
-              }}>
-                <h4 style={{ color: '#d4af37', margin: 0 }}>
-                  Interrupted Operations:
-                </h4>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '8px',
+                }}
+              >
+                <h4 style={{ color: '#d4af37', margin: 0 }}>Interrupted Operations:</h4>
                 <button
                   onClick={() => setShowDetails(!showDetails)}
                   style={{
@@ -217,80 +218,93 @@ export const SaveRecoveryDialog: React.FC<SaveRecoveryDialogProps> = ({
                     border: 'none',
                     color: '#4ecdc4',
                     cursor: 'pointer',
-                    fontSize: '0.8rem'
+                    fontSize: '0.8rem',
                   }}
                 >
                   {showDetails ? 'Hide Details' : 'Show Details'}
                 </button>
               </div>
 
-              {recoveryInfo.interruptedOperations.slice(0, showDetails ? undefined : 3).map((operation) => (
-                <div key={operation.id} style={operationStyle}>
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-start',
-                    gap: '12px'
-                  }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{
-                        color: '#ffffff',
-                        fontWeight: '500',
-                        marginBottom: '4px'
-                      }}>
-                        {operation.saveName} (Slot {operation.slotNumber + 1})
-                      </div>
-
-                      <div style={{
-                        fontSize: '0.8rem',
-                        color: '#cccccc',
+              {recoveryInfo.interruptedOperations
+                .slice(0, showDetails ? undefined : 3)
+                .map(operation => (
+                  <div key={operation.id} style={operationStyle}>
+                    <div
+                      style={{
                         display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
                         gap: '12px',
-                        flexWrap: 'wrap'
-                      }}>
-                        <span>
-                          Status: <span style={{ color: getOperationStatusColor(operation.status) }}>
-                            {getOperationStatusText(operation.status)}
+                      }}
+                    >
+                      <div style={{ flex: 1 }}>
+                        <div
+                          style={{
+                            color: '#ffffff',
+                            fontWeight: '500',
+                            marginBottom: '4px',
+                          }}
+                        >
+                          {operation.saveName} (Slot {operation.slotNumber + 1})
+                        </div>
+
+                        <div
+                          style={{
+                            fontSize: '0.8rem',
+                            color: '#cccccc',
+                            display: 'flex',
+                            gap: '12px',
+                            flexWrap: 'wrap',
+                          }}
+                        >
+                          <span>
+                            Status:{' '}
+                            <span style={{ color: getOperationStatusColor(operation.status) }}>
+                              {getOperationStatusText(operation.status)}
+                            </span>
                           </span>
-                        </span>
-                        <span>Duration: {formatOperationDuration(operation)}</span>
-                        <span>Retries: {operation.retryCount}/3</span>
+                          <span>Duration: {formatOperationDuration(operation)}</span>
+                          <span>Retries: {operation.retryCount}/3</span>
+                        </div>
+
+                        {operation.lastError && showDetails && (
+                          <div
+                            style={{
+                              fontSize: '0.75rem',
+                              color: '#ff9999',
+                              marginTop: '4px',
+                              fontStyle: 'italic',
+                            }}
+                          >
+                            Error: {operation.lastError}
+                          </div>
+                        )}
                       </div>
 
-                      {operation.lastError && showDetails && (
-                        <div style={{
-                          fontSize: '0.75rem',
-                          color: '#ff9999',
-                          marginTop: '4px',
-                          fontStyle: 'italic'
-                        }}>
-                          Error: {operation.lastError}
-                        </div>
+                      {operation.retryCount < 3 && (
+                        <Button
+                          size='sm'
+                          variant='secondary'
+                          onClick={() => handleRetryOperation(operation)}
+                          disabled={retryingOperations.has(operation.id)}
+                          style={{ minWidth: '60px' }}
+                        >
+                          {retryingOperations.has(operation.id) ? '...' : 'Retry'}
+                        </Button>
                       )}
                     </div>
-
-                    {operation.retryCount < 3 && (
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => handleRetryOperation(operation)}
-                        disabled={retryingOperations.has(operation.id)}
-                        style={{ minWidth: '60px' }}
-                      >
-                        {retryingOperations.has(operation.id) ? '...' : 'Retry'}
-                      </Button>
-                    )}
                   </div>
-                </div>
-              ))}
+                ))}
 
               {!showDetails && recoveryInfo.interruptedOperations.length > 3 && (
-                <div style={{
-                  textAlign: 'center',
-                  color: '#999999',
-                  fontSize: '0.85rem',
-                  fontStyle: 'italic'
-                }}>
+                <div
+                  style={{
+                    textAlign: 'center',
+                    color: '#999999',
+                    fontSize: '0.85rem',
+                    fontStyle: 'italic',
+                  }}
+                >
                   +{recoveryInfo.interruptedOperations.length - 3} more operations
                 </div>
               )}
@@ -298,17 +312,19 @@ export const SaveRecoveryDialog: React.FC<SaveRecoveryDialogProps> = ({
 
             {/* Last Known Good Save */}
             {recoveryInfo.lastKnownGoodSave && (
-              <div style={{
-                background: 'rgba(81, 207, 102, 0.1)',
-                borderRadius: '6px',
-                padding: '10px',
-                marginBottom: '16px'
-              }}>
+              <div
+                style={{
+                  background: 'rgba(81, 207, 102, 0.1)',
+                  borderRadius: '6px',
+                  padding: '10px',
+                  marginBottom: '16px',
+                }}
+              >
                 <div style={{ color: '#51cf66', fontWeight: '500', marginBottom: '4px' }}>
                   ✅ Last Known Good Save:
                 </div>
                 <div style={{ fontSize: '0.85rem', color: '#cccccc' }}>
-                  {recoveryInfo.lastKnownGoodSave.saveName} • {' '}
+                  {recoveryInfo.lastKnownGoodSave.saveName} •{' '}
                   {new Date(recoveryInfo.lastKnownGoodSave.timestamp).toLocaleString()}
                 </div>
               </div>
@@ -316,25 +332,17 @@ export const SaveRecoveryDialog: React.FC<SaveRecoveryDialogProps> = ({
           </div>
 
           <div style={actionsStyle}>
-            <Button
-              variant="ghost"
-              onClick={handleDismiss}
-              disabled={isCheckingRecovery}
-            >
+            <Button variant='ghost' onClick={handleDismiss} disabled={isCheckingRecovery}>
               Dismiss
             </Button>
 
-            <Button
-              variant="secondary"
-              onClick={handleClearAll}
-              disabled={isCheckingRecovery}
-            >
+            <Button variant='secondary' onClick={handleClearAll} disabled={isCheckingRecovery}>
               Clear All
             </Button>
 
             {recoveryInfo.recommendedAction === 'retry' && (
               <Button
-                variant="primary"
+                variant='primary'
                 onClick={handleRetryAll}
                 disabled={isCheckingRecovery || retryingOperations.size > 0}
               >

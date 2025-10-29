@@ -215,6 +215,7 @@ export interface Area {
   monsters: string[];
   connections: string[];
   services: string[];
+  shopIds?: string[];
   unlocked: boolean;
   position: { x: number; y: number };
 }

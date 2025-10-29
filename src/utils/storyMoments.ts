@@ -21,7 +21,7 @@ export const STORY_MOMENTS: Record<string, StoryMoment> = {
     flag: 'tutorial_in_progress',
     description: 'Tutorial is in progress',
     priority: 'medium',
-    pauseAutoSave: true
+    pauseAutoSave: true,
   },
 
   // Dialogue and story
@@ -29,19 +29,19 @@ export const STORY_MOMENTS: Record<string, StoryMoment> = {
     flag: 'dialogue_active',
     description: 'Character dialogue is active',
     priority: 'high',
-    pauseAutoSave: true
+    pauseAutoSave: true,
   },
   cutscene_playing: {
     flag: 'cutscene_playing',
     description: 'Cutscene is playing',
     priority: 'high',
-    pauseAutoSave: true
+    pauseAutoSave: true,
   },
   story_choice_pending: {
     flag: 'story_choice_pending',
     description: 'Player must make a story choice',
     priority: 'critical',
-    pauseAutoSave: true
+    pauseAutoSave: true,
   },
 
   // Combat and encounters
@@ -49,13 +49,13 @@ export const STORY_MOMENTS: Record<string, StoryMoment> = {
     flag: 'boss_encounter_intro',
     description: 'Boss encounter introduction',
     priority: 'high',
-    pauseAutoSave: true
+    pauseAutoSave: true,
   },
   monster_capture_attempt: {
     flag: 'monster_capture_attempt',
     description: 'Monster capture in progress',
     priority: 'medium',
-    pauseAutoSave: false // Allow saving during capture attempts
+    pauseAutoSave: false, // Allow saving during capture attempts
   },
 
   // Special events
@@ -63,13 +63,13 @@ export const STORY_MOMENTS: Record<string, StoryMoment> = {
     flag: 'ending_sequence',
     description: 'Game ending sequence',
     priority: 'critical',
-    pauseAutoSave: true
+    pauseAutoSave: true,
   },
   special_event_active: {
     flag: 'special_event_active',
     description: 'Special event is active',
     priority: 'high',
-    pauseAutoSave: true
+    pauseAutoSave: true,
   },
 
   // Shop and trading
@@ -77,7 +77,7 @@ export const STORY_MOMENTS: Record<string, StoryMoment> = {
     flag: 'shop_transaction_active',
     description: 'Shop transaction in progress',
     priority: 'low',
-    pauseAutoSave: false
+    pauseAutoSave: false,
   },
 
   // Area transitions
@@ -85,8 +85,8 @@ export const STORY_MOMENTS: Record<string, StoryMoment> = {
     flag: 'area_transition_in_progress',
     description: 'Area transition in progress',
     priority: 'medium',
-    pauseAutoSave: true
-  }
+    pauseAutoSave: true,
+  },
 };
 
 /**
@@ -110,7 +110,9 @@ export const hasActiveStoryMoments = (storyFlags: Record<string, boolean>): Stor
 /**
  * Get the highest priority story moment that should pause auto-save
  */
-export const getHighestPriorityStoryMoment = (storyFlags: Record<string, boolean>): StoryMoment | null => {
+export const getHighestPriorityStoryMoment = (
+  storyFlags: Record<string, boolean>
+): StoryMoment | null => {
   const activeMoments = hasActiveStoryMoments(storyFlags);
   return activeMoments.length > 0 ? activeMoments[0] : null;
 };
@@ -203,7 +205,9 @@ export class StoryMomentManager {
 /**
  * Create a story moment manager instance
  */
-export const createStoryMomentManager = (updateStoryFlags: (flags: Record<string, boolean>) => void): StoryMomentManager => {
+export const createStoryMomentManager = (
+  updateStoryFlags: (flags: Record<string, boolean>) => void
+): StoryMomentManager => {
   return new StoryMomentManager(updateStoryFlags);
 };
 
@@ -230,5 +234,5 @@ export const STORY_SEQUENCES = {
   AREA_TRANSITION_END: ['area_transition_in_progress'],
 
   ENDING_START: ['ending_sequence', 'cutscene_playing'],
-  ENDING_END: ['ending_sequence', 'cutscene_playing']
+  ENDING_END: ['ending_sequence', 'cutscene_playing'],
 };

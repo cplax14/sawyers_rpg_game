@@ -36,7 +36,7 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
   isSelected = false,
   isLoading = false,
   className = '',
-  disableCardClick = false
+  disableCardClick = false,
 }) => {
   const [showActions, setShowActions] = useState(false);
   const { isMobile, isTablet } = useResponsive();
@@ -52,7 +52,7 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
           background: 'rgba(76, 175, 80, 0.1)',
           border: 'rgba(76, 175, 80, 0.3)',
           text: 'Synced',
-          tooltip: 'Save is synchronized with cloud storage'
+          tooltip: 'Save is synchronized with cloud storage',
         };
       case SaveSyncStatus.LOCAL_ONLY:
         return {
@@ -61,7 +61,7 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
           background: 'rgba(33, 150, 243, 0.1)',
           border: 'rgba(33, 150, 243, 0.3)',
           text: 'Local Only',
-          tooltip: 'Save exists only on this device'
+          tooltip: 'Save exists only on this device',
         };
       case SaveSyncStatus.CLOUD_ONLY:
         return {
@@ -70,7 +70,7 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
           background: 'rgba(156, 39, 176, 0.1)',
           border: 'rgba(156, 39, 176, 0.3)',
           text: 'Cloud Only',
-          tooltip: 'Save exists only in cloud storage'
+          tooltip: 'Save exists only in cloud storage',
         };
       case SaveSyncStatus.LOCAL_NEWER:
         return {
@@ -79,7 +79,7 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
           background: 'rgba(255, 152, 0, 0.1)',
           border: 'rgba(255, 152, 0, 0.3)',
           text: 'Local Newer',
-          tooltip: 'Local version is newer than cloud'
+          tooltip: 'Local version is newer than cloud',
         };
       case SaveSyncStatus.CLOUD_NEWER:
         return {
@@ -88,7 +88,7 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
           background: 'rgba(96, 125, 139, 0.1)',
           border: 'rgba(96, 125, 139, 0.3)',
           text: 'Cloud Newer',
-          tooltip: 'Cloud version is newer than local'
+          tooltip: 'Cloud version is newer than local',
         };
       case SaveSyncStatus.SYNCING:
         return {
@@ -97,7 +97,7 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
           background: 'rgba(33, 150, 243, 0.1)',
           border: 'rgba(33, 150, 243, 0.3)',
           text: 'Syncing...',
-          tooltip: 'Synchronization in progress'
+          tooltip: 'Synchronization in progress',
         };
       case SaveSyncStatus.SYNC_FAILED:
         return {
@@ -106,7 +106,7 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
           background: 'rgba(244, 67, 54, 0.1)',
           border: 'rgba(244, 67, 54, 0.3)',
           text: 'Sync Failed',
-          tooltip: 'Synchronization failed - click to retry'
+          tooltip: 'Synchronization failed - click to retry',
         };
       case SaveSyncStatus.CONFLICT:
         return {
@@ -115,7 +115,7 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
           background: 'rgba(255, 87, 34, 0.1)',
           border: 'rgba(255, 87, 34, 0.3)',
           text: 'Conflict',
-          tooltip: 'Sync conflict detected - click to resolve'
+          tooltip: 'Sync conflict detected - click to resolve',
         };
       default:
         return {
@@ -124,7 +124,7 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
           background: 'rgba(158, 158, 158, 0.1)',
           border: 'rgba(158, 158, 158, 0.3)',
           text: 'Unknown',
-          tooltip: 'Unknown sync status'
+          tooltip: 'Unknown sync status',
         };
     }
   }, []);
@@ -145,7 +145,7 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     }).format(date);
   }, []);
 
@@ -157,15 +157,15 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
   // Memoize computed values
   const isEmpty = useMemo(() => !slotInfo.metadata, [slotInfo.metadata]);
   const formattedDate = useMemo(
-    () => slotInfo.metadata ? formatDate(new Date(slotInfo.metadata.lastModified)) : '',
+    () => (slotInfo.metadata ? formatDate(new Date(slotInfo.metadata.lastModified)) : ''),
     [slotInfo.metadata, formatDate]
   );
   const formattedFileSize = useMemo(
-    () => slotInfo.metadata ? formatFileSize(slotInfo.metadata.fileSizeBytes) : '',
+    () => (slotInfo.metadata ? formatFileSize(slotInfo.metadata.fileSizeBytes) : ''),
     [slotInfo.metadata, formatFileSize]
   );
   const formattedPlayTime = useMemo(
-    () => slotInfo.metadata ? formatPlayTime(slotInfo.metadata.totalPlayTime) : '',
+    () => (slotInfo.metadata ? formatPlayTime(slotInfo.metadata.totalPlayTime) : ''),
     [slotInfo.metadata, formatPlayTime]
   );
   const cloudSyncConfig = useMemo(
@@ -191,43 +191,46 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
       : '0 4px 16px rgba(0, 0, 0, 0.3)',
     opacity: isLoading ? 0.7 : 1,
     overflow: 'hidden',
-    transform: isSelected ? 'scale(1.02)' : 'scale(1)'
+    transform: isSelected ? 'scale(1.02)' : 'scale(1)',
   };
 
   const headerStyle: React.CSSProperties = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '8px'
+    marginBottom: '8px',
   };
 
   const slotNumberStyle: React.CSSProperties = {
     fontSize: isMobile ? '0.9rem' : '1rem',
     fontWeight: 'bold',
-    color: '#d4af37'
+    color: '#d4af37',
   };
 
   // Cloud sync indicator click handler
-  const handleCloudSyncClick = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    switch (slotInfo.syncStatus) {
-      case SaveSyncStatus.SYNC_FAILED:
-        onCloudSync?.();
-        break;
-      case SaveSyncStatus.CONFLICT:
-        onConflictResolve?.();
-        break;
-      case SaveSyncStatus.CLOUD_NEWER:
-        onCloudRestore?.();
-        break;
-      case SaveSyncStatus.LOCAL_NEWER:
-        onCloudSync?.();
-        break;
-      default:
-        // For other states, show more details or status
-        break;
-    }
-  }, [slotInfo.syncStatus, onCloudSync, onCloudRestore, onConflictResolve]);
+  const handleCloudSyncClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      switch (slotInfo.syncStatus) {
+        case SaveSyncStatus.SYNC_FAILED:
+          onCloudSync?.();
+          break;
+        case SaveSyncStatus.CONFLICT:
+          onConflictResolve?.();
+          break;
+        case SaveSyncStatus.CLOUD_NEWER:
+          onCloudRestore?.();
+          break;
+        case SaveSyncStatus.LOCAL_NEWER:
+          onCloudSync?.();
+          break;
+        default:
+          // For other states, show more details or status
+          break;
+      }
+    },
+    [slotInfo.syncStatus, onCloudSync, onCloudRestore, onConflictResolve]
+  );
 
   return (
     <motion.div
@@ -235,21 +238,37 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
       style={cardStyle}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={!slotInfo.isEmpty ? {
-        scale: 1.02,
-        boxShadow: '0 8px 32px rgba(212, 175, 55, 0.4)'
-      } : {}}
+      whileHover={
+        !slotInfo.isEmpty
+          ? {
+              scale: 1.02,
+              boxShadow: '0 8px 32px rgba(212, 175, 55, 0.4)',
+            }
+          : {}
+      }
       whileTap={!slotInfo.isEmpty ? { scale: 0.98 } : {}}
       transition={animationConfig}
-      onClick={disableCardClick ? undefined : () => {
-        console.log('💾 SaveSlotCard clicked:', { slotNumber: slotInfo.slotNumber, isEmpty: slotInfo.isEmpty, hasOnLoad: !!onLoad, disableCardClick });
-        if (!slotInfo.isEmpty && onLoad) {
-          console.log('🔥 Calling onLoad for slot:', slotInfo.slotNumber);
-          onLoad();
-        } else {
-          console.log('⚠️ Click blocked:', { isEmpty: slotInfo.isEmpty, hasOnLoad: !!onLoad });
-        }
-      }}
+      onClick={
+        disableCardClick
+          ? undefined
+          : () => {
+              console.log('💾 SaveSlotCard clicked:', {
+                slotNumber: slotInfo.slotNumber,
+                isEmpty: slotInfo.isEmpty,
+                hasOnLoad: !!onLoad,
+                disableCardClick,
+              });
+              if (!slotInfo.isEmpty && onLoad) {
+                console.log('🔥 Calling onLoad for slot:', slotInfo.slotNumber);
+                onLoad();
+              } else {
+                console.log('⚠️ Click blocked:', {
+                  isEmpty: slotInfo.isEmpty,
+                  hasOnLoad: !!onLoad,
+                });
+              }
+            }
+      }
       onMouseEnter={() => !isMobile && setShowActions(true)}
       onMouseLeave={() => !isMobile && setShowActions(false)}
     >
@@ -268,15 +287,13 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
               alignItems: 'center',
               justifyContent: 'center',
               borderRadius: '12px',
-              zIndex: 10
+              zIndex: 10,
             }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <div style={{ color: '#d4af37', fontSize: '1rem' }}>
-              Loading...
-            </div>
+            <div style={{ color: '#d4af37', fontSize: '1rem' }}>Loading...</div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -300,7 +317,7 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
               fontSize: '1.2rem',
               fontWeight: 'bold',
               boxShadow: '0 4px 12px rgba(212, 175, 55, 0.5)',
-              zIndex: 5
+              zIndex: 5,
             }}
             initial={{ scale: 0, rotate: -180 }}
             animate={{ scale: 1, rotate: 0 }}
@@ -327,16 +344,32 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
                 borderRadius: '6px',
                 border: `1px solid ${cloudSyncConfig.border}`,
                 background: cloudSyncConfig.background,
-                cursor: [SaveSyncStatus.SYNC_FAILED, SaveSyncStatus.CONFLICT, SaveSyncStatus.LOCAL_NEWER, SaveSyncStatus.CLOUD_NEWER].includes(slotInfo.syncStatus) ? 'pointer' : 'default',
+                cursor: [
+                  SaveSyncStatus.SYNC_FAILED,
+                  SaveSyncStatus.CONFLICT,
+                  SaveSyncStatus.LOCAL_NEWER,
+                  SaveSyncStatus.CLOUD_NEWER,
+                ].includes(slotInfo.syncStatus)
+                  ? 'pointer'
+                  : 'default',
                 fontSize: '0.75rem',
                 fontWeight: '500',
                 color: cloudSyncConfig.color,
-                transition: 'all 0.2s ease'
+                transition: 'all 0.2s ease',
               }}
-              whileHover={[SaveSyncStatus.SYNC_FAILED, SaveSyncStatus.CONFLICT, SaveSyncStatus.LOCAL_NEWER, SaveSyncStatus.CLOUD_NEWER].includes(slotInfo.syncStatus) ? {
-                scale: 1.05,
-                background: cloudSyncConfig.color + '20'
-              } : {}}
+              whileHover={
+                [
+                  SaveSyncStatus.SYNC_FAILED,
+                  SaveSyncStatus.CONFLICT,
+                  SaveSyncStatus.LOCAL_NEWER,
+                  SaveSyncStatus.CLOUD_NEWER,
+                ].includes(slotInfo.syncStatus)
+                  ? {
+                      scale: 1.05,
+                      background: cloudSyncConfig.color + '20',
+                    }
+                  : {}
+              }
               onClick={handleCloudSyncClick}
               title={cloudSyncConfig.tooltip}
             >
@@ -345,7 +378,7 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
               {slotInfo.syncStatus === SaveSyncStatus.SYNCING && (
                 <motion.div
                   animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                   style={{ display: 'inline-block' }}
                 >
                   🔄
@@ -362,7 +395,7 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
                     height: '6px',
                     borderRadius: '50%',
                     background: '#4caf50',
-                    title: 'Available locally'
+                    title: 'Available locally',
                   }}
                 />
               )}
@@ -373,7 +406,7 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
                     height: '6px',
                     borderRadius: '50%',
                     background: '#2196f3',
-                    title: 'Available in cloud'
+                    title: 'Available in cloud',
                   }}
                 />
               )}
@@ -388,15 +421,17 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
 
       {slotInfo.isEmpty ? (
         /* Empty Slot */
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: '80px',
-          color: '#888',
-          fontSize: isMobile ? '0.9rem' : '1rem'
-        }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '80px',
+            color: '#888',
+            fontSize: isMobile ? '0.9rem' : '1rem',
+          }}
+        >
           <div style={{ marginBottom: '8px', fontSize: '2rem' }}>+</div>
           <div>Empty Slot</div>
         </div>
@@ -405,17 +440,19 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {/* Thumbnail */}
           {slotInfo.metadata?.thumbnail && (
-            <div style={{
-              width: '60px',
-              height: '45px',
-              borderRadius: '4px',
-              overflow: 'hidden',
-              float: 'right',
-              marginLeft: '12px'
-            }}>
+            <div
+              style={{
+                width: '60px',
+                height: '45px',
+                borderRadius: '4px',
+                overflow: 'hidden',
+                float: 'right',
+                marginLeft: '12px',
+              }}
+            >
               <img
                 src={slotInfo.metadata.thumbnail}
-                alt="Save thumbnail"
+                alt='Save thumbnail'
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
             </div>
@@ -424,24 +461,30 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
           {/* Player Info */}
           {slotInfo.playerSummary && (
             <div>
-              <div style={{
-                fontSize: isMobile ? '1rem' : '1.1rem',
-                fontWeight: 'bold',
-                color: '#ffffff',
-                marginBottom: '4px'
-              }}>
+              <div
+                style={{
+                  fontSize: isMobile ? '1rem' : '1.1rem',
+                  fontWeight: 'bold',
+                  color: '#ffffff',
+                  marginBottom: '4px',
+                }}
+              >
                 {slotInfo.playerSummary.name}
               </div>
-              <div style={{
-                fontSize: '0.85rem',
-                color: '#cccccc'
-              }}>
+              <div
+                style={{
+                  fontSize: '0.85rem',
+                  color: '#cccccc',
+                }}
+              >
                 Level {slotInfo.playerSummary.level} {slotInfo.playerSummary.class}
               </div>
-              <div style={{
-                fontSize: '0.8rem',
-                color: '#aaaaaa'
-              }}>
+              <div
+                style={{
+                  fontSize: '0.8rem',
+                  color: '#aaaaaa',
+                }}
+              >
                 {slotInfo.playerSummary.currentAreaName}
               </div>
             </div>
@@ -449,36 +492,32 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
 
           {/* Progress Info */}
           {slotInfo.progressSummary && (
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              fontSize: '0.75rem',
-              color: '#aaaaaa',
-              marginTop: '8px'
-            }}>
-              <span>
-                {slotInfo.progressSummary.overallCompletion}% Complete
-              </span>
-              <span>
-                {formatPlayTime(slotInfo.metadata?.totalPlayTime || 0)}
-              </span>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                fontSize: '0.75rem',
+                color: '#aaaaaa',
+                marginTop: '8px',
+              }}
+            >
+              <span>{slotInfo.progressSummary.overallCompletion}% Complete</span>
+              <span>{formatPlayTime(slotInfo.metadata?.totalPlayTime || 0)}</span>
             </div>
           )}
 
           {/* Metadata */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            fontSize: '0.7rem',
-            color: '#888',
-            marginTop: '4px'
-          }}>
-            <span>
-              {slotInfo.metadata && formatDate(new Date(slotInfo.metadata.lastModified))}
-            </span>
-            <span>
-              {slotInfo.metadata && formatFileSize(slotInfo.metadata.fileSizeBytes)}
-            </span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              fontSize: '0.7rem',
+              color: '#888',
+              marginTop: '4px',
+            }}
+          >
+            <span>{slotInfo.metadata && formatDate(new Date(slotInfo.metadata.lastModified))}</span>
+            <span>{slotInfo.metadata && formatFileSize(slotInfo.metadata.fileSizeBytes)}</span>
           </div>
         </div>
       )}
@@ -495,7 +534,7 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
               gap: '4px',
               background: 'rgba(0, 0, 0, 0.8)',
               borderRadius: '6px',
-              padding: '4px'
+              padding: '4px',
             }}
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -504,9 +543,9 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
           >
             {onSave && (
               <Button
-                variant="ghost"
-                size="small"
-                onClick={(e) => {
+                variant='ghost'
+                size='small'
+                onClick={e => {
                   e.stopPropagation();
                   onSave();
                 }}
@@ -517,9 +556,9 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
             )}
             {onExport && (
               <Button
-                variant="ghost"
-                size="small"
-                onClick={(e) => {
+                variant='ghost'
+                size='small'
+                onClick={e => {
                   e.stopPropagation();
                   onExport();
                 }}
@@ -530,46 +569,54 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
             )}
 
             {/* Cloud-specific action buttons */}
-            {onCloudSync && [SaveSyncStatus.LOCAL_ONLY, SaveSyncStatus.LOCAL_NEWER, SaveSyncStatus.SYNC_FAILED].includes(slotInfo.syncStatus) && (
-              <Button
-                variant="ghost"
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onCloudSync();
-                }}
-                style={{ fontSize: '0.7rem', padding: '4px 6px', color: '#2196f3' }}
-                title="Upload to cloud"
-              >
-                ☁️↑
-              </Button>
-            )}
+            {onCloudSync &&
+              [
+                SaveSyncStatus.LOCAL_ONLY,
+                SaveSyncStatus.LOCAL_NEWER,
+                SaveSyncStatus.SYNC_FAILED,
+              ].includes(slotInfo.syncStatus) && (
+                <Button
+                  variant='ghost'
+                  size='small'
+                  onClick={e => {
+                    e.stopPropagation();
+                    onCloudSync();
+                  }}
+                  style={{ fontSize: '0.7rem', padding: '4px 6px', color: '#2196f3' }}
+                  title='Upload to cloud'
+                >
+                  ☁️↑
+                </Button>
+              )}
 
-            {onCloudRestore && [SaveSyncStatus.CLOUD_ONLY, SaveSyncStatus.CLOUD_NEWER].includes(slotInfo.syncStatus) && (
-              <Button
-                variant="ghost"
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onCloudRestore();
-                }}
-                style={{ fontSize: '0.7rem', padding: '4px 6px', color: '#9c27b0' }}
-                title="Download from cloud"
-              >
-                ☁️↓
-              </Button>
-            )}
+            {onCloudRestore &&
+              [SaveSyncStatus.CLOUD_ONLY, SaveSyncStatus.CLOUD_NEWER].includes(
+                slotInfo.syncStatus
+              ) && (
+                <Button
+                  variant='ghost'
+                  size='small'
+                  onClick={e => {
+                    e.stopPropagation();
+                    onCloudRestore();
+                  }}
+                  style={{ fontSize: '0.7rem', padding: '4px 6px', color: '#9c27b0' }}
+                  title='Download from cloud'
+                >
+                  ☁️↓
+                </Button>
+              )}
 
             {onConflictResolve && slotInfo.syncStatus === SaveSyncStatus.CONFLICT && (
               <Button
-                variant="ghost"
-                size="small"
-                onClick={(e) => {
+                variant='ghost'
+                size='small'
+                onClick={e => {
                   e.stopPropagation();
                   onConflictResolve();
                 }}
                 style={{ fontSize: '0.7rem', padding: '4px 6px', color: '#ff5722' }}
-                title="Resolve conflict"
+                title='Resolve conflict'
               >
                 ⚠️
               </Button>
@@ -577,9 +624,9 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
 
             {onDelete && (
               <Button
-                variant="ghost"
-                size="small"
-                onClick={(e) => {
+                variant='ghost'
+                size='small'
+                onClick={e => {
                   e.stopPropagation();
                   onDelete();
                 }}
@@ -594,16 +641,18 @@ const SaveSlotCardComponent: React.FC<SaveSlotCardProps> = ({
 
       {/* Error Indicator */}
       {slotInfo.lastError && (
-        <div style={{
-          position: 'absolute',
-          top: '8px',
-          right: '8px',
-          width: '8px',
-          height: '8px',
-          background: '#ff4444',
-          borderRadius: '50%',
-          title: slotInfo.lastError
-        }} />
+        <div
+          style={{
+            position: 'absolute',
+            top: '8px',
+            right: '8px',
+            width: '8px',
+            height: '8px',
+            background: '#ff4444',
+            borderRadius: '50%',
+            title: slotInfo.lastError,
+          }}
+        />
       )}
     </motion.div>
   );
@@ -628,10 +677,10 @@ export const SaveSlotCard = memo(SaveSlotCardComponent, (prevProps, nextProps) =
     prevProps.onConflictResolve === nextProps.onConflictResolve &&
     // Deep compare metadata if both exist
     ((!prevProps.slotInfo.metadata && !nextProps.slotInfo.metadata) ||
-     (prevProps.slotInfo.metadata?.lastModified === nextProps.slotInfo.metadata?.lastModified &&
-      prevProps.slotInfo.metadata?.fileSizeBytes === nextProps.slotInfo.metadata?.fileSizeBytes &&
-      prevProps.slotInfo.metadata?.totalPlayTime === nextProps.slotInfo.metadata?.totalPlayTime &&
-      prevProps.slotInfo.metadata?.isFavorite === nextProps.slotInfo.metadata?.isFavorite))
+      (prevProps.slotInfo.metadata?.lastModified === nextProps.slotInfo.metadata?.lastModified &&
+        prevProps.slotInfo.metadata?.fileSizeBytes === nextProps.slotInfo.metadata?.fileSizeBytes &&
+        prevProps.slotInfo.metadata?.totalPlayTime === nextProps.slotInfo.metadata?.totalPlayTime &&
+        prevProps.slotInfo.metadata?.isFavorite === nextProps.slotInfo.metadata?.isFavorite))
   );
 });
 

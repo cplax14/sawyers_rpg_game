@@ -5,7 +5,7 @@ interface LoadingScreenProps {
 }
 
 const LoadingScreen: React.FC<LoadingScreenProps> = ({
-  message = "Initializing Sawyer's RPG Game..."
+  message = "Initializing Sawyer's RPG Game...",
 }) => {
   const [debugInfo, setDebugInfo] = useState<string[]>([]);
 
@@ -27,21 +27,27 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({
     return () => clearInterval(checkInterval);
   }, []);
   return (
-    <div className="loading-screen">
-      <div className="loading-content">
-        <h1 className="loading-title">Sawyer's RPG Game</h1>
-        <p className="loading-subtitle">A Fantasy Adventure</p>
+    <div className='loading-screen'>
+      <div className='loading-content'>
+        <h1 className='loading-title'>Sawyer's RPG Game</h1>
+        <p className='loading-subtitle'>A Fantasy Adventure</p>
 
-        <div className="loading-spinner"></div>
+        <div className='loading-spinner'></div>
 
-        <p className="loading-text">{message}</p>
+        <p className='loading-text'>{message}</p>
 
-        <div className="loading-tips" style={{ marginTop: '2rem', fontSize: '0.9rem', opacity: 0.6 }}>
+        <div
+          className='loading-tips'
+          style={{ marginTop: '2rem', fontSize: '0.9rem', opacity: 0.6 }}
+        >
           <p>🎮 Tip: Press F11 for fullscreen mode</p>
           <p>⚔️ Get ready to explore magical realms!</p>
         </div>
 
-        <div className="debug-info" style={{ marginTop: '2rem', fontSize: '0.8rem', opacity: 0.8, textAlign: 'left' }}>
+        <div
+          className='debug-info'
+          style={{ marginTop: '2rem', fontSize: '0.8rem', opacity: 0.8, textAlign: 'left' }}
+        >
           <strong>Debug Info:</strong>
           {debugInfo.map((info, index) => (
             <div key={index}>{info}</div>

@@ -23,7 +23,7 @@ export function useVanillaBridge() {
 
   return {
     isReady,
-    bridge: vanillaBridge
+    bridge: vanillaBridge,
   };
 }
 
@@ -49,53 +49,77 @@ export function useVanillaBridgeEvent<K extends GameEventName>(
 export function useVanillaBridgeAnimations() {
   const { isReady, bridge } = useVanillaBridge();
 
-  const triggerAttackAnimation = useCallback((attacker: string, target: string, weaponType?: string) => {
-    if (isReady) {
-      bridge.triggerAttackAnimation(attacker, target, weaponType);
-    }
-  }, [isReady, bridge]);
+  const triggerAttackAnimation = useCallback(
+    (attacker: string, target: string, weaponType?: string) => {
+      if (isReady) {
+        bridge.triggerAttackAnimation(attacker, target, weaponType);
+      }
+    },
+    [isReady, bridge]
+  );
 
-  const triggerSpellAnimation = useCallback((caster: string, target: string, element: string, spell: string) => {
-    if (isReady) {
-      bridge.triggerSpellAnimation(caster, target, element, spell);
-    }
-  }, [isReady, bridge]);
+  const triggerSpellAnimation = useCallback(
+    (caster: string, target: string, element: string, spell: string) => {
+      if (isReady) {
+        bridge.triggerSpellAnimation(caster, target, element, spell);
+      }
+    },
+    [isReady, bridge]
+  );
 
-  const triggerDamageAnimation = useCallback((target: string, damage: number, type: 'physical' | 'magical' = 'physical') => {
-    if (isReady) {
-      bridge.triggerDamageAnimation(target, damage, type);
-    }
-  }, [isReady, bridge]);
+  const triggerDamageAnimation = useCallback(
+    (target: string, damage: number, type: 'physical' | 'magical' = 'physical') => {
+      if (isReady) {
+        bridge.triggerDamageAnimation(target, damage, type);
+      }
+    },
+    [isReady, bridge]
+  );
 
-  const triggerHealAnimation = useCallback((target: string, amount: number) => {
-    if (isReady) {
-      bridge.triggerHealAnimation(target, amount);
-    }
-  }, [isReady, bridge]);
+  const triggerHealAnimation = useCallback(
+    (target: string, amount: number) => {
+      if (isReady) {
+        bridge.triggerHealAnimation(target, amount);
+      }
+    },
+    [isReady, bridge]
+  );
 
-  const triggerNotificationAnimation = useCallback((message: string, type: 'info' | 'warning' | 'error' | 'success' = 'info') => {
-    if (isReady) {
-      bridge.triggerNotificationAnimation(message, type);
-    }
-  }, [isReady, bridge]);
+  const triggerNotificationAnimation = useCallback(
+    (message: string, type: 'info' | 'warning' | 'error' | 'success' = 'info') => {
+      if (isReady) {
+        bridge.triggerNotificationAnimation(message, type);
+      }
+    },
+    [isReady, bridge]
+  );
 
-  const triggerLevelUpAnimation = useCallback((newLevel: number, stats: any) => {
-    if (isReady) {
-      bridge.triggerLevelUpAnimation(newLevel, stats);
-    }
-  }, [isReady, bridge]);
+  const triggerLevelUpAnimation = useCallback(
+    (newLevel: number, stats: any) => {
+      if (isReady) {
+        bridge.triggerLevelUpAnimation(newLevel, stats);
+      }
+    },
+    [isReady, bridge]
+  );
 
-  const triggerItemFoundAnimation = useCallback((item: string, quantity: number = 1) => {
-    if (isReady) {
-      bridge.triggerItemFoundAnimation(item, quantity);
-    }
-  }, [isReady, bridge]);
+  const triggerItemFoundAnimation = useCallback(
+    (item: string, quantity: number = 1) => {
+      if (isReady) {
+        bridge.triggerItemFoundAnimation(item, quantity);
+      }
+    },
+    [isReady, bridge]
+  );
 
-  const triggerMonsterCapturedAnimation = useCallback((monster: string) => {
-    if (isReady) {
-      bridge.triggerMonsterCapturedAnimation(monster);
-    }
-  }, [isReady, bridge]);
+  const triggerMonsterCapturedAnimation = useCallback(
+    (monster: string) => {
+      if (isReady) {
+        bridge.triggerMonsterCapturedAnimation(monster);
+      }
+    },
+    [isReady, bridge]
+  );
 
   return {
     isReady,
@@ -106,7 +130,7 @@ export function useVanillaBridgeAnimations() {
     triggerNotificationAnimation,
     triggerLevelUpAnimation,
     triggerItemFoundAnimation,
-    triggerMonsterCapturedAnimation
+    triggerMonsterCapturedAnimation,
   };
 }
 
@@ -146,7 +170,7 @@ export function useVanillaGameState() {
   return {
     gameState,
     player,
-    isReady
+    isReady,
   };
 }
 
@@ -156,23 +180,29 @@ export function useVanillaGameState() {
 export function useVanillaGameMethods() {
   const { isReady, bridge } = useVanillaBridge();
 
-  const callGameMethod = useCallback(async (method: string, ...args: any[]) => {
-    if (!isReady) {
-      throw new Error('Game not ready');
-    }
-    return bridge.callGameMethod(method, ...args);
-  }, [isReady, bridge]);
+  const callGameMethod = useCallback(
+    async (method: string, ...args: any[]) => {
+      if (!isReady) {
+        throw new Error('Game not ready');
+      }
+      return bridge.callGameMethod(method, ...args);
+    },
+    [isReady, bridge]
+  );
 
-  const callUIMethod = useCallback(async (method: string, ...args: any[]) => {
-    if (!isReady) {
-      throw new Error('Game not ready');
-    }
-    return bridge.callUIMethod(method, ...args);
-  }, [isReady, bridge]);
+  const callUIMethod = useCallback(
+    async (method: string, ...args: any[]) => {
+      if (!isReady) {
+        throw new Error('Game not ready');
+      }
+      return bridge.callUIMethod(method, ...args);
+    },
+    [isReady, bridge]
+  );
 
   return {
     callGameMethod,
     callUIMethod,
-    isReady
+    isReady,
   };
 }

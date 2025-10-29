@@ -23,7 +23,7 @@ export const AutoSaveIndicator: React.FC<AutoSaveIndicatorProps> = ({
   position = 'top-right',
   showDetails = false,
   className = '',
-  overlay = true
+  overlay = true,
 }) => {
   const { state } = useReactGame();
   const {
@@ -33,7 +33,7 @@ export const AutoSaveIndicator: React.FC<AutoSaveIndicatorProps> = ({
     getAutoSaveStatus,
     formatTimeUntilNext,
     getTimeUntilNextAutoSave,
-    pauseReason
+    pauseReason,
   } = useAutoSave();
 
   const { isMobile } = useResponsive();
@@ -147,48 +147,57 @@ export const AutoSaveIndicator: React.FC<AutoSaveIndicatorProps> = ({
         <span style={iconStyle}>{getStatusIcon()}</span>
 
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{
-            color: getStatusColor(),
-            fontWeight: '500',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis'
-          }}>
+          <div
+            style={{
+              color: getStatusColor(),
+              fontWeight: '500',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
             {getAutoSaveStatus()}
           </div>
 
           {showDetails && isAutoSaveActive && !autoSaveState.isPaused && (
-            <div style={{
-              fontSize: '0.65rem',
-              color: '#cccccc',
-              marginTop: '2px',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis'
-            }}>
+            <div
+              style={{
+                fontSize: '0.65rem',
+                color: '#cccccc',
+                marginTop: '2px',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
               Next: {formatTimeUntilNext()}
             </div>
           )}
 
           {autoSaveState.consecutiveFailures > 0 && (
-            <div style={{
-              fontSize: '0.65rem',
-              color: '#ff9999',
-              marginTop: '2px'
-            }}>
-              {autoSaveState.consecutiveFailures} failure{autoSaveState.consecutiveFailures > 1 ? 's' : ''}
+            <div
+              style={{
+                fontSize: '0.65rem',
+                color: '#ff9999',
+                marginTop: '2px',
+              }}
+            >
+              {autoSaveState.consecutiveFailures} failure
+              {autoSaveState.consecutiveFailures > 1 ? 's' : ''}
             </div>
           )}
 
           {pauseReason && autoSaveState.isPaused && showDetails && (
-            <div style={{
-              fontSize: '0.65rem',
-              color: '#ffa500',
-              marginTop: '2px',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis'
-            }}>
+            <div
+              style={{
+                fontSize: '0.65rem',
+                color: '#ffa500',
+                marginTop: '2px',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
               {pauseReason.source === 'story' && '📖'}
               {pauseReason.source === 'combat' && '⚔️'}
               {pauseReason.source === 'system' && '⚙️'}
@@ -198,11 +207,13 @@ export const AutoSaveIndicator: React.FC<AutoSaveIndicatorProps> = ({
           )}
 
           {lastAutoSave && showDetails && (
-            <div style={{
-              fontSize: '0.6rem',
-              color: '#999999',
-              marginTop: '2px'
-            }}>
+            <div
+              style={{
+                fontSize: '0.6rem',
+                color: '#999999',
+                marginTop: '2px',
+              }}
+            >
               Last: {lastAutoSave.toLocaleTimeString()}
             </div>
           )}

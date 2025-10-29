@@ -10,11 +10,11 @@ import { EmailVerificationPrompt } from '../molecules/EmailVerificationPrompt';
 import { AuthResult } from '../../services/authentication';
 
 export type EmailVerificationFlowState =
-  | 'idle'           // No verification flow active
-  | 'signup'         // User is signing up
-  | 'verification'   // User needs to verify email
-  | 'verified'       // Email has been verified
-  | 'error';         // Error occurred
+  | 'idle' // No verification flow active
+  | 'signup' // User is signing up
+  | 'verification' // User needs to verify email
+  | 'verified' // Email has been verified
+  | 'error'; // Error occurred
 
 export interface EmailVerificationFlowProps {
   /** Whether to show the flow initially */
@@ -76,7 +76,7 @@ export const EmailVerificationFlow: React.FC<EmailVerificationFlowProps> = ({
   className = '',
   autoStartSignup = true,
   requireVerification = true,
-  messages = {}
+  messages = {},
 }) => {
   const { user, isAuthenticated } = useAuth();
   const [flowState, setFlowState] = useState<EmailVerificationFlowState>('idle');
@@ -193,7 +193,7 @@ export const EmailVerificationFlow: React.FC<EmailVerificationFlowProps> = ({
       <AuthenticationModal
         isOpen={showAuthModal}
         onClose={handleAuthModalClose}
-        initialMode="signup"
+        initialMode='signup'
         onSuccess={handleSignupSuccess}
         onError={handleSignupError}
         disableBackdropClose={true} // Prevent accidental dismissal during flow
@@ -202,7 +202,7 @@ export const EmailVerificationFlow: React.FC<EmailVerificationFlowProps> = ({
       {/* Email Verification Prompt */}
       {showVerificationPrompt && (
         <EmailVerificationPrompt
-          mode="modal"
+          mode='modal'
           onVerificationComplete={handleVerificationComplete}
           onDismiss={handleVerificationDismiss}
           showCloseButton={!requireVerification} // Hide close button if verification is required
@@ -212,23 +212,32 @@ export const EmailVerificationFlow: React.FC<EmailVerificationFlowProps> = ({
 
       {/* Success State Overlay */}
       {flowState === 'verified' && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
-            <div className="text-center">
-              <div className="mx-auto flex items-center justify-center w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/20 mb-4">
-                <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
+          <div className='bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md mx-4 p-6'>
+            <div className='text-center'>
+              <div className='mx-auto flex items-center justify-center w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/20 mb-4'>
+                <svg
+                  className='w-6 h-6 text-green-600 dark:text-green-400'
+                  fill='none'
+                  stroke='currentColor'
+                  viewBox='0 0 24 24'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M5 13l4 4L19 7'
+                  />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                Welcome!
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                {messages.verificationComplete || 'Your account has been created and verified successfully.'}
+              <h3 className='text-lg font-medium text-gray-900 dark:text-white mb-2'>Welcome!</h3>
+              <p className='text-sm text-gray-600 dark:text-gray-400 mb-6'>
+                {messages.verificationComplete ||
+                  'Your account has been created and verified successfully.'}
               </p>
               <button
                 onClick={onComplete}
-                className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200"
+                className='w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200'
               >
                 Continue
               </button>
@@ -239,30 +248,40 @@ export const EmailVerificationFlow: React.FC<EmailVerificationFlowProps> = ({
 
       {/* Error State Overlay */}
       {flowState === 'error' && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
-            <div className="text-center">
-              <div className="mx-auto flex items-center justify-center w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/20 mb-4">
-                <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
+          <div className='bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md mx-4 p-6'>
+            <div className='text-center'>
+              <div className='mx-auto flex items-center justify-center w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/20 mb-4'>
+                <svg
+                  className='w-6 h-6 text-red-600 dark:text-red-400'
+                  fill='none'
+                  stroke='currentColor'
+                  viewBox='0 0 24 24'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+                  />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              <h3 className='text-lg font-medium text-gray-900 dark:text-white mb-2'>
                 Something went wrong
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+              <p className='text-sm text-gray-600 dark:text-gray-400 mb-6'>
                 {messages.error || 'There was an error during account creation. Please try again.'}
               </p>
-              <div className="flex gap-3">
+              <div className='flex gap-3'>
                 <button
                   onClick={handleRestart}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200"
+                  className='flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200'
                 >
                   Try Again
                 </button>
                 <button
                   onClick={onCancel}
-                  className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium py-2 px-4 rounded-md transition-colors duration-200"
+                  className='flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium py-2 px-4 rounded-md transition-colors duration-200'
                 >
                   Cancel
                 </button>
@@ -311,7 +330,7 @@ export function useEmailVerificationFlow() {
     startFlow,
     completeFlow,
     cancelFlow,
-    setFlowState
+    setFlowState,
   };
 }
 

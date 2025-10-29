@@ -132,7 +132,7 @@ export const mockGameContextActions = {
   // Computed properties
   isPlayerCreated: true,
   canAccessArea: jest.fn(() => true),
-  getInventoryByType: jest.fn((type) => mockInventoryItems.filter(item => item.type === type)),
+  getInventoryByType: jest.fn(type => mockInventoryItems.filter(item => item.type === type)),
   getPlayerLevel: jest.fn(() => mockPlayer.level),
   getTotalPlaytime: jest.fn(() => 0),
   getCurrentSessionTime: jest.fn(() => 0),
@@ -160,11 +160,7 @@ interface MockGameProviderProps {
 export function MockGameProvider({ children, value }: MockGameProviderProps) {
   const contextValue = value || createMockGameContext();
 
-  return (
-    <ReactGameContext.Provider value={contextValue}>
-      {children}
-    </ReactGameContext.Provider>
-  );
+  return <ReactGameContext.Provider value={contextValue}>{children}</ReactGameContext.Provider>;
 }
 
 // Custom render function with game context
@@ -176,21 +172,12 @@ interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
 
 export function renderWithGameContext(
   ui: ReactElement,
-  {
-    gameState,
-    gameActions,
-    contextValue,
-    ...renderOptions
-  }: CustomRenderOptions = {}
+  { gameState, gameActions, contextValue, ...renderOptions }: CustomRenderOptions = {}
 ): RenderResult {
   const mockContext = contextValue || createMockGameContext(gameState, gameActions);
 
   function Wrapper({ children }: { children: ReactNode }) {
-    return (
-      <ReactGameContext.Provider value={mockContext}>
-        {children}
-      </ReactGameContext.Provider>
-    );
+    return <ReactGameContext.Provider value={mockContext}>{children}</ReactGameContext.Provider>;
   }
 
   return render(ui, { wrapper: Wrapper, ...renderOptions });
@@ -202,7 +189,7 @@ export const renderWithProviders = renderWithGameContext;
 // Helper to reset all mocks
 export function resetAllMocks() {
   mockDispatch.mockReset();
-  Object.values(mockGameContextActions).forEach((mock) => {
+  Object.values(mockGameContextActions).forEach(mock => {
     if (typeof mock === 'function' && 'mockReset' in mock) {
       (mock as jest.Mock).mockReset();
     }
@@ -266,7 +253,7 @@ export function createPostCombatGameState(overrides?: Partial<ReactGameState>): 
 
 // Helper to wait for async state updates
 export function flushPromises() {
-  return new Promise((resolve) => setImmediate(resolve));
+  return new Promise(resolve => setImmediate(resolve));
 }
 
 // Re-export testing library utilities

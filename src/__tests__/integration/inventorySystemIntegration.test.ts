@@ -59,7 +59,7 @@ describe('Inventory System Integration Tests', () => {
       useOutOfCombat: true,
       description: 'Restores 50 HP',
       icon: '🧪',
-      effects: [{ type: 'heal', value: 50 }]
+      effects: [{ type: 'heal', value: 50 }],
     },
     {
       id: 'steel_sword',
@@ -84,7 +84,7 @@ describe('Inventory System Integration Tests', () => {
       useInCombat: false,
       useOutOfCombat: false,
       description: 'A sharp steel blade',
-      icon: '⚔️'
+      icon: '⚔️',
     },
     {
       id: 'leather_armor',
@@ -109,8 +109,8 @@ describe('Inventory System Integration Tests', () => {
       useInCombat: false,
       useOutOfCombat: false,
       description: 'Basic leather protection',
-      icon: '🦺'
-    }
+      icon: '🦺',
+    },
   ];
 
   const testCreatures: EnhancedCreature[] = [
@@ -123,8 +123,8 @@ describe('Inventory System Integration Tests', () => {
       level: 25,
       rarity: 'legendary',
       stats: { health: 500, attack: 80, defense: 60, speed: 40 },
-      collectionStatus: 'captured'
-    }
+      collectionStatus: 'captured',
+    },
   ];
 
   beforeEach(() => {
@@ -137,10 +137,10 @@ describe('Inventory System Integration Tests', () => {
         level: 10,
         experience: 2500,
         currentArea: 'test_area',
-        stats: { health: 100, mana: 50, attack: 30, defense: 20 }
+        stats: { health: 100, mana: 50, attack: 30, defense: 20 },
       },
       inventory: {
-        items: testItems.map(item => ({ id: item.id, quantity: item.quantity || 1 }))
+        items: testItems.map(item => ({ id: item.id, quantity: item.quantity || 1 })),
       },
       equipment: {
         weapon: null,
@@ -152,13 +152,13 @@ describe('Inventory System Integration Tests', () => {
         necklace: null,
         ring1: null,
         ring2: null,
-        charm: null
+        charm: null,
       },
       creatures: testCreatures,
       settings: {
         autoSave: true,
-        autoSaveInterval: 300000
-      }
+        autoSaveInterval: 300000,
+      },
     } as ReactGameState;
 
     // Mock inventory system
@@ -166,9 +166,9 @@ describe('Inventory System Integration Tests', () => {
       items: testItems,
       isLoading: false,
       error: null,
-      getFilteredItems: jest.fn((filter) => testItems.filter(item =>
-        !filter.category || item.category === filter.category
-      )),
+      getFilteredItems: jest.fn(filter =>
+        testItems.filter(item => !filter.category || item.category === filter.category)
+      ),
       getItemsByCategory: jest.fn((category: ItemCategory) =>
         testItems.filter(item => item.category === category)
       ),
@@ -180,7 +180,9 @@ describe('Inventory System Integration Tests', () => {
       removeItem: jest.fn(),
       updateItemQuantity: jest.fn(),
       consolidateInventoryStacks: jest.fn(),
-      getTotalItemCount: jest.fn(() => testItems.reduce((sum, item) => sum + (item.quantity || 1), 0))
+      getTotalItemCount: jest.fn(() =>
+        testItems.reduce((sum, item) => sum + (item.quantity || 1), 0)
+      ),
     };
 
     // Mock equipment system
@@ -198,7 +200,7 @@ describe('Inventory System Integration Tests', () => {
       equipItem: jest.fn(),
       unequipItem: jest.fn(),
       isLoading: false,
-      error: null
+      error: null,
     };
 
     // Mock creature system
@@ -213,7 +215,7 @@ describe('Inventory System Integration Tests', () => {
         discovered: 1,
         captured: 1,
         total: 100,
-        completionPercentage: 1
+        completionPercentage: 1,
       })),
       captureCreature: jest.fn(() => {
         // When capturing, also add to team if space available
@@ -223,7 +225,7 @@ describe('Inventory System Integration Tests', () => {
       }),
       releaseCreature: jest.fn(),
       addToTeam: jest.fn(),
-      removeFromTeam: jest.fn()
+      removeFromTeam: jest.fn(),
     };
 
     // Mock combat system
@@ -233,7 +235,7 @@ describe('Inventory System Integration Tests', () => {
       combatRestrictions: {
         canAccessInventory: true,
         canUseConsumables: true,
-        canChangeEquipment: false
+        canChangeEquipment: false,
       },
       startCombat: jest.fn(),
       endCombat: jest.fn(),
@@ -242,7 +244,7 @@ describe('Inventory System Integration Tests', () => {
         mockInventoryState.useItem('health_potion');
       }),
       isLoading: false,
-      error: null
+      error: null,
     };
 
     // Mock save system
@@ -253,7 +255,7 @@ describe('Inventory System Integration Tests', () => {
       deleteSave: jest.fn().mockResolvedValue({ success: true }),
       exportSave: jest.fn().mockResolvedValue({ success: true, data: 'exported_data' }),
       importSave: jest.fn().mockResolvedValue({ success: true }),
-      initialize: jest.fn().mockResolvedValue({ success: true })
+      initialize: jest.fn().mockResolvedValue({ success: true }),
     } as any;
 
     // Setup mock implementations
@@ -272,12 +274,12 @@ describe('Inventory System Integration Tests', () => {
       mockCombatState.currentEncounter = {
         enemy: { name: 'Goblin', health: 50, maxHealth: 50 },
         playerHealth: 75,
-        playerMaxHealth: 100
+        playerMaxHealth: 100,
       };
 
       const { result } = renderHook(() => ({
         inventory: useInventory(),
-        combat: useCombat()
+        combat: useCombat(),
       }));
 
       // Act: Use health potion during combat
@@ -297,7 +299,7 @@ describe('Inventory System Integration Tests', () => {
 
       const { result } = renderHook(() => ({
         equipment: useEquipment(),
-        combat: useCombat()
+        combat: useCombat(),
       }));
 
       // Act: Try to equip weapon during combat
@@ -314,12 +316,12 @@ describe('Inventory System Integration Tests', () => {
       mockEquipmentState.equipmentStats.attack = 25;
       mockEquipmentState.finalStats = {
         ...mockGameState.player.stats,
-        attack: mockGameState.player.stats.attack + 25
+        attack: mockGameState.player.stats.attack + 25,
       };
 
       const { result } = renderHook(() => ({
         equipment: useEquipment(),
-        combat: useCombat()
+        combat: useCombat(),
       }));
 
       // Assert: Player stats include equipment bonuses
@@ -333,21 +335,21 @@ describe('Inventory System Integration Tests', () => {
 
       const { result } = renderHook(() => ({
         creatures: useCreatures(),
-        combat: useCombat()
+        combat: useCombat(),
       }));
 
       // Act: Start combat with creature companion
       await act(async () => {
         await result.current.combat.startCombat({
           enemy: { name: 'Boss', health: 200 },
-          companions: result.current.creatures.activeTeam
+          companions: result.current.creatures.activeTeam,
         });
       });
 
       // Assert: Combat started with companion
       expect(mockCombatState.startCombat).toHaveBeenCalledWith(
         expect.objectContaining({
-          companions: expect.arrayContaining([testCreatures[0]])
+          companions: expect.arrayContaining([testCreatures[0]]),
         })
       );
     });
@@ -389,8 +391,8 @@ describe('Inventory System Integration Tests', () => {
           necklace: null,
           ring1: null,
           ring2: null,
-          charm: null
-        }
+          charm: null,
+        },
       };
 
       const saveManager = new SaveSystemManager({} as any);
@@ -398,7 +400,7 @@ describe('Inventory System Integration Tests', () => {
       // Mock load to return equipped state
       mockSaveManager.loadGame.mockResolvedValue({
         success: true,
-        data: gameStateWithEquipment
+        data: gameStateWithEquipment,
       });
 
       // Act: Save and load
@@ -413,7 +415,7 @@ describe('Inventory System Integration Tests', () => {
     it('should maintain creature collection across saves', async () => {
       const gameStateWithCreatures = {
         ...mockGameState,
-        creatures: testCreatures
+        creatures: testCreatures,
       };
 
       const saveManager = new SaveSystemManager({} as any);
@@ -421,7 +423,7 @@ describe('Inventory System Integration Tests', () => {
       // Mock load to return creature state
       mockSaveManager.loadGame.mockResolvedValue({
         success: true,
-        data: gameStateWithCreatures
+        data: gameStateWithCreatures,
       });
 
       // Act: Save and load
@@ -438,12 +440,12 @@ describe('Inventory System Integration Tests', () => {
       const corruptedGameState = {
         ...mockGameState,
         inventory: null, // Corrupted inventory
-        equipment: undefined // Missing equipment
+        equipment: undefined, // Missing equipment
       };
 
       mockSaveManager.loadGame.mockResolvedValue({
         success: true,
-        data: corruptedGameState
+        data: corruptedGameState,
       });
 
       const saveManager = new SaveSystemManager({} as any);
@@ -462,7 +464,7 @@ describe('Inventory System Integration Tests', () => {
       const { result } = renderHook(() => ({
         inventory: useInventory(),
         equipment: useEquipment(),
-        gameState: useGameState()
+        gameState: useGameState(),
       }));
 
       // Act: Complete equipment upgrade workflow
@@ -487,7 +489,7 @@ describe('Inventory System Integration Tests', () => {
       const { result } = renderHook(() => ({
         creatures: useCreatures(),
         combat: useCombat(),
-        gameState: useGameState()
+        gameState: useGameState(),
       }));
 
       // Act: Complete creature capture workflow
@@ -512,7 +514,7 @@ describe('Inventory System Integration Tests', () => {
     it('should handle inventory management during exploration', async () => {
       const { result } = renderHook(() => ({
         inventory: useInventory(),
-        combat: useCombat()
+        combat: useCombat(),
       }));
 
       // Act: Manage inventory during exploration
@@ -543,15 +545,15 @@ describe('Inventory System Integration Tests', () => {
         inventory: {
           items: testItems.map(item => ({
             id: item.id,
-            quantity: item.quantity || 1
-          }))
-        }
+            quantity: item.quantity || 1,
+          })),
+        },
       };
 
       const saveManager = new SaveSystemManager({} as any);
       mockSaveManager.loadGame.mockResolvedValue({
         success: true,
-        data: complexGameState
+        data: complexGameState,
       });
 
       // Act: Save and load complex state
@@ -590,7 +592,7 @@ describe('Inventory System Integration Tests', () => {
       // Setup: Player doesn't meet requirements
       mockEquipmentState.canEquip.mockReturnValue({
         canEquip: false,
-        reason: 'Level requirement not met'
+        reason: 'Level requirement not met',
       });
 
       const { result } = renderHook(() => useEquipment());
@@ -607,7 +609,7 @@ describe('Inventory System Integration Tests', () => {
       // Setup: Save system failure
       mockSaveManager.saveGame.mockResolvedValue({
         success: false,
-        error: 'Storage quota exceeded'
+        error: 'Storage quota exceeded',
       });
 
       const saveManager = new SaveSystemManager({} as any);

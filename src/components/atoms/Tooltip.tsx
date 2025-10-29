@@ -54,7 +54,9 @@ const Tooltip: React.FC<TooltipProps> = ({
   zIndex = 1500,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
-  const [actualPlacement, setActualPlacement] = useState<'top' | 'bottom' | 'left' | 'right'>('top');
+  const [actualPlacement, setActualPlacement] = useState<'top' | 'bottom' | 'left' | 'right'>(
+    'top'
+  );
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
   const triggerRef = useRef<HTMLDivElement>(null);
@@ -222,28 +224,23 @@ const Tooltip: React.FC<TooltipProps> = ({
     };
   }, []);
 
-  const tooltipClasses = [
-    styles.tooltip,
-    styles[variant],
-    styles[actualPlacement],
-    className,
-  ].filter(Boolean).join(' ');
+  const tooltipClasses = [styles.tooltip, styles[variant], styles[actualPlacement], className]
+    .filter(Boolean)
+    .join(' ');
 
   const arrowClasses = [
     styles.arrow,
     styles[`arrow${actualPlacement.charAt(0).toUpperCase() + actualPlacement.slice(1)}`],
     arrowClassName,
-  ].filter(Boolean).join(' ');
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   const shouldShow = isManuallyControlled ? visible : isVisible;
 
   return (
     <>
-      <div
-        ref={triggerRef}
-        className={styles.trigger}
-        {...getTriggerProps()}
-      >
+      <div ref={triggerRef} className={styles.trigger} {...getTriggerProps()}>
         {children}
       </div>
 
@@ -263,13 +260,11 @@ const Tooltip: React.FC<TooltipProps> = ({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            role="tooltip"
+            role='tooltip'
             aria-hidden={!shouldShow}
           >
             {showArrow && <div className={arrowClasses} />}
-            <div className={styles.content}>
-              {content}
-            </div>
+            <div className={styles.content}>{content}</div>
           </motion.div>
         )}
       </AnimatePresence>

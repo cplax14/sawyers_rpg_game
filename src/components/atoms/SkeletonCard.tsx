@@ -21,13 +21,13 @@ export const SkeletonCard: React.FC<SkeletonCardProps> = ({
   type = 'item',
   size = 'md',
   className,
-  style
+  style,
 }) => {
   // Size configurations
   const sizeConfig = {
     sm: { height: 180, padding: 12, imageSize: 40 },
     md: { height: 220, padding: 16, imageSize: 48 },
-    lg: { height: 260, padding: 20, imageSize: 56 }
+    lg: { height: 260, padding: 20, imageSize: 56 },
   };
 
   const config = sizeConfig[size];
@@ -45,7 +45,7 @@ export const SkeletonCard: React.FC<SkeletonCardProps> = ({
       gap: '12px',
       position: 'relative' as const,
       overflow: 'hidden',
-      ...style
+      ...style,
     },
     shimmer: {
       position: 'absolute' as const,
@@ -54,71 +54,71 @@ export const SkeletonCard: React.FC<SkeletonCardProps> = ({
       width: '100%',
       height: '100%',
       background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent)',
-      animation: 'shimmer 2s infinite'
+      animation: 'shimmer 2s infinite',
     },
     header: {
       display: 'flex',
       alignItems: 'center',
-      gap: '12px'
+      gap: '12px',
     },
     image: {
       width: `${config.imageSize}px`,
       height: `${config.imageSize}px`,
       borderRadius: '8px',
-      background: 'rgba(255, 255, 255, 0.08)'
+      background: 'rgba(255, 255, 255, 0.08)',
     },
     textContent: {
       flex: 1,
       display: 'flex',
       flexDirection: 'column' as const,
-      gap: '6px'
+      gap: '6px',
     },
     title: {
       height: '16px',
       background: 'rgba(255, 255, 255, 0.08)',
       borderRadius: '4px',
-      width: '70%'
+      width: '70%',
     },
     subtitle: {
       height: '12px',
       background: 'rgba(255, 255, 255, 0.05)',
       borderRadius: '4px',
-      width: '50%'
+      width: '50%',
     },
     content: {
       display: 'flex',
       flexDirection: 'column' as const,
       gap: '8px',
-      flex: 1
+      flex: 1,
     },
     description: {
       height: '10px',
       background: 'rgba(255, 255, 255, 0.05)',
       borderRadius: '3px',
-      width: '90%'
+      width: '90%',
     },
     stats: {
       display: 'flex',
       gap: '8px',
-      marginTop: 'auto'
+      marginTop: 'auto',
     },
     stat: {
       height: '24px',
       background: 'rgba(255, 255, 255, 0.06)',
       borderRadius: '6px',
-      width: '60px'
+      width: '60px',
     },
     actions: {
       display: 'flex',
       gap: '6px',
-      marginTop: '8px'
+      marginTop: '8px',
     },
     action: {
       height: '28px',
       background: 'rgba(255, 255, 255, 0.06)',
       borderRadius: '6px',
-      flex: 1
-    }
+      flex: 1,
+    },
   };
 
   const renderItemSkeleton = () => (
@@ -225,7 +225,7 @@ export const SkeletonCard: React.FC<SkeletonCardProps> = ({
         transition={{
           duration: 2,
           repeat: Infinity,
-          ease: 'linear'
+          ease: 'linear',
         }}
       />
 

@@ -4,7 +4,11 @@ export type { AnimatedSpriteProps } from './AnimatedSprite';
 export { default as TransitionWrapper } from './TransitionWrapper';
 export type { TransitionWrapperProps } from './TransitionWrapper';
 
-export { default as AnimationProvider, useAnimationSettings, useOptimizedAnimation } from './AnimationProvider';
+export {
+  default as AnimationProvider,
+  useAnimationSettings,
+  useOptimizedAnimation,
+} from './AnimationProvider';
 export type { AnimationSettings } from './AnimationProvider';
 
 // Re-export animation utilities

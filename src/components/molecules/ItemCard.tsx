@@ -33,17 +33,17 @@ const cardStyles = {
     transition: 'all 0.3s ease',
     overflow: 'hidden',
     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-    backdropFilter: 'blur(8px)'
+    backdropFilter: 'blur(8px)',
   },
   containerSm: {
-    padding: '0.75rem'
+    padding: '0.75rem',
   },
   containerLg: {
-    padding: '1.25rem'
+    padding: '1.25rem',
   },
   containerDisabled: {
     opacity: 0.6,
-    cursor: 'not-allowed'
+    cursor: 'not-allowed',
   },
   border: {
     position: 'absolute' as const,
@@ -54,7 +54,7 @@ const cardStyles = {
     borderRadius: '12px',
     padding: '2px',
     background: 'linear-gradient(135deg, transparent, transparent)',
-    pointerEvents: 'none' as const
+    pointerEvents: 'none' as const,
   },
   content: {
     position: 'relative' as const,
@@ -62,17 +62,17 @@ const cardStyles = {
     height: '100%',
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: '0.75rem'
+    gap: '0.75rem',
   },
   header: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    gap: '0.5rem'
+    gap: '0.5rem',
   },
   titleContainer: {
     flex: 1,
-    minWidth: 0
+    minWidth: 0,
   },
   title: {
     fontSize: '1rem',
@@ -80,19 +80,19 @@ const cardStyles = {
     color: '#d4af37',
     margin: '0 0 0.25rem 0',
     lineHeight: '1.2',
-    wordBreak: 'break-word' as const
+    wordBreak: 'break-word' as const,
   },
   titleSm: {
-    fontSize: '0.9rem'
+    fontSize: '0.9rem',
   },
   titleLg: {
-    fontSize: '1.1rem'
+    fontSize: '1.1rem',
   },
   category: {
     fontSize: '0.75rem',
     color: '#94a3b8',
     margin: 0,
-    fontWeight: '500'
+    fontWeight: '500',
   },
   quantityBadge: {
     background: 'rgba(212, 175, 55, 0.2)',
@@ -102,7 +102,7 @@ const cardStyles = {
     fontWeight: 'bold',
     color: '#d4af37',
     whiteSpace: 'nowrap' as const,
-    border: '1px solid rgba(212, 175, 55, 0.3)'
+    border: '1px solid rgba(212, 175, 55, 0.3)',
   },
   equippedBadge: {
     background: 'rgba(34, 197, 94, 0.2)',
@@ -115,7 +115,7 @@ const cardStyles = {
     border: '1px solid rgba(34, 197, 94, 0.4)',
     display: 'flex',
     alignItems: 'center',
-    gap: '0.25rem'
+    gap: '0.25rem',
   },
   description: {
     fontSize: '0.8rem',
@@ -125,50 +125,50 @@ const cardStyles = {
     overflow: 'hidden',
     display: '-webkit-box',
     WebkitLineClamp: 3,
-    WebkitBoxOrient: 'vertical' as const
+    WebkitBoxOrient: 'vertical' as const,
   },
   descriptionSm: {
     fontSize: '0.75rem',
-    WebkitLineClamp: 2
+    WebkitLineClamp: 2,
   },
   properties: {
     display: 'flex',
     flexWrap: 'wrap' as const,
     gap: '0.5rem',
-    marginTop: '0.5rem'
+    marginTop: '0.5rem',
   },
   property: {
     fontSize: '0.7rem',
     padding: '0.2rem 0.4rem',
     borderRadius: '6px',
     background: 'rgba(255, 255, 255, 0.1)',
-    color: '#cbd5e1'
+    color: '#cbd5e1',
   },
   stackable: {
     background: 'rgba(34, 197, 94, 0.2)',
-    color: '#4ade80'
+    color: '#4ade80',
   },
   consumable: {
     background: 'rgba(168, 85, 247, 0.2)',
-    color: '#a855f7'
+    color: '#a855f7',
   },
   tradeable: {
     background: 'rgba(59, 130, 246, 0.2)',
-    color: '#3b82f6'
+    color: '#3b82f6',
   },
   actions: {
     display: 'flex',
     gap: '0.5rem',
     marginTop: 'auto',
-    paddingTop: '0.5rem'
+    paddingTop: '0.5rem',
   },
   actionButton: {
     flex: 1,
     fontSize: '0.75rem',
-    padding: '0.4rem 0.6rem'
+    padding: '0.4rem 0.6rem',
   },
   primaryAction: {
-    flex: 2
+    flex: 2,
   },
   loadingOverlay: {
     position: 'absolute' as const,
@@ -181,7 +181,7 @@ const cardStyles = {
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: '12px',
-    zIndex: 10
+    zIndex: 10,
   },
   messageOverlay: {
     position: 'absolute' as const,
@@ -196,27 +196,27 @@ const cardStyles = {
     borderRadius: '12px',
     zIndex: 15,
     padding: '0.5rem',
-    textAlign: 'center' as const
+    textAlign: 'center' as const,
   },
   messageText: {
     fontSize: '0.8rem',
     color: '#10b981',
     fontWeight: 'bold',
-    lineHeight: '1.2'
+    lineHeight: '1.2',
   },
   errorMessageText: {
     fontSize: '0.8rem',
     color: '#ef4444',
     fontWeight: 'bold',
-    lineHeight: '1.2'
+    lineHeight: '1.2',
   },
   valueDisplay: {
     fontSize: '0.7rem',
     color: '#94a3b8',
     marginTop: '0.5rem',
     display: 'flex',
-    justifyContent: 'space-between'
-  }
+    justifyContent: 'space-between',
+  },
 };
 
 // Rarity colors and effects
@@ -226,7 +226,7 @@ const rarityColors = {
   rare: '#8b5cf6',
   epic: '#f59e0b',
   legendary: '#ef4444',
-  mythical: '#ec4899'
+  mythical: '#ec4899',
 };
 
 const rarityGlow = {
@@ -235,7 +235,7 @@ const rarityGlow = {
   rare: 'rgba(139, 92, 246, 0.2)',
   epic: 'rgba(245, 158, 11, 0.2)',
   legendary: 'rgba(239, 68, 68, 0.2)',
-  mythical: 'rgba(236, 72, 153, 0.2)'
+  mythical: 'rgba(236, 72, 153, 0.2)',
 };
 
 // Helper function to get equipment icon based on equipment slot
@@ -278,7 +278,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
   showDescription = true,
   size = 'md',
   className = '',
-  disabled = false
+  disabled = false,
 }) => {
   const { gameState } = useGameState();
   const { isMobile } = useResponsive();
@@ -362,7 +362,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
     const base = {
       ...cardStyles.container,
       border: `2px solid ${rarityColor}`,
-      boxShadow: `0 2px 8px rgba(0, 0, 0, 0.1), 0 0 20px ${glowColor}`
+      boxShadow: `0 2px 8px rgba(0, 0, 0, 0.1), 0 0 20px ${glowColor}`,
     };
 
     if (size === 'sm') Object.assign(base, cardStyles.containerSm);
@@ -393,10 +393,14 @@ export const ItemCard: React.FC<ItemCardProps> = ({
       className={className}
       style={getContainerStyles()}
       onClick={handleCardClick}
-      whileHover={disabled ? {} : {
-        scale: 1.02,
-        boxShadow: `0 4px 16px rgba(0, 0, 0, 0.15), 0 0 30px ${glowColor}`
-      }}
+      whileHover={
+        disabled
+          ? {}
+          : {
+              scale: 1.02,
+              boxShadow: `0 4px 16px rgba(0, 0, 0, 0.15), 0 0 30px ${glowColor}`,
+            }
+      }
       whileTap={disabled ? {} : { scale: 0.98 }}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -408,15 +412,13 @@ export const ItemCard: React.FC<ItemCardProps> = ({
         {/* Header */}
         <div style={cardStyles.header}>
           <div style={cardStyles.titleContainer}>
-            <h3 style={getTitleStyles()}>
-              {item.name}
-            </h3>
-            <p style={cardStyles.category}>
-              {getCategoryDisplay()}
-            </p>
+            <h3 style={getTitleStyles()}>{item.name}</h3>
+            <p style={cardStyles.category}>{getCategoryDisplay()}</p>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <div
+            style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', flexWrap: 'wrap' }}
+          >
             {/* Rarity Indicator */}
             <RarityIndicator rarity={item.rarity} size={size} />
 
@@ -427,7 +429,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.15, type: 'spring' }}
-                title="This item is currently equipped"
+                title='This item is currently equipped'
               >
                 <span>{getEquipmentIcon(item)}</span>
                 <span>Equipped</span>
@@ -455,7 +457,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
               style={{
                 ...cardStyles.description,
                 ...(size === 'sm' ? cardStyles.descriptionSm : {}),
-                WebkitLineClamp: showFullDescription ? 'unset' : (size === 'sm' ? 2 : 3)
+                WebkitLineClamp: showFullDescription ? 'unset' : size === 'sm' ? 2 : 3,
               }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -479,7 +481,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
                 key={prop.key}
                 style={{
                   ...cardStyles.property,
-                  ...(cardStyles[prop.type as keyof typeof cardStyles] || {})
+                  ...(cardStyles[prop.type as keyof typeof cardStyles] || {}),
                 }}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -510,9 +512,9 @@ export const ItemCard: React.FC<ItemCardProps> = ({
             {/* Primary Action (Use/Consume) */}
             {item.itemType === 'consumable' && (
               <Button
-                variant="primary"
-                size="sm"
-                onClick={(e) => {
+                variant='primary'
+                size='sm'
+                onClick={e => {
                   e.stopPropagation();
                   handleUse();
                 }}
@@ -526,9 +528,9 @@ export const ItemCard: React.FC<ItemCardProps> = ({
             {/* Secondary Actions */}
             {onSell && (
               <Button
-                variant="secondary"
-                size="sm"
-                onClick={(e) => {
+                variant='secondary'
+                size='sm'
+                onClick={e => {
                   e.stopPropagation();
                   onSell(item);
                 }}
@@ -541,9 +543,9 @@ export const ItemCard: React.FC<ItemCardProps> = ({
 
             {onDrop && (
               <Button
-                variant="danger"
-                size="sm"
-                onClick={(e) => {
+                variant='danger'
+                size='sm'
+                onClick={e => {
                   e.stopPropagation();
                   onDrop(item);
                 }}
@@ -566,7 +568,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <LoadingSpinner size="sm" />
+            <LoadingSpinner size='sm' />
           </motion.div>
         )}
       </AnimatePresence>
@@ -581,11 +583,13 @@ export const ItemCard: React.FC<ItemCardProps> = ({
             exit={{ opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.3 }}
           >
-            <div style={
-              lastUseMessage.startsWith('Error:')
-                ? cardStyles.errorMessageText
-                : cardStyles.messageText
-            }>
+            <div
+              style={
+                lastUseMessage.startsWith('Error:')
+                  ? cardStyles.errorMessageText
+                  : cardStyles.messageText
+              }
+            >
               {lastUseMessage}
             </div>
           </motion.div>

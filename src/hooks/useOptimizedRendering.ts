@@ -70,7 +70,7 @@ export function useOptimizedRendering<T extends { id: string }>(
     cacheKey = 'optimized-render',
     cacheTTL = 5 * 60 * 1000, // 5 minutes
     enableMonitoring = true,
-    componentName = 'OptimizedRenderer'
+    componentName = 'OptimizedRenderer',
   } = config;
 
   // Performance monitoring
@@ -80,20 +80,22 @@ export function useOptimizedRendering<T extends { id: string }>(
   const cache = useSmartCache<string, React.ReactNode>({
     maxSize: Math.max(500, items.length * 2),
     defaultTTL: cacheTTL,
-    enableStats: true
+    enableStats: true,
   });
 
   // State for performance tracking
   const [renderMetrics, setRenderMetrics] = useState({
     renderTime: 0,
     cacheHitRate: 0,
-    memoryUsage: 0
+    memoryUsage: 0,
   });
 
   // Frame rate management
   const frameTimeRef = useRef(1000 / maxFPS);
   const lastFrameRef = useRef(0);
-  const renderQueueRef = useRef<Array<{ item: T; index: number; callback: (node: React.ReactNode) => void }>>([]);
+  const renderQueueRef = useRef<
+    Array<{ item: T; index: number; callback: (node: React.ReactNode) => void }>
+  >([]);
 
   // Scroll optimization state
   const [isScrolling, setIsScrolling] = useState(false);
@@ -114,104 +116,121 @@ export function useOptimizedRendering<T extends { id: string }>(
   }, [items, visibleRange.startIndex, visibleRange.endIndex]);
 
   // Optimized render function with caching
-  const renderItemOptimized = useCallback((item: T, index: number) => {
-    const itemCacheKey = `${cacheKey}-${item.id}-${index}`;
+  const renderItemOptimized = useCallback(
+    (item: T, index: number) => {
+      const itemCacheKey = `${cacheKey}-${item.id}-${index}`;
 
-    if (enableCaching) {
-      const cached = cache.get(itemCacheKey);
-      if (cached) {
-        return cached;
-      }
-    }
-
-    const startTime = performance.now();
-    const rendered = renderFunction(item, index);
-    const renderTime = performance.now() - startTime;
-
-    if (enableMonitoring && renderTime > frameTimeRef.current) {
-      console.warn(`Slow render detected for item ${item.id}: ${renderTime.toFixed(2)}ms`);
-    }
-
-    if (enableCaching) {
-      // Cache with higher TTL for frequently accessed items
-      const cacheTtl = renderTime > frameTimeRef.current ? cacheTTL * 2 : cacheTTL;
-      cache.set(itemCacheKey, rendered, {
-        ttl: cacheTtl,
-        tags: [cacheKey, `item-${item.id}`],
-        priority: renderTime > frameTimeRef.current ? 'low' : 'high'
-      });
-    }
-
-    return rendered;
-  }, [renderFunction, enableCaching, cache, cacheKey, enableMonitoring, cacheTTL]);
-
-  // Batch rendering for better performance
-  const renderBatch = useCallback((items: T[], startIndex: number) => {
-    return performanceMonitor.measure(() => {
-      const batchStart = performance.now();
-      const nodes: React.ReactNode[] = [];
-
-      // Render items in smaller chunks to avoid blocking
-      for (let i = 0; i < items.length; i += batchSize) {
-        const chunk = items.slice(i, Math.min(i + batchSize, items.length));
-
-        chunk.forEach((item, chunkIndex) => {
-          const itemIndex = startIndex + i + chunkIndex;
-          nodes.push(renderItemOptimized(item, itemIndex));
-        });
-
-        // Check if we need to yield to prevent frame drops
-        const elapsed = performance.now() - batchStart;
-        if (elapsed > frameTimeRef.current * 0.8) {
-          // Queue remaining items for next frame
-          const remaining = items.slice(i + batchSize);
-          if (remaining.length > 0) {
-            requestIdleCallback(() => {
-              const remainingNodes = renderBatch(remaining, startIndex + i + batchSize);
-              nodes.push(...remainingNodes);
-            });
-          }
-          break;
+      if (enableCaching) {
+        const cached = cache.get(itemCacheKey);
+        if (cached) {
+          return cached;
         }
       }
 
-      const renderTime = performance.now() - batchStart;
-      setRenderMetrics(prev => ({ ...prev, renderTime }));
+      const startTime = performance.now();
+      const rendered = renderFunction(item, index);
+      const renderTime = performance.now() - startTime;
 
-      return nodes;
-    });
-  }, [batchSize, frameTimeRef, renderItemOptimized, performanceMonitor]);
-
-  // Throttled scroll optimization
-  const optimizeForScrolling = useThrottle(useCallback((scrolling: boolean) => {
-    setIsScrolling(scrolling);
-
-    if (scrolling) {
-      // Reduce quality during scrolling for better performance
-      frameTimeRef.current = 1000 / (maxFPS * 0.6); // Reduce target FPS during scroll
-
-      // Clear timeout if it exists
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
+      if (enableMonitoring && renderTime > frameTimeRef.current) {
+        console.warn(`Slow render detected for item ${item.id}: ${renderTime.toFixed(2)}ms`);
       }
 
-      // Reset after scrolling stops
-      scrollTimeoutRef.current = setTimeout(() => {
-        setIsScrolling(false);
-        frameTimeRef.current = 1000 / maxFPS;
-      }, 150);
-    }
-  }, [maxFPS]), throttleMs);
+      if (enableCaching) {
+        // Cache with higher TTL for frequently accessed items
+        const cacheTtl = renderTime > frameTimeRef.current ? cacheTTL * 2 : cacheTTL;
+        cache.set(itemCacheKey, rendered, {
+          ttl: cacheTtl,
+          tags: [cacheKey, `item-${item.id}`],
+          priority: renderTime > frameTimeRef.current ? 'low' : 'high',
+        });
+      }
+
+      return rendered;
+    },
+    [renderFunction, enableCaching, cache, cacheKey, enableMonitoring, cacheTTL]
+  );
+
+  // Batch rendering for better performance
+  const renderBatch = useCallback(
+    (items: T[], startIndex: number) => {
+      return performanceMonitor.measure(() => {
+        const batchStart = performance.now();
+        const nodes: React.ReactNode[] = [];
+
+        // Render items in smaller chunks to avoid blocking
+        for (let i = 0; i < items.length; i += batchSize) {
+          const chunk = items.slice(i, Math.min(i + batchSize, items.length));
+
+          chunk.forEach((item, chunkIndex) => {
+            const itemIndex = startIndex + i + chunkIndex;
+            nodes.push(renderItemOptimized(item, itemIndex));
+          });
+
+          // Check if we need to yield to prevent frame drops
+          const elapsed = performance.now() - batchStart;
+          if (elapsed > frameTimeRef.current * 0.8) {
+            // Queue remaining items for next frame
+            const remaining = items.slice(i + batchSize);
+            if (remaining.length > 0) {
+              requestIdleCallback(() => {
+                const remainingNodes = renderBatch(remaining, startIndex + i + batchSize);
+                nodes.push(...remainingNodes);
+              });
+            }
+            break;
+          }
+        }
+
+        const renderTime = performance.now() - batchStart;
+        setRenderMetrics(prev => ({ ...prev, renderTime }));
+
+        return nodes;
+      });
+    },
+    [batchSize, frameTimeRef, renderItemOptimized, performanceMonitor]
+  );
+
+  // Throttled scroll optimization
+  const optimizeForScrolling = useThrottle(
+    useCallback(
+      (scrolling: boolean) => {
+        setIsScrolling(scrolling);
+
+        if (scrolling) {
+          // Reduce quality during scrolling for better performance
+          frameTimeRef.current = 1000 / (maxFPS * 0.6); // Reduce target FPS during scroll
+
+          // Clear timeout if it exists
+          if (scrollTimeoutRef.current) {
+            clearTimeout(scrollTimeoutRef.current);
+          }
+
+          // Reset after scrolling stops
+          scrollTimeoutRef.current = setTimeout(() => {
+            setIsScrolling(false);
+            frameTimeRef.current = 1000 / maxFPS;
+          }, 150);
+        }
+      },
+      [maxFPS]
+    ),
+    throttleMs
+  );
 
   // Preload items in range
-  const preloadRange = useCallback(async (start: number, end: number) => {
-    const preloadItems = items.slice(start, end + 1);
+  const preloadRange = useCallback(
+    async (start: number, end: number) => {
+      const preloadItems = items.slice(start, end + 1);
 
-    for (const item of preloadItems) {
-      const cacheKey = `${config.cacheKey}-${item.id}`;
-      await cache.prefetch(cacheKey, () => renderFunction(item, start + preloadItems.indexOf(item)));
-    }
-  }, [items, cache, renderFunction, config.cacheKey]);
+      for (const item of preloadItems) {
+        const cacheKey = `${config.cacheKey}-${item.id}`;
+        await cache.prefetch(cacheKey, () =>
+          renderFunction(item, start + preloadItems.indexOf(item))
+        );
+      }
+    },
+    [items, cache, renderFunction, config.cacheKey]
+  );
 
   // Cache invalidation
   const invalidateCache = useCallback(() => {
@@ -226,7 +245,7 @@ export function useOptimizedRendering<T extends { id: string }>(
       const stats = cache.getStats();
       setRenderMetrics(prev => ({
         ...prev,
-        cacheHitRate: stats.hitRate
+        cacheHitRate: stats.hitRate,
       }));
     }, 100); // Debounce by 100ms
 
@@ -241,7 +260,7 @@ export function useOptimizedRendering<T extends { id: string }>(
       const memory = (performance as any).memory;
       setRenderMetrics(prev => ({
         ...prev,
-        memoryUsage: memory.usedJSHeapSize / 1024 / 1024 // MB
+        memoryUsage: memory.usedJSHeapSize / 1024 / 1024, // MB
       }));
     }, 1000); // Update every 1 second instead of on every visibleItems change
 
@@ -271,7 +290,7 @@ export function useOptimizedRendering<T extends { id: string }>(
     memoryUsage: renderMetrics.memoryUsage,
     invalidateCache,
     preloadRange,
-    optimizeForScrolling
+    optimizeForScrolling,
   };
 }
 
@@ -291,7 +310,7 @@ export function useOptimizedInventoryRendering<T extends { id: string }>(
     batchSize: 15,
     maxFPS: 60,
     enableCaching: true,
-    enableMonitoring: true
+    enableMonitoring: true,
   });
 }
 
@@ -311,6 +330,6 @@ export function useOptimizedCreatureRendering<T extends { id: string }>(
     batchSize: 12,
     maxFPS: 60,
     enableCaching: true,
-    enableMonitoring: true
+    enableMonitoring: true,
   });
 }

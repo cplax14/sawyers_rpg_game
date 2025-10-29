@@ -26,7 +26,9 @@ export class ErrorRecoveryService {
   private fallbackMode: boolean = false;
   private notificationCallback?: (message: string, type: 'error' | 'warning' | 'info') => void;
 
-  constructor(notificationCallback?: (message: string, type: 'error' | 'warning' | 'info') => void) {
+  constructor(
+    notificationCallback?: (message: string, type: 'error' | 'warning' | 'info') => void
+  ) {
     this.notificationCallback = notificationCallback;
     this.initializeRecoveryStrategies();
   }
@@ -41,7 +43,7 @@ export class ErrorRecoveryService {
         name: 'wait_and_retry',
         description: 'Wait for network connection and retry',
         execute: async () => {
-          return new Promise((resolve) => {
+          return new Promise(resolve => {
             const checkConnection = () => {
               if (navigator.onLine) {
                 resolve(true);
@@ -55,10 +57,13 @@ export class ErrorRecoveryService {
         fallback: async () => {
           this.enableFallbackMode();
           serviceModeManager.degradeToMode(ServiceMode.OFFLINE, 'Network connection lost');
-          this.notify('Operating in offline mode. Changes will sync when connection is restored.', 'warning');
+          this.notify(
+            'Operating in offline mode. Changes will sync when connection is restored.',
+            'warning'
+          );
           return true;
-        }
-      }
+        },
+      },
     ]);
 
     this.recoveryStrategies.set(CloudErrorCode.NETWORK_ERROR, [
@@ -69,8 +74,8 @@ export class ErrorRecoveryService {
           const delay = Math.min(1000 * Math.pow(2, Math.random() * 3), 10000);
           await new Promise(resolve => setTimeout(resolve, delay));
           return navigator.onLine;
-        }
-      }
+        },
+      },
     ]);
 
     // Authentication error strategies
@@ -87,8 +92,8 @@ export class ErrorRecoveryService {
           serviceModeManager.degradeToMode(ServiceMode.LOCAL_ONLY, 'Authentication required');
           this.notify('Operating in local-only mode. Sign in to enable cloud features.', 'info');
           return true;
-        }
-      }
+        },
+      },
     ]);
 
     this.recoveryStrategies.set(CloudErrorCode.AUTH_EXPIRED, [
@@ -99,8 +104,8 @@ export class ErrorRecoveryService {
           // In a real implementation, this would attempt token refresh
           this.notify('Authentication expired. Please sign in again.', 'warning');
           return false;
-        }
-      }
+        },
+      },
     ]);
 
     // Storage quota strategies
@@ -113,10 +118,13 @@ export class ErrorRecoveryService {
           return false; // Requires user action
         },
         fallback: async () => {
-          this.notify('Cannot save to cloud due to storage limits. Saving locally only.', 'warning');
+          this.notify(
+            'Cannot save to cloud due to storage limits. Saving locally only.',
+            'warning'
+          );
           return true; // Continue with local saves
-        }
-      }
+        },
+      },
     ]);
 
     // Data integrity strategies
@@ -130,10 +138,13 @@ export class ErrorRecoveryService {
           return false;
         },
         fallback: async () => {
-          this.notify('Unable to recover corrupted save. Please use a different save slot.', 'error');
+          this.notify(
+            'Unable to recover corrupted save. Please use a different save slot.',
+            'error'
+          );
           return true;
-        }
-      }
+        },
+      },
     ]);
 
     this.recoveryStrategies.set(CloudErrorCode.DATA_CHECKSUM_MISMATCH, [
@@ -144,8 +155,8 @@ export class ErrorRecoveryService {
           this.notify('Data integrity check failed. Attempting repair...', 'warning');
           // Simplified repair: assume success for now
           return Math.random() > 0.5; // 50% success rate for demo
-        }
-      }
+        },
+      },
     ]);
 
     // Sync conflict strategies
@@ -157,8 +168,8 @@ export class ErrorRecoveryService {
           this.notify('Sync conflict detected. Resolving automatically...', 'info');
           // Use timestamp-based resolution by default
           return true;
-        }
-      }
+        },
+      },
     ]);
 
     // Operation timeout strategies
@@ -169,8 +180,8 @@ export class ErrorRecoveryService {
         execute: async () => {
           await new Promise(resolve => setTimeout(resolve, 5000));
           return true;
-        }
-      }
+        },
+      },
     ]);
   }
 
@@ -180,7 +191,10 @@ export class ErrorRecoveryService {
   async attemptRecovery(context: RecoveryContext): Promise<boolean> {
     const strategies = this.recoveryStrategies.get(context.error.code) || [];
 
-    logCloudError(context.error, `Recovery attempt ${context.attempt}/${context.maxAttempts} for ${context.operation}`);
+    logCloudError(
+      context.error,
+      `Recovery attempt ${context.attempt}/${context.maxAttempts} for ${context.operation}`
+    );
 
     // Try each recovery strategy
     for (const strategy of strategies) {
@@ -279,7 +293,8 @@ export class ErrorRecoveryService {
       this.notificationCallback(message, type);
     } else {
       // Fallback to console
-      const logFn = type === 'error' ? console.error : type === 'warning' ? console.warn : console.info;
+      const logFn =
+        type === 'error' ? console.error : type === 'warning' ? console.warn : console.info;
       logFn(`[${type.toUpperCase()}] ${message}`);
     }
   }
@@ -298,7 +313,7 @@ export class ErrorRecoveryService {
       attempt,
       maxAttempts,
       error,
-      userNotified: false
+      userNotified: false,
     };
   }
 
@@ -316,21 +331,27 @@ export class ErrorRecoveryService {
       try {
         return await operation();
       } catch (error) {
-        const cloudError = error instanceof Error ?
-          {
-            code: CloudErrorCode.UNKNOWN,
-            message: error.message,
-            severity: ErrorSeverity.MEDIUM,
-            retryable: true,
-            userMessage: error.message,
-            timestamp: new Date()
-          } as CloudError :
-          error as CloudError;
+        const cloudError =
+          error instanceof Error
+            ? ({
+                code: CloudErrorCode.UNKNOWN,
+                message: error.message,
+                severity: ErrorSeverity.MEDIUM,
+                retryable: true,
+                userMessage: error.message,
+                timestamp: new Date(),
+              } as CloudError)
+            : (error as CloudError);
 
         lastError = cloudError;
 
         if (attempt < maxAttempts && this.isRecoverable(cloudError)) {
-          const context = this.createRecoveryContext(operationName, cloudError, attempt, maxAttempts);
+          const context = this.createRecoveryContext(
+            operationName,
+            cloudError,
+            attempt,
+            maxAttempts
+          );
           const recovered = await this.attemptRecovery(context);
 
           if (recovered) {
@@ -361,7 +382,10 @@ export class ErrorRecoveryService {
     return {
       fallbackMode: this.fallbackMode,
       onlineStatus: navigator.onLine,
-      recoveryStrategiesCount: Array.from(this.recoveryStrategies.values()).reduce((sum, strategies) => sum + strategies.length, 0)
+      recoveryStrategiesCount: Array.from(this.recoveryStrategies.values()).reduce(
+        (sum, strategies) => sum + strategies.length,
+        0
+      ),
     };
   }
 }
@@ -374,8 +398,12 @@ export const errorRecoveryService = new ErrorRecoveryService();
 /**
  * Hook for using error recovery in React components
  */
-export const useErrorRecovery = (notificationCallback?: (message: string, type: 'error' | 'warning' | 'info') => void) => {
-  const service = notificationCallback ? new ErrorRecoveryService(notificationCallback) : errorRecoveryService;
+export const useErrorRecovery = (
+  notificationCallback?: (message: string, type: 'error' | 'warning' | 'info') => void
+) => {
+  const service = notificationCallback
+    ? new ErrorRecoveryService(notificationCallback)
+    : errorRecoveryService;
 
   return {
     attemptRecovery: service.attemptRecovery.bind(service),
@@ -385,6 +413,6 @@ export const useErrorRecovery = (notificationCallback?: (message: string, type: 
     disableFallbackMode: service.disableFallbackMode.bind(service),
     isInFallbackMode: service.isInFallbackMode.bind(service),
     executeWithRecovery: service.executeWithRecovery.bind(service),
-    getSystemStatus: service.getSystemStatus.bind(service)
+    getSystemStatus: service.getSystemStatus.bind(service),
   };
 };

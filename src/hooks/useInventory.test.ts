@@ -33,9 +33,9 @@ describe('useInventory Hook', () => {
       {
         type: 'heal',
         value: 50,
-        duration: 0
-      }
-    ]
+        duration: 0,
+      },
+    ],
   };
 
   const mockGameState = {
@@ -43,16 +43,16 @@ describe('useInventory Hook', () => {
       inventory: [mockReactItem],
       player: {
         name: 'Test Player',
-        level: 5
-      }
+        level: 5,
+      },
     },
-    updateState: jest.fn()
+    updateState: jest.fn(),
   };
 
   const mockSaveSystem = {
     saveGame: jest.fn(),
     loadGame: jest.fn(),
-    getCurrentSlot: jest.fn().mockReturnValue(0)
+    getCurrentSlot: jest.fn().mockReturnValue(0),
   };
 
   beforeEach(() => {

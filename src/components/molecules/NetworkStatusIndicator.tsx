@@ -23,7 +23,7 @@ export const NetworkStatusIndicator: React.FC<NetworkStatusIndicatorProps> = ({
   showDetails = false,
   compact = false,
   className = '',
-  allowManualCheck = true
+  allowManualCheck = true,
 }) => {
   const { status, isOnline, connectionQuality, checkConnectivity, statistics } = useNetworkStatus();
   const { isSuitable, reason } = useCloudOperationStatus();
@@ -85,7 +85,7 @@ export const NetworkStatusIndicator: React.FC<NetworkStatusIndicatorProps> = ({
     borderRadius: '6px',
     border: `1px solid ${getStatusColor()}`,
     fontSize: compact ? '0.8rem' : '0.9rem',
-    position: 'relative'
+    position: 'relative',
   };
 
   const statusIndicatorStyle: React.CSSProperties = {
@@ -93,7 +93,7 @@ export const NetworkStatusIndicator: React.FC<NetworkStatusIndicatorProps> = ({
     height: compact ? '8px' : '10px',
     borderRadius: '50%',
     backgroundColor: getStatusColor(),
-    animation: isChecking ? 'pulse 1s infinite' : undefined
+    animation: isChecking ? 'pulse 1s infinite' : undefined,
   };
 
   const detailsPanelStyle: React.CSSProperties = {
@@ -108,7 +108,7 @@ export const NetworkStatusIndicator: React.FC<NetworkStatusIndicatorProps> = ({
     borderRadius: '6px',
     fontSize: '0.8rem',
     zIndex: 1000,
-    minWidth: '280px'
+    minWidth: '280px',
   };
 
   if (compact) {
@@ -179,8 +179,8 @@ export const NetworkStatusIndicator: React.FC<NetworkStatusIndicatorProps> = ({
 
       {allowManualCheck && (
         <Button
-          variant="secondary"
-          size="sm"
+          variant='secondary'
+          size='sm'
           onClick={handleManualCheck}
           disabled={isChecking}
           style={{ marginLeft: 'auto' }}
@@ -191,8 +191,8 @@ export const NetworkStatusIndicator: React.FC<NetworkStatusIndicatorProps> = ({
 
       {showDetails && (
         <Button
-          variant="ghost"
-          size="sm"
+          variant='ghost'
+          size='sm'
           onClick={() => setShowDetailsPanel(!showDetailsPanel)}
           style={{ marginLeft: allowManualCheck ? '4px' : 'auto' }}
         >
@@ -233,7 +233,7 @@ const NetworkDetails: React.FC<NetworkDetailsProps> = ({
   status,
   statistics,
   onManualCheck,
-  isChecking
+  isChecking,
 }) => {
   const formatDuration = (ms: number) => {
     const seconds = Math.floor(ms / 1000);
@@ -249,17 +249,17 @@ const NetworkDetails: React.FC<NetworkDetailsProps> = ({
     display: 'flex',
     justifyContent: 'space-between',
     marginBottom: '8px',
-    color: '#cccccc'
+    color: '#cccccc',
   };
 
   const labelStyle: React.CSSProperties = {
     color: '#999999',
-    fontSize: '0.75rem'
+    fontSize: '0.75rem',
   };
 
   const valueStyle: React.CSSProperties = {
     color: '#ffffff',
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   };
 
   return (
@@ -270,9 +270,7 @@ const NetworkDetails: React.FC<NetworkDetailsProps> = ({
 
       <div style={detailItemStyle}>
         <span style={labelStyle}>Status:</span>
-        <span style={valueStyle}>
-          {status.isOnline ? '🟢 Online' : '🔴 Offline'}
-        </span>
+        <span style={valueStyle}>{status.isOnline ? '🟢 Online' : '🔴 Offline'}</span>
       </div>
 
       <div style={detailItemStyle}>
@@ -299,43 +297,41 @@ const NetworkDetails: React.FC<NetworkDetailsProps> = ({
 
       <div style={detailItemStyle}>
         <span style={labelStyle}>Data Saver:</span>
-        <span style={valueStyle}>
-          {status.saveData ? '🟡 Enabled' : '🟢 Disabled'}
-        </span>
+        <span style={valueStyle}>{status.saveData ? '🟡 Enabled' : '🟢 Disabled'}</span>
       </div>
 
       {statistics.currentSessionDuration > 0 && (
         <div style={detailItemStyle}>
           <span style={labelStyle}>Session:</span>
-          <span style={valueStyle}>
-            {formatDuration(statistics.currentSessionDuration)}
-          </span>
+          <span style={valueStyle}>{formatDuration(statistics.currentSessionDuration)}</span>
         </div>
       )}
 
       {status.lastOnline && (
         <div style={detailItemStyle}>
           <span style={labelStyle}>Last Online:</span>
-          <span style={valueStyle}>
-            {status.lastOnline.toLocaleTimeString()}
-          </span>
+          <span style={valueStyle}>{status.lastOnline.toLocaleTimeString()}</span>
         </div>
       )}
 
       {status.lastOffline && (
         <div style={detailItemStyle}>
           <span style={labelStyle}>Last Offline:</span>
-          <span style={valueStyle}>
-            {status.lastOffline.toLocaleTimeString()}
-          </span>
+          <span style={valueStyle}>{status.lastOffline.toLocaleTimeString()}</span>
         </div>
       )}
 
       {onManualCheck && (
-        <div style={{ marginTop: '12px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+        <div
+          style={{
+            marginTop: '12px',
+            paddingTop: '8px',
+            borderTop: '1px solid rgba(255,255,255,0.1)',
+          }}
+        >
           <Button
-            variant="secondary"
-            size="sm"
+            variant='secondary'
+            size='sm'
             onClick={onManualCheck}
             disabled={isChecking}
             style={{ width: '100%' }}

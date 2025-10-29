@@ -1,13 +1,31 @@
-import React, { createContext, useContext, useReducer, useEffect, useCallback, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useReducer,
+  useEffect,
+  useCallback,
+  ReactNode,
+} from 'react';
 import { AutoSaveManager } from '../utils/autoSave';
 import { InventoryState, EquipmentSlot } from '../types/inventory';
 import { CreatureCollection, EnhancedCreature } from '../types/creatures';
 import { ExperienceState } from '../types/experience';
-import { removeExhaustion, calculateBreedingCost, generateOffspring, validateBreeding, applyExhaustion } from '../utils/breedingEngine';
+import {
+  removeExhaustion,
+  calculateBreedingCost,
+  generateOffspring,
+  validateBreeding,
+  applyExhaustion,
+} from '../utils/breedingEngine';
 import { BreedingRecipe } from '../types/breeding';
 import { checkRecipeDiscoveryAfterCapture } from '../utils/recipeDiscovery';
 import { ExperienceCalculator } from '../utils/experienceUtils';
-import { cleanInvalidEquipment, migrateEquipmentSlots, EQUIPMENT_VERSION } from '../utils/equipmentValidation';
+import {
+  cleanInvalidEquipment,
+  migrateEquipmentSlots,
+  EQUIPMENT_VERSION,
+} from '../utils/equipmentValidation';
+import { Transaction, PlayerShopState, ShopInventory } from '../types/shop';
 
 // Global type declaration for auto-save manager
 declare global {
@@ -48,7 +66,7 @@ export interface PlayerStats {
 export interface Equipment {
   // Main equipment slots
   weapon: string | null; // Item ID
-  armor: string | null;  // Item ID (legacy - now maps to chestplate)
+  armor: string | null; // Item ID (legacy - now maps to chestplate)
   accessory: string | null; // Item ID (legacy - general accessory slot)
 
   // Extended equipment slots (10-slot system)
@@ -78,6 +96,7 @@ export interface ReactArea {
   monsters: string[]; // Monster IDs
   connections: string[]; // Area IDs
   services?: string[];
+  shopIds?: string[]; // Shop IDs available in this area
   recommendedLevel: number;
   position?: { x: number; y: number };
 }
@@ -172,7 +191,16 @@ export interface ReactGameState {
 
   // UI state
   isLoading: boolean;
-  currentScreen: 'menu' | 'character-selection' | 'world-map' | 'area' | 'combat' | 'inventory' | 'breeding' | 'creatures' | 'settings';
+  currentScreen:
+    | 'menu'
+    | 'character-selection'
+    | 'world-map'
+    | 'area'
+    | 'combat'
+    | 'inventory'
+    | 'breeding'
+    | 'creatures'
+    | 'settings';
   error: string | null;
 
   // Combat state
@@ -206,6 +234,9 @@ export interface ReactGameState {
   breedingAttempts: number;
   discoveredRecipes: string[];
   breedingMaterials: Record<string, number>;
+
+  // Shop system
+  shops?: PlayerShopState;
 
   // System metadata for tracking versions and migrations
   metadata?: GameMetadata;
@@ -260,7 +291,10 @@ export type ReactGameAction =
   | { type: 'SET_CURRENT_SCREEN'; payload: ReactGameState['currentScreen'] }
   | { type: 'CREATE_PLAYER'; payload: { name: string; class: string } }
   | { type: 'UPDATE_PLAYER'; payload: Partial<ReactPlayer> }
-  | { type: 'UPDATE_PLAYER_STATS'; payload: { playerId: string; stats: Partial<ReactPlayer['stats']> } }
+  | {
+      type: 'UPDATE_PLAYER_STATS';
+      payload: { playerId: string; stats: Partial<ReactPlayer['stats']> };
+    }
   | { type: 'LEVEL_UP_PLAYER'; payload: { playerId: string } }
   | { type: 'ADD_EXPERIENCE'; payload: { playerId: string; experience: number } }
   | { type: 'ADD_GOLD'; payload: { playerId: string; gold: number } }
@@ -301,13 +335,37 @@ export type ReactGameAction =
   | { type: 'UPDATE_CREATURE_COLLECTION'; payload: CreatureCollection }
   | { type: 'UPDATE_EXPERIENCE_STATE'; payload: ExperienceState }
   // Breeding system actions
-  | { type: 'BREED_CREATURES'; payload: { parent1Id: string; parent2Id: string; recipeId?: string } }
+  | {
+      type: 'BREED_CREATURES';
+      payload: { parent1Id: string; parent2Id: string; recipeId?: string };
+    }
   | { type: 'UPDATE_BREEDING_ATTEMPTS'; payload: number }
   | { type: 'DISCOVER_RECIPE'; payload: string }
   | { type: 'ADD_BREEDING_MATERIAL'; payload: { materialId: string; quantity: number } }
   | { type: 'REMOVE_BREEDING_MATERIAL'; payload: { materialId: string; quantity: number } }
   | { type: 'APPLY_EXHAUSTION'; payload: { creatureId: string } }
-  | { type: 'REMOVE_EXHAUSTION'; payload: { creatureId: string; levelsToRemove: number; costGold?: number } };
+  | {
+      type: 'REMOVE_EXHAUSTION';
+      payload: { creatureId: string; levelsToRemove: number; costGold?: number };
+    }
+  // Shop system actions
+  | { type: 'DISCOVER_SHOP'; payload: { shopId: string } }
+  | { type: 'UNLOCK_SHOP'; payload: { shopId: string } }
+  | { type: 'OPEN_SHOP'; payload: { shopId: string } }
+  | { type: 'CLOSE_SHOP' }
+  | {
+      type: 'BUY_ITEM';
+      payload: { shopId: string; item: ReactItem; quantity: number; totalCost: number };
+    }
+  | {
+      type: 'SELL_ITEM';
+      payload: { shopId: string; itemId: string; quantity: number; totalValue: number };
+    }
+  | { type: 'ADD_TRANSACTION'; payload: { transaction: Transaction } }
+  | { type: 'UPDATE_SHOP_INVENTORY_CACHE'; payload: { shopId: string; inventory: ShopInventory } }
+  | { type: 'COMPLETE_SHOP_TUTORIAL' }
+  | { type: 'COMPLETE_TRADE_TUTORIAL' }
+  | { type: 'COMPLETE_NPC_TRADE'; payload: { tradeId: string } };
 
 /**
  * Helper function to calculate player stats including equipment bonuses
@@ -378,8 +436,14 @@ function validateBreedingData(creature: EnhancedCreature): EnhancedCreature {
   const validated = { ...creature };
 
   // Validate generation (0-5)
-  if (typeof validated.generation !== 'number' || validated.generation < 0 || validated.generation > 5) {
-    console.warn(`⚠️ Invalid generation ${validated.generation} for creature ${validated.id}, defaulting to 0`);
+  if (
+    typeof validated.generation !== 'number' ||
+    validated.generation < 0 ||
+    validated.generation > 5
+  ) {
+    console.warn(
+      `⚠️ Invalid generation ${validated.generation} for creature ${validated.id}, defaulting to 0`
+    );
     validated.generation = 0;
   }
 
@@ -415,10 +479,19 @@ function validateBreedingData(creature: EnhancedCreature): EnhancedCreature {
 
   // Ensure stats don't exceed generation caps
   if (validated.stats) {
-    const statKeys: (keyof PlayerStats)[] = ['attack', 'defense', 'magicAttack', 'magicDefense', 'speed', 'accuracy'];
+    const statKeys: (keyof PlayerStats)[] = [
+      'attack',
+      'defense',
+      'magicAttack',
+      'magicDefense',
+      'speed',
+      'accuracy',
+    ];
     statKeys.forEach(statKey => {
       if (validated.stats[statKey] > expectedCap) {
-        console.warn(`⚠️ Stat ${statKey} (${validated.stats[statKey]}) exceeds gen ${validated.generation} cap (${expectedCap}), capping it`);
+        console.warn(
+          `⚠️ Stat ${statKey} (${validated.stats[statKey]}) exceeds gen ${validated.generation} cap (${expectedCap}), capping it`
+        );
         validated.stats[statKey] = expectedCap;
       }
     });
@@ -436,7 +509,7 @@ function migrateCreatureToBreedingSystem(creature: any): EnhancedCreature {
     exhaustionLevel: creature.exhaustionLevel ?? 0,
     parentIds: creature.parentIds ?? [undefined, undefined],
     inheritedAbilities: creature.inheritedAbilities ?? [],
-    passiveTraits: creature.passiveTraits ?? []
+    passiveTraits: creature.passiveTraits ?? [],
   };
 }
 
@@ -463,6 +536,18 @@ const initialState: ReactGameState = {
   breedingAttempts: 0,
   discoveredRecipes: [],
   breedingMaterials: {},
+  // Initialize shop state with defaults
+  shops: {
+    discoveredShops: [],
+    unlockedShops: [],
+    currentShop: null,
+    shopInventoryCache: {},
+    transactionHistory: [],
+    completedTrades: [],
+    tradeCooldowns: {},
+    shopTutorialCompleted: false,
+    tradeTutorialCompleted: false,
+  },
   // Initialize creatures collection to prevent undefined errors
   creatures: {
     creatures: {},
@@ -510,9 +595,10 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
       const { name, class: playerClass } = action.payload;
 
       // Load character class data and assign starting spells
-      const characterClassData = typeof window !== 'undefined' && (window as any).CharacterData
-        ? (window as any).CharacterData.getClass(playerClass)
-        : null;
+      const characterClassData =
+        typeof window !== 'undefined' && (window as any).CharacterData
+          ? (window as any).CharacterData.getClass(playerClass)
+          : null;
 
       const startingSpells = characterClassData?.startingSpells || [];
 
@@ -562,7 +648,7 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         player: newPlayer,
         currentScreen: 'world-map',
         sessionStartTime: Date.now(),
-        storyFlags: { ...state.storyFlags, tutorial_complete: true }
+        storyFlags: { ...state.storyFlags, tutorial_complete: true },
       };
 
     case 'UPDATE_PLAYER':
@@ -571,7 +657,7 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
       console.log('🔍 UPDATE_PLAYER Debug:', {
         originalPlayer: { experience: state.player.experience, gold: state.player.gold },
         updatePayload: action.payload,
-        updatedPlayer: { experience: updatedPlayerData.experience, gold: updatedPlayerData.gold }
+        updatedPlayer: { experience: updatedPlayerData.experience, gold: updatedPlayerData.gold },
       });
       return {
         ...state,
@@ -634,16 +720,18 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
 
     case 'REMOVE_FROM_INVENTORY':
       const { itemId, quantity = 1 } = action.payload;
-      const filteredInventory = state.inventory.map(item => {
-        if (item.id === itemId) {
-          const newQuantity = item.quantity - quantity;
-          if (newQuantity <= 0) {
-            return null; // Mark for removal
+      const filteredInventory = state.inventory
+        .map(item => {
+          if (item.id === itemId) {
+            const newQuantity = item.quantity - quantity;
+            if (newQuantity <= 0) {
+              return null; // Mark for removal
+            }
+            return { ...item, quantity: newQuantity };
           }
-          return { ...item, quantity: newQuantity };
-        }
-        return item;
-      }).filter(Boolean) as ReactItem[];
+          return item;
+        })
+        .filter(Boolean) as ReactItem[];
 
       return { ...state, inventory: filteredInventory };
 
@@ -651,9 +739,7 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
       return {
         ...state,
         inventory: state.inventory.map(item =>
-          item.id === action.payload.itemId
-            ? { ...item, quantity: action.payload.quantity }
-            : item
+          item.id === action.payload.itemId ? { ...item, quantity: action.payload.quantity } : item
         ),
       };
 
@@ -691,7 +777,9 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
     case 'RELEASE_MONSTER':
       return {
         ...state,
-        capturedMonsters: state.capturedMonsters.filter(monster => monster.id !== action.payload.monsterId),
+        capturedMonsters: state.capturedMonsters.filter(
+          monster => monster.id !== action.payload.monsterId
+        ),
       };
 
     case 'UPDATE_STORY_FLAGS':
@@ -720,11 +808,15 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
 
     case 'LOAD_GAME_DATA':
       console.log('🔍 LOAD_GAME_DATA Debug:', {
-        currentPlayerData: state.player ? { experience: state.player.experience, gold: state.player.gold } : 'No player',
-        payloadPlayerData: action.payload.player ? { experience: action.payload.player.experience, gold: action.payload.player.gold } : 'No player in payload',
+        currentPlayerData: state.player
+          ? { experience: state.player.experience, gold: state.player.gold }
+          : 'No player',
+        payloadPlayerData: action.payload.player
+          ? { experience: action.payload.player.experience, gold: action.payload.player.gold }
+          : 'No player in payload',
         currentStoryFlags: state.storyFlags,
         payloadStoryFlags: action.payload.storyFlags,
-        fullPayload: action.payload
+        fullPayload: action.payload,
       });
       const loadedState = { ...state, ...action.payload };
 
@@ -733,14 +825,16 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         console.warn('⚠️ Loaded save missing tutorial_complete flag, adding it automatically...');
         loadedState.storyFlags = {
           ...loadedState.storyFlags,
-          tutorial_complete: true
+          tutorial_complete: true,
         };
       }
 
       console.log('🔍 LOAD_GAME_DATA Result:', {
-        newPlayerData: loadedState.player ? { experience: loadedState.player.experience, gold: loadedState.player.gold } : 'No player',
+        newPlayerData: loadedState.player
+          ? { experience: loadedState.player.experience, gold: loadedState.player.gold }
+          : 'No player',
         storyFlags: loadedState.storyFlags,
-        hasTutorialComplete: loadedState.storyFlags?.tutorial_complete
+        hasTutorialComplete: loadedState.storyFlags?.tutorial_complete,
       });
       return loadedState;
 
@@ -748,7 +842,7 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
       return {
         ...state,
         currentEncounter: action.payload,
-        currentScreen: 'combat'
+        currentScreen: 'combat',
       };
 
     case 'END_COMBAT':
@@ -770,26 +864,32 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         updatedPlayerFromCombat = {
           ...updatedPlayerFromCombat,
           experience: updatedPlayerFromCombat.experience + experience,
-          gold: updatedPlayerFromCombat.gold + gold
+          gold: updatedPlayerFromCombat.gold + gold,
         };
 
         // Check for level up using proper level calculation
-        const calculatedLevel = ExperienceCalculator.calculateLevel(updatedPlayerFromCombat.experience);
+        const calculatedLevel = ExperienceCalculator.calculateLevel(
+          updatedPlayerFromCombat.experience
+        );
         if (calculatedLevel > updatedPlayerFromCombat.level && calculatedLevel <= 100) {
           // Player leveled up!
           didLevelUp = true;
           levelAfterCombat = calculatedLevel;
           const levelDifference = calculatedLevel - updatedPlayerFromCombat.level;
-          console.log(`🎉 LEVEL UP! ${updatedPlayerFromCombat.level} → ${calculatedLevel} (gained ${levelDifference} levels)`);
+          console.log(
+            `🎉 LEVEL UP! ${updatedPlayerFromCombat.level} → ${calculatedLevel} (gained ${levelDifference} levels)`
+          );
 
           updatedPlayerFromCombat = {
             ...updatedPlayerFromCombat,
             level: calculatedLevel,
-            experienceToNext: ExperienceCalculator.getXPForNextLevel(updatedPlayerFromCombat.experience),
-            maxHp: updatedPlayerFromCombat.maxHp + (10 * levelDifference),
-            maxMp: updatedPlayerFromCombat.maxMp + (5 * levelDifference),
-            hp: updatedPlayerFromCombat.maxHp + (10 * levelDifference),
-            mp: updatedPlayerFromCombat.maxMp + (5 * levelDifference)
+            experienceToNext: ExperienceCalculator.getXPForNextLevel(
+              updatedPlayerFromCombat.experience
+            ),
+            maxHp: updatedPlayerFromCombat.maxHp + 10 * levelDifference,
+            maxMp: updatedPlayerFromCombat.maxMp + 5 * levelDifference,
+            hp: updatedPlayerFromCombat.maxHp + 10 * levelDifference,
+            mp: updatedPlayerFromCombat.maxMp + 5 * levelDifference,
           };
         }
       }
@@ -798,7 +898,9 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
       const updatedInventoryFromCombat = [...state.inventory];
       if (items && Array.isArray(items)) {
         items.forEach(newItem => {
-          const existingItemIndex = updatedInventoryFromCombat.findIndex(item => item.id === newItem.id);
+          const existingItemIndex = updatedInventoryFromCombat.findIndex(
+            item => item.id === newItem.id
+          );
           if (existingItemIndex !== -1) {
             updatedInventoryFromCombat[existingItemIndex].quantity += newItem.quantity;
           } else {
@@ -819,23 +921,23 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
           items,
           didLevelUp,
           previousLevel,
-          newLevel: levelAfterCombat
+          newLevel: levelAfterCombat,
         },
         // Keep current screen as 'combat' to show victory modal, let VictoryModal handle navigation
-        currentScreen: state.currentScreen
+        currentScreen: state.currentScreen,
       };
 
     case 'SHOW_VICTORY_MODAL':
       return {
         ...state,
-        showVictoryModal: action.payload
+        showVictoryModal: action.payload,
       };
 
     case 'HIDE_VICTORY_MODAL':
       return {
         ...state,
         showVictoryModal: false,
-        lastCombatRewards: null
+        lastCombatRewards: null,
       };
 
     case 'LEVEL_UP_PLAYER':
@@ -848,7 +950,7 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         maxHp: state.player.maxHp + 10,
         maxMp: state.player.maxMp + 5,
         hp: state.player.maxHp + 10, // Heal to full on level up
-        mp: state.player.maxMp + 5
+        mp: state.player.maxMp + 5,
       };
       // Trigger auto-save for level up
       setTimeout(() => {
@@ -867,7 +969,7 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         currentExp: state.player.experience,
         currentExpType: typeof state.player.experience,
         incomingExp: action.payload.experience,
-        incomingExpType: typeof action.payload.experience
+        incomingExpType: typeof action.payload.experience,
       });
       const newExp = state.player.experience + action.payload.experience;
 
@@ -876,7 +978,7 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         console.error('❌ Invalid XP calculation!', {
           currentXP: state.player.experience,
           addedXP: action.payload.experience,
-          result: newExp
+          result: newExp,
         });
         return state; // Don't update with invalid data
       }
@@ -889,16 +991,18 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
       if (calculatedLevel > updatedPlayer.level && calculatedLevel <= 100) {
         // Player leveled up!
         const levelDifference = calculatedLevel - updatedPlayer.level;
-        console.log(`🎉 LEVEL UP! ${updatedPlayer.level} → ${calculatedLevel} (gained ${levelDifference} levels)`);
+        console.log(
+          `🎉 LEVEL UP! ${updatedPlayer.level} → ${calculatedLevel} (gained ${levelDifference} levels)`
+        );
 
         updatedPlayer = {
           ...updatedPlayer,
           level: calculatedLevel,
           experienceToNext: ExperienceCalculator.getXPForNextLevel(updatedPlayer.experience),
-          maxHp: updatedPlayer.maxHp + (10 * levelDifference),
-          maxMp: updatedPlayer.maxMp + (5 * levelDifference),
-          hp: updatedPlayer.maxHp + (10 * levelDifference),
-          mp: updatedPlayer.maxMp + (5 * levelDifference)
+          maxHp: updatedPlayer.maxHp + 10 * levelDifference,
+          maxMp: updatedPlayer.maxMp + 5 * levelDifference,
+          hp: updatedPlayer.maxHp + 10 * levelDifference,
+          mp: updatedPlayer.maxMp + 5 * levelDifference,
         };
         // Trigger auto-save for level up
         setTimeout(() => {
@@ -919,7 +1023,7 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         currentGold: state.player.gold,
         currentGoldType: typeof state.player.gold,
         incomingGold: action.payload.gold,
-        incomingGoldType: typeof action.payload.gold
+        incomingGoldType: typeof action.payload.gold,
       });
       const newGold = state.player.gold + action.payload.gold;
       console.log('🔍 ADD_GOLD Result:', { newGold, isNaN: isNaN(newGold) });
@@ -927,7 +1031,7 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         ...state,
         player: {
           ...state.player,
-          gold: newGold
+          gold: newGold,
         },
       };
 
@@ -942,7 +1046,19 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
       const { slot, itemId: equipItemId } = action.payload;
 
       // Basic validation: slot must be a valid equipment slot
-      const validSlots = ['weapon', 'armor', 'accessory', 'helmet', 'necklace', 'shield', 'gloves', 'boots', 'ring1', 'ring2', 'charm'];
+      const validSlots = [
+        'weapon',
+        'armor',
+        'accessory',
+        'helmet',
+        'necklace',
+        'shield',
+        'gloves',
+        'boots',
+        'ring1',
+        'ring2',
+        'charm',
+      ];
       if (!validSlots.includes(slot)) {
         console.warn(`⚠️ [EQUIP_ITEM] Invalid equipment slot: ${slot}`);
         return state;
@@ -961,9 +1077,9 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
           ...state.player,
           equipment: {
             ...state.player.equipment,
-            [slot]: equipItemId
-          }
-        }
+            [slot]: equipItemId,
+          },
+        },
       };
 
     case 'UNEQUIP_ITEM':
@@ -977,7 +1093,19 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
       const { slot: unequipSlot } = action.payload;
 
       // Basic validation: slot must be a valid equipment slot
-      const validUnequipSlots = ['weapon', 'armor', 'accessory', 'helmet', 'necklace', 'shield', 'gloves', 'boots', 'ring1', 'ring2', 'charm'];
+      const validUnequipSlots = [
+        'weapon',
+        'armor',
+        'accessory',
+        'helmet',
+        'necklace',
+        'shield',
+        'gloves',
+        'boots',
+        'ring1',
+        'ring2',
+        'charm',
+      ];
       if (!validUnequipSlots.includes(unequipSlot)) {
         console.warn(`⚠️ [UNEQUIP_ITEM] Invalid equipment slot: ${unequipSlot}`);
         return state;
@@ -990,9 +1118,9 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
           ...state.player,
           equipment: {
             ...state.player.equipment,
-            [unequipSlot]: null
-          }
-        }
+            [unequipSlot]: null,
+          },
+        },
       };
 
     case 'UPDATE_PLAYER_STATS':
@@ -1008,7 +1136,7 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         ...state,
         player: {
           ...state.player,
-          stats: { ...state.player.stats, ...statsToUpdate }
+          stats: { ...state.player.stats, ...statsToUpdate },
         },
       };
 
@@ -1019,19 +1147,19 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
     case 'UPDATE_INVENTORY_STATE':
       return {
         ...state,
-        inventoryState: action.payload
+        inventoryState: action.payload,
       };
 
     case 'UPDATE_CREATURE_COLLECTION':
       return {
         ...state,
-        creatures: action.payload
+        creatures: action.payload,
       };
 
     case 'UPDATE_EXPERIENCE_STATE':
       return {
         ...state,
-        experience: action.payload
+        experience: action.payload,
       };
 
     // Breeding system reducer handlers
@@ -1048,7 +1176,7 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
       if (!parent1 || !parent2) {
         console.error('❌ BREED_CREATURES: Parent creatures not found', {
           parent1Id: action.payload.parent1Id,
-          parent2Id: action.payload.parent2Id
+          parent2Id: action.payload.parent2Id,
         });
         return state;
       }
@@ -1238,7 +1366,7 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         offspring: completeOffspring.name,
         species: result.offspringSpecies,
         generation: result.generation,
-        rarity: result.offspring.rarity
+        rarity: result.offspring.rarity,
       });
 
       // REMOVED: Auto-save trigger moved to external effect (see useEffect in ReactGameProvider)
@@ -1260,7 +1388,7 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
     case 'UPDATE_BREEDING_ATTEMPTS':
       return {
         ...state,
-        breedingAttempts: action.payload
+        breedingAttempts: action.payload,
       };
 
     case 'RENAME_MONSTER': {
@@ -1276,27 +1404,27 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
       const updatedCreature = {
         ...targetCreature,
         name: action.payload.nickname,
-        nickname: action.payload.nickname
+        nickname: action.payload.nickname,
       };
 
       const updatedCreatures = {
         ...state.creatures,
         creatures: {
           ...state.creatures.creatures,
-          [action.payload.monsterId]: updatedCreature
+          [action.payload.monsterId]: updatedCreature,
         },
-        lastUpdated: Date.now() // Trigger state propagation
+        lastUpdated: Date.now(), // Trigger state propagation
       };
 
       console.log('✅ [RENAME_MONSTER] Creature renamed:', {
         id: action.payload.monsterId,
         oldName: targetCreature.name,
-        newName: action.payload.nickname
+        newName: action.payload.nickname,
       });
 
       return {
         ...state,
-        creatures: updatedCreatures
+        creatures: updatedCreatures,
       };
     }
 
@@ -1304,7 +1432,7 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
       if (state.discoveredRecipes.includes(action.payload)) return state;
       return {
         ...state,
-        discoveredRecipes: [...state.discoveredRecipes, action.payload]
+        discoveredRecipes: [...state.discoveredRecipes, action.payload],
       };
 
     case 'ADD_BREEDING_MATERIAL':
@@ -1313,8 +1441,8 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         ...state,
         breedingMaterials: {
           ...state.breedingMaterials,
-          [action.payload.materialId]: currentMaterialQuantity + action.payload.quantity
-        }
+          [action.payload.materialId]: currentMaterialQuantity + action.payload.quantity,
+        },
       };
 
     case 'REMOVE_BREEDING_MATERIAL':
@@ -1330,7 +1458,7 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
 
       return {
         ...state,
-        breedingMaterials: updatedMaterials
+        breedingMaterials: updatedMaterials,
       };
 
     case 'APPLY_EXHAUSTION':
@@ -1345,14 +1473,14 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
 
       // Apply -20% stat penalty per exhaustion level to creature's stats
       // Note: We apply penalty directly to stats since EnhancedCreature uses Monster.stats
-      const exhaustionMultiplier = 1 - (newExhaustionLevel * 0.2);
+      const exhaustionMultiplier = 1 - newExhaustionLevel * 0.2;
       const penalizedStats = {
         attack: Math.floor(targetCreature.stats.attack * exhaustionMultiplier),
         defense: Math.floor(targetCreature.stats.defense * exhaustionMultiplier),
         magicAttack: Math.floor(targetCreature.stats.magicAttack * exhaustionMultiplier),
         magicDefense: Math.floor(targetCreature.stats.magicDefense * exhaustionMultiplier),
         speed: Math.floor(targetCreature.stats.speed * exhaustionMultiplier),
-        accuracy: Math.floor(targetCreature.stats.accuracy * exhaustionMultiplier)
+        accuracy: Math.floor(targetCreature.stats.accuracy * exhaustionMultiplier),
       };
 
       const updatedCreatures = {
@@ -1363,14 +1491,14 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
             ...targetCreature,
             exhaustionLevel: newExhaustionLevel,
             breedingCount: newBreedingCount,
-            stats: penalizedStats
-          }
-        }
+            stats: penalizedStats,
+          },
+        },
       };
 
       return {
         ...state,
-        creatures: updatedCreatures
+        creatures: updatedCreatures,
       };
 
     case 'REMOVE_EXHAUSTION':
@@ -1384,9 +1512,10 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
       if (currentExhaustion === 0) return state; // Already fully restored
 
       // Calculate new exhaustion level
-      const levelsToRemove = action.payload.levelsToRemove === -1
-        ? currentExhaustion  // -1 means remove all
-        : action.payload.levelsToRemove;
+      const levelsToRemove =
+        action.payload.levelsToRemove === -1
+          ? currentExhaustion // -1 means remove all
+          : action.payload.levelsToRemove;
       const newExhaustion = Math.max(0, currentExhaustion - levelsToRemove);
 
       // Recalculate stats without exhaustion penalty using removeExhaustion from breedingEngine
@@ -1397,7 +1526,7 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
       if (action.payload.costGold && action.payload.costGold > 0) {
         updatedPlayerAfterRecovery = {
           ...state.player,
-          gold: state.player.gold - action.payload.costGold
+          gold: state.player.gold - action.payload.costGold,
         };
       }
 
@@ -1405,14 +1534,14 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         ...state.creatures,
         creatures: {
           ...state.creatures.creatures,
-          [action.payload.creatureId]: restoredCreature
-        }
+          [action.payload.creatureId]: restoredCreature,
+        },
       };
 
       return {
         ...state,
         player: updatedPlayerAfterRecovery,
-        creatures: updatedCreaturesAfterRecovery
+        creatures: updatedCreaturesAfterRecovery,
       };
 
     case 'SAVE_GAME':
@@ -1436,19 +1565,24 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
           breedingAttempts: state.breedingAttempts,
           discoveredRecipes: state.discoveredRecipes,
           breedingMaterials: state.breedingMaterials,
+          // Shop system data
+          shops: state.shops,
           // System metadata with version tracking
           metadata: {
             ...state.metadata,
             equipmentVersion: EQUIPMENT_VERSION,
-            savedAt: new Date().toISOString()
-          }
+            savedAt: new Date().toISOString(),
+          },
         };
 
         // Save to localStorage
         const saveSlotKey = `sawyers_rpg_save_slot_${action.payload.slotIndex}`;
         localStorage.setItem(saveSlotKey, JSON.stringify(saveData));
 
-        console.log(`✅ Game saved to slot ${action.payload.slotIndex + 1}:`, action.payload.saveName);
+        console.log(
+          `✅ Game saved to slot ${action.payload.slotIndex + 1}:`,
+          action.payload.saveName
+        );
 
         // Update save slots in state
         const updatedSaveSlots = [...state.saveSlots];
@@ -1456,13 +1590,13 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
           data: saveData,
           isEmpty: false,
           saveName: action.payload.saveName,
-          timestamp: action.payload.timestamp
+          timestamp: action.payload.timestamp,
         };
 
         return {
           ...state,
           saveSlots: updatedSaveSlots,
-          currentSaveSlot: action.payload.slotIndex
+          currentSaveSlot: action.payload.slotIndex,
         };
       } catch (error) {
         console.error('Save failed:', error);
@@ -1508,13 +1642,16 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
             const creature = loadedCreatures.creatures[creatureId];
 
             // Check if creature needs migration (missing breeding fields)
-            const needsMigration = creature.generation === undefined ||
-                                   creature.breedingCount === undefined ||
-                                   creature.exhaustionLevel === undefined;
+            const needsMigration =
+              creature.generation === undefined ||
+              creature.breedingCount === undefined ||
+              creature.exhaustionLevel === undefined;
 
             if (needsMigration) {
               migrationCount++;
-              validatedCreatures[creatureId] = validateBreedingData(migrateCreatureToBreedingSystem(creature));
+              validatedCreatures[creatureId] = validateBreedingData(
+                migrateCreatureToBreedingSystem(creature)
+              );
             } else {
               validationCount++;
               validatedCreatures[creatureId] = validateBreedingData(creature);
@@ -1523,7 +1660,7 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
 
           loadedCreatures = {
             ...loadedCreatures,
-            creatures: validatedCreatures
+            creatures: validatedCreatures,
           };
 
           if (migrationCount > 0) {
@@ -1554,7 +1691,20 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
           // Breeding system data with backward compatibility
           breedingAttempts: parsedData.breedingAttempts || 0,
           discoveredRecipes: parsedData.discoveredRecipes || [],
-          breedingMaterials: parsedData.breedingMaterials || {}
+          breedingMaterials: parsedData.breedingMaterials || {},
+          // Shop system data with backward compatibility
+          // Ensure all required fields exist to prevent undefined errors in old saves
+          shops: {
+            discoveredShops: parsedData.shops?.discoveredShops || [],
+            unlockedShops: parsedData.shops?.unlockedShops || [],
+            currentShop: parsedData.shops?.currentShop || null,
+            shopInventoryCache: parsedData.shops?.shopInventoryCache || {},
+            transactionHistory: parsedData.shops?.transactionHistory || [],
+            completedTrades: parsedData.shops?.completedTrades || [],
+            tradeCooldowns: parsedData.shops?.tradeCooldowns || {},
+            shopTutorialCompleted: parsedData.shops?.shopTutorialCompleted || false,
+            tradeTutorialCompleted: parsedData.shops?.tradeTutorialCompleted || false,
+          },
         };
       } catch (error) {
         console.error('Load failed:', error);
@@ -1574,18 +1724,405 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
           data: null,
           isEmpty: true,
           saveName: '',
-          timestamp: 0
+          timestamp: 0,
         };
 
         return {
           ...state,
           saveSlots: updatedSaveSlots,
-          currentSaveSlot: state.currentSaveSlot === action.payload.slotIndex ? null : state.currentSaveSlot
+          currentSaveSlot:
+            state.currentSaveSlot === action.payload.slotIndex ? null : state.currentSaveSlot,
         };
       } catch (error) {
         console.error('Delete save failed:', error);
         return state;
       }
+
+    // =============================================================================
+    // SHOP SYSTEM REDUCERS
+    // =============================================================================
+
+    case 'DISCOVER_SHOP': {
+      // Initialize shop state if it doesn't exist
+      const shopState = state.shops || {
+        discoveredShops: [],
+        unlockedShops: [],
+        currentShop: null,
+        shopInventoryCache: {},
+        transactionHistory: [],
+        completedTrades: [],
+        tradeCooldowns: {},
+        shopTutorialCompleted: false,
+        tradeTutorialCompleted: false,
+      };
+
+      // Check if shop is already discovered
+      if (shopState.discoveredShops.includes(action.payload.shopId)) {
+        return state;
+      }
+
+      console.log('🔍 Shop discovered:', action.payload.shopId);
+
+      return {
+        ...state,
+        shops: {
+          ...shopState,
+          discoveredShops: [...shopState.discoveredShops, action.payload.shopId],
+        },
+      };
+    }
+
+    case 'UNLOCK_SHOP': {
+      // Initialize shop state if it doesn't exist
+      const shopState = state.shops || {
+        discoveredShops: [],
+        unlockedShops: [],
+        currentShop: null,
+        shopInventoryCache: {},
+        transactionHistory: [],
+        completedTrades: [],
+        tradeCooldowns: {},
+        shopTutorialCompleted: false,
+        tradeTutorialCompleted: false,
+      };
+
+      // Check if shop is already unlocked
+      if (shopState.unlockedShops.includes(action.payload.shopId)) {
+        return state;
+      }
+
+      // Ensure shop is in discovered list when unlocking
+      const updatedDiscoveredShops = shopState.discoveredShops.includes(action.payload.shopId)
+        ? shopState.discoveredShops
+        : [...shopState.discoveredShops, action.payload.shopId];
+
+      console.log('🔓 Shop unlocked:', action.payload.shopId);
+
+      return {
+        ...state,
+        shops: {
+          ...shopState,
+          discoveredShops: updatedDiscoveredShops,
+          unlockedShops: [...shopState.unlockedShops, action.payload.shopId],
+        },
+      };
+    }
+
+    case 'OPEN_SHOP': {
+      const shopState = state.shops || {
+        discoveredShops: [],
+        unlockedShops: [],
+        currentShop: null,
+        shopInventoryCache: {},
+        transactionHistory: [],
+        completedTrades: [],
+        tradeCooldowns: {},
+        shopTutorialCompleted: false,
+        tradeTutorialCompleted: false,
+      };
+
+      console.log('🏪 Opening shop:', action.payload.shopId);
+
+      return {
+        ...state,
+        shops: {
+          ...shopState,
+          currentShop: action.payload.shopId,
+        },
+      };
+    }
+
+    case 'CLOSE_SHOP': {
+      const shopState = state.shops || {
+        discoveredShops: [],
+        unlockedShops: [],
+        currentShop: null,
+        shopInventoryCache: {},
+        transactionHistory: [],
+        completedTrades: [],
+        tradeCooldowns: {},
+        shopTutorialCompleted: false,
+        tradeTutorialCompleted: false,
+      };
+
+      console.log('🚪 Closing shop');
+
+      return {
+        ...state,
+        shops: {
+          ...shopState,
+          currentShop: null,
+        },
+      };
+    }
+
+    case 'BUY_ITEM': {
+      if (!state.player) {
+        console.error('❌ BUY_ITEM: No player found');
+        return state;
+      }
+
+      const { shopId, item, quantity, totalCost } = action.payload;
+
+      // Validate player has enough gold
+      if (state.player.gold < totalCost) {
+        console.error('❌ BUY_ITEM: Insufficient gold', {
+          playerGold: state.player.gold,
+          cost: totalCost,
+        });
+        return state;
+      }
+
+      // Deduct gold from player
+      const updatedPlayerAfterPurchase = {
+        ...state.player,
+        gold: state.player.gold - totalCost,
+      };
+
+      // Find the item in inventory (if it exists for stacking)
+      const existingItemIndex = state.inventory.findIndex(invItem => invItem.id === item.id);
+      let updatedInventoryAfterPurchase: ReactItem[];
+
+      if (existingItemIndex !== -1) {
+        // Stack with existing item
+        updatedInventoryAfterPurchase = state.inventory.map((invItem, index) =>
+          index === existingItemIndex ? { ...invItem, quantity: invItem.quantity + quantity } : invItem
+        );
+      } else {
+        // Add new item to inventory with full item data
+        const newItem: ReactItem = {
+          ...item,
+          quantity: quantity,
+        };
+        updatedInventoryAfterPurchase = [...state.inventory, newItem];
+      }
+
+      console.log('✅ Item purchased:', {
+        shopId,
+        itemId: item.id,
+        itemName: item.name,
+        quantity,
+        totalCost,
+        newGold: updatedPlayerAfterPurchase.gold,
+        inventoryCount: updatedInventoryAfterPurchase.length,
+      });
+
+      // Trigger auto-save for purchase
+      setTimeout(() => {
+        if (window.gameAutoSaveManager) {
+          window.gameAutoSaveManager.forceSave();
+        }
+      }, 500);
+
+      return {
+        ...state,
+        player: updatedPlayerAfterPurchase,
+        inventory: updatedInventoryAfterPurchase,
+      };
+    }
+
+    case 'SELL_ITEM': {
+      if (!state.player) {
+        console.error('❌ SELL_ITEM: No player found');
+        return state;
+      }
+
+      const { shopId, itemId, quantity, totalValue } = action.payload;
+
+      // Find item in inventory
+      const itemIndex = state.inventory.findIndex(item => item.id === itemId);
+      if (itemIndex === -1) {
+        console.error('❌ SELL_ITEM: Item not found in inventory', itemId);
+        return state;
+      }
+
+      const inventoryItem = state.inventory[itemIndex];
+
+      // Validate player has enough of the item
+      if (inventoryItem.quantity < quantity) {
+        console.error('❌ SELL_ITEM: Insufficient quantity', {
+          has: inventoryItem.quantity,
+          selling: quantity,
+        });
+        return state;
+      }
+
+      // Add gold to player
+      const updatedPlayerAfterSale = {
+        ...state.player,
+        gold: state.player.gold + totalValue,
+      };
+
+      // Remove items from inventory
+      let updatedInventoryAfterSale: ReactItem[];
+      const newQuantity = inventoryItem.quantity - quantity;
+
+      if (newQuantity <= 0) {
+        // Remove item completely
+        updatedInventoryAfterSale = state.inventory.filter((_, index) => index !== itemIndex);
+      } else {
+        // Reduce quantity
+        updatedInventoryAfterSale = state.inventory.map((item, index) =>
+          index === itemIndex ? { ...item, quantity: newQuantity } : item
+        );
+      }
+
+      console.log('✅ Item sold:', {
+        shopId,
+        itemId,
+        quantity,
+        totalValue,
+        newGold: updatedPlayerAfterSale.gold,
+      });
+
+      // Trigger auto-save for sale
+      setTimeout(() => {
+        if (window.gameAutoSaveManager) {
+          window.gameAutoSaveManager.forceSave();
+        }
+      }, 500);
+
+      return {
+        ...state,
+        player: updatedPlayerAfterSale,
+        inventory: updatedInventoryAfterSale,
+      };
+    }
+
+    case 'ADD_TRANSACTION': {
+      const shopState = state.shops || {
+        discoveredShops: [],
+        unlockedShops: [],
+        currentShop: null,
+        shopInventoryCache: {},
+        transactionHistory: [],
+        completedTrades: [],
+        tradeCooldowns: {},
+        shopTutorialCompleted: false,
+        tradeTutorialCompleted: false,
+      };
+
+      // Add transaction to history, keeping only last 10
+      const updatedTransactionHistory = [
+        action.payload.transaction,
+        ...shopState.transactionHistory,
+      ].slice(0, 10); // MAX_TRANSACTION_HISTORY = 10
+
+      return {
+        ...state,
+        shops: {
+          ...shopState,
+          transactionHistory: updatedTransactionHistory,
+        },
+      };
+    }
+
+    case 'UPDATE_SHOP_INVENTORY_CACHE': {
+      const shopState = state.shops || {
+        discoveredShops: [],
+        unlockedShops: [],
+        currentShop: null,
+        shopInventoryCache: {},
+        transactionHistory: [],
+        completedTrades: [],
+        tradeCooldowns: {},
+        shopTutorialCompleted: false,
+        tradeTutorialCompleted: false,
+      };
+
+      return {
+        ...state,
+        shops: {
+          ...shopState,
+          shopInventoryCache: {
+            ...shopState.shopInventoryCache,
+            [action.payload.shopId]: action.payload.inventory,
+          },
+        },
+      };
+    }
+
+    case 'COMPLETE_SHOP_TUTORIAL': {
+      const shopState = state.shops || {
+        discoveredShops: [],
+        unlockedShops: [],
+        currentShop: null,
+        shopInventoryCache: {},
+        transactionHistory: [],
+        completedTrades: [],
+        tradeCooldowns: {},
+        shopTutorialCompleted: false,
+        tradeTutorialCompleted: false,
+      };
+
+      console.log('✅ Shop tutorial completed');
+
+      return {
+        ...state,
+        shops: {
+          ...shopState,
+          shopTutorialCompleted: true,
+        },
+      };
+    }
+
+    case 'COMPLETE_TRADE_TUTORIAL': {
+      const shopState = state.shops || {
+        discoveredShops: [],
+        unlockedShops: [],
+        currentShop: null,
+        shopInventoryCache: {},
+        transactionHistory: [],
+        completedTrades: [],
+        tradeCooldowns: {},
+        shopTutorialCompleted: false,
+        tradeTutorialCompleted: false,
+      };
+
+      console.log('✅ Trade tutorial completed');
+
+      return {
+        ...state,
+        shops: {
+          ...shopState,
+          tradeTutorialCompleted: true,
+        },
+      };
+    }
+
+    case 'COMPLETE_NPC_TRADE': {
+      const shopState = state.shops || {
+        discoveredShops: [],
+        unlockedShops: [],
+        currentShop: null,
+        shopInventoryCache: {},
+        transactionHistory: [],
+        completedTrades: [],
+        tradeCooldowns: {},
+        shopTutorialCompleted: false,
+        tradeTutorialCompleted: false,
+      };
+
+      // Add trade to completed trades list
+      const updatedCompletedTrades = [...shopState.completedTrades, action.payload.tradeId];
+
+      // Set cooldown for repeatable trades
+      const updatedTradeCooldowns = {
+        ...shopState.tradeCooldowns,
+        [action.payload.tradeId]: new Date(),
+      };
+
+      console.log('✅ NPC trade completed:', action.payload.tradeId);
+
+      return {
+        ...state,
+        shops: {
+          ...shopState,
+          completedTrades: updatedCompletedTrades,
+          tradeCooldowns: updatedTradeCooldowns,
+        },
+      };
+    }
 
     default:
       return state;
@@ -1626,7 +2163,11 @@ interface ReactGameContextType {
   endCombat: (rewards: { experience: number; gold: number; items: ReactItem[] }) => void;
   showVictoryModal: () => void;
   hideVictoryModal: () => void;
-  generateCombatRewards: (enemyLevel: number) => { experience: number; gold: number; items: ReactItem[] };
+  generateCombatRewards: (enemyLevel: number) => {
+    experience: number;
+    gold: number;
+    items: ReactItem[];
+  };
   resetGame: () => void;
 
   // New inventory system functions
@@ -1643,6 +2184,19 @@ interface ReactGameContextType {
   updateBreedingAttempts: (attempts: number) => void;
   addBreedingMaterial: (materialId: string, quantity: number) => void;
   removeBreedingMaterial: (materialId: string, quantity: number) => void;
+
+  // Shop system functions
+  discoverShop: (shopId: string) => void;
+  unlockShop: (shopId: string) => void;
+  openShop: (shopId: string) => void;
+  closeShop: () => void;
+  buyItem: (shopId: string, itemId: string, quantity: number, totalCost: number) => void;
+  sellItem: (shopId: string, itemId: string, quantity: number, totalValue: number) => void;
+  addTransaction: (transaction: Transaction) => void;
+  updateShopInventoryCache: (shopId: string, inventory: ShopInventory) => void;
+  completeShopTutorial: () => void;
+  completeTradeTutorial: () => void;
+  completeNPCTrade: (tradeId: string) => void;
 
   // Computed properties
   isPlayerCreated: boolean;
@@ -1669,7 +2223,8 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
     if (state.creatures?.lastUpdated) {
       const saveTimer = setTimeout(() => {
         if (window.gameAutoSaveManager) {
-          window.gameAutoSaveManager.forceSave()
+          window.gameAutoSaveManager
+            .forceSave()
             .then((success: boolean) => {
               if (!success) {
                 console.error('❌ Auto-save failed after breeding');
@@ -1691,7 +2246,8 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
   useEffect(() => {
     const initializeSaveSlots = () => {
       const saveSlots = [];
-      for (let i = 0; i < 5; i++) { // Check for 5 save slots
+      for (let i = 0; i < 5; i++) {
+        // Check for 5 save slots
         const saveSlotKey = `sawyers_rpg_save_slot_${i}`;
         const savedData = localStorage.getItem(saveSlotKey);
 
@@ -1702,7 +2258,7 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
               data: parsedData,
               isEmpty: false,
               saveName: `Save ${i + 1}`, // Default name, could be enhanced
-              timestamp: parsedData.timestamp || Date.now()
+              timestamp: parsedData.timestamp || Date.now(),
             };
           } catch (error) {
             console.error(`Failed to parse save slot ${i + 1}:`, error);
@@ -1710,7 +2266,7 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
               data: null,
               isEmpty: true,
               saveName: '',
-              timestamp: 0
+              timestamp: 0,
             };
           }
         } else {
@@ -1718,14 +2274,18 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
             data: null,
             isEmpty: true,
             saveName: '',
-            timestamp: 0
+            timestamp: 0,
           };
         }
       }
 
       // Update state with loaded save slots
       dispatch({ type: 'LOAD_GAME_DATA', payload: { saveSlots } });
-      console.log('✅ Initialized save slots from localStorage:', saveSlots.filter(slot => !slot.isEmpty).length, 'saves found');
+      console.log(
+        '✅ Initialized save slots from localStorage:',
+        saveSlots.filter(slot => !slot.isEmpty).length,
+        'saves found'
+      );
     };
 
     initializeSaveSlots();
@@ -1743,14 +2303,22 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
   // Auto-save functionality
   useEffect(() => {
     if (state.settings.autoSave && state.player && state.currentSaveSlot !== null) {
-      const interval = setInterval(() => {
-        // Auto-save logic would go here
-        console.log('Auto-saving game...');
-      }, state.settings.autoSaveInterval * 60 * 1000); // Convert minutes to milliseconds
+      const interval = setInterval(
+        () => {
+          // Auto-save logic would go here
+          console.log('Auto-saving game...');
+        },
+        state.settings.autoSaveInterval * 60 * 1000
+      ); // Convert minutes to milliseconds
 
       return () => clearInterval(interval);
     }
-  }, [state.settings.autoSave, state.settings.autoSaveInterval, state.player, state.currentSaveSlot]);
+  }, [
+    state.settings.autoSave,
+    state.settings.autoSaveInterval,
+    state.player,
+    state.currentSaveSlot,
+  ]);
 
   // Helper functions
   const createPlayer = (name: string, playerClass: string) => {
@@ -1880,9 +2448,30 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
     // Common items (40% chance) - using items that exist in ItemData
     if (Math.random() < 0.4) {
       const commonItems = [
-        { id: 'healing_herb', name: 'Healing Herb', type: 'material', rarity: 'common', quantity: 1, icon: '🌿' },
-        { id: 'mana_flower', name: 'Mana Flower', type: 'material', rarity: 'common', quantity: 1, icon: '🌸' },
-        { id: 'health_potion', name: 'Health Potion', type: 'consumable', rarity: 'common', quantity: 1, icon: '🧪' },
+        {
+          id: 'healing_herb',
+          name: 'Healing Herb',
+          type: 'material',
+          rarity: 'common',
+          quantity: 1,
+          icon: '🌿',
+        },
+        {
+          id: 'mana_flower',
+          name: 'Mana Flower',
+          type: 'material',
+          rarity: 'common',
+          quantity: 1,
+          icon: '🌸',
+        },
+        {
+          id: 'health_potion',
+          name: 'Health Potion',
+          type: 'consumable',
+          rarity: 'common',
+          quantity: 1,
+          icon: '🧪',
+        },
       ];
       const randomCommon = commonItems[Math.floor(Math.random() * commonItems.length)];
       items.push(randomCommon);
@@ -1909,7 +2498,10 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
           name: item.name,
           description: item.description || '',
           type: item.type,
-          category: item.type === 'weapon' || item.type === 'armor' || item.type === 'accessory' ? 'equipment' : 'consumables',
+          category:
+            item.type === 'weapon' || item.type === 'armor' || item.type === 'accessory'
+              ? 'equipment'
+              : 'consumables',
           rarity: item.rarity as ItemRarity,
           icon: item.icon,
           value: item.value || 0,
@@ -1925,14 +2517,19 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
           canDestroy: item.canDestroy !== false,
           usable: item.type === 'consumable',
           consumeOnUse: item.type === 'consumable',
-          quantity: 1
+          quantity: 1,
         } as ReactItem;
       };
 
       const equipmentIds = [
-        'iron_sword', 'steel_dagger', 'oak_staff',
-        'leather_vest', 'chain_mail', 'cloth_robe',
-        'health_ring', 'mana_crystal'
+        'iron_sword',
+        'steel_dagger',
+        'oak_staff',
+        'leather_vest',
+        'chain_mail',
+        'cloth_robe',
+        'health_ring',
+        'mana_crystal',
       ];
 
       // Filter equipment appropriate for enemy level and load full data
@@ -1946,7 +2543,8 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
         });
 
       if (appropriateEquipment.length > 0) {
-        const randomEquipment = appropriateEquipment[Math.floor(Math.random() * appropriateEquipment.length)];
+        const randomEquipment =
+          appropriateEquipment[Math.floor(Math.random() * appropriateEquipment.length)];
         items.push(randomEquipment);
       }
     }
@@ -1954,9 +2552,30 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
     // Rare drops (5% chance for higher level enemies) - using actual ItemData items
     if (enemyLevel >= 3 && Math.random() < 0.05) {
       const rareItems = [
-        { id: 'crystal_staff', name: 'Crystal Staff', type: 'weapon', rarity: 'rare', quantity: 1, icon: '✨' },
-        { id: 'hi_potion', name: 'Hi-Potion', type: 'consumable', rarity: 'uncommon', quantity: 1, icon: '🧪' },
-        { id: 'elixir', name: 'Elixir', type: 'consumable', rarity: 'rare', quantity: 1, icon: '✨' },
+        {
+          id: 'crystal_staff',
+          name: 'Crystal Staff',
+          type: 'weapon',
+          rarity: 'rare',
+          quantity: 1,
+          icon: '✨',
+        },
+        {
+          id: 'hi_potion',
+          name: 'Hi-Potion',
+          type: 'consumable',
+          rarity: 'uncommon',
+          quantity: 1,
+          icon: '🧪',
+        },
+        {
+          id: 'elixir',
+          name: 'Elixir',
+          type: 'consumable',
+          rarity: 'rare',
+          quantity: 1,
+          icon: '✨',
+        },
       ];
       const randomRare = rareItems[Math.floor(Math.random() * rareItems.length)];
       items.push(randomRare);
@@ -1964,11 +2583,32 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
 
     // Monster-specific drops - using actual ItemData materials
     if (enemySpecies === 'slime' && Math.random() < 0.3) {
-      items.push({ id: 'slime_gel', name: 'Slime Gel', type: 'material', rarity: 'common', quantity: 1, icon: '🫧' });
+      items.push({
+        id: 'slime_gel',
+        name: 'Slime Gel',
+        type: 'material',
+        rarity: 'common',
+        quantity: 1,
+        icon: '🫧',
+      });
     } else if (enemySpecies === 'goblin' && Math.random() < 0.25) {
-      items.push({ id: 'goblin_tooth', name: 'Goblin Tooth', type: 'material', rarity: 'common', quantity: 1, icon: '🦷' });
+      items.push({
+        id: 'goblin_tooth',
+        name: 'Goblin Tooth',
+        type: 'material',
+        rarity: 'common',
+        quantity: 1,
+        icon: '🦷',
+      });
     } else if (enemySpecies === 'wolf' && Math.random() < 0.2) {
-      items.push({ id: 'wolf_pelt', name: 'Wolf Pelt', type: 'material', rarity: 'uncommon', quantity: 1, icon: '🧥' });
+      items.push({
+        id: 'wolf_pelt',
+        name: 'Wolf Pelt',
+        type: 'material',
+        rarity: 'uncommon',
+        quantity: 1,
+        icon: '🧥',
+      });
     }
 
     // Breeding Material Drops - Check MonsterData for breedingMaterialDrops
@@ -1986,12 +2626,13 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
             if (roll < dropInfo.dropRate) {
               // Determine quantity within the defined range
               const quantity = dropInfo.quantity
-                ? Math.floor(Math.random() * (dropInfo.quantity.max - dropInfo.quantity.min + 1)) + dropInfo.quantity.min
+                ? Math.floor(Math.random() * (dropInfo.quantity.max - dropInfo.quantity.min + 1)) +
+                  dropInfo.quantity.min
                 : 1;
 
               breedingMaterialsDropped.push({
                 materialId: dropInfo.materialId,
-                quantity: quantity
+                quantity: quantity,
               });
             }
           });
@@ -2005,7 +2646,7 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
       experience: baseExp,
       gold: baseGold,
       items: items,
-      breedingMaterials: breedingMaterialsDropped
+      breedingMaterials: breedingMaterialsDropped,
     };
   }, []);
 
@@ -2018,7 +2659,7 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
       type: 'consumable',
       rarity: 'common',
       value: 25,
-      icon: '🧪'
+      icon: '🧪',
     },
     mana_potion: {
       id: 'mana_potion',
@@ -2027,7 +2668,7 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
       type: 'consumable',
       rarity: 'common',
       value: 20,
-      icon: '💙'
+      icon: '💙',
     },
     stamina_potion: {
       id: 'stamina_potion',
@@ -2036,7 +2677,7 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
       type: 'consumable',
       rarity: 'common',
       value: 18,
-      icon: '💪'
+      icon: '💪',
     },
     goblin_tooth: {
       id: 'goblin_tooth',
@@ -2045,7 +2686,7 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
       type: 'material',
       rarity: 'common',
       value: 5,
-      icon: '🦷'
+      icon: '🦷',
     },
     wolf_fang: {
       id: 'wolf_fang',
@@ -2054,7 +2695,7 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
       type: 'material',
       rarity: 'uncommon',
       value: 25,
-      icon: '🔪'
+      icon: '🔪',
     },
     wolf_pelt: {
       id: 'wolf_pelt',
@@ -2063,7 +2704,7 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
       type: 'material',
       rarity: 'uncommon',
       value: 30,
-      icon: '🧥'
+      icon: '🧥',
     },
     leather_scraps: {
       id: 'leather_scraps',
@@ -2072,7 +2713,7 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
       type: 'material',
       rarity: 'common',
       value: 8,
-      icon: '🟤'
+      icon: '🟤',
     },
     repair_kit: {
       id: 'repair_kit',
@@ -2081,7 +2722,7 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
       type: 'material',
       rarity: 'common',
       value: 30,
-      icon: '🔧'
+      icon: '🔧',
     },
     healing_herb: {
       id: 'healing_herb',
@@ -2090,10 +2731,9 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
       type: 'material',
       rarity: 'common',
       value: 5,
-      icon: '🌿'
-    }
+      icon: '🌿',
+    },
   };
-
 
   const resetGame = () => {
     dispatch({ type: 'RESET_GAME' });
@@ -2143,6 +2783,51 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
 
   const removeBreedingMaterial = (materialId: string, quantity: number) => {
     dispatch({ type: 'REMOVE_BREEDING_MATERIAL', payload: { materialId, quantity } });
+  };
+
+  // Shop system action creators
+  const discoverShop = (shopId: string) => {
+    dispatch({ type: 'DISCOVER_SHOP', payload: { shopId } });
+  };
+
+  const unlockShop = (shopId: string) => {
+    dispatch({ type: 'UNLOCK_SHOP', payload: { shopId } });
+  };
+
+  const openShop = (shopId: string) => {
+    dispatch({ type: 'OPEN_SHOP', payload: { shopId } });
+  };
+
+  const closeShop = () => {
+    dispatch({ type: 'CLOSE_SHOP' });
+  };
+
+  const buyItem = (shopId: string, item: ReactItem, quantity: number, totalCost: number) => {
+    dispatch({ type: 'BUY_ITEM', payload: { shopId, item, quantity, totalCost } });
+  };
+
+  const sellItem = (shopId: string, itemId: string, quantity: number, totalValue: number) => {
+    dispatch({ type: 'SELL_ITEM', payload: { shopId, itemId, quantity, totalValue } });
+  };
+
+  const addTransaction = (transaction: Transaction) => {
+    dispatch({ type: 'ADD_TRANSACTION', payload: { transaction } });
+  };
+
+  const updateShopInventoryCache = (shopId: string, inventory: ShopInventory) => {
+    dispatch({ type: 'UPDATE_SHOP_INVENTORY_CACHE', payload: { shopId, inventory } });
+  };
+
+  const completeShopTutorial = () => {
+    dispatch({ type: 'COMPLETE_SHOP_TUTORIAL' });
+  };
+
+  const completeTradeTutorial = () => {
+    dispatch({ type: 'COMPLETE_TRADE_TUTORIAL' });
+  };
+
+  const completeNPCTrade = (tradeId: string) => {
+    dispatch({ type: 'COMPLETE_NPC_TRADE', payload: { tradeId } });
   };
 
   // Computed properties
@@ -2209,6 +2894,17 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
     updateBreedingAttempts,
     addBreedingMaterial,
     removeBreedingMaterial,
+    discoverShop,
+    unlockShop,
+    openShop,
+    closeShop,
+    buyItem,
+    sellItem,
+    addTransaction,
+    updateShopInventoryCache,
+    completeShopTutorial,
+    completeTradeTutorial,
+    completeNPCTrade,
     isPlayerCreated,
     canAccessArea,
     getInventoryByType,
@@ -2217,11 +2913,7 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
     getCurrentSessionTime,
   };
 
-  return (
-    <ReactGameContext.Provider value={contextValue}>
-      {children}
-    </ReactGameContext.Provider>
-  );
+  return <ReactGameContext.Provider value={contextValue}>{children}</ReactGameContext.Provider>;
 };
 
 // Custom hook to use the React game context
@@ -2258,7 +2950,7 @@ export const useReactGameActions = () => {
     setCurrentScreen,
     setLoading,
     setError,
-    resetGame
+    resetGame,
   } = useReactGame();
 
   return {
@@ -2293,7 +2985,7 @@ export const useGameState = () => {
     updateGameState,
     updateInventoryState,
     updateCreatureCollection,
-    updateExperienceState
+    updateExperienceState,
   } = useReactGame();
 
   return {
@@ -2307,17 +2999,19 @@ export const useGameState = () => {
     creatureCollection: state.creatures,
     experienceState: state.experience,
     // Legacy compatibility
-    playerStats: state.player ? {
-      level: state.player.level,
-      experience: state.player.experience,
-      maxHealth: state.player.maxHp,
-      maxMana: state.player.maxMp,
-      attack: state.player.stats.attack,
-      defense: state.player.stats.defense,
-      magicAttack: state.player.stats.magicAttack,
-      magicDefense: state.player.stats.magicDefense,
-      speed: state.player.stats.speed
-    } : undefined,
-    currentLocation: state.currentArea
+    playerStats: state.player
+      ? {
+          level: state.player.level,
+          experience: state.player.experience,
+          maxHealth: state.player.maxHp,
+          maxMana: state.player.maxMp,
+          attack: state.player.stats.attack,
+          defense: state.player.stats.defense,
+          magicAttack: state.player.stats.magicAttack,
+          magicDefense: state.player.stats.magicDefense,
+          speed: state.player.stats.speed,
+        }
+      : undefined,
+    currentLocation: state.currentArea,
   };
 };

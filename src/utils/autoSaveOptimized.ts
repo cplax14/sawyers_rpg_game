@@ -52,7 +52,11 @@ export interface OptimizedAutoSaveCallbacks {
   /** Function to execute the actual save operation */
   onSave: (gameState: ReactGameState, slotNumber: number) => Promise<boolean>;
   /** Called when auto-save completes successfully */
-  onSaveSuccess?: (timestamp: number, slotNumber: number, metrics: { saveTime: number; saveSize: number }) => void;
+  onSaveSuccess?: (
+    timestamp: number,
+    slotNumber: number,
+    metrics: { saveTime: number; saveSize: number }
+  ) => void;
   /** Called when auto-save fails */
   onSaveError?: (error: Error, consecutiveFailures: number) => void;
   /** Called when auto-save is disabled due to too many failures */
@@ -86,7 +90,7 @@ export class OptimizedAutoSaveManager {
       useBackgroundSerialization: true,
       compressSaveData: true,
       maxStateSizeKB: 500, // Trigger optimization at 500KB
-      ...config
+      ...config,
     };
 
     this.state = {
@@ -98,7 +102,7 @@ export class OptimizedAutoSaveManager {
       lastSaveSuccess: true,
       lastSaveSize: 0,
       serializationTime: 0,
-      isDebouncing: false
+      isDebouncing: false,
     };
 
     this.performanceMetrics = {
@@ -108,7 +112,7 @@ export class OptimizedAutoSaveManager {
       maxSaveSize: 0,
       totalSaves: 0,
       failedSaves: 0,
-      debouncedSaves: 0
+      debouncedSaves: 0,
     };
 
     this.callbacks = callbacks;
@@ -268,7 +272,7 @@ export class OptimizedAutoSaveManager {
 
         this.callbacks.onSaveSuccess?.(this.state.lastSaveTime, this.config.autoSaveSlot, {
           saveTime,
-          saveSize: this.state.lastSaveSize
+          saveSize: this.state.lastSaveSize,
         });
 
         return true;
@@ -316,7 +320,7 @@ export class OptimizedAutoSaveManager {
         level: gameState.player.level,
         experience: gameState.player.experience,
         currentArea: gameState.player.currentArea,
-        stats: gameState.player.stats
+        stats: gameState.player.stats,
       },
       inventory: {
         itemCount: gameState.inventory.items.length,
@@ -324,14 +328,14 @@ export class OptimizedAutoSaveManager {
         itemHash: gameState.inventory.items
           .map(item => `${item.id}:${item.quantity}`)
           .sort()
-          .join('|')
+          .join('|'),
       },
       story: {
         currentChapter: gameState.story.currentChapter,
-        questCount: gameState.story.completedQuests.length
+        questCount: gameState.story.completedQuests.length,
       },
       flagCount: Object.keys(gameState.gameFlags).length,
-      timestamp: gameState.timestamp
+      timestamp: gameState.timestamp,
     };
 
     return JSON.stringify(snapshot);
@@ -343,10 +347,13 @@ export class OptimizedAutoSaveManager {
   private async optimizeGameState(gameState: ReactGameState): Promise<ReactGameState> {
     // Use requestIdleCallback if available for background processing
     if ('requestIdleCallback' in window) {
-      return new Promise((resolve) => {
-        requestIdleCallback(() => {
-          resolve(this.performGameStateOptimization(gameState));
-        }, { timeout: 1000 });
+      return new Promise(resolve => {
+        requestIdleCallback(
+          () => {
+            resolve(this.performGameStateOptimization(gameState));
+          },
+          { timeout: 1000 }
+        );
       });
     }
 
@@ -395,7 +402,8 @@ export class OptimizedAutoSaveManager {
 
     this.performanceMetrics.totalSaves++;
     this.performanceMetrics.averageSerializationTime =
-      (this.performanceMetrics.averageSerializationTime * (this.performanceMetrics.totalSaves - 1) + saveTime) /
+      (this.performanceMetrics.averageSerializationTime * (this.performanceMetrics.totalSaves - 1) +
+        saveTime) /
       this.performanceMetrics.totalSaves;
 
     this.performanceMetrics.maxSerializationTime = Math.max(
@@ -404,7 +412,8 @@ export class OptimizedAutoSaveManager {
     );
 
     this.performanceMetrics.averageSaveSize =
-      (this.performanceMetrics.averageSaveSize * (this.performanceMetrics.totalSaves - 1) + stateSize) /
+      (this.performanceMetrics.averageSaveSize * (this.performanceMetrics.totalSaves - 1) +
+        stateSize) /
       this.performanceMetrics.totalSaves;
 
     this.performanceMetrics.maxSaveSize = Math.max(this.performanceMetrics.maxSaveSize, stateSize);
@@ -423,7 +432,9 @@ export class OptimizedAutoSaveManager {
 
     if (this.state.consecutiveFailures >= this.config.maxFailures) {
       this.state.isActive = false;
-      this.callbacks.onAutoSaveDisabled?.(`Too many consecutive failures: ${this.state.consecutiveFailures}`);
+      this.callbacks.onAutoSaveDisabled?.(
+        `Too many consecutive failures: ${this.state.consecutiveFailures}`
+      );
     }
   }
 
@@ -519,7 +530,7 @@ export const createOptimizedAutoSaveConfig = (): OptimizedAutoSaveConfig => ({
   debounceTime: 5000, // 5 seconds
   useBackgroundSerialization: true,
   compressSaveData: true,
-  maxStateSizeKB: 500
+  maxStateSizeKB: 500,
 });
 
 /**

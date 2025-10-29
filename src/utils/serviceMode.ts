@@ -10,7 +10,7 @@ export enum ServiceMode {
   CLOUD_ENABLED = 'cloud_enabled',
   LOCAL_ONLY = 'local_only',
   DEGRADED = 'degraded',
-  OFFLINE = 'offline'
+  OFFLINE = 'offline',
 }
 
 export interface ServiceModeConfig {
@@ -39,54 +39,69 @@ export const SERVICE_CAPABILITIES: Record<string, ServiceCapability> = {
     description: 'Save game progress to cloud storage',
     requiredMode: [ServiceMode.CLOUD_ENABLED, ServiceMode.DEGRADED],
     fallbackBehavior: 'Save locally with sync pending',
-    essential: false
+    essential: false,
   },
   cloud_load: {
     name: 'Cloud Load',
     description: 'Load game progress from cloud storage',
     requiredMode: [ServiceMode.CLOUD_ENABLED, ServiceMode.DEGRADED],
     fallbackBehavior: 'Load from local storage only',
-    essential: false
+    essential: false,
   },
   cloud_sync: {
     name: 'Cloud Sync',
     description: 'Synchronize saves across devices',
     requiredMode: [ServiceMode.CLOUD_ENABLED],
     fallbackBehavior: 'Queue for later sync',
-    essential: false
+    essential: false,
   },
   auto_backup: {
     name: 'Auto Backup',
     description: 'Automatic cloud backup of saves',
     requiredMode: [ServiceMode.CLOUD_ENABLED, ServiceMode.DEGRADED],
     fallbackBehavior: 'Local backup only',
-    essential: false
+    essential: false,
   },
   user_authentication: {
     name: 'User Authentication',
     description: 'Sign in and account management',
     requiredMode: [ServiceMode.CLOUD_ENABLED, ServiceMode.DEGRADED],
     fallbackBehavior: 'Guest mode with local saves',
-    essential: false
+    essential: false,
   },
   local_save: {
     name: 'Local Save',
     description: 'Save game progress locally',
-    requiredMode: [ServiceMode.CLOUD_ENABLED, ServiceMode.LOCAL_ONLY, ServiceMode.DEGRADED, ServiceMode.OFFLINE],
-    essential: true
+    requiredMode: [
+      ServiceMode.CLOUD_ENABLED,
+      ServiceMode.LOCAL_ONLY,
+      ServiceMode.DEGRADED,
+      ServiceMode.OFFLINE,
+    ],
+    essential: true,
   },
   local_load: {
     name: 'Local Load',
     description: 'Load game progress from local storage',
-    requiredMode: [ServiceMode.CLOUD_ENABLED, ServiceMode.LOCAL_ONLY, ServiceMode.DEGRADED, ServiceMode.OFFLINE],
-    essential: true
+    requiredMode: [
+      ServiceMode.CLOUD_ENABLED,
+      ServiceMode.LOCAL_ONLY,
+      ServiceMode.DEGRADED,
+      ServiceMode.OFFLINE,
+    ],
+    essential: true,
   },
   gameplay: {
     name: 'Core Gameplay',
     description: 'Main game functionality',
-    requiredMode: [ServiceMode.CLOUD_ENABLED, ServiceMode.LOCAL_ONLY, ServiceMode.DEGRADED, ServiceMode.OFFLINE],
-    essential: true
-  }
+    requiredMode: [
+      ServiceMode.CLOUD_ENABLED,
+      ServiceMode.LOCAL_ONLY,
+      ServiceMode.DEGRADED,
+      ServiceMode.OFFLINE,
+    ],
+    essential: true,
+  },
 };
 
 type ServiceModeListener = (config: ServiceModeConfig) => void;
@@ -105,7 +120,7 @@ export class ServiceModeManager {
       autoRetryEnabled: true,
       retryInterval: 30000, // 30 seconds
       fallbackFeatures: [],
-      disabledFeatures: []
+      disabledFeatures: [],
     };
 
     // Start health monitoring
@@ -149,8 +164,8 @@ export class ServiceModeManager {
    * Get capabilities that are not available in current mode
    */
   getUnavailableCapabilities(): ServiceCapability[] {
-    return Object.values(SERVICE_CAPABILITIES).filter(cap =>
-      !cap.requiredMode.includes(this.config.mode)
+    return Object.values(SERVICE_CAPABILITIES).filter(
+      cap => !cap.requiredMode.includes(this.config.mode)
     );
   }
 
@@ -165,7 +180,7 @@ export class ServiceModeManager {
       mode,
       reason,
       timestamp: new Date(),
-      lastCloudAttempt: mode !== ServiceMode.CLOUD_ENABLED ? new Date() : undefined
+      lastCloudAttempt: mode !== ServiceMode.CLOUD_ENABLED ? new Date() : undefined,
     };
 
     console.log(`Service mode changed: ${previousMode} → ${mode} (${reason})`);
@@ -204,7 +219,7 @@ export class ServiceModeManager {
           mode: ServiceMode.CLOUD_ENABLED,
           reason: 'Cloud services restored',
           timestamp: new Date(),
-          lastCloudAttempt: new Date()
+          lastCloudAttempt: new Date(),
         };
 
         console.log('Cloud services successfully restored');
@@ -276,7 +291,10 @@ export class ServiceModeManager {
 
       default:
         // For unknown errors, degrade conservatively
-        if (error.severity === ErrorSeverity.CRITICAL && currentMode === ServiceMode.CLOUD_ENABLED) {
+        if (
+          error.severity === ErrorSeverity.CRITICAL &&
+          currentMode === ServiceMode.CLOUD_ENABLED
+        ) {
           this.degradeToMode(ServiceMode.DEGRADED, `Critical error: ${error.message}`);
           return ServiceMode.DEGRADED;
         }
@@ -294,10 +312,12 @@ export class ServiceModeManager {
       this.pendingSyncQueue.push({
         operation,
         data,
-        timestamp: new Date()
+        timestamp: new Date(),
       });
 
-      console.log(`Queued ${operation} for later sync (queue size: ${this.pendingSyncQueue.length})`);
+      console.log(
+        `Queued ${operation} for later sync (queue size: ${this.pendingSyncQueue.length})`
+      );
     }
   }
 
@@ -312,7 +332,7 @@ export class ServiceModeManager {
     return {
       count: this.pendingSyncQueue.length,
       oldestItem: this.pendingSyncQueue.length > 0 ? this.pendingSyncQueue[0].timestamp : undefined,
-      operations: [...new Set(this.pendingSyncQueue.map(item => item.operation))]
+      operations: [...new Set(this.pendingSyncQueue.map(item => item.operation))],
     };
   }
 
@@ -383,7 +403,7 @@ export class ServiceModeManager {
 
     return {
       success: isOnline,
-      services
+      services,
     };
   }
 
@@ -396,7 +416,8 @@ export class ServiceModeManager {
     const batchSize = 5;
     let processed = 0;
 
-    while (this.pendingSyncQueue.length > 0 && processed < 20) { // Limit total processing
+    while (this.pendingSyncQueue.length > 0 && processed < 20) {
+      // Limit total processing
       const batch = this.pendingSyncQueue.splice(0, batchSize);
 
       try {
@@ -415,7 +436,9 @@ export class ServiceModeManager {
       }
     }
 
-    console.log(`Processed ${processed} sync operations, ${this.pendingSyncQueue.length} remaining`);
+    console.log(
+      `Processed ${processed} sync operations, ${this.pendingSyncQueue.length} remaining`
+    );
   }
 
   private handleModeTransition(fromMode: ServiceMode, toMode: ServiceMode): void {
@@ -441,9 +464,11 @@ export class ServiceModeManager {
     const unavailable = this.getUnavailableCapabilities().map(cap => cap.name);
 
     this.config.fallbackFeatures = available.filter(name => {
-      const cap = SERVICE_CAPABILITIES[Object.keys(SERVICE_CAPABILITIES).find(key =>
-        SERVICE_CAPABILITIES[key].name === name
-      ) || ''];
+      const cap =
+        SERVICE_CAPABILITIES[
+          Object.keys(SERVICE_CAPABILITIES).find(key => SERVICE_CAPABILITIES[key].name === name) ||
+            ''
+        ];
       return cap && cap.fallbackBehavior;
     });
 
@@ -452,7 +477,7 @@ export class ServiceModeManager {
     console.log('Feature availability updated:', {
       available: available.length,
       unavailable: unavailable.length,
-      fallback: this.config.fallbackFeatures.length
+      fallback: this.config.fallbackFeatures.length,
     });
   }
 
@@ -553,11 +578,12 @@ export const useServiceMode = () => {
   return {
     mode: config.mode,
     config,
-    isCapabilityAvailable: (capability: string) => serviceModeManager.isCapabilityAvailable(capability),
+    isCapabilityAvailable: (capability: string) =>
+      serviceModeManager.isCapabilityAvailable(capability),
     getAvailableCapabilities: () => serviceModeManager.getAvailableCapabilities(),
     getUnavailableCapabilities: () => serviceModeManager.getUnavailableCapabilities(),
     getStatusMessage: () => serviceModeManager.getStatusMessage(),
     getPendingSyncStatus: () => serviceModeManager.getPendingSyncStatus(),
-    attemptRestoration: () => serviceModeManager.attemptCloudRestoration()
+    attemptRestoration: () => serviceModeManager.attemptCloudRestoration(),
   };
 };

@@ -7,10 +7,7 @@
 
 import React from 'react';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import {
-  ReactGameProvider,
-  useReactGame,
-} from '../ReactGameContext';
+import { ReactGameProvider, useReactGame } from '../ReactGameContext';
 import { EnhancedCreature } from '../../types/creatures';
 import { PlayerStats } from '../../types/game';
 
@@ -22,7 +19,10 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
   <ReactGameProvider>{children}</ReactGameProvider>
 );
 
-const createMockCreature = (id: string, overrides?: Partial<EnhancedCreature>): EnhancedCreature => {
+const createMockCreature = (
+  id: string,
+  overrides?: Partial<EnhancedCreature>
+): EnhancedCreature => {
   const baseStats: PlayerStats = {
     attack: 50,
     defense: 50,
@@ -316,9 +316,7 @@ describe('ReactGameContext - Auto-save after breeding', () => {
     );
 
     // Verify error was logged
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      expect.stringContaining('Auto-save failed')
-    );
+    expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('Auto-save failed'));
 
     consoleErrorSpy.mockRestore();
   });

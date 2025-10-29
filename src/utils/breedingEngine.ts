@@ -89,7 +89,10 @@ export function calculateBreedingCost(
 /**
  * Get the combined rarity multiplier for two parents
  */
-function getRarityMultiplier(rarity1: CreatureRarity | string, rarity2: CreatureRarity | string): number {
+function getRarityMultiplier(
+  rarity1: CreatureRarity | string,
+  rarity2: CreatureRarity | string
+): number {
   const rarityValues: Record<string, number> = {
     common: 1,
     uncommon: 2,
@@ -138,18 +141,20 @@ export function generateOffspring(
   // Determine generation (max parent gen + 1, cap at 5)
   const parentGen1 = parent1.generation || 0;
   const parentGen2 = parent2.generation || 0;
-  const generation = Math.min(Math.max(parentGen1, parentGen2) + 1, DEFAULT_STAT_INHERITANCE.maxGeneration);
+  const generation = Math.min(
+    Math.max(parentGen1, parentGen2) + 1,
+    DEFAULT_STAT_INHERITANCE.maxGeneration
+  );
   messages.push(`Generation ${generation}`);
 
   // Inherit stats with generation bonuses
-  const inheritedStats = inheritStats(
-    parent1.stats,
-    parent2.stats,
-    generation
-  );
+  const inheritedStats = inheritStats(parent1.stats, parent2.stats, generation);
 
   // Roll for rarity upgrade (10% chance)
-  const parentRarity = getHigherRarity(parent1.rarity as CreatureRarity, parent2.rarity as CreatureRarity);
+  const parentRarity = getHigherRarity(
+    parent1.rarity as CreatureRarity,
+    parent2.rarity as CreatureRarity
+  );
   const { upgraded, finalRarity } = rollRarityUpgrade(parentRarity, recipe);
   const rarityUpgraded = upgraded;
   if (rarityUpgraded) {
@@ -252,9 +257,16 @@ export function inheritStats(
   generation: number
 ): PlayerStats {
   const config = DEFAULT_STAT_INHERITANCE;
-  const generationBonus = 1 + (generation * config.generationBonusPercent);
+  const generationBonus = 1 + generation * config.generationBonusPercent;
 
-  const statKeys: (keyof PlayerStats)[] = ['attack', 'defense', 'magicAttack', 'magicDefense', 'speed', 'accuracy'];
+  const statKeys: (keyof PlayerStats)[] = [
+    'attack',
+    'defense',
+    'magicAttack',
+    'magicDefense',
+    'speed',
+    'accuracy',
+  ];
   const inheritedStats: any = {};
 
   for (const stat of statKeys) {
@@ -349,11 +361,18 @@ export function applyExhaustion(creature: EnhancedCreature): EnhancedCreature {
   const newExhaustionLevel = (creature.exhaustionLevel || 0) + 1;
 
   // Calculate stat penalties
-  const penaltyMultiplier = 1 - (newExhaustionLevel * config.penaltyPerLevel);
+  const penaltyMultiplier = 1 - newExhaustionLevel * config.penaltyPerLevel;
 
   // Apply penalty to current stats
   const exhaustedStats: any = {};
-  const statKeys: (keyof PlayerStats)[] = ['attack', 'defense', 'magicAttack', 'magicDefense', 'speed', 'accuracy'];
+  const statKeys: (keyof PlayerStats)[] = [
+    'attack',
+    'defense',
+    'magicAttack',
+    'magicDefense',
+    'speed',
+    'accuracy',
+  ];
 
   for (const stat of statKeys) {
     const originalValue = creature.stats?.[stat] || 0;
@@ -383,17 +402,26 @@ export function removeExhaustion(
 
   // Recalculate stats without exhaustion penalties
   const config = DEFAULT_EXHAUSTION_CONFIG;
-  const penaltyMultiplier = 1 - (newExhaustionLevel * config.penaltyPerLevel);
+  const penaltyMultiplier = 1 - newExhaustionLevel * config.penaltyPerLevel;
 
   const restoredStats: any = {};
-  const statKeys: (keyof PlayerStats)[] = ['attack', 'defense', 'magicAttack', 'magicDefense', 'speed', 'accuracy'];
+  const statKeys: (keyof PlayerStats)[] = [
+    'attack',
+    'defense',
+    'magicAttack',
+    'magicDefense',
+    'speed',
+    'accuracy',
+  ];
 
   // Get original stats (before exhaustion)
   // Assuming we store original stats or calculate from base + exhaustion
   for (const stat of statKeys) {
     const currentValue = creature.stats?.[stat] || 0;
-    const currentExhaustionMultiplier = 1 - ((creature.exhaustionLevel || 0) * config.penaltyPerLevel);
-    const originalValue = currentExhaustionMultiplier > 0 ? currentValue / currentExhaustionMultiplier : currentValue;
+    const currentExhaustionMultiplier =
+      1 - (creature.exhaustionLevel || 0) * config.penaltyPerLevel;
+    const originalValue =
+      currentExhaustionMultiplier > 0 ? currentValue / currentExhaustionMultiplier : currentValue;
     restoredStats[stat] = Math.round(originalValue * penaltyMultiplier);
   }
 
@@ -478,7 +506,7 @@ export function inheritAbilities(
  * @returns Stat cap multipliers
  */
 export function calculateStatCaps(generation: number): Partial<PlayerStats> {
-  const capMultiplier = 1 + (generation * 0.1); // +10% per generation
+  const capMultiplier = 1 + generation * 0.1; // +10% per generation
 
   // Base stat caps (these would be multiplied by species base stats)
   // For now, return multiplier as a percentage
@@ -713,7 +741,8 @@ export function inheritPassiveTraits(
  * @returns Total ability slots (base + bonus)
  */
 export function getAbilitySlots(generation: number): number {
-  const slots = DEFAULT_ABILITY_INHERITANCE.abilitySlotsByGeneration[generation] ||
+  const slots =
+    DEFAULT_ABILITY_INHERITANCE.abilitySlotsByGeneration[generation] ||
     DEFAULT_ABILITY_INHERITANCE.abilitySlotsByGeneration[0];
 
   return slots.baseSlots + slots.bonusSlots;

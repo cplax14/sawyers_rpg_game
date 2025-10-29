@@ -38,7 +38,7 @@ export function VirtualizedGrid<T>({
   style,
   overscan = 3,
   onScroll,
-  scrollToIndex
+  scrollToIndex,
 }: VirtualizedGridProps<T>) {
   const [scrollTop, setScrollTop] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -88,7 +88,7 @@ export function VirtualizedGrid<T>({
         col,
         top,
         left,
-        key: getItemKey(item, i)
+        key: getItemKey(item, i),
       });
     }
 
@@ -96,20 +96,23 @@ export function VirtualizedGrid<T>({
   }, [items, startRow, endRow, itemsPerRow, rowHeight, getItemKey]);
 
   // Handle scroll events
-  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    const newScrollTop = e.currentTarget.scrollTop;
-    setScrollTop(newScrollTop);
-    onScroll?.(newScrollTop);
+  const handleScroll = useCallback(
+    (e: React.UIEvent<HTMLDivElement>) => {
+      const newScrollTop = e.currentTarget.scrollTop;
+      setScrollTop(newScrollTop);
+      onScroll?.(newScrollTop);
 
-    // Track scrolling state for performance optimizations
-    isScrollingRef.current = true;
-    if (scrollTimeoutRef.current) {
-      clearTimeout(scrollTimeoutRef.current);
-    }
-    scrollTimeoutRef.current = setTimeout(() => {
-      isScrollingRef.current = false;
-    }, 150);
-  }, [onScroll]);
+      // Track scrolling state for performance optimizations
+      isScrollingRef.current = true;
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+      scrollTimeoutRef.current = setTimeout(() => {
+        isScrollingRef.current = false;
+      }, 150);
+    },
+    [onScroll]
+  );
 
   // Handle scroll to index
   useEffect(() => {
@@ -134,13 +137,13 @@ export function VirtualizedGrid<T>({
     overflowY: 'auto',
     overflowX: 'hidden',
     position: 'relative',
-    ...style
+    ...style,
   };
 
   const spacerStyle: React.CSSProperties = {
     height: totalHeight,
     width: '100%',
-    position: 'relative'
+    position: 'relative',
   };
 
   const itemContainerStyle: React.CSSProperties = {
@@ -151,7 +154,7 @@ export function VirtualizedGrid<T>({
     display: 'grid',
     gridTemplateColumns: `repeat(${itemsPerRow}, 1fr)`,
     gap: `${gap}px`,
-    padding: `0 ${gap / 2}px`
+    padding: `0 ${gap / 2}px`,
   };
 
   return (
@@ -160,7 +163,7 @@ export function VirtualizedGrid<T>({
       className={className}
       style={containerStyle}
       onScroll={handleScroll}
-      data-testid="virtualized-grid"
+      data-testid='virtualized-grid'
     >
       <div style={spacerStyle}>
         <div style={itemContainerStyle}>
@@ -174,14 +177,14 @@ export function VirtualizedGrid<T>({
                   left: `${left}%`,
                   width: `${100 / itemsPerRow}%`,
                   height: `${itemHeight}px`,
-                  padding: `0 ${gap / 2}px`
+                  padding: `0 ${gap / 2}px`,
                 }}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{
                   duration: isScrollingRef.current ? 0.1 : 0.3,
-                  delay: isScrollingRef.current ? 0 : index * 0.02
+                  delay: isScrollingRef.current ? 0 : index * 0.02,
                 }}
                 layout
               >

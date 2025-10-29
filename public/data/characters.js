@@ -8,6 +8,7 @@ const CharacterData = {
         knight: {
             name: "Knight",
             description: "Strong defense and sword mastery",
+            startingGold: 100,
             baseStats: {
                 hp: 120,
                 mp: 30,
@@ -50,6 +51,7 @@ const CharacterData = {
         wizard: {
             name: "Wizard",
             description: "Master of elemental magic",
+            startingGold: 100,
             baseStats: {
                 hp: 70,
                 mp: 100,
@@ -93,6 +95,7 @@ const CharacterData = {
         rogue: {
             name: "Rogue",
             description: "Swift and sneaky combatant",
+            startingGold: 100,
             baseStats: {
                 hp: 90,
                 mp: 50,
@@ -136,6 +139,7 @@ const CharacterData = {
         paladin: {
             name: "Paladin",
             description: "Holy warrior with healing powers",
+            startingGold: 100,
             baseStats: {
                 hp: 110,
                 mp: 70,
@@ -179,6 +183,7 @@ const CharacterData = {
         ranger: {
             name: "Ranger",
             description: "Nature's guardian with bow mastery",
+            startingGold: 100,
             baseStats: {
                 hp: 100,
                 mp: 60,
@@ -221,6 +226,7 @@ const CharacterData = {
         warrior: {
             name: "Warrior",
             description: "Fierce fighter with axe expertise",
+            startingGold: 100,
             baseStats: {
                 hp: 130,
                 mp: 40,

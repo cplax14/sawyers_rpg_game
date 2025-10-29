@@ -45,9 +45,9 @@ function createTestItem(
       magicAttack: stats.magicAttack || 0,
       magicDefense: stats.magicDefense || 0,
       speed: stats.speed || 0,
-      accuracy: stats.accuracy || 0
+      accuracy: stats.accuracy || 0,
     },
-    icon: type === 'weapon' ? '⚔️' : '🛡️'
+    icon: type === 'weapon' ? '⚔️' : '🛡️',
   };
 }
 
@@ -98,7 +98,7 @@ describe('Equipment Combat Integration', () => {
         console.log('📊 [Test] After equipping:', {
           baseAttack,
           finalAttack,
-          increase: finalAttack - baseAttack
+          increase: finalAttack - baseAttack,
         });
 
         // Equipment should increase player.stats
@@ -146,7 +146,7 @@ describe('Equipment Combat Integration', () => {
         console.log('📊 [Test] Stacked bonuses:', {
           baseAttack,
           finalAttack,
-          expected: expectedMinimum
+          expected: expectedMinimum,
         });
 
         expect(finalAttack).toBeGreaterThanOrEqual(expectedMinimum);
@@ -202,7 +202,7 @@ describe('Equipment Combat Integration', () => {
         console.log('📊 [Test] Without weapon:', {
           attackWithWeapon,
           attackWithoutWeapon,
-          decrease: attackWithWeapon - attackWithoutWeapon
+          decrease: attackWithWeapon - attackWithoutWeapon,
         });
 
         expect(attackWithoutWeapon).toBeLessThan(attackWithWeapon);
@@ -236,7 +236,7 @@ describe('Equipment Combat Integration', () => {
 
       console.log('📊 [Bug Detection] Initial:', {
         baseStats: player.baseStats,
-        stats: player.stats
+        stats: player.stats,
       });
 
       // Equip powerful weapon to create a clear difference
@@ -263,7 +263,7 @@ describe('Equipment Combat Integration', () => {
         console.log('📊 [Bug Detection] After equipping:', {
           baseAttack,
           finalAttack,
-          difference: finalAttack - baseAttack
+          difference: finalAttack - baseAttack,
         });
 
         // THIS IS THE CRITICAL ASSERTION
@@ -315,7 +315,7 @@ describe('Equipment Combat Integration', () => {
         console.log('📊 [Bug Detection] Defense:', {
           baseDefense,
           finalDefense,
-          bonus: finalDefense - baseDefense
+          bonus: finalDefense - baseDefense,
         });
 
         expect(finalDefense).toBeGreaterThan(baseDefense);

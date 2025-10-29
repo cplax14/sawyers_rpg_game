@@ -10,7 +10,11 @@
  */
 
 import React, { useState, useEffect, useCallback, useRef, Component, ErrorInfo } from 'react';
-import { getAnimationMetadata, DEFAULT_ANIMATION, type AnimationMetadata } from './animationRegistry';
+import {
+  getAnimationMetadata,
+  DEFAULT_ANIMATION,
+  type AnimationMetadata,
+} from './animationRegistry';
 import { getEnemyAnimationMetadata, type EnemyAnimationMetadata } from './enemyAnimationRegistry';
 import type { AnimationComponentProps } from './animationRegistry';
 import { DamageNumber } from './DamageNumber';
@@ -83,9 +87,7 @@ const logAnimationTiming = (
       const startTime = (window as any)[key];
       if (startTime) {
         const duration = timestamp - startTime;
-        console.log(
-          `✅ [Animation Timing] ${attackType} completed in ${duration.toFixed(2)}ms`
-        );
+        console.log(`✅ [Animation Timing] ${attackType} completed in ${duration.toFixed(2)}ms`);
 
         // Warn if animation took unusually long
         if (duration > 2000) {
@@ -128,14 +130,11 @@ class AnimationErrorBoundary extends Component<
 
     // Task 5.3: Development/Test - detailed error logging
     if (process.env.NODE_ENV !== 'production') {
-      console.error(
-        `🚨 [AnimationController] Animation error for "${attackType}":`,
-        error
-      );
+      console.error(`🚨 [AnimationController] Animation error for "${attackType}":`, error);
       console.error('Component stack:', errorInfo.componentStack);
       console.error('Error details:', {
         message: error.message,
-        stack: error.stack
+        stack: error.stack,
       });
     } else {
       // Task 5.2: Production - minimal warning
@@ -229,21 +228,22 @@ const validatePositions = (
 
   // Check for NaN or undefined
   if (
-    typeof casterX !== 'number' || isNaN(casterX) ||
-    typeof casterY !== 'number' || isNaN(casterY) ||
-    typeof targetX !== 'number' || isNaN(targetX) ||
-    typeof targetY !== 'number' || isNaN(targetY)
+    typeof casterX !== 'number' ||
+    isNaN(casterX) ||
+    typeof casterY !== 'number' ||
+    isNaN(casterY) ||
+    typeof targetX !== 'number' ||
+    isNaN(targetX) ||
+    typeof targetY !== 'number' ||
+    isNaN(targetY)
   ) {
     if (process.env.NODE_ENV !== 'production') {
-      console.warn(
-        `⚠️ [AnimationController] Invalid position data for "${attackType}":`,
-        {
-          casterX: casterX ?? 'undefined',
-          casterY: casterY ?? 'undefined',
-          targetX: targetX ?? 'undefined',
-          targetY: targetY ?? 'undefined'
-        }
-      );
+      console.warn(`⚠️ [AnimationController] Invalid position data for "${attackType}":`, {
+        casterX: casterX ?? 'undefined',
+        casterY: casterY ?? 'undefined',
+        targetX: targetX ?? 'undefined',
+        targetY: targetY ?? 'undefined',
+      });
     }
     return false;
   }
@@ -254,22 +254,23 @@ const validatePositions = (
   const MIN_COORDINATE = -1000; // Allow some negative for off-screen effects
 
   if (
-    casterX < MIN_COORDINATE || casterX > MAX_COORDINATE ||
-    casterY < MIN_COORDINATE || casterY > MAX_COORDINATE ||
-    targetX < MIN_COORDINATE || targetX > MAX_COORDINATE ||
-    targetY < MIN_COORDINATE || targetY > MAX_COORDINATE
+    casterX < MIN_COORDINATE ||
+    casterX > MAX_COORDINATE ||
+    casterY < MIN_COORDINATE ||
+    casterY > MAX_COORDINATE ||
+    targetX < MIN_COORDINATE ||
+    targetX > MAX_COORDINATE ||
+    targetY < MIN_COORDINATE ||
+    targetY > MAX_COORDINATE
   ) {
     if (process.env.NODE_ENV !== 'production') {
-      console.warn(
-        `⚠️ [AnimationController] Position out of bounds for "${attackType}":`,
-        {
-          casterX,
-          casterY,
-          targetX,
-          targetY,
-          bounds: { min: MIN_COORDINATE, max: MAX_COORDINATE }
-        }
-      );
+      console.warn(`⚠️ [AnimationController] Position out of bounds for "${attackType}":`, {
+        casterX,
+        casterY,
+        targetX,
+        targetY,
+        bounds: { min: MIN_COORDINATE, max: MAX_COORDINATE },
+      });
     }
     return false;
   }
@@ -292,7 +293,7 @@ export const AnimationController: React.FC<AnimationControllerProps> = ({
   attackData,
   onComplete,
   isActive,
-  animationType = 'spell' // Default to spell for backward compatibility
+  animationType = 'spell', // Default to spell for backward compatibility
 }) => {
   // ================================================================
   // STATE MANAGEMENT
@@ -336,55 +337,58 @@ export const AnimationController: React.FC<AnimationControllerProps> = ({
    * Handle errors from the error boundary
    * Skip animation and immediately call onComplete to continue combat
    */
-  const handleAnimationError = useCallback((_error: Error, failedAttackType: string) => {
-    if (process.env.NODE_ENV !== 'production') {
-      console.error(
-        `🚨 [AnimationController] Animation failed for "${failedAttackType}", skipping to result`
-      );
-    }
-
-    // Clear the failed animation
-    setCurrentAnimation(null);
-    setAnimationState('idle');
-
-    // Immediately call onComplete to continue combat flow
-    onComplete();
-
-    // Process next queued animation if any
-    setAnimationQueue(prevQueue => {
-      if (prevQueue.length > 0) {
-        const [nextAnimation, ...remainingQueue] = prevQueue;
-
-        if (process.env.NODE_ENV !== 'production') {
-          console.log(
-            `🎬 [AnimationController] Processing queued animation after error: ${nextAnimation.attackType}`
-          );
-        }
-
-        // Validate positions before starting next animation
-        if (validatePositions(nextAnimation.attackData, nextAnimation.attackType)) {
-          const metadata = getAnimationWithFallback(
-            nextAnimation.attackType,
-            nextAnimation.animationType || 'spell',
-            nextAnimation.attackData.enemySpecies
-          );
-          setCurrentAnimation({
-            type: nextAnimation.attackType,
-            data: nextAnimation.attackData,
-            metadata,
-            animationType: nextAnimation.animationType || 'spell'
-          });
-          setAnimationState('playing');
-        } else {
-          // Invalid positions in queue - skip this one too
-          nextAnimation.onComplete();
-        }
-
-        return remainingQueue;
+  const handleAnimationError = useCallback(
+    (_error: Error, failedAttackType: string) => {
+      if (process.env.NODE_ENV !== 'production') {
+        console.error(
+          `🚨 [AnimationController] Animation failed for "${failedAttackType}", skipping to result`
+        );
       }
-      return [];
-    });
-  }, [onComplete]);
+
+      // Clear the failed animation
+      setCurrentAnimation(null);
+      setAnimationState('idle');
+
+      // Immediately call onComplete to continue combat flow
+      onComplete();
+
+      // Process next queued animation if any
+      setAnimationQueue(prevQueue => {
+        if (prevQueue.length > 0) {
+          const [nextAnimation, ...remainingQueue] = prevQueue;
+
+          if (process.env.NODE_ENV !== 'production') {
+            console.log(
+              `🎬 [AnimationController] Processing queued animation after error: ${nextAnimation.attackType}`
+            );
+          }
+
+          // Validate positions before starting next animation
+          if (validatePositions(nextAnimation.attackData, nextAnimation.attackType)) {
+            const metadata = getAnimationWithFallback(
+              nextAnimation.attackType,
+              nextAnimation.animationType || 'spell',
+              nextAnimation.attackData.enemySpecies
+            );
+            setCurrentAnimation({
+              type: nextAnimation.attackType,
+              data: nextAnimation.attackData,
+              metadata,
+              animationType: nextAnimation.animationType || 'spell',
+            });
+            setAnimationState('playing');
+          } else {
+            // Invalid positions in queue - skip this one too
+            nextAnimation.onComplete();
+          }
+
+          return remainingQueue;
+        }
+        return [];
+      });
+    },
+    [onComplete]
+  );
 
   // ================================================================
   // ANIMATION SELECTION LOGIC
@@ -397,42 +401,45 @@ export const AnimationController: React.FC<AnimationControllerProps> = ({
    * Returns the animation component and metadata for the given attack type
    * Supports both player spells and enemy attacks
    */
-  const getAnimationWithFallback = useCallback((
-    type: string,
-    animType: 'spell' | 'enemy-attack',
-    enemySpecies?: string
-  ): AnimationMetadata | EnemyAnimationMetadata => {
-    if (animType === 'enemy-attack' && enemySpecies) {
-      // Enemy attack - use enemy animation registry
-      const enemyMetadata = getEnemyAnimationMetadata(enemySpecies);
+  const getAnimationWithFallback = useCallback(
+    (
+      type: string,
+      animType: 'spell' | 'enemy-attack',
+      enemySpecies?: string
+    ): AnimationMetadata | EnemyAnimationMetadata => {
+      if (animType === 'enemy-attack' && enemySpecies) {
+        // Enemy attack - use enemy animation registry
+        const enemyMetadata = getEnemyAnimationMetadata(enemySpecies);
 
-      if (process.env.NODE_ENV !== 'production') {
-        console.log(
-          `🎬 [AnimationController] Enemy animation selected: ${enemySpecies} →`,
-          enemyMetadata.description || 'no description'
-        );
+        if (process.env.NODE_ENV !== 'production') {
+          console.log(
+            `🎬 [AnimationController] Enemy animation selected: ${enemySpecies} →`,
+            enemyMetadata.description || 'no description'
+          );
+        }
+
+        return enemyMetadata;
       }
 
-      return enemyMetadata;
-    }
+      // Player spell - use spell animation registry
+      const metadata = getAnimationMetadata(type);
 
-    // Player spell - use spell animation registry
-    const metadata = getAnimationMetadata(type);
+      if (metadata) {
+        return metadata;
+      }
 
-    if (metadata) {
-      return metadata;
-    }
+      // Task 4.6: Log warning in development when using fallback
+      if (process.env.NODE_ENV !== 'production' && !warnedTypesRef.current.has(type)) {
+        console.warn(
+          `⚠️ [AnimationController] No animation found for attack type: "${type}". Using fallback (Magic Bolt).`
+        );
+        warnedTypesRef.current.add(type);
+      }
 
-    // Task 4.6: Log warning in development when using fallback
-    if (process.env.NODE_ENV !== 'production' && !warnedTypesRef.current.has(type)) {
-      console.warn(
-        `⚠️ [AnimationController] No animation found for attack type: "${type}". Using fallback (Magic Bolt).`
-      );
-      warnedTypesRef.current.add(type);
-    }
-
-    return DEFAULT_ANIMATION;
-  }, []);
+      return DEFAULT_ANIMATION;
+    },
+    []
+  );
 
   // ================================================================
   // LIFECYCLE MANAGEMENT
@@ -449,7 +456,9 @@ export const AnimationController: React.FC<AnimationControllerProps> = ({
    */
   const handleAnimationComplete = useCallback(() => {
     if (process.env.NODE_ENV !== 'production') {
-      console.log(`✅ [AnimationController] Animation complete: ${currentAnimation?.type || 'unknown'}`);
+      console.log(
+        `✅ [AnimationController] Animation complete: ${currentAnimation?.type || 'unknown'}`
+      );
     }
 
     // Task 5.9: Log animation completion time
@@ -495,7 +504,7 @@ export const AnimationController: React.FC<AnimationControllerProps> = ({
             type: nextAnimation.attackType,
             data: nextAnimation.attackData,
             metadata,
-            animationType: nextAnimation.animationType || 'spell'
+            animationType: nextAnimation.animationType || 'spell',
           });
           setAnimationState('playing');
         }, DAMAGE_NUMBER_COMPLETION_DELAY);
@@ -528,21 +537,23 @@ export const AnimationController: React.FC<AnimationControllerProps> = ({
    */
   useEffect(() => {
     // Only trigger for animations with damage
-    if (currentAnimation && currentAnimation.data.damage && currentAnimation.data.damage > 0 && animationState === 'playing') {
+    if (
+      currentAnimation &&
+      currentAnimation.data.damage &&
+      currentAnimation.data.damage > 0 &&
+      animationState === 'playing'
+    ) {
       const IMPACT_TIME = 1150; // When impact phase starts (ms)
       const DAMAGE_NUMBER_DURATION = 1250; // How long damage number is visible (ms)
 
       if (process.env.NODE_ENV !== 'production') {
-        console.log(
-          `💥 [Damage Number] Scheduling damage number for ${currentAnimation.type}:`,
-          {
-            damage: currentAnimation.data.damage,
-            isCritical: currentAnimation.data.isCritical,
-            impactTime: `${IMPACT_TIME}ms`,
-            duration: `${DAMAGE_NUMBER_DURATION}ms`,
-            position: { x: currentAnimation.data.targetX, y: currentAnimation.data.targetY }
-          }
-        );
+        console.log(`💥 [Damage Number] Scheduling damage number for ${currentAnimation.type}:`, {
+          damage: currentAnimation.data.damage,
+          isCritical: currentAnimation.data.isCritical,
+          impactTime: `${IMPACT_TIME}ms`,
+          duration: `${DAMAGE_NUMBER_DURATION}ms`,
+          position: { x: currentAnimation.data.targetX, y: currentAnimation.data.targetY },
+        });
       }
 
       // Schedule damage number to appear at impact time
@@ -593,14 +604,11 @@ export const AnimationController: React.FC<AnimationControllerProps> = ({
       const MISS_INDICATOR_DURATION = 1200; // How long miss indicator is visible (ms)
 
       if (process.env.NODE_ENV !== 'production') {
-        console.log(
-          `❌ [Miss Indicator] Scheduling miss indicator for ${currentAnimation.type}:`,
-          {
-            impactTime: `${IMPACT_TIME}ms`,
-            duration: `${MISS_INDICATOR_DURATION}ms`,
-            position: { x: currentAnimation.data.targetX, y: currentAnimation.data.targetY }
-          }
-        );
+        console.log(`❌ [Miss Indicator] Scheduling miss indicator for ${currentAnimation.type}:`, {
+          impactTime: `${IMPACT_TIME}ms`,
+          duration: `${MISS_INDICATOR_DURATION}ms`,
+          position: { x: currentAnimation.data.targetX, y: currentAnimation.data.targetY },
+        });
       }
 
       // Schedule miss indicator to appear at impact time
@@ -691,8 +699,8 @@ export const AnimationController: React.FC<AnimationControllerProps> = ({
               attackData,
               onComplete,
               timestamp: Date.now(),
-              animationType
-            }
+              animationType,
+            },
           ];
         });
       } else if (process.env.NODE_ENV !== 'production') {
@@ -728,11 +736,20 @@ export const AnimationController: React.FC<AnimationControllerProps> = ({
         type: attackType,
         data: attackData,
         metadata,
-        animationType
+        animationType,
       });
       setAnimationState('playing');
     }
-  }, [isActive, attackType, attackData, onComplete, animationState, animationQueue, getAnimationWithFallback, animationType]);
+  }, [
+    isActive,
+    attackType,
+    attackData,
+    onComplete,
+    animationState,
+    animationQueue,
+    getAnimationWithFallback,
+    animationType,
+  ]);
 
   // ================================================================
   // CLEANUP
@@ -798,7 +815,7 @@ export const AnimationController: React.FC<AnimationControllerProps> = ({
     // Critical hit and damage data for visual customization
     isCritical: currentAnimation.data.isCritical,
     damage: currentAnimation.data.damage,
-    element: currentAnimation.data.element
+    element: currentAnimation.data.element,
   };
 
   // Merge custom props for enemy animations (variant, colors, etc.)
@@ -808,12 +825,9 @@ export const AnimationController: React.FC<AnimationControllerProps> = ({
   // Render the animation wrapped in error boundary
   // Task 5.1-5.3: Error boundary prevents crashes and provides graceful degradation
   return (
-    <AnimationErrorBoundary
-      attackType={currentAnimation.type}
-      onError={handleAnimationError}
-    >
+    <AnimationErrorBoundary attackType={currentAnimation.type} onError={handleAnimationError}>
       <div
-        className="animation-controller"
+        className='animation-controller'
         style={{
           position: 'absolute',
           top: 0,
@@ -821,7 +835,7 @@ export const AnimationController: React.FC<AnimationControllerProps> = ({
           right: 0,
           bottom: 0,
           pointerEvents: 'none', // Don't interfere with UI interactions
-          zIndex: 100 // Ensure animations appear above combat UI
+          zIndex: 100, // Ensure animations appear above combat UI
         }}
       >
         {/* Main spell animation */}

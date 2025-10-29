@@ -12,31 +12,49 @@ import { InventoryScreen } from './InventoryScreen';
 jest.mock('../../hooks/useInventory');
 jest.mock('../../contexts/ReactGameContext');
 jest.mock('../../hooks', () => ({
-  useResponsive: jest.fn()
+  useResponsive: jest.fn(),
 }));
 
 // Mock child components
 jest.mock('../atoms/Button', () => ({
   Button: ({ children, onClick, disabled, variant, ...props }: any) => (
-    <button onClick={onClick} disabled={disabled} data-testid="button" data-variant={variant} {...props}>
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      data-testid='button'
+      data-variant={variant}
+      {...props}
+    >
       {children}
     </button>
-  )
+  ),
 }));
 jest.mock('../atoms/LoadingSpinner', () => ({
-  LoadingSpinner: () => <div data-testid="loading-spinner">Loading...</div>
+  LoadingSpinner: () => <div data-testid='loading-spinner'>Loading...</div>,
 }));
 jest.mock('../molecules/ItemCard', () => ({
   ItemCard: ({ item, onClick, onUse, onDelete, ...props }: any) => (
-    <div data-testid="item-card" data-item-id={item?.id} {...props}>
+    <div data-testid='item-card' data-item-id={item?.id} {...props}>
       <span>{item?.name}</span>
       <span>Qty: {item?.quantity || 1}</span>
       <span>Rarity: {item?.rarity}</span>
-      {onClick && <button onClick={() => onClick(item)} data-testid="item-click">Click</button>}
-      {onUse && <button onClick={() => onUse(item)} data-testid="item-use">Use</button>}
-      {onDelete && <button onClick={() => onDelete(item)} data-testid="item-delete">Delete</button>}
+      {onClick && (
+        <button onClick={() => onClick(item)} data-testid='item-click'>
+          Click
+        </button>
+      )}
+      {onUse && (
+        <button onClick={() => onUse(item)} data-testid='item-use'>
+          Use
+        </button>
+      )}
+      {onDelete && (
+        <button onClick={() => onDelete(item)} data-testid='item-delete'>
+          Delete
+        </button>
+      )}
     </div>
-  )
+  ),
 }));
 
 // Import mocked modules
@@ -64,8 +82,8 @@ describe('InventoryScreen Component', () => {
     stackable: true,
     usable: true,
     effects: {
-      health: 50
-    }
+      health: 50,
+    },
   };
 
   const mockMaterialItem = {
@@ -79,7 +97,7 @@ describe('InventoryScreen Component', () => {
     weight: 2,
     quantity: 10,
     stackable: true,
-    usable: false
+    usable: false,
   };
 
   const mockQuestItem = {
@@ -93,14 +111,14 @@ describe('InventoryScreen Component', () => {
     weight: 0.1,
     quantity: 1,
     stackable: false,
-    usable: false
+    usable: false,
   };
 
   const mockItems = [mockConsumableItem, mockMaterialItem, mockQuestItem];
 
   const defaultMocks = {
     inventory: {
-      getFilteredItems: jest.fn().mockImplementation((filter) => {
+      getFilteredItems: jest.fn().mockImplementation(filter => {
         if (!filter) return mockItems;
         if (filter.category === 'consumables') return [mockConsumableItem];
         if (filter.category === 'materials') return [mockMaterialItem];
@@ -108,20 +126,18 @@ describe('InventoryScreen Component', () => {
         return mockItems;
       }),
       getTotalItemCount: jest.fn().mockReturnValue(16),
-      getItemsByCategory: jest.fn().mockImplementation((category) => {
+      getItemsByCategory: jest.fn().mockImplementation(category => {
         if (category === 'consumables') return [mockConsumableItem];
         if (category === 'materials') return [mockMaterialItem];
         if (category === 'quest') return [mockQuestItem];
         return mockItems;
       }),
-      searchItems: jest.fn().mockImplementation((query) => {
-        return mockItems.filter(item =>
-          item.name.toLowerCase().includes(query.toLowerCase())
-        );
+      searchItems: jest.fn().mockImplementation(query => {
+        return mockItems.filter(item => item.name.toLowerCase().includes(query.toLowerCase()));
       }),
       consolidateInventoryStacks: jest.fn().mockResolvedValue({ success: true }),
       isLoading: false,
-      error: null
+      error: null,
     },
     gameState: {
       gameState: {
@@ -135,17 +151,17 @@ describe('InventoryScreen Component', () => {
             agility: 12,
             intelligence: 6,
             health: 100,
-            mana: 50
-          }
-        }
+            mana: 50,
+          },
+        },
       },
-      updateGameState: jest.fn()
+      updateGameState: jest.fn(),
     },
     responsive: {
       isMobile: false,
       isTablet: false,
-      isDesktop: true
-    }
+      isDesktop: true,
+    },
   };
 
   beforeEach(() => {
@@ -160,7 +176,7 @@ describe('InventoryScreen Component', () => {
   const renderInventoryScreen = (props = {}) => {
     const defaultProps = {
       onClose: mockOnClose,
-      ...props
+      ...props,
     };
 
     return render(<InventoryScreen {...defaultProps} />);
@@ -232,7 +248,7 @@ describe('InventoryScreen Component', () => {
         ...defaultMocks.inventory,
         getFilteredItems: jest.fn().mockReturnValue([]),
         getItemsByCategory: jest.fn().mockReturnValue([]),
-        getTotalItemCount: jest.fn().mockReturnValue(0)
+        getTotalItemCount: jest.fn().mockReturnValue(0),
       } as any);
 
       renderInventoryScreen();
@@ -277,7 +293,7 @@ describe('InventoryScreen Component', () => {
       const user = userEvent.setup();
       mockUseInventory.mockReturnValue({
         ...defaultMocks.inventory,
-        getTotalItemCount: jest.fn().mockReturnValue(5)
+        getTotalItemCount: jest.fn().mockReturnValue(5),
       } as any);
 
       renderInventoryScreen();
@@ -316,7 +332,7 @@ describe('InventoryScreen Component', () => {
       const user = userEvent.setup();
       mockUseInventory.mockReturnValue({
         ...defaultMocks.inventory,
-        searchItems: jest.fn().mockReturnValue([])
+        searchItems: jest.fn().mockReturnValue([]),
       } as any);
 
       renderInventoryScreen();
@@ -491,7 +507,7 @@ describe('InventoryScreen Component', () => {
       const user = userEvent.setup();
       mockUseInventory.mockReturnValue({
         ...defaultMocks.inventory,
-        consolidateInventoryStacks: jest.fn().mockRejectedValue(new Error('Consolidation failed'))
+        consolidateInventoryStacks: jest.fn().mockRejectedValue(new Error('Consolidation failed')),
       } as any);
 
       renderInventoryScreen();
@@ -509,7 +525,7 @@ describe('InventoryScreen Component', () => {
       mockUseResponsive.mockReturnValue({
         isMobile: true,
         isTablet: false,
-        isDesktop: false
+        isDesktop: false,
       });
 
       renderInventoryScreen();
@@ -521,7 +537,7 @@ describe('InventoryScreen Component', () => {
       mockUseResponsive.mockReturnValue({
         isMobile: false,
         isTablet: true,
-        isDesktop: false
+        isDesktop: false,
       });
 
       renderInventoryScreen();
@@ -540,7 +556,7 @@ describe('InventoryScreen Component', () => {
     it('should show loading spinner when loading', () => {
       mockUseInventory.mockReturnValue({
         ...defaultMocks.inventory,
-        isLoading: true
+        isLoading: true,
       } as any);
 
       renderInventoryScreen();
@@ -559,7 +575,7 @@ describe('InventoryScreen Component', () => {
     it('should handle inventory errors gracefully', () => {
       mockUseInventory.mockReturnValue({
         ...defaultMocks.inventory,
-        error: 'Failed to load inventory'
+        error: 'Failed to load inventory',
       } as any);
 
       renderInventoryScreen();
@@ -570,7 +586,7 @@ describe('InventoryScreen Component', () => {
     it('should handle missing player data gracefully', () => {
       mockUseGameState.mockReturnValue({
         gameState: { player: null },
-        updateGameState: jest.fn()
+        updateGameState: jest.fn(),
       } as any);
 
       renderInventoryScreen();
@@ -640,13 +656,13 @@ describe('InventoryScreen Component', () => {
       const largeItemList = Array.from({ length: 1000 }, (_, i) => ({
         ...mockConsumableItem,
         id: `item-${i}`,
-        name: `Item ${i}`
+        name: `Item ${i}`,
       }));
 
       mockUseInventory.mockReturnValue({
         ...defaultMocks.inventory,
         getFilteredItems: jest.fn().mockReturnValue(largeItemList),
-        getTotalItemCount: jest.fn().mockReturnValue(1000)
+        getTotalItemCount: jest.fn().mockReturnValue(1000),
       } as any);
 
       renderInventoryScreen();

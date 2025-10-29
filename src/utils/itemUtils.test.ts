@@ -43,7 +43,7 @@ import {
   removeMaterial,
   getMaterialQuantity,
   hasMaterials,
-  getMissingMaterials
+  getMissingMaterials,
 } from './itemUtils';
 
 import { EnhancedItem, ItemCategory, ItemType, ItemFilter } from '../types/inventory';
@@ -67,8 +67,8 @@ describe('itemUtils', () => {
       requiredLevel: 5,
       requiredClass: ['warrior', 'paladin'],
       statModifiers: {
-        attack: { value: 10, type: 'flat' }
-      }
+        attack: { value: 10, type: 'flat' },
+      },
     },
     {
       id: 'potion_heal',
@@ -82,9 +82,7 @@ describe('itemUtils', () => {
       stackable: true,
       tradeable: true,
       quantity: 3,
-      effects: [
-        { type: 'heal', stat: 'health', value: 50, duration: 0 }
-      ]
+      effects: [{ type: 'heal', stat: 'health', value: 50, duration: 0 }],
     },
     {
       id: 'potion_mana',
@@ -98,9 +96,7 @@ describe('itemUtils', () => {
       stackable: true,
       tradeable: true,
       quantity: 2,
-      effects: [
-        { type: 'restore', stat: 'mana', value: 30, duration: 0 }
-      ]
+      effects: [{ type: 'restore', stat: 'mana', value: 30, duration: 0 }],
     },
     {
       id: 'iron_ore',
@@ -113,7 +109,7 @@ describe('itemUtils', () => {
       weight: 2,
       stackable: true,
       tradeable: true,
-      quantity: 10
+      quantity: 10,
     },
     {
       id: 'quest_scroll',
@@ -127,8 +123,8 @@ describe('itemUtils', () => {
       stackable: false,
       tradeable: false,
       questItem: true,
-      quantity: 1
-    }
+      quantity: 1,
+    },
   ];
 
   const mockPlayerStats: PlayerStats = {
@@ -137,7 +133,7 @@ describe('itemUtils', () => {
     magicAttack: 8,
     magicDefense: 10,
     speed: 14,
-    accuracy: 85
+    accuracy: 85,
   };
 
   describe('filterItems', () => {
@@ -306,7 +302,7 @@ describe('itemUtils', () => {
     // TASK 4.8: Test that equipped items cannot stack with inventory items
     it('should not allow stacking equipped items with non-equipped items', () => {
       const item1 = { ...mockItems[1], equipped: false }; // Potion in inventory
-      const item2 = { ...mockItems[1], equipped: true };  // Potion equipped (hypothetical)
+      const item2 = { ...mockItems[1], equipped: true }; // Potion equipped (hypothetical)
 
       const result = canStackItems(item1, item2);
 
@@ -387,7 +383,7 @@ describe('itemUtils', () => {
         { ...mockItems[1], quantity: 2 },
         { ...mockItems[1], quantity: 3 },
         { ...mockItems[0] }, // Different item
-        { ...mockItems[1], quantity: 1 }
+        { ...mockItems[1], quantity: 1 },
       ];
 
       const result = consolidateStacks(items);
@@ -547,8 +543,8 @@ describe('itemUtils', () => {
     it('should calculate total value including quantities', () => {
       const items = [
         { ...mockItems[0], quantity: 1, value: 100 }, // 100
-        { ...mockItems[1], quantity: 3, value: 50 },  // 150
-        { ...mockItems[3], quantity: 10, value: 10 }  // 100
+        { ...mockItems[1], quantity: 3, value: 50 }, // 150
+        { ...mockItems[3], quantity: 10, value: 10 }, // 100
       ];
 
       const result = calculateTotalValue(items);
@@ -559,7 +555,7 @@ describe('itemUtils', () => {
     it('should handle items without value', () => {
       const items = [
         { ...mockItems[0], value: undefined },
-        { ...mockItems[1], value: 50, quantity: 2 }
+        { ...mockItems[1], value: 50, quantity: 2 },
       ];
 
       const result = calculateTotalValue(items);
@@ -571,9 +567,9 @@ describe('itemUtils', () => {
   describe('calculateTotalWeight', () => {
     it('should calculate total weight including quantities', () => {
       const items = [
-        { ...mockItems[0], quantity: 1, weight: 5 },   // 5
+        { ...mockItems[0], quantity: 1, weight: 5 }, // 5
         { ...mockItems[1], quantity: 3, weight: 0.5 }, // 1.5
-        { ...mockItems[3], quantity: 10, weight: 2 }   // 20
+        { ...mockItems[3], quantity: 10, weight: 2 }, // 20
       ];
 
       const result = calculateTotalWeight(items);
@@ -732,7 +728,7 @@ describe('itemUtils', () => {
       const item = {
         ...mockItems[1],
         effects: [{ type: 'heal', stat: 'health', value: 50, duration: 0 }],
-        statModifiers: { attack: { value: 5, type: 'flat' } }
+        statModifiers: { attack: { value: 5, type: 'flat' } },
       };
 
       const clone = cloneItem(item);
@@ -893,7 +889,7 @@ describe('itemUtils', () => {
       const materials = { slime_gel: 5, goblin_tooth: 3 };
       const requirements = [
         { itemId: 'slime_gel', quantity: 3 },
-        { itemId: 'goblin_tooth', quantity: 2 }
+        { itemId: 'goblin_tooth', quantity: 2 },
       ];
 
       expect(hasMaterials(materials, requirements)).toBe(true);
@@ -903,7 +899,7 @@ describe('itemUtils', () => {
       const materials = { slime_gel: 5, goblin_tooth: 1 };
       const requirements = [
         { itemId: 'slime_gel', quantity: 3 },
-        { itemId: 'goblin_tooth', quantity: 2 }
+        { itemId: 'goblin_tooth', quantity: 2 },
       ];
 
       expect(hasMaterials(materials, requirements)).toBe(false);
@@ -913,7 +909,7 @@ describe('itemUtils', () => {
       const materials = { slime_gel: 5 };
       const requirements = [
         { itemId: 'slime_gel', quantity: 3 },
-        { itemId: 'goblin_tooth', quantity: 2 }
+        { itemId: 'goblin_tooth', quantity: 2 },
       ];
 
       expect(hasMaterials(materials, requirements)).toBe(false);
@@ -932,7 +928,7 @@ describe('itemUtils', () => {
       const materials = { slime_gel: 5, goblin_tooth: 3 };
       const requirements = [
         { itemId: 'slime_gel', quantity: 3, name: 'Slime Gel' },
-        { itemId: 'goblin_tooth', quantity: 2, name: 'Goblin Tooth' }
+        { itemId: 'goblin_tooth', quantity: 2, name: 'Goblin Tooth' },
       ];
 
       const missing = getMissingMaterials(materials, requirements);
@@ -943,39 +939,33 @@ describe('itemUtils', () => {
       const materials = { slime_gel: 2, goblin_tooth: 1 };
       const requirements = [
         { itemId: 'slime_gel', quantity: 5, name: 'Slime Gel' },
-        { itemId: 'goblin_tooth', quantity: 3, name: 'Goblin Tooth' }
+        { itemId: 'goblin_tooth', quantity: 3, name: 'Goblin Tooth' },
       ];
 
       const missing = getMissingMaterials(materials, requirements);
       expect(missing).toEqual([
         { itemId: 'slime_gel', quantity: 3, name: 'Slime Gel' },
-        { itemId: 'goblin_tooth', quantity: 2, name: 'Goblin Tooth' }
+        { itemId: 'goblin_tooth', quantity: 2, name: 'Goblin Tooth' },
       ]);
     });
 
     it('should return completely missing materials', () => {
       const materials = {};
-      const requirements = [
-        { itemId: 'slime_gel', quantity: 5, name: 'Slime Gel' }
-      ];
+      const requirements = [{ itemId: 'slime_gel', quantity: 5, name: 'Slime Gel' }];
 
       const missing = getMissingMaterials(materials, requirements);
-      expect(missing).toEqual([
-        { itemId: 'slime_gel', quantity: 5, name: 'Slime Gel' }
-      ]);
+      expect(missing).toEqual([{ itemId: 'slime_gel', quantity: 5, name: 'Slime Gel' }]);
     });
 
     it('should return partial missing materials', () => {
       const materials = { slime_gel: 5 };
       const requirements = [
         { itemId: 'slime_gel', quantity: 3, name: 'Slime Gel' },
-        { itemId: 'goblin_tooth', quantity: 2, name: 'Goblin Tooth' }
+        { itemId: 'goblin_tooth', quantity: 2, name: 'Goblin Tooth' },
       ];
 
       const missing = getMissingMaterials(materials, requirements);
-      expect(missing).toEqual([
-        { itemId: 'goblin_tooth', quantity: 2, name: 'Goblin Tooth' }
-      ]);
+      expect(missing).toEqual([{ itemId: 'goblin_tooth', quantity: 2, name: 'Goblin Tooth' }]);
     });
   });
 });

@@ -115,8 +115,8 @@ export const DEFAULT_CLOUD_STORAGE_CONFIG: CloudStorageConfig = {
       storageBucket: '',
       messagingSenderId: '',
       appId: '',
-      useEmulator: false
-    }
+      useEmulator: false,
+    },
   },
 
   features: {
@@ -125,7 +125,7 @@ export const DEFAULT_CLOUD_STORAGE_CONFIG: CloudStorageConfig = {
     networkMonitoring: true,
     autoRetry: true,
     analytics: false, // Disabled by default
-    encryption: false // TODO: Implement encryption
+    encryption: false, // TODO: Implement encryption
   },
 
   settings: {
@@ -135,7 +135,7 @@ export const DEFAULT_CLOUD_STORAGE_CONFIG: CloudStorageConfig = {
     retryAttempts: 3,
     retryDelay: 1000, // 1 second
     batchSize: 5,
-    syncInterval: 15 // 15 minutes
+    syncInterval: 15, // 15 minutes
   },
 
   compression: {
@@ -143,7 +143,7 @@ export const DEFAULT_CLOUD_STORAGE_CONFIG: CloudStorageConfig = {
     level: 'balanced',
     enableBase64: true,
     chunkSize: 64 * 1024, // 64KB
-    minimumCompressionRatio: 0.1
+    minimumCompressionRatio: 0.1,
   },
 
   offlineQueue: {
@@ -154,7 +154,7 @@ export const DEFAULT_CLOUD_STORAGE_CONFIG: CloudStorageConfig = {
     enablePersistence: true,
     storageKey: 'cloud_save_offline_queue',
     processingConcurrency: 3,
-    autoProcessOnline: true
+    autoProcessOnline: true,
   },
 
   networkMonitoring: {
@@ -162,7 +162,7 @@ export const DEFAULT_CLOUD_STORAGE_CONFIG: CloudStorageConfig = {
     pingInterval: 30000, // 30 seconds
     pingTimeout: 5000, // 5 seconds
     retryAttempts: 3,
-    enableDetailedInfo: true
+    enableDetailedInfo: true,
   },
 
   analytics: {
@@ -170,7 +170,7 @@ export const DEFAULT_CLOUD_STORAGE_CONFIG: CloudStorageConfig = {
     trackOperations: true,
     trackPerformance: true,
     trackErrors: true,
-    sampleRate: 0.1 // 10% sampling
+    sampleRate: 0.1, // 10% sampling
   },
 
   quotaMonitoring: {
@@ -180,8 +180,8 @@ export const DEFAULT_CLOUD_STORAGE_CONFIG: CloudStorageConfig = {
     criticalThreshold: 90, // 90%
     checkInterval: 5 * 60 * 1000, // 5 minutes
     autoCleanup: false, // Disabled by default for safety
-    maxSavesToKeep: 5
-  }
+    maxSavesToKeep: 5,
+  },
 };
 
 /**
@@ -196,7 +196,9 @@ export interface ConfigValidationResult {
 /**
  * Validate cloud storage configuration
  */
-export function validateCloudStorageConfig(config: Partial<CloudStorageConfig>): ConfigValidationResult {
+export function validateCloudStorageConfig(
+  config: Partial<CloudStorageConfig>
+): ConfigValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
 
@@ -248,8 +250,11 @@ export function validateCloudStorageConfig(config: Partial<CloudStorageConfig>):
     if (config.compression.chunkSize && config.compression.chunkSize < 1024) {
       warnings.push('Compression chunk size is very small (< 1KB)');
     }
-    if (config.compression.minimumCompressionRatio &&
-        (config.compression.minimumCompressionRatio < 0 || config.compression.minimumCompressionRatio > 1)) {
+    if (
+      config.compression.minimumCompressionRatio &&
+      (config.compression.minimumCompressionRatio < 0 ||
+        config.compression.minimumCompressionRatio > 1)
+    ) {
       errors.push('minimumCompressionRatio must be between 0 and 1');
     }
   }
@@ -267,7 +272,7 @@ export function validateCloudStorageConfig(config: Partial<CloudStorageConfig>):
   return {
     isValid: errors.length === 0,
     errors,
-    warnings
+    warnings,
   };
 }
 
@@ -295,7 +300,7 @@ export function loadConfigFromEnvironment(): Partial<CloudStorageConfig> {
     messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID || '',
     appId: process.env.REACT_APP_FIREBASE_APP_ID || '',
     measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
-    useEmulator: process.env.REACT_APP_FIREBASE_USE_EMULATOR === 'true'
+    useEmulator: process.env.REACT_APP_FIREBASE_USE_EMULATOR === 'true',
   };
 
   // Only include Firebase config if at least apiKey is provided
@@ -303,7 +308,7 @@ export function loadConfigFromEnvironment(): Partial<CloudStorageConfig> {
     config.provider = {
       provider: 'firebase',
       enabled: true,
-      firebase: firebaseConfig
+      firebase: firebaseConfig,
     };
 
     // Emulator configuration
@@ -311,16 +316,16 @@ export function loadConfigFromEnvironment(): Partial<CloudStorageConfig> {
       config.provider.firebase!.emulatorConfig = {
         auth: {
           host: process.env.REACT_APP_FIREBASE_AUTH_EMULATOR_HOST || 'localhost',
-          port: parseInt(process.env.REACT_APP_FIREBASE_AUTH_EMULATOR_PORT || '9099')
+          port: parseInt(process.env.REACT_APP_FIREBASE_AUTH_EMULATOR_PORT || '9099'),
         },
         firestore: {
           host: process.env.REACT_APP_FIREBASE_FIRESTORE_EMULATOR_HOST || 'localhost',
-          port: parseInt(process.env.REACT_APP_FIREBASE_FIRESTORE_EMULATOR_PORT || '8080')
+          port: parseInt(process.env.REACT_APP_FIREBASE_FIRESTORE_EMULATOR_PORT || '8080'),
         },
         storage: {
           host: process.env.REACT_APP_FIREBASE_STORAGE_EMULATOR_HOST || 'localhost',
-          port: parseInt(process.env.REACT_APP_FIREBASE_STORAGE_EMULATOR_PORT || '9199')
-        }
+          port: parseInt(process.env.REACT_APP_FIREBASE_STORAGE_EMULATOR_PORT || '9199'),
+        },
       };
     }
   }
@@ -355,13 +360,18 @@ export function loadConfigFromEnvironment(): Partial<CloudStorageConfig> {
     config.quotaMonitoring.enabled = process.env.REACT_APP_QUOTA_MONITORING_ENABLED === 'true';
   }
   if (process.env.REACT_APP_MAX_STORAGE_MB) {
-    config.quotaMonitoring.maxStorageBytes = parseInt(process.env.REACT_APP_MAX_STORAGE_MB) * 1024 * 1024;
+    config.quotaMonitoring.maxStorageBytes =
+      parseInt(process.env.REACT_APP_MAX_STORAGE_MB) * 1024 * 1024;
   }
   if (process.env.REACT_APP_QUOTA_WARNING_THRESHOLD) {
-    config.quotaMonitoring.warningThreshold = parseInt(process.env.REACT_APP_QUOTA_WARNING_THRESHOLD);
+    config.quotaMonitoring.warningThreshold = parseInt(
+      process.env.REACT_APP_QUOTA_WARNING_THRESHOLD
+    );
   }
   if (process.env.REACT_APP_QUOTA_CRITICAL_THRESHOLD) {
-    config.quotaMonitoring.criticalThreshold = parseInt(process.env.REACT_APP_QUOTA_CRITICAL_THRESHOLD);
+    config.quotaMonitoring.criticalThreshold = parseInt(
+      process.env.REACT_APP_QUOTA_CRITICAL_THRESHOLD
+    );
   }
   if (process.env.REACT_APP_QUOTA_AUTO_CLEANUP !== undefined) {
     config.quotaMonitoring.autoCleanup = process.env.REACT_APP_QUOTA_AUTO_CLEANUP === 'true';
@@ -388,41 +398,41 @@ export function mergeConfigurations(
         ...override.provider,
         firebase: {
           ...result.provider.firebase,
-          ...override.provider?.firebase
+          ...override.provider?.firebase,
         },
         supabase: {
           ...result.provider.supabase,
-          ...override.provider?.supabase
-        }
+          ...override.provider?.supabase,
+        },
       },
       features: {
         ...result.features,
-        ...override.features
+        ...override.features,
       },
       settings: {
         ...result.settings,
-        ...override.settings
+        ...override.settings,
       },
       compression: {
         ...result.compression,
-        ...override.compression
+        ...override.compression,
       },
       offlineQueue: {
         ...result.offlineQueue,
-        ...override.offlineQueue
+        ...override.offlineQueue,
       },
       networkMonitoring: {
         ...result.networkMonitoring,
-        ...override.networkMonitoring
+        ...override.networkMonitoring,
       },
       analytics: {
         ...result.analytics,
-        ...override.analytics
+        ...override.analytics,
       },
       quotaMonitoring: {
         ...result.quotaMonitoring,
-        ...override.quotaMonitoring
-      }
+        ...override.quotaMonitoring,
+      },
     };
   }
 
@@ -432,9 +442,10 @@ export function mergeConfigurations(
 /**
  * Create configuration with validation
  */
-export function createCloudStorageConfig(
-  overrides: Partial<CloudStorageConfig> = {}
-): { config: CloudStorageConfig; validation: ConfigValidationResult } {
+export function createCloudStorageConfig(overrides: Partial<CloudStorageConfig> = {}): {
+  config: CloudStorageConfig;
+  validation: ConfigValidationResult;
+} {
   // Load from environment
   const envConfig = loadConfigFromEnvironment();
 
@@ -455,9 +466,11 @@ export const ConfigUtils = {
    * Check if cloud storage is properly configured and enabled
    */
   isCloudStorageEnabled(config: CloudStorageConfig): boolean {
-    return config.provider.enabled &&
-           config.provider.provider !== 'none' &&
-           this.hasRequiredCredentials(config);
+    return (
+      config.provider.enabled &&
+      config.provider.provider !== 'none' &&
+      this.hasRequiredCredentials(config)
+    );
   },
 
   /**
@@ -497,5 +510,5 @@ export const ConfigUtils = {
     feature: T
   ): CloudStorageConfig[T] {
     return config[feature];
-  }
+  },
 };

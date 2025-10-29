@@ -6,7 +6,7 @@ import {
   checkEquipmentCompatibility,
   formatSlotNameForDisplay,
   getArticle,
-  clearCompatibilityCache
+  clearCompatibilityCache,
 } from '../equipmentUtils';
 import { EnhancedItem } from '../../types/inventory';
 import { PlayerStats } from '../../types/game';
@@ -23,7 +23,7 @@ describe('equipmentUtils - Slot Compatibility', () => {
     magicAttack: 10,
     magicDefense: 12,
     speed: 18,
-    accuracy: 85
+    accuracy: 85,
   };
 
   const mockPlayerLevel = 10;
@@ -42,7 +42,7 @@ describe('equipmentUtils - Slot Compatibility', () => {
         rarity: 'common',
         quantity: 1,
         stackable: false,
-        usable: false
+        usable: false,
       };
 
       const result = checkEquipmentCompatibility(
@@ -69,7 +69,7 @@ describe('equipmentUtils - Slot Compatibility', () => {
         rarity: 'common',
         quantity: 1,
         stackable: false,
-        usable: false
+        usable: false,
       };
 
       const result = checkEquipmentCompatibility(
@@ -98,7 +98,7 @@ describe('equipmentUtils - Slot Compatibility', () => {
         rarity: 'common',
         quantity: 1,
         stackable: false,
-        usable: false
+        usable: false,
       };
 
       const result = checkEquipmentCompatibility(
@@ -125,7 +125,7 @@ describe('equipmentUtils - Slot Compatibility', () => {
         rarity: 'common',
         quantity: 1,
         stackable: false,
-        usable: false
+        usable: false,
       };
 
       const result = checkEquipmentCompatibility(
@@ -152,7 +152,7 @@ describe('equipmentUtils - Slot Compatibility', () => {
         rarity: 'common',
         quantity: 1,
         stackable: false,
-        usable: false
+        usable: false,
       };
 
       const result = checkEquipmentCompatibility(
@@ -181,7 +181,7 @@ describe('equipmentUtils - Slot Compatibility', () => {
         rarity: 'common',
         quantity: 1,
         stackable: false,
-        usable: false
+        usable: false,
       };
 
       const result = checkEquipmentCompatibility(
@@ -208,7 +208,7 @@ describe('equipmentUtils - Slot Compatibility', () => {
         rarity: 'common',
         quantity: 1,
         stackable: false,
-        usable: false
+        usable: false,
       };
 
       const result = checkEquipmentCompatibility(
@@ -239,7 +239,7 @@ describe('equipmentUtils - Slot Compatibility', () => {
         rarity: 'legendary',
         quantity: 1,
         stackable: false,
-        usable: false
+        usable: false,
       };
 
       // Try to equip in wrong slot (helmet)

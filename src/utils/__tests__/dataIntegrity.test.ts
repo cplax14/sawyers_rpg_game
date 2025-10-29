@@ -10,7 +10,7 @@ import {
   validateGameStateStructure,
   attemptDataRecovery,
   sanitizeGameStateForCloud,
-  DEFAULT_GAME_STATE_SCHEMA
+  DEFAULT_GAME_STATE_SCHEMA,
 } from '../dataIntegrity';
 import { ReactGameState } from '../../types/game';
 
@@ -26,9 +26,9 @@ Object.defineProperty(global, 'crypto', {
           view[i] = i;
         }
         return Promise.resolve(hash);
-      })
-    }
-  }
+      }),
+    },
+  },
 });
 
 describe('Data Integrity Validation', () => {
@@ -49,19 +49,19 @@ describe('Data Integrity Validation', () => {
           strength: 15,
           agility: 12,
           intelligence: 8,
-          defense: 10
+          defense: 10,
         },
         equipment: {
           weapon: { id: 'sword', enchantments: [] },
           armor: { id: 'leather_armor', enchantments: [] },
-          accessories: []
-        }
+          accessories: [],
+        },
       },
       inventory: {
         items: [
           { id: 'potion', quantity: 5 },
-          { id: 'gold', quantity: 100 }
-        ]
+          { id: 'gold', quantity: 100 },
+        ],
       },
       story: {
         currentChapter: 2,
@@ -72,15 +72,15 @@ describe('Data Integrity Validation', () => {
             progress: 50,
             objectives: [
               { id: 'obj1', completed: true },
-              { id: 'obj2', completed: false }
-            ]
-          }
-        ]
+              { id: 'obj2', completed: false },
+            ],
+          },
+        ],
       },
       gameFlags: {
         tutorial_completed: true,
         has_sword: true,
-        level_5_reached: true
+        level_5_reached: true,
       },
       worldState: {
         areas: {
@@ -89,13 +89,13 @@ describe('Data Integrity Validation', () => {
             completion: 75,
             secrets: [
               { id: 'secret1', discovered: true },
-              { id: 'secret2', discovered: false }
-            ]
-          }
-        }
+              { id: 'secret2', discovered: false },
+            ],
+          },
+        },
       },
       version: '1.0.0',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     } as ReactGameState;
   });
 
@@ -168,14 +168,16 @@ describe('Data Integrity Validation', () => {
         ...mockGameState,
         player: {
           ...mockGameState.player,
-          level: 'not_a_number' // Should be number
-        }
+          level: 'not_a_number', // Should be number
+        },
       };
 
       const result = validateGameStateStructure(invalidState);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors.some(error => error.includes('Invalid type for field player.level'))).toBe(true);
+      expect(
+        result.errors.some(error => error.includes('Invalid type for field player.level'))
+      ).toBe(true);
       expect(result.corruptedFields).toContain('player.level');
     });
 
@@ -184,8 +186,8 @@ describe('Data Integrity Validation', () => {
         ...mockGameState,
         player: {
           ...mockGameState.player,
-          level: -5 // Below minimum
-        }
+          level: -5, // Below minimum
+        },
       };
 
       const result = validateGameStateStructure(invalidState);
@@ -198,7 +200,7 @@ describe('Data Integrity Validation', () => {
     it('should detect deprecated fields', () => {
       const stateWithDeprecated = {
         ...mockGameState,
-        oldPlayerData: 'deprecated_data'
+        oldPlayerData: 'deprecated_data',
       };
 
       const result = validateGameStateStructure(stateWithDeprecated);
@@ -213,28 +215,30 @@ describe('Data Integrity Validation', () => {
           items: [
             { id: 'valid_item', quantity: 5 },
             { quantity: 3 }, // Missing id
-            'invalid_item' // Not an object
-          ]
-        }
+            'invalid_item', // Not an object
+          ],
+        },
       };
 
       const result = validateGameStateStructure(invalidState, DEFAULT_GAME_STATE_SCHEMA, {
-        deepValidation: true
+        deepValidation: true,
       });
 
       expect(result.isValid).toBe(false);
       expect(result.errors.some(error => error.includes('Missing or invalid item ID'))).toBe(true);
-      expect(result.errors.some(error => error.includes('Invalid item at inventory.items'))).toBe(true);
+      expect(result.errors.some(error => error.includes('Invalid item at inventory.items'))).toBe(
+        true
+      );
     });
 
     it('should respect strict mode settings', () => {
       const stateWithWarnings = {
         ...mockGameState,
-        oldPlayerData: 'deprecated_data'
+        oldPlayerData: 'deprecated_data',
       };
 
       const result = validateGameStateStructure(stateWithWarnings, DEFAULT_GAME_STATE_SCHEMA, {
-        strictMode: true
+        strictMode: true,
       });
 
       expect(result.isValid).toBe(false); // Should fail in strict mode due to warnings
@@ -268,7 +272,9 @@ describe('Data Integrity Validation', () => {
       const result = await validateDataIntegrity(invalidState);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors.some(error => error.includes('Missing required field: player'))).toBe(true);
+      expect(result.errors.some(error => error.includes('Missing required field: player'))).toBe(
+        true
+      );
     });
 
     it('should attempt data recovery when enabled', async () => {
@@ -276,12 +282,12 @@ describe('Data Integrity Validation', () => {
         ...mockGameState,
         player: {
           ...mockGameState.player,
-          level: 'corrupted_level' // Invalid type
-        }
+          level: 'corrupted_level', // Invalid type
+        },
       };
 
       const result = await validateDataIntegrity(corruptedState, undefined, undefined, {
-        enableRecovery: true
+        enableRecovery: true,
       });
 
       expect(result.recoveredData).toBeDefined();
@@ -308,8 +314,8 @@ describe('Data Integrity Validation', () => {
         player: {
           ...mockGameState.player,
           level: 'invalid_level',
-          experience: -100
-        }
+          experience: -100,
+        },
       };
 
       const validationResult = validateGameStateStructure(corruptedState);
@@ -325,12 +331,12 @@ describe('Data Integrity Validation', () => {
       const corruptedState = {
         ...mockGameState,
         inventory: {
-          items: 'not_an_array'
+          items: 'not_an_array',
         },
         story: {
           ...mockGameState.story,
-          completedQuests: null
-        }
+          completedQuests: null,
+        },
       };
 
       const validationResult = validateGameStateStructure(corruptedState);
@@ -347,7 +353,7 @@ describe('Data Integrity Validation', () => {
         checksum: '',
         errors: ['Unknown error'],
         warnings: [],
-        corruptedFields: ['unknown_field']
+        corruptedFields: ['unknown_field'],
       };
 
       const recoveryResult = attemptDataRecovery(mockGameState, validationResult);
@@ -362,7 +368,7 @@ describe('Data Integrity Validation', () => {
       const stateWithTemp = {
         ...mockGameState,
         temporaryData: { temp: 'value' },
-        sessionData: { session: 'data' }
+        sessionData: { session: 'data' },
       } as any;
 
       const sanitized = sanitizeGameStateForCloud(stateWithTemp);
@@ -376,7 +382,7 @@ describe('Data Integrity Validation', () => {
       const oldTimestamp = '2023-01-01T00:00:00.000Z';
       const stateWithOldTimestamp = {
         ...mockGameState,
-        timestamp: oldTimestamp
+        timestamp: oldTimestamp,
       };
 
       const sanitized = sanitizeGameStateForCloud(stateWithOldTimestamp);
@@ -389,7 +395,7 @@ describe('Data Integrity Validation', () => {
       const largeItems = Array.from({ length: 1500 }, (_, i) => ({ id: `item_${i}`, quantity: 1 }));
       const stateWithLargeInventory = {
         ...mockGameState,
-        inventory: { items: largeItems }
+        inventory: { items: largeItems },
       };
 
       const sanitized = sanitizeGameStateForCloud(stateWithLargeInventory);
@@ -412,11 +418,14 @@ describe('Data Integrity Validation', () => {
       const largeState = {
         ...mockGameState,
         inventory: {
-          items: Array.from({ length: 500 }, (_, i) => ({ id: `item_${i}`, quantity: Math.floor(Math.random() * 10) + 1 }))
+          items: Array.from({ length: 500 }, (_, i) => ({
+            id: `item_${i}`,
+            quantity: Math.floor(Math.random() * 10) + 1,
+          })),
         },
         gameFlags: Object.fromEntries(
           Array.from({ length: 100 }, (_, i) => [`flag_${i}`, Math.random() > 0.5])
-        )
+        ),
       };
 
       const startTime = performance.now();
@@ -445,9 +454,9 @@ describe('Data Integrity Validation', () => {
         ...mockGameState,
         player: {
           ...mockGameState.player,
-          equipment: null
+          equipment: null,
         },
-        optionalField: undefined
+        optionalField: undefined,
       } as any;
 
       const result = validateGameStateStructure(stateWithNulls);

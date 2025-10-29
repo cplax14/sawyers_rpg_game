@@ -71,30 +71,31 @@ interface InventoryNavigationProviderProps {
 export const InventoryNavigationProvider: React.FC<InventoryNavigationProviderProps> = ({
   children,
   initialTab = 'items',
-  onTabChange
+  onTabChange,
 }) => {
   const [navigationState, setNavigationState] = useState<NavigationState>({
     currentTab: initialTab,
     history: [initialTab],
-    pendingAction: null
+    pendingAction: null,
   });
 
   // Basic navigation
-  const navigateToTab = useCallback((tab: InventoryTab) => {
-    setNavigationState(prev => {
-      const newHistory = prev.currentTab !== tab
-        ? [...prev.history, tab]
-        : prev.history;
+  const navigateToTab = useCallback(
+    (tab: InventoryTab) => {
+      setNavigationState(prev => {
+        const newHistory = prev.currentTab !== tab ? [...prev.history, tab] : prev.history;
 
-      return {
-        ...prev,
-        currentTab: tab,
-        history: newHistory.slice(-10) // Keep last 10 for memory management
-      };
-    });
+        return {
+          ...prev,
+          currentTab: tab,
+          history: newHistory.slice(-10), // Keep last 10 for memory management
+        };
+      });
 
-    onTabChange?.(tab);
-  }, [onTabChange]);
+      onTabChange?.(tab);
+    },
+    [onTabChange]
+  );
 
   const goBack = useCallback(() => {
     setNavigationState(prev => {
@@ -106,7 +107,7 @@ export const InventoryNavigationProvider: React.FC<InventoryNavigationProviderPr
       return {
         ...prev,
         currentTab: previousTab,
-        history: newHistory
+        history: newHistory,
       };
     });
   }, []);
@@ -116,94 +117,118 @@ export const InventoryNavigationProvider: React.FC<InventoryNavigationProviderPr
   }, [navigationState.history.length]);
 
   // Enhanced navigation with context
-  const navigateToEquipment = useCallback((slot?: string) => {
-    const action: NavigationAction = {
-      type: 'navigate',
-      target: 'equipment',
-      payload: slot ? { equipmentSlot: slot } : undefined
-    };
+  const navigateToEquipment = useCallback(
+    (slot?: string) => {
+      const action: NavigationAction = {
+        type: 'navigate',
+        target: 'equipment',
+        payload: slot ? { equipmentSlot: slot } : undefined,
+      };
 
-    setNavigationState(prev => ({ ...prev, pendingAction: action }));
-    navigateToTab('equipment');
-  }, [navigateToTab]);
+      setNavigationState(prev => ({ ...prev, pendingAction: action }));
+      navigateToTab('equipment');
+    },
+    [navigateToTab]
+  );
 
-  const navigateToItems = useCallback((filter?: string, category?: string) => {
-    const action: NavigationAction = {
-      type: 'open_with_filter',
-      target: 'items',
-      payload: { filter, category }
-    };
+  const navigateToItems = useCallback(
+    (filter?: string, category?: string) => {
+      const action: NavigationAction = {
+        type: 'open_with_filter',
+        target: 'items',
+        payload: { filter, category },
+      };
 
-    setNavigationState(prev => ({ ...prev, pendingAction: action }));
-    navigateToTab('items');
-  }, [navigateToTab]);
+      setNavigationState(prev => ({ ...prev, pendingAction: action }));
+      navigateToTab('items');
+    },
+    [navigateToTab]
+  );
 
-  const navigateToCreatures = useCallback((filter?: string) => {
-    const action: NavigationAction = {
-      type: 'open_with_filter',
-      target: 'creatures',
-      payload: { filter }
-    };
+  const navigateToCreatures = useCallback(
+    (filter?: string) => {
+      const action: NavigationAction = {
+        type: 'open_with_filter',
+        target: 'creatures',
+        payload: { filter },
+      };
 
-    setNavigationState(prev => ({ ...prev, pendingAction: action }));
-    navigateToTab('creatures');
-  }, [navigateToTab]);
+      setNavigationState(prev => ({ ...prev, pendingAction: action }));
+      navigateToTab('creatures');
+    },
+    [navigateToTab]
+  );
 
-  const navigateToStats = useCallback((section?: string) => {
-    const action: NavigationAction = {
-      type: 'navigate',
-      target: 'stats',
-      payload: section ? { filter: section } : undefined
-    };
+  const navigateToStats = useCallback(
+    (section?: string) => {
+      const action: NavigationAction = {
+        type: 'navigate',
+        target: 'stats',
+        payload: section ? { filter: section } : undefined,
+      };
 
-    setNavigationState(prev => ({ ...prev, pendingAction: action }));
-    navigateToTab('stats');
-  }, [navigateToTab]);
+      setNavigationState(prev => ({ ...prev, pendingAction: action }));
+      navigateToTab('stats');
+    },
+    [navigateToTab]
+  );
 
   // Cross-screen actions
-  const equipItem = useCallback((itemId: string) => {
-    const action: NavigationAction = {
-      type: 'open_with_item',
-      target: 'equipment',
-      payload: { itemId, autoSelect: true }
-    };
+  const equipItem = useCallback(
+    (itemId: string) => {
+      const action: NavigationAction = {
+        type: 'open_with_item',
+        target: 'equipment',
+        payload: { itemId, autoSelect: true },
+      };
 
-    setNavigationState(prev => ({ ...prev, pendingAction: action }));
-    navigateToTab('equipment');
-  }, [navigateToTab]);
+      setNavigationState(prev => ({ ...prev, pendingAction: action }));
+      navigateToTab('equipment');
+    },
+    [navigateToTab]
+  );
 
-  const viewItemDetails = useCallback((itemId: string) => {
-    const action: NavigationAction = {
-      type: 'open_with_item',
-      target: 'items',
-      payload: { itemId, autoSelect: true }
-    };
+  const viewItemDetails = useCallback(
+    (itemId: string) => {
+      const action: NavigationAction = {
+        type: 'open_with_item',
+        target: 'items',
+        payload: { itemId, autoSelect: true },
+      };
 
-    setNavigationState(prev => ({ ...prev, pendingAction: action }));
-    navigateToTab('items');
-  }, [navigateToTab]);
+      setNavigationState(prev => ({ ...prev, pendingAction: action }));
+      navigateToTab('items');
+    },
+    [navigateToTab]
+  );
 
-  const viewCreatureDetails = useCallback((creatureId: string) => {
-    const action: NavigationAction = {
-      type: 'open_with_creature',
-      target: 'creatures',
-      payload: { creatureId, autoSelect: true }
-    };
+  const viewCreatureDetails = useCallback(
+    (creatureId: string) => {
+      const action: NavigationAction = {
+        type: 'open_with_creature',
+        target: 'creatures',
+        payload: { creatureId, autoSelect: true },
+      };
 
-    setNavigationState(prev => ({ ...prev, pendingAction: action }));
-    navigateToTab('creatures');
-  }, [navigateToTab]);
+      setNavigationState(prev => ({ ...prev, pendingAction: action }));
+      navigateToTab('creatures');
+    },
+    [navigateToTab]
+  );
 
-  const compareEquipment = useCallback((itemId: string, slot: string) => {
-    const action: NavigationAction = {
-      type: 'open_with_item',
-      target: 'equipment',
-      payload: { itemId, equipmentSlot: slot, autoSelect: true }
-    };
+  const compareEquipment = useCallback(
+    (itemId: string, slot: string) => {
+      const action: NavigationAction = {
+        type: 'open_with_item',
+        target: 'equipment',
+        payload: { itemId, equipmentSlot: slot, autoSelect: true },
+      };
 
-    setNavigationState(prev => ({ ...prev, pendingAction: action }));
-    navigateToTab('equipment');
-  }, [navigateToTab]);
+      setNavigationState(prev => ({ ...prev, pendingAction: action }));
+      navigateToTab('equipment');
+    },
+    [navigateToTab]
+  );
 
   // Pending action management
   const setPendingAction = useCallback((action: NavigationAction | null) => {
@@ -226,13 +251,16 @@ export const InventoryNavigationProvider: React.FC<InventoryNavigationProviderPr
   const clearHistory = useCallback(() => {
     setNavigationState(prev => ({
       ...prev,
-      history: [prev.currentTab]
+      history: [prev.currentTab],
     }));
   }, []);
 
-  const isCurrentTab = useCallback((tab: InventoryTab) => {
-    return navigationState.currentTab === tab;
-  }, [navigationState.currentTab]);
+  const isCurrentTab = useCallback(
+    (tab: InventoryTab) => {
+      return navigationState.currentTab === tab;
+    },
+    [navigationState.currentTab]
+  );
 
   const contextValue: InventoryNavigationContextType = {
     navigationState,
@@ -251,7 +279,7 @@ export const InventoryNavigationProvider: React.FC<InventoryNavigationProviderPr
     consumePendingAction,
     getTabHistory,
     clearHistory,
-    isCurrentTab
+    isCurrentTab,
   };
 
   return (

@@ -26,7 +26,7 @@ export {
   getSpellsByElement,
   getSpellsByType,
   DEFAULT_ANIMATION,
-  ATTACK_ANIMATION_MAP
+  ATTACK_ANIMATION_MAP,
 } from './animationRegistry';
 export type { AnimationMetadata, AnimationComponentProps } from './animationRegistry';
 
@@ -36,7 +36,7 @@ export {
   hasEnemyAnimation,
   getRegisteredEnemies,
   getEnemiesByAnimationType,
-  ENEMY_ANIMATION_MAP
+  ENEMY_ANIMATION_MAP,
 } from './enemyAnimationRegistry';
 export type { EnemyAnimationMetadata } from './enemyAnimationRegistry';
 

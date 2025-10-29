@@ -3,7 +3,14 @@
  * Provides authentication state management across the React application
  */
 
-import React, { createContext, useContext, useReducer, useEffect, useCallback, useMemo } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useReducer,
+  useEffect,
+  useCallback,
+  useMemo,
+} from 'react';
 import { User } from 'firebase/auth';
 import {
   AuthenticationService,
@@ -11,9 +18,14 @@ import {
   UserProfile,
   AuthConfig,
   AuthEventHandlers,
-  authService
+  authService,
 } from '../services/authentication';
-import { authPersistence, AuthPreferences, UserPreferences, SessionData } from '../utils/authPersistence';
+import {
+  authPersistence,
+  AuthPreferences,
+  UserPreferences,
+  SessionData,
+} from '../utils/authPersistence';
 
 // Authentication state
 export interface AuthState {
@@ -116,7 +128,7 @@ const initialAuthState: AuthState = {
   authPreferences: authPersistence.getAuthPreferences(),
   userPreferences: null,
   sessionData: null,
-  rememberMe: authPersistence.getRememberMe()
+  rememberMe: authPersistence.getRememberMe(),
 };
 
 // Authentication reducer
@@ -127,7 +139,7 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
         ...state,
         isLoading: true,
         lastOperation: action.payload.operation || null,
-        lastError: null
+        lastError: null,
       };
 
     case 'AUTH_SUCCESS':
@@ -151,7 +163,7 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
         sessionStartTime: state.sessionStartTime || new Date(),
         lastActivity: new Date(),
         sessionData,
-        userPreferences
+        userPreferences,
       };
 
     case 'AUTH_ERROR':
@@ -160,8 +172,8 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
         isLoading: false,
         lastError: action.payload.error,
         lastOperation: action.payload.operation,
-        requiresEmailVerification: action.payload.error.includes('verify') ||
-                                  action.payload.error.includes('verification')
+        requiresEmailVerification:
+          action.payload.error.includes('verify') || action.payload.error.includes('verification'),
       };
 
     case 'AUTH_SIGN_OUT':
@@ -177,40 +189,42 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
         ...initialAuthState,
         isInitialized: true,
         isLoading: false,
-        authPreferences: shouldRemember ? state.authPreferences : authPersistence.getAuthPreferences(),
-        rememberMe: shouldRemember
+        authPreferences: shouldRemember
+          ? state.authPreferences
+          : authPersistence.getAuthPreferences(),
+        rememberMe: shouldRemember,
       };
 
     case 'AUTH_INITIALIZED':
       return {
         ...state,
         isInitialized: true,
-        isLoading: false
+        isLoading: false,
       };
 
     case 'USER_PROFILE_UPDATED':
       return {
         ...state,
         userProfile: action.payload.userProfile,
-        lastActivity: new Date()
+        lastActivity: new Date(),
       };
 
     case 'EMAIL_VERIFICATION_REQUIRED':
       return {
         ...state,
-        requiresEmailVerification: action.payload.required
+        requiresEmailVerification: action.payload.required,
       };
 
     case 'CLEAR_ERROR':
       return {
         ...state,
-        lastError: null
+        lastError: null,
       };
 
     case 'UPDATE_ACTIVITY':
       return {
         ...state,
-        lastActivity: new Date()
+        lastActivity: new Date(),
       };
 
     case 'UPDATE_AUTH_PREFERENCES':
@@ -218,7 +232,7 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
       authPersistence.setAuthPreferences(action.payload.preferences);
       return {
         ...state,
-        authPreferences: updatedAuthPrefs
+        authPreferences: updatedAuthPrefs,
       };
 
     case 'UPDATE_USER_PREFERENCES':
@@ -227,7 +241,7 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
         authPersistence.setUserPreferences(state.user.uid, action.payload.preferences);
         return {
           ...state,
-          userPreferences: updatedUserPrefs
+          userPreferences: updatedUserPrefs,
         };
       }
       return state;
@@ -236,14 +250,14 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
       authPersistence.setSessionData(action.payload.sessionData);
       return {
         ...state,
-        sessionData: action.payload.sessionData
+        sessionData: action.payload.sessionData,
       };
 
     case 'SET_REMEMBER_ME':
       authPersistence.setRememberMe(action.payload.rememberMe);
       return {
         ...state,
-        rememberMe: action.payload.rememberMe
+        rememberMe: action.payload.rememberMe,
       };
 
     case 'RESTORE_PERSISTENCE_DATA':
@@ -253,7 +267,7 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
         authPreferences: authPersistence.getAuthPreferences(),
         userPreferences: currentUser ? authPersistence.getUserPreferences(currentUser.uid) : null,
         sessionData: authPersistence.getSessionData(),
-        rememberMe: authPersistence.getRememberMe()
+        rememberMe: authPersistence.getRememberMe(),
       };
 
     default:
@@ -280,7 +294,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
   children,
   config = {},
   enableActivityTracking = true,
-  activityTrackingInterval = 30000 // 30 seconds
+  activityTrackingInterval = 30000, // 30 seconds
 }) => {
   const [state, dispatch] = useReducer(authReducer, initialAuthState);
 
@@ -315,10 +329,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
           type: 'AUTH_ERROR',
           payload: {
             error: error.message,
-            operation
-          }
+            operation,
+          },
         });
-      }
+      },
     };
 
     // Initialize auth service with config and handlers
@@ -391,39 +405,38 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
   }, [state.isAuthenticated, state.authPreferences.sessionTimeout]);
 
   // Authentication operations
-  const signUp = useCallback(async (
-    email: string,
-    password: string,
-    displayName?: string
-  ): Promise<AuthResult> => {
-    dispatch({ type: 'AUTH_LOADING', payload: { operation: 'signUp' } });
+  const signUp = useCallback(
+    async (email: string, password: string, displayName?: string): Promise<AuthResult> => {
+      dispatch({ type: 'AUTH_LOADING', payload: { operation: 'signUp' } });
 
-    try {
-      const result = await authService.signUp(email, password, displayName);
+      try {
+        const result = await authService.signUp(email, password, displayName);
 
-      if (result.success && result.user) {
-        dispatch({ type: 'AUTH_SUCCESS', payload: { user: result.user, operation: 'signUp' } });
+        if (result.success && result.user) {
+          dispatch({ type: 'AUTH_SUCCESS', payload: { user: result.user, operation: 'signUp' } });
 
-        if (result.requiresEmailVerification) {
-          dispatch({ type: 'EMAIL_VERIFICATION_REQUIRED', payload: { required: true } });
-        }
-      } else if (result.error) {
-        dispatch({
-          type: 'AUTH_ERROR',
-          payload: {
-            error: result.error.message,
-            operation: 'signUp'
+          if (result.requiresEmailVerification) {
+            dispatch({ type: 'EMAIL_VERIFICATION_REQUIRED', payload: { required: true } });
           }
-        });
-      }
+        } else if (result.error) {
+          dispatch({
+            type: 'AUTH_ERROR',
+            payload: {
+              error: result.error.message,
+              operation: 'signUp',
+            },
+          });
+        }
 
-      return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Sign up failed';
-      dispatch({ type: 'AUTH_ERROR', payload: { error: errorMessage, operation: 'signUp' } });
-      throw error;
-    }
-  }, []);
+        return result;
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Sign up failed';
+        dispatch({ type: 'AUTH_ERROR', payload: { error: errorMessage, operation: 'signUp' } });
+        throw error;
+      }
+    },
+    []
+  );
 
   const signIn = useCallback(async (email: string, password: string): Promise<AuthResult> => {
     dispatch({ type: 'AUTH_LOADING', payload: { operation: 'signIn' } });
@@ -438,8 +451,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
           type: 'AUTH_ERROR',
           payload: {
             error: result.error.message,
-            operation: 'signIn'
-          }
+            operation: 'signIn',
+          },
         });
 
         if (result.requiresEmailVerification) {
@@ -468,8 +481,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
           type: 'AUTH_ERROR',
           payload: {
             error: result.error.message,
-            operation: 'signOut'
-          }
+            operation: 'signOut',
+          },
         });
       }
 
@@ -492,15 +505,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
           type: 'AUTH_ERROR',
           payload: {
             error: result.error.message,
-            operation: 'passwordReset'
-          }
+            operation: 'passwordReset',
+          },
         });
       }
 
       return result;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Password reset failed';
-      dispatch({ type: 'AUTH_ERROR', payload: { error: errorMessage, operation: 'passwordReset' } });
+      dispatch({
+        type: 'AUTH_ERROR',
+        payload: { error: errorMessage, operation: 'passwordReset' },
+      });
       throw error;
     }
   }, []);
@@ -516,110 +532,125 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
           type: 'AUTH_ERROR',
           payload: {
             error: result.error.message,
-            operation: 'emailVerification'
-          }
+            operation: 'emailVerification',
+          },
         });
       }
 
       return result;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Email verification failed';
-      dispatch({ type: 'AUTH_ERROR', payload: { error: errorMessage, operation: 'emailVerification' } });
+      dispatch({
+        type: 'AUTH_ERROR',
+        payload: { error: errorMessage, operation: 'emailVerification' },
+      });
       throw error;
     }
   }, []);
 
-  const updateProfile = useCallback(async (updates: {
-    displayName?: string;
-    photoURL?: string;
-  }): Promise<AuthResult> => {
-    dispatch({ type: 'AUTH_LOADING', payload: { operation: 'updateProfile' } });
+  const updateProfile = useCallback(
+    async (updates: { displayName?: string; photoURL?: string }): Promise<AuthResult> => {
+      dispatch({ type: 'AUTH_LOADING', payload: { operation: 'updateProfile' } });
 
-    try {
-      const result = await authService.updateUserProfile(updates);
+      try {
+        const result = await authService.updateUserProfile(updates);
 
-      if (result.success && result.user) {
-        const userProfile = authService.getUserProfile(result.user);
-        if (userProfile) {
-          dispatch({ type: 'USER_PROFILE_UPDATED', payload: { userProfile } });
+        if (result.success && result.user) {
+          const userProfile = authService.getUserProfile(result.user);
+          if (userProfile) {
+            dispatch({ type: 'USER_PROFILE_UPDATED', payload: { userProfile } });
+          }
+        } else if (result.error) {
+          dispatch({
+            type: 'AUTH_ERROR',
+            payload: {
+              error: result.error.message,
+              operation: 'updateProfile',
+            },
+          });
         }
-      } else if (result.error) {
+
+        return result;
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Profile update failed';
         dispatch({
           type: 'AUTH_ERROR',
-          payload: {
-            error: result.error.message,
-            operation: 'updateProfile'
-          }
+          payload: { error: errorMessage, operation: 'updateProfile' },
         });
+        throw error;
       }
+    },
+    []
+  );
 
-      return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Profile update failed';
-      dispatch({ type: 'AUTH_ERROR', payload: { error: errorMessage, operation: 'updateProfile' } });
-      throw error;
-    }
-  }, []);
+  const changePassword = useCallback(
+    async (currentPassword: string, newPassword: string): Promise<AuthResult> => {
+      dispatch({ type: 'AUTH_LOADING', payload: { operation: 'changePassword' } });
 
-  const changePassword = useCallback(async (
-    currentPassword: string,
-    newPassword: string
-  ): Promise<AuthResult> => {
-    dispatch({ type: 'AUTH_LOADING', payload: { operation: 'changePassword' } });
+      try {
+        const result = await authService.changePassword(currentPassword, newPassword);
 
-    try {
-      const result = await authService.changePassword(currentPassword, newPassword);
-
-      if (!result.success && result.error) {
-        dispatch({
-          type: 'AUTH_ERROR',
-          payload: {
-            error: result.error.message,
-            operation: 'changePassword'
-          }
-        });
-      }
-
-      return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Password change failed';
-      dispatch({ type: 'AUTH_ERROR', payload: { error: errorMessage, operation: 'changePassword' } });
-      throw error;
-    }
-  }, []);
-
-  const changeEmail = useCallback(async (
-    currentPassword: string,
-    newEmail: string
-  ): Promise<AuthResult> => {
-    dispatch({ type: 'AUTH_LOADING', payload: { operation: 'changeEmail' } });
-
-    try {
-      const result = await authService.changeEmail(currentPassword, newEmail);
-
-      if (result.success && result.user) {
-        dispatch({ type: 'AUTH_SUCCESS', payload: { user: result.user, operation: 'changeEmail' } });
-
-        if (result.requiresEmailVerification) {
-          dispatch({ type: 'EMAIL_VERIFICATION_REQUIRED', payload: { required: true } });
+        if (!result.success && result.error) {
+          dispatch({
+            type: 'AUTH_ERROR',
+            payload: {
+              error: result.error.message,
+              operation: 'changePassword',
+            },
+          });
         }
-      } else if (result.error) {
+
+        return result;
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Password change failed';
         dispatch({
           type: 'AUTH_ERROR',
-          payload: {
-            error: result.error.message,
-            operation: 'changeEmail'
-          }
+          payload: { error: errorMessage, operation: 'changePassword' },
         });
+        throw error;
       }
+    },
+    []
+  );
 
-      return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Email change failed';
-      dispatch({ type: 'AUTH_ERROR', payload: { error: errorMessage, operation: 'changeEmail' } });
-      throw error;
-    }
-  }, []);
+  const changeEmail = useCallback(
+    async (currentPassword: string, newEmail: string): Promise<AuthResult> => {
+      dispatch({ type: 'AUTH_LOADING', payload: { operation: 'changeEmail' } });
+
+      try {
+        const result = await authService.changeEmail(currentPassword, newEmail);
+
+        if (result.success && result.user) {
+          dispatch({
+            type: 'AUTH_SUCCESS',
+            payload: { user: result.user, operation: 'changeEmail' },
+          });
+
+          if (result.requiresEmailVerification) {
+            dispatch({ type: 'EMAIL_VERIFICATION_REQUIRED', payload: { required: true } });
+          }
+        } else if (result.error) {
+          dispatch({
+            type: 'AUTH_ERROR',
+            payload: {
+              error: result.error.message,
+              operation: 'changeEmail',
+            },
+          });
+        }
+
+        return result;
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Email change failed';
+        dispatch({
+          type: 'AUTH_ERROR',
+          payload: { error: errorMessage, operation: 'changeEmail' },
+        });
+        throw error;
+      }
+    },
+    []
+  );
 
   const deleteAccount = useCallback(async (currentPassword: string): Promise<AuthResult> => {
     dispatch({ type: 'AUTH_LOADING', payload: { operation: 'deleteAccount' } });
@@ -634,15 +665,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
           type: 'AUTH_ERROR',
           payload: {
             error: result.error.message,
-            operation: 'deleteAccount'
-          }
+            operation: 'deleteAccount',
+          },
         });
       }
 
       return result;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Account deletion failed';
-      dispatch({ type: 'AUTH_ERROR', payload: { error: errorMessage, operation: 'deleteAccount' } });
+      dispatch({
+        type: 'AUTH_ERROR',
+        payload: { error: errorMessage, operation: 'deleteAccount' },
+      });
       throw error;
     }
   }, []);
@@ -691,78 +725,85 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
     return null;
   }, [state.user]);
 
-  const importUserData = useCallback((data: any) => {
-    if (state.user && data) {
-      authPersistence.importUserData(state.user.uid, data);
-      dispatch({ type: 'RESTORE_PERSISTENCE_DATA' });
-    }
-  }, [state.user]);
+  const importUserData = useCallback(
+    (data: any) => {
+      if (state.user && data) {
+        authPersistence.importUserData(state.user.uid, data);
+        dispatch({ type: 'RESTORE_PERSISTENCE_DATA' });
+      }
+    },
+    [state.user]
+  );
 
   // Computed values
-  const contextValue = useMemo((): AuthContextValue => ({
-    // State
-    state,
+  const contextValue = useMemo(
+    (): AuthContextValue => ({
+      // State
+      state,
 
-    // Authentication operations
-    signUp,
-    signIn,
-    signOut,
+      // Authentication operations
+      signUp,
+      signIn,
+      signOut,
 
-    // Account management
-    sendPasswordReset,
-    resendEmailVerification,
-    updateProfile,
-    changePassword,
-    changeEmail,
-    deleteAccount,
+      // Account management
+      sendPasswordReset,
+      resendEmailVerification,
+      updateProfile,
+      changePassword,
+      changeEmail,
+      deleteAccount,
 
-    // Utility functions
-    clearError,
-    refreshUserData,
-    updateActivity,
+      // Utility functions
+      clearError,
+      refreshUserData,
+      updateActivity,
 
-    // Persistence management
-    updateAuthPreferences,
-    updateUserPreferences,
-    setRememberMe,
-    restorePersistenceData,
-    exportUserData,
-    importUserData,
+      // Persistence management
+      updateAuthPreferences,
+      updateUserPreferences,
+      setRememberMe,
+      restorePersistenceData,
+      exportUserData,
+      importUserData,
 
-    // Computed values
-    isSignedIn: state.isAuthenticated,
-    canAccessCloudFeatures: state.isAuthenticated && state.emailVerified,
-    displayName: state.userProfile?.displayName || state.user?.email?.split('@')[0] || 'User',
-    userInitials: state.userProfile?.displayName
-      ? state.userProfile.displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-      : state.user?.email?.charAt(0).toUpperCase() || '?'
-  }), [
-    state,
-    signUp,
-    signIn,
-    signOut,
-    sendPasswordReset,
-    resendEmailVerification,
-    updateProfile,
-    changePassword,
-    changeEmail,
-    deleteAccount,
-    clearError,
-    refreshUserData,
-    updateActivity,
-    updateAuthPreferences,
-    updateUserPreferences,
-    setRememberMe,
-    restorePersistenceData,
-    exportUserData,
-    importUserData
-  ]);
-
-  return (
-    <AuthContext.Provider value={contextValue}>
-      {children}
-    </AuthContext.Provider>
+      // Computed values
+      isSignedIn: state.isAuthenticated,
+      canAccessCloudFeatures: state.isAuthenticated && state.emailVerified,
+      displayName: state.userProfile?.displayName || state.user?.email?.split('@')[0] || 'User',
+      userInitials: state.userProfile?.displayName
+        ? state.userProfile.displayName
+            .split(' ')
+            .map(n => n[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2)
+        : state.user?.email?.charAt(0).toUpperCase() || '?',
+    }),
+    [
+      state,
+      signUp,
+      signIn,
+      signOut,
+      sendPasswordReset,
+      resendEmailVerification,
+      updateProfile,
+      changePassword,
+      changeEmail,
+      deleteAccount,
+      clearError,
+      refreshUserData,
+      updateActivity,
+      updateAuthPreferences,
+      updateUserPreferences,
+      setRememberMe,
+      restorePersistenceData,
+      exportUserData,
+      importUserData,
+    ]
   );
+
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 };
 
 /**
@@ -799,7 +840,7 @@ export const useAuthStatus = (): {
     isSignedIn,
     isLoading: state.isLoading,
     isEmailVerified: state.emailVerified,
-    canAccessCloudFeatures
+    canAccessCloudFeatures,
   };
 };
 

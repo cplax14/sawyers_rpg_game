@@ -1,6 +1,9 @@
 import React, { useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAnimationPerformance, usePerformanceAwareAnimation } from '../../hooks/usePerformanceMonitor';
+import {
+  useAnimationPerformance,
+  usePerformanceAwareAnimation,
+} from '../../hooks/usePerformanceMonitor';
 import type { AnimationVariant, SpellElement } from '../../types/animations';
 
 export interface AnimatedSpriteProps {
@@ -73,11 +76,12 @@ const AnimatedSprite: React.FC<AnimatedSpriteProps> = ({
   onFrameChange,
   className = '',
   style = {},
-  children
+  children,
 }) => {
   const spriteRef = useRef<HTMLDivElement>(null);
   const { startAnimation, endAnimation } = useAnimationPerformance();
-  const { shouldReduceAnimations, getOptimalAnimationDuration, getOptimalAnimationQuality } = usePerformanceAwareAnimation();
+  const { shouldReduceAnimations, getOptimalAnimationDuration, getOptimalAnimationQuality } =
+    usePerformanceAwareAnimation();
 
   const animationId = useRef(`sprite-${Math.random().toString(36).substr(2, 9)}`);
 
@@ -154,7 +158,11 @@ const AnimatedSprite: React.FC<AnimatedSpriteProps> = ({
     const optimized = { ...animation };
 
     // Adjust duration based on performance
-    if (optimized.animate && typeof optimized.animate === 'object' && 'transition' in optimized.animate) {
+    if (
+      optimized.animate &&
+      typeof optimized.animate === 'object' &&
+      'transition' in optimized.animate
+    ) {
       const transition = optimized.animate.transition as any;
       if (transition?.duration) {
         transition.duration = getOptimalAnimationDuration(transition.duration);
@@ -178,7 +186,13 @@ const AnimatedSprite: React.FC<AnimatedSpriteProps> = ({
     }
 
     return optimized;
-  }, [animation, enablePerformanceOptimization, getOptimalAnimationDuration, shouldReduceAnimations, getOptimalAnimationQuality]);
+  }, [
+    animation,
+    enablePerformanceOptimization,
+    getOptimalAnimationDuration,
+    shouldReduceAnimations,
+    getOptimalAnimationQuality,
+  ]);
 
   const containerStyle: React.CSSProperties = {
     position: 'absolute',
@@ -189,7 +203,7 @@ const AnimatedSprite: React.FC<AnimatedSpriteProps> = ({
     transform: `scale(${scale}) rotate(${rotation}deg)`,
     opacity,
     transformOrigin: 'center',
-    ...style
+    ...style,
   };
 
   const spriteStyle: React.CSSProperties = {
@@ -211,7 +225,7 @@ const AnimatedSprite: React.FC<AnimatedSpriteProps> = ({
       air: '#DDDD44',
       light: '#FFFFFF',
       dark: '#444444',
-      arcane: '#AA44AA'
+      arcane: '#AA44AA',
     };
 
     const elementColor = elementColors[spellElement];

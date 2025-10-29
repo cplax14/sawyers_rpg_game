@@ -65,7 +65,7 @@ export function useNetworkStatus(options: UseNetworkStatusOptions = {}): UseNetw
     connectionQuality: networkStatusManager.getConnectionQuality(),
     isSuitableForCloudOperations: networkStatusManager.isSuitableForCloudOperations(),
     checkConnectivity,
-    statistics: networkStatusManager.getStatistics()
+    statistics: networkStatusManager.getStatistics(),
   };
 }
 
@@ -101,7 +101,7 @@ export function useCloudOperationStatus(): {
     isSuitable: networkStatusManager.isSuitableForCloudOperations(),
     isOnline,
     quality: connectionQuality,
-    reason
+    reason,
   };
 }
 
@@ -122,6 +122,6 @@ export function useNetworkInfo(): {
     effectiveType: status.effectiveType,
     downlink: status.downlink,
     rtt: status.rtt,
-    saveData: status.saveData
+    saveData: status.saveData,
   };
 }

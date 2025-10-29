@@ -67,7 +67,7 @@ export function GameProvider({ children }: GameProviderProps) {
             console.log('🎮 Starting game initialization from React...');
 
             // Initialize the game now that React is ready
-            const vanillaGame = await window.initializeSawyersRPG() as GameInstance;
+            const vanillaGame = (await window.initializeSawyersRPG()) as GameInstance;
             const vanillaGameState = window.gameState as GameState;
 
             if (!vanillaGame || !vanillaGameState) {
@@ -175,7 +175,9 @@ export function GameProvider({ children }: GameProviderProps) {
           const hasWindowGameUI = !!(window.game && window.game.ui);
           const hasGameInstanceUI = !!gameInstance?.ui;
 
-          console.log(`🔍 DEBUG: gameInstance.ui=${hasGameInstanceUI}, window.game=${hasWindowGame}, window.game.ui=${hasWindowGameUI}`);
+          console.log(
+            `🔍 DEBUG: gameInstance.ui=${hasGameInstanceUI}, window.game=${hasWindowGame}, window.game.ui=${hasWindowGameUI}`
+          );
 
           // If we have window.game but not in our gameInstance, update it
           if (window.game && !gameInstance) {
@@ -188,7 +190,9 @@ export function GameProvider({ children }: GameProviderProps) {
             const currentSceneObj = window.game.ui.sceneManager.getCurrentScene();
             const currentScene = currentSceneObj?.name || 'main-menu';
             if (currentScene !== lastCurrentScreen) {
-              console.log(`🎬 React updating screen via window.game: ${lastCurrentScreen} -> ${currentScene}`);
+              console.log(
+                `🎬 React updating screen via window.game: ${lastCurrentScreen} -> ${currentScene}`
+              );
               setCurrentScreen(currentScene);
               lastCurrentScreen = currentScene;
             }
@@ -210,10 +214,10 @@ export function GameProvider({ children }: GameProviderProps) {
   const initializeAnimationBridge = () => {
     // Start performance monitoring for animations
     globalPerformanceMonitor.startMonitoring(
-      (metrics) => {
+      metrics => {
         // Performance metrics are available to React components via usePerformanceMonitor hook
       },
-      (warning) => {
+      warning => {
         console.warn(`Animation Performance: ${warning}`);
       }
     );
@@ -304,11 +308,7 @@ export function GameProvider({ children }: GameProviderProps) {
     hideModal,
   };
 
-  return (
-    <GameContext.Provider value={contextValue}>
-      {children}
-    </GameContext.Provider>
-  );
+  return <GameContext.Provider value={contextValue}>{children}</GameContext.Provider>;
 }
 
 // Custom hook to use game context

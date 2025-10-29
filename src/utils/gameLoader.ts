@@ -71,7 +71,7 @@ class GameModuleLoader {
         resolve();
       };
 
-      script.onerror = (error) => {
+      script.onerror = error => {
         console.error(`❌ Failed to load: ${src}`, error);
         reject(new Error(`Failed to load script: ${src}`));
       };

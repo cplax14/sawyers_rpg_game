@@ -70,7 +70,7 @@ export const validateEquippedItems = (equipment: Equipment): EquipmentValidation
       isValid: false,
       invalidSlots: [],
       validSlots: [],
-      warnings
+      warnings,
     };
   }
 
@@ -98,7 +98,7 @@ export const validateEquippedItems = (equipment: Equipment): EquipmentValidation
     isValid,
     invalidSlots,
     validSlots,
-    warnings
+    warnings,
   };
 };
 
@@ -133,8 +133,8 @@ export const cleanInvalidEquipment = (equipment: Equipment): Equipment => {
     const slotNames = validation.invalidSlots.join(', ');
     console.log(
       `✨ Some equipment was removed in a game update. ` +
-      `The following slots are now empty: ${slotNames}. ` +
-      `Don't worry - you can find new equipment in your adventures!`
+        `The following slots are now empty: ${slotNames}. ` +
+        `Don't worry - you can find new equipment in your adventures!`
     );
   }
 
@@ -154,10 +154,7 @@ export const cleanInvalidEquipment = (equipment: Equipment): Equipment => {
  * @param slot - The slot being checked (for logging)
  * @returns True if the item exists in the database or is null
  */
-export const validateEquipmentSlot = (
-  itemId: string | null,
-  slot: EquipmentSlot
-): boolean => {
+export const validateEquipmentSlot = (itemId: string | null, slot: EquipmentSlot): boolean => {
   // Null/empty slots are always valid
   if (itemId === null) {
     return true;
@@ -271,7 +268,7 @@ const ensureAllSlots = (equipment: Partial<Equipment>): Equipment => {
     ring1: equipment.ring1 ?? null,
     ring2: equipment.ring2 ?? null,
     charm: equipment.charm ?? null,
-    accessory: equipment.accessory ?? null // Deprecated but kept for backward compatibility
+    accessory: equipment.accessory ?? null, // Deprecated but kept for backward compatibility
   };
 };
 
@@ -302,7 +299,11 @@ const performLegacyMigration = (equipment: Partial<Equipment>): Equipment => {
         if (item.equipmentSlot === 'necklace') {
           necklace = equipment.accessory;
           console.log(`📿 Mapped old accessory "${equipment.accessory}" to necklace slot`);
-        } else if (item.equipmentSlot === 'ring1' || item.equipmentSlot === 'ring2' || item.equipmentSlot === 'ring') {
+        } else if (
+          item.equipmentSlot === 'ring1' ||
+          item.equipmentSlot === 'ring2' ||
+          item.equipmentSlot === 'ring'
+        ) {
           ring1 = equipment.accessory;
           console.log(`💍 Mapped old accessory "${equipment.accessory}" to ring1 slot`);
         } else if (item.equipmentSlot === 'charm') {
@@ -311,17 +312,23 @@ const performLegacyMigration = (equipment: Partial<Equipment>): Equipment => {
         } else {
           // Fallback: default to necklace if slot type is unclear
           necklace = equipment.accessory;
-          console.log(`📿 Mapped old accessory "${equipment.accessory}" to necklace slot (default mapping)`);
+          console.log(
+            `📿 Mapped old accessory "${equipment.accessory}" to necklace slot (default mapping)`
+          );
         }
       } else {
         // Item not found or no slot info - default to necklace
         necklace = equipment.accessory;
-        console.log(`📿 Mapped old accessory "${equipment.accessory}" to necklace slot (item not found, using default)`);
+        console.log(
+          `📿 Mapped old accessory "${equipment.accessory}" to necklace slot (item not found, using default)`
+        );
       }
     } else {
       // ItemData not available - default to necklace
       necklace = equipment.accessory;
-      console.log(`📿 Mapped old accessory "${equipment.accessory}" to necklace slot (ItemData unavailable, using default)`);
+      console.log(
+        `📿 Mapped old accessory "${equipment.accessory}" to necklace slot (ItemData unavailable, using default)`
+      );
     }
   }
 
@@ -337,7 +344,7 @@ const performLegacyMigration = (equipment: Partial<Equipment>): Equipment => {
     ring1,
     ring2: null,
     charm,
-    accessory: null // Deprecated but kept for backward compatibility
+    accessory: null, // Deprecated but kept for backward compatibility
   };
 
   console.log('✅ Equipment migration complete! Added 7 new equipment slots.');

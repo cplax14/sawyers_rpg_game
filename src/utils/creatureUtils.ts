@@ -19,7 +19,7 @@ import {
   CreatureEvolution,
   CreatureFilter,
   BestiaryEntry,
-  CreatureCompanionData
+  CreatureCompanionData,
 } from '../types/creatures';
 import { PlayerStats } from '../types/game';
 
@@ -41,12 +41,20 @@ export const filterCreatures = (
     }
 
     // Element filter
-    if (filter.elements && filter.elements.length > 0 && !filter.elements.includes(creature.element)) {
+    if (
+      filter.elements &&
+      filter.elements.length > 0 &&
+      !filter.elements.includes(creature.element)
+    ) {
       return false;
     }
 
     // Rarity filter
-    if (filter.rarities && filter.rarities.length > 0 && !filter.rarities.includes(creature.rarity as CreatureRarity)) {
+    if (
+      filter.rarities &&
+      filter.rarities.length > 0 &&
+      !filter.rarities.includes(creature.rarity as CreatureRarity)
+    ) {
       return false;
     }
 
@@ -110,7 +118,11 @@ export const filterCreatures = (
 export const searchCreatures = (
   creatures: EnhancedCreature[],
   query: string,
-  searchFields: ('name' | 'description' | 'species' | 'creatureType' | 'element')[] = ['name', 'description', 'species']
+  searchFields: ('name' | 'description' | 'species' | 'creatureType' | 'element')[] = [
+    'name',
+    'description',
+    'species',
+  ]
 ): EnhancedCreature[] => {
   if (!query.trim()) {
     return creatures;
@@ -153,7 +165,17 @@ export const getCreaturesByElement = (
 // CREATURE SORTING
 // ================================
 
-export type CreatureSortField = 'name' | 'level' | 'rarity' | 'type' | 'element' | 'capturedAt' | 'discoveredAt' | 'hp' | 'attack' | 'defense';
+export type CreatureSortField =
+  | 'name'
+  | 'level'
+  | 'rarity'
+  | 'type'
+  | 'element'
+  | 'capturedAt'
+  | 'discoveredAt'
+  | 'hp'
+  | 'attack'
+  | 'defense';
 export type SortOrder = 'asc' | 'desc';
 
 /**
@@ -259,7 +281,7 @@ export const checkBreedingCompatibility = (
     reasons: [],
     successChance: 0,
     estimatedTime: 0,
-    offspringPredictions: []
+    offspringPredictions: [],
   };
 
   // Cannot breed with self
@@ -308,12 +330,14 @@ export const checkBreedingCompatibility = (
     ['fire', 'water'],
     ['earth', 'air'],
     ['light', 'dark'],
-    ['ice', 'lightning']
+    ['ice', 'lightning'],
   ];
 
-  const hasComplementaryElements = elementPairs.some(pair =>
-    (pair.includes(creature1.element) && pair.includes(creature2.element)) &&
-    creature1.element !== creature2.element
+  const hasComplementaryElements = elementPairs.some(
+    pair =>
+      pair.includes(creature1.element) &&
+      pair.includes(creature2.element) &&
+      creature1.element !== creature2.element
   );
 
   if (hasComplementaryElements) {
@@ -363,7 +387,7 @@ export const calculatePersonalityCompatibility = (
     sad: ['sad', 'neutral', 'tired'],
     angry: ['angry', 'excited'],
     excited: ['excited', 'happy', 'angry'],
-    tired: ['tired', 'content', 'sad']
+    tired: ['tired', 'content', 'sad'],
   };
 
   if (moodCompatibility[personality1.mood]?.includes(personality2.mood)) {
@@ -378,13 +402,19 @@ export const calculatePersonalityCompatibility = (
     ['curious', 'playful'],
     ['energetic', 'playful'],
     ['independent', 'serious'],
-    ['clingy', 'protective']
+    ['clingy', 'protective'],
   ];
 
-  const hasCompatibleTraits = personality1.traits && personality2.traits && compatibleTraits.some(pair =>
-    (personality1.traits.includes(pair[0] as any) && personality2.traits.includes(pair[1] as any)) ||
-    (personality1.traits.includes(pair[1] as any) && personality2.traits.includes(pair[0] as any))
-  );
+  const hasCompatibleTraits =
+    personality1.traits &&
+    personality2.traits &&
+    compatibleTraits.some(
+      pair =>
+        (personality1.traits.includes(pair[0] as any) &&
+          personality2.traits.includes(pair[1] as any)) ||
+        (personality1.traits.includes(pair[1] as any) &&
+          personality2.traits.includes(pair[0] as any))
+    );
 
   if (hasCompatibleTraits) {
     score += 15;
@@ -415,7 +445,7 @@ export const generateOffspringPredictions = (
     species: Math.random() > 0.5 ? parent1.species : parent2.species,
     element: getInheritedElement(parent1.element, parent2.element),
     rarity: getInheritedRarity(parent1.rarity as CreatureRarity, parent2.rarity as CreatureRarity),
-    traits: mixTraits(parent1.personality?.traits || [], parent2.personality?.traits || [])
+    traits: mixTraits(parent1.personality?.traits || [], parent2.personality?.traits || []),
   });
 
   // Hybrid outcome (20% chance)
@@ -423,12 +453,18 @@ export const generateOffspringPredictions = (
     type: 'hybrid',
     chance: 20,
     species: `${parent1.species}-${parent2.species} Hybrid`,
-    element: parent1.element !== parent2.element ?
-      ['fire', 'water'].includes(parent1.element) && ['fire', 'water'].includes(parent2.element) ? 'steam' :
-      ['earth', 'air'].includes(parent1.element) && ['earth', 'air'].includes(parent2.element) ? 'dust' :
-      'neutral' : parent1.element,
-    rarity: upgradeRarity(getInheritedRarity(parent1.rarity as CreatureRarity, parent2.rarity as CreatureRarity)),
-    traits: mixTraits(parent1.personality?.traits || [], parent2.personality?.traits || [], true)
+    element:
+      parent1.element !== parent2.element
+        ? ['fire', 'water'].includes(parent1.element) && ['fire', 'water'].includes(parent2.element)
+          ? 'steam'
+          : ['earth', 'air'].includes(parent1.element) && ['earth', 'air'].includes(parent2.element)
+            ? 'dust'
+            : 'neutral'
+        : parent1.element,
+    rarity: upgradeRarity(
+      getInheritedRarity(parent1.rarity as CreatureRarity, parent2.rarity as CreatureRarity)
+    ),
+    traits: mixTraits(parent1.personality?.traits || [], parent2.personality?.traits || [], true),
   });
 
   // Rare mutation (5% chance)
@@ -438,7 +474,7 @@ export const generateOffspringPredictions = (
     species: `Rare ${parent1.species} Variant`,
     element: getRandomElement(),
     rarity: 'legendary',
-    traits: generateRandomTraits()
+    traits: generateRandomTraits(),
   });
 
   return predictions;
@@ -447,7 +483,10 @@ export const generateOffspringPredictions = (
 /**
  * Determine inherited element from parents
  */
-export const getInheritedElement = (element1: CreatureElement, element2: CreatureElement): CreatureElement => {
+export const getInheritedElement = (
+  element1: CreatureElement,
+  element2: CreatureElement
+): CreatureElement => {
   if (element1 === element2) return element1;
 
   // Elemental combinations
@@ -460,7 +499,7 @@ export const getInheritedElement = (element1: CreatureElement, element2: Creatur
     'earth-air': 'neutral',
     'light-dark': 'neutral',
     'lightning-water': 'ice',
-    'nature-fire': 'earth'
+    'nature-fire': 'earth',
   };
 
   const key1 = `${element1}-${element2}`;
@@ -472,17 +511,27 @@ export const getInheritedElement = (element1: CreatureElement, element2: Creatur
 /**
  * Determine inherited rarity from parents
  */
-export const getInheritedRarity = (rarity1: CreatureRarity, rarity2: CreatureRarity): CreatureRarity => {
+export const getInheritedRarity = (
+  rarity1: CreatureRarity,
+  rarity2: CreatureRarity
+): CreatureRarity => {
   const rarityValues = {
     common: 1,
     uncommon: 2,
     rare: 3,
     epic: 4,
     legendary: 5,
-    mythical: 6
+    mythical: 6,
   };
 
-  const rarityNames = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythical'] as CreatureRarity[];
+  const rarityNames = [
+    'common',
+    'uncommon',
+    'rare',
+    'epic',
+    'legendary',
+    'mythical',
+  ] as CreatureRarity[];
 
   const avg = (rarityValues[rarity1] + rarityValues[rarity2]) / 2;
   const baseIndex = Math.floor(avg) - 1;
@@ -502,7 +551,14 @@ export const getInheritedRarity = (rarity1: CreatureRarity, rarity2: CreatureRar
  * Upgrade rarity by one tier
  */
 export const upgradeRarity = (rarity: CreatureRarity): CreatureRarity => {
-  const rarityOrder: CreatureRarity[] = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythical'];
+  const rarityOrder: CreatureRarity[] = [
+    'common',
+    'uncommon',
+    'rare',
+    'epic',
+    'legendary',
+    'mythical',
+  ];
   const currentIndex = rarityOrder.indexOf(rarity);
   return rarityOrder[Math.min(currentIndex + 1, rarityOrder.length - 1)];
 };
@@ -520,7 +576,18 @@ export const mixTraits = (traits1: any[], traits2: any[], enhanced = false): any
 
   // Chance for new trait
   if (enhanced || Math.random() > 0.7) {
-    const possibleTraits = ['aggressive', 'docile', 'playful', 'serious', 'curious', 'lazy', 'energetic', 'protective', 'independent', 'clingy'];
+    const possibleTraits = [
+      'aggressive',
+      'docile',
+      'playful',
+      'serious',
+      'curious',
+      'lazy',
+      'energetic',
+      'protective',
+      'independent',
+      'clingy',
+    ];
     const newTrait = possibleTraits[Math.floor(Math.random() * possibleTraits.length)];
     if (!mixedTraits.includes(newTrait)) {
       mixedTraits.push(newTrait);
@@ -534,7 +601,18 @@ export const mixTraits = (traits1: any[], traits2: any[], enhanced = false): any
  * Generate random traits for mutations
  */
 export const generateRandomTraits = (): any[] => {
-  const allTraits = ['aggressive', 'docile', 'playful', 'serious', 'curious', 'lazy', 'energetic', 'protective', 'independent', 'clingy'];
+  const allTraits = [
+    'aggressive',
+    'docile',
+    'playful',
+    'serious',
+    'curious',
+    'lazy',
+    'energetic',
+    'protective',
+    'independent',
+    'clingy',
+  ];
   const numTraits = Math.floor(Math.random() * 3) + 1;
   const traits = [];
 
@@ -552,7 +630,18 @@ export const generateRandomTraits = (): any[] => {
  * Get random element for mutations
  */
 export const getRandomElement = (): CreatureElement => {
-  const elements: CreatureElement[] = ['fire', 'water', 'earth', 'air', 'light', 'dark', 'ice', 'lightning', 'nature', 'neutral'];
+  const elements: CreatureElement[] = [
+    'fire',
+    'water',
+    'earth',
+    'air',
+    'light',
+    'dark',
+    'ice',
+    'lightning',
+    'nature',
+    'neutral',
+  ];
   return elements[Math.floor(Math.random() * elements.length)];
 };
 
@@ -588,19 +677,30 @@ export const breedCreatures = (
   const offspring: EnhancedCreature = {
     id: `offspring_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     creatureId: `${parent1.creatureId}_${parent2.creatureId}_offspring`,
-    name: selectedPrediction.species.includes('Hybrid') || selectedPrediction.species.includes('Variant')
-      ? selectedPrediction.species
-      : `${selectedPrediction.species} Jr.`,
+    name:
+      selectedPrediction.species.includes('Hybrid') ||
+      selectedPrediction.species.includes('Variant')
+        ? selectedPrediction.species
+        : `${selectedPrediction.species} Jr.`,
     species: selectedPrediction.species,
     level: 1,
 
     // Base stats inherited from parents with some variance
-    hp: Math.floor((parent1.hp + parent2.hp) / 2 * (0.8 + Math.random() * 0.4)),
-    attack: Math.floor((parent1.attack + parent2.attack) / 2 * (0.8 + Math.random() * 0.4)),
-    defense: Math.floor((parent1.defense + parent2.defense) / 2 * (0.8 + Math.random() * 0.4)),
-    magicAttack: Math.floor(((parent1.magicAttack || parent1.attack) + (parent2.magicAttack || parent2.attack)) / 2 * (0.8 + Math.random() * 0.4)),
-    magicDefense: Math.floor(((parent1.magicDefense || parent1.defense) + (parent2.magicDefense || parent2.defense)) / 2 * (0.8 + Math.random() * 0.4)),
-    speed: Math.floor(((parent1.speed || 50) + (parent2.speed || 50)) / 2 * (0.8 + Math.random() * 0.4)),
+    hp: Math.floor(((parent1.hp + parent2.hp) / 2) * (0.8 + Math.random() * 0.4)),
+    attack: Math.floor(((parent1.attack + parent2.attack) / 2) * (0.8 + Math.random() * 0.4)),
+    defense: Math.floor(((parent1.defense + parent2.defense) / 2) * (0.8 + Math.random() * 0.4)),
+    magicAttack: Math.floor(
+      (((parent1.magicAttack || parent1.attack) + (parent2.magicAttack || parent2.attack)) / 2) *
+        (0.8 + Math.random() * 0.4)
+    ),
+    magicDefense: Math.floor(
+      (((parent1.magicDefense || parent1.defense) + (parent2.magicDefense || parent2.defense)) /
+        2) *
+        (0.8 + Math.random() * 0.4)
+    ),
+    speed: Math.floor(
+      (((parent1.speed || 50) + (parent2.speed || 50)) / 2) * (0.8 + Math.random() * 0.4)
+    ),
 
     // Inherited properties
     element: selectedPrediction.element,
@@ -614,17 +714,18 @@ export const breedCreatures = (
     // Genetics tracking
     genetics: {
       parentIds: [parent1.creatureId, parent2.creatureId],
-      generation: Math.max(parent1.genetics?.generation || 0, parent2.genetics?.generation || 0) + 1,
+      generation:
+        Math.max(parent1.genetics?.generation || 0, parent2.genetics?.generation || 0) + 1,
       inheritedTraits: selectedPrediction.traits,
       mutations: selectedPrediction.type === 'mutation' ? ['rare_variant'] : [],
-      breedingPotential: selectedPrediction.type === 'hybrid' ? 120 : 100
+      breedingPotential: selectedPrediction.type === 'hybrid' ? 120 : 100,
     },
 
     // Enhanced properties
     personality: {
       traits: selectedPrediction.traits,
       dominantTrait: selectedPrediction.traits[0] || 'balanced',
-      compatibility: calculatePersonalityCompatibility(parent1, parent2)
+      compatibility: calculatePersonalityCompatibility(parent1, parent2),
     },
 
     // Collection status
@@ -632,7 +733,7 @@ export const breedCreatures = (
       discovered: true,
       captured: true,
       seen: true,
-      timesEncountered: 1
+      timesEncountered: 1,
     },
 
     capturedAt: new Date(),
@@ -645,17 +746,19 @@ export const breedCreatures = (
       defenseIV: Math.floor(Math.random() * 32),
       magicAttackIV: Math.floor(Math.random() * 32),
       magicDefenseIV: Math.floor(Math.random() * 32),
-      speedIV: Math.floor(Math.random() * 32)
+      speedIV: Math.floor(Math.random() * 32),
     },
 
     // Random nature
     nature: {
-      name: ['Hardy', 'Bold', 'Modest', 'Timid', 'Jolly', 'Adamant', 'Careful', 'Calm'][Math.floor(Math.random() * 8)],
+      name: ['Hardy', 'Bold', 'Modest', 'Timid', 'Jolly', 'Adamant', 'Careful', 'Calm'][
+        Math.floor(Math.random() * 8)
+      ],
       statModifiers: {
         // Simple stat modifiers for different natures
         attack: Math.random() > 0.5 ? (Math.random() > 0.5 ? 2 : -2) : 0,
         defense: Math.random() > 0.5 ? (Math.random() > 0.5 ? 2 : -2) : 0,
-      }
+      },
     },
 
     // Start with basic companion status
@@ -664,8 +767,8 @@ export const breedCreatures = (
       isActiveTeamMember: false,
       bond: 10, // Start with low bond
       experience: 0,
-      lastInteraction: new Date()
-    }
+      lastInteraction: new Date(),
+    },
   };
 
   return offspring;
@@ -722,22 +825,23 @@ export const generateNPCTraders = (): NPCTrader[] => {
       location: 'forest_clearing',
       specialty: 'beast',
       reputation: 75,
-      description: 'A grizzled veteran who specializes in beast-type creatures. Knows the wilderness like the back of his hand.',
+      description:
+        'A grizzled veteran who specializes in beast-type creatures. Knows the wilderness like the back of his hand.',
       icon: '🐺',
       trades: [
         {
           id: 'beast_trade_1',
           wants: { type: 'beast', minLevel: 5 },
           offers: { species: 'forest_wolf', level: 8, guaranteedTraits: ['loyal', 'protective'] },
-          availability: 3
+          availability: 3,
         },
         {
           id: 'beast_trade_2',
           wants: { species: 'goblin', minLevel: 10 },
           offers: { species: 'dire_wolf', level: 12, rarity: 'uncommon' },
-          availability: 1
-        }
-      ]
+          availability: 1,
+        },
+      ],
     },
     {
       id: 'trader_mystic',
@@ -745,23 +849,24 @@ export const generateNPCTraders = (): NPCTrader[] => {
       location: 'magic_tower',
       specialty: 'spirit',
       reputation: 90,
-      description: 'An ethereal being who trades in spirits and magical creatures. Her wisdom spans centuries.',
+      description:
+        'An ethereal being who trades in spirits and magical creatures. Her wisdom spans centuries.',
       icon: '🔮',
       trades: [
         {
           id: 'spirit_trade_1',
           wants: { type: 'spirit', rarity: 'common' },
           offers: { species: 'wisp', level: 6, guaranteedTraits: ['magical', 'curious'] },
-          availability: 5
+          availability: 5,
         },
         {
           id: 'spirit_trade_2',
           wants: { rarity: 'rare' },
           offers: { species: 'phantom', level: 15, rarity: 'epic', currency: 100 },
           availability: 1,
-          requirements: { minReputation: 50 }
-        }
-      ]
+          requirements: { minReputation: 50 },
+        },
+      ],
     },
     {
       id: 'trader_dragon_keeper',
@@ -769,7 +874,8 @@ export const generateNPCTraders = (): NPCTrader[] => {
       location: 'mountain_peak',
       specialty: 'dragon',
       reputation: 95,
-      description: 'The legendary dragon keeper who has formed bonds with the most powerful creatures in the realm.',
+      description:
+        'The legendary dragon keeper who has formed bonds with the most powerful creatures in the realm.',
       icon: '🐉',
       trades: [
         {
@@ -777,16 +883,16 @@ export const generateNPCTraders = (): NPCTrader[] => {
           wants: { type: 'dragon', minLevel: 20 },
           offers: { species: 'ancient_dragon', level: 25, rarity: 'legendary' },
           availability: 1,
-          requirements: { minReputation: 80 }
+          requirements: { minReputation: 80 },
         },
         {
           id: 'dragon_trade_2',
           wants: { rarity: 'epic', minLevel: 15 },
           offers: { species: 'drake', level: 18, currency: 500 },
           availability: 2,
-          requirements: { minReputation: 60 }
-        }
-      ]
+          requirements: { minReputation: 60 },
+        },
+      ],
     },
     {
       id: 'trader_collector',
@@ -794,30 +900,31 @@ export const generateNPCTraders = (): NPCTrader[] => {
       location: 'trading_post',
       specialty: 'all',
       reputation: 60,
-      description: 'A traveling collector who deals in all types of creatures. Always looking for rare specimens.',
+      description:
+        'A traveling collector who deals in all types of creatures. Always looking for rare specimens.',
       icon: '🎒',
       trades: [
         {
           id: 'collector_trade_1',
           wants: { rarity: 'uncommon' },
           offers: { currency: 200 },
-          availability: 10
+          availability: 10,
         },
         {
           id: 'collector_trade_2',
           wants: { rarity: 'rare' },
           offers: { currency: 800 },
-          availability: 5
+          availability: 5,
         },
         {
           id: 'collector_trade_3',
           wants: { minLevel: 25 },
           offers: { species: 'mystery_egg', level: 1, rarity: 'rare' },
           availability: 2,
-          requirements: { minReputation: 40 }
-        }
-      ]
-    }
+          requirements: { minReputation: 40 },
+        },
+      ],
+    },
   ];
 };
 
@@ -836,8 +943,14 @@ export const canMakeTrade = (
   }
 
   // Check reputation requirements
-  if (tradeOffer.requirements?.minReputation && playerReputation < tradeOffer.requirements.minReputation) {
-    return { canTrade: false, reason: `Requires ${tradeOffer.requirements.minReputation} reputation` };
+  if (
+    tradeOffer.requirements?.minReputation &&
+    playerReputation < tradeOffer.requirements.minReputation
+  ) {
+    return {
+      canTrade: false,
+      reason: `Requires ${tradeOffer.requirements.minReputation} reputation`,
+    };
   }
 
   // Check creature requirements
@@ -848,19 +961,31 @@ export const canMakeTrade = (
   }
 
   if (wants.type && playerCreature.creatureType !== wants.type) {
-    return { canTrade: false, reason: `Wants ${wants.type} type, offered ${playerCreature.creatureType}` };
+    return {
+      canTrade: false,
+      reason: `Wants ${wants.type} type, offered ${playerCreature.creatureType}`,
+    };
   }
 
   if (wants.minLevel && playerCreature.level < wants.minLevel) {
-    return { canTrade: false, reason: `Wants level ${wants.minLevel}+, offered level ${playerCreature.level}` };
+    return {
+      canTrade: false,
+      reason: `Wants level ${wants.minLevel}+, offered level ${playerCreature.level}`,
+    };
   }
 
   if (wants.maxLevel && playerCreature.level > wants.maxLevel) {
-    return { canTrade: false, reason: `Wants level ${wants.maxLevel} or lower, offered level ${playerCreature.level}` };
+    return {
+      canTrade: false,
+      reason: `Wants level ${wants.maxLevel} or lower, offered level ${playerCreature.level}`,
+    };
   }
 
   if (wants.rarity && playerCreature.rarity !== wants.rarity) {
-    return { canTrade: false, reason: `Wants ${wants.rarity} rarity, offered ${playerCreature.rarity}` };
+    return {
+      canTrade: false,
+      reason: `Wants ${wants.rarity} rarity, offered ${playerCreature.rarity}`,
+    };
   }
 
   if (wants.traits && wants.traits.length > 0) {
@@ -881,7 +1006,12 @@ export const executeNPCTrade = (
   trader: NPCTrader,
   tradeOffer: NPCTradeOffer,
   offeredCreature: EnhancedCreature
-): { success: boolean; receivedCreature?: EnhancedCreature; receivedCurrency?: number; error?: string } => {
+): {
+  success: boolean;
+  receivedCreature?: EnhancedCreature;
+  receivedCurrency?: number;
+  error?: string;
+} => {
   try {
     // Validate trade can be made
     const validation = canMakeTrade(trader, tradeOffer, offeredCreature);
@@ -923,7 +1053,7 @@ export const executeNPCTrade = (
           discovered: true,
           captured: true,
           seen: true,
-          timesEncountered: 1
+          timesEncountered: 1,
         },
 
         capturedAt: new Date(),
@@ -933,7 +1063,7 @@ export const executeNPCTrade = (
         personality: {
           traits: tradeOffer.offers.guaranteedTraits || ['friendly'],
           dominantTrait: tradeOffer.offers.guaranteedTraits?.[0] || 'friendly',
-          compatibility: 50
+          compatibility: 50,
         },
 
         // Random IVs
@@ -943,13 +1073,15 @@ export const executeNPCTrade = (
           defenseIV: Math.floor(Math.random() * 32),
           magicAttackIV: Math.floor(Math.random() * 32),
           magicDefenseIV: Math.floor(Math.random() * 32),
-          speedIV: Math.floor(Math.random() * 32)
+          speedIV: Math.floor(Math.random() * 32),
         },
 
         // Random nature
         nature: {
-          name: ['Hardy', 'Bold', 'Modest', 'Timid', 'Jolly', 'Adamant'][Math.floor(Math.random() * 6)],
-          statModifiers: {}
+          name: ['Hardy', 'Bold', 'Modest', 'Timid', 'Jolly', 'Adamant'][
+            Math.floor(Math.random() * 6)
+          ],
+          statModifiers: {},
         },
 
         // Companion data
@@ -958,7 +1090,7 @@ export const executeNPCTrade = (
           isActiveTeamMember: false,
           bond: 20, // NPC traded creatures start with higher bond
           experience: 0,
-          lastInteraction: new Date()
+          lastInteraction: new Date(),
         },
 
         // Genetics for NPC creatures
@@ -967,8 +1099,8 @@ export const executeNPCTrade = (
           generation: 0,
           inheritedTraits: tradeOffer.offers.guaranteedTraits || [],
           mutations: [],
-          breedingPotential: 100
-        }
+          breedingPotential: 100,
+        },
       };
     }
 
@@ -979,12 +1111,12 @@ export const executeNPCTrade = (
     return {
       success: true,
       receivedCreature,
-      receivedCurrency
+      receivedCurrency,
     };
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Trade execution failed'
+      error: error instanceof Error ? error.message : 'Trade execution failed',
     };
   }
 };
@@ -1003,18 +1135,18 @@ export const calculateCombatStats = (creature: EnhancedCreature): CreatureCombat
     defense: creature.defense,
     magicAttack: creature.magicAttack || creature.attack,
     magicDefense: creature.magicDefense || creature.defense,
-    speed: creature.speed || 50
+    speed: creature.speed || 50,
   };
 
   // Apply individual values (genetics)
   if (creature.individualStats) {
     const ivs = creature.individualStats;
-    baseStats.hp += Math.floor(ivs.hpIV * creature.level / 100);
-    baseStats.attack += Math.floor(ivs.attackIV * creature.level / 100);
-    baseStats.defense += Math.floor(ivs.defenseIV * creature.level / 100);
-    baseStats.magicAttack += Math.floor(ivs.magicAttackIV * creature.level / 100);
-    baseStats.magicDefense += Math.floor(ivs.magicDefenseIV * creature.level / 100);
-    baseStats.speed += Math.floor(ivs.speedIV * creature.level / 100);
+    baseStats.hp += Math.floor((ivs.hpIV * creature.level) / 100);
+    baseStats.attack += Math.floor((ivs.attackIV * creature.level) / 100);
+    baseStats.defense += Math.floor((ivs.defenseIV * creature.level) / 100);
+    baseStats.magicAttack += Math.floor((ivs.magicAttackIV * creature.level) / 100);
+    baseStats.magicDefense += Math.floor((ivs.magicDefenseIV * creature.level) / 100);
+    baseStats.speed += Math.floor((ivs.speedIV * creature.level) / 100);
   }
 
   // Apply nature modifiers
@@ -1038,7 +1170,7 @@ export const calculateCombatStats = (creature: EnhancedCreature): CreatureCombat
     speed: Math.floor(baseStats.speed * levelMultiplier),
     accuracy: 85 + creature.level,
     evasion: 10 + Math.floor(creature.level / 5),
-    criticalRate: 5 + Math.floor(creature.level / 10)
+    criticalRate: 5 + Math.floor(creature.level / 10),
   };
 };
 
@@ -1058,7 +1190,7 @@ export const getTypeEffectiveness = (
     dark: { light: 2.0 },
     ice: { fire: 0.5, water: 2.0, nature: 2.0 },
     lightning: { water: 2.0, earth: 0.5, air: 0.5 },
-    nature: { water: 2.0, earth: 2.0, fire: 0.5, ice: 0.5 }
+    nature: { water: 2.0, earth: 2.0, fire: 0.5, ice: 0.5 },
   };
 
   return effectiveness[attackerElement]?.[defenderElement] || 1.0;
@@ -1119,9 +1251,9 @@ export const calculateExperienceGain = (
   // Level difference modifier
   let modifier = 1.0;
   if (levelDifference > 0) {
-    modifier = 1.0 + (levelDifference * 0.1); // Bonus for defeating higher level
+    modifier = 1.0 + levelDifference * 0.1; // Bonus for defeating higher level
   } else if (levelDifference < 0) {
-    modifier = Math.max(0.1, 1.0 + (levelDifference * 0.05)); // Penalty for defeating lower level
+    modifier = Math.max(0.1, 1.0 + levelDifference * 0.05); // Penalty for defeating lower level
   }
 
   // Rarity bonus
@@ -1131,7 +1263,7 @@ export const calculateExperienceGain = (
     rare: 1.5,
     epic: 2.0,
     legendary: 3.0,
-    mythical: 5.0
+    mythical: 5.0,
   };
 
   modifier *= rarityMultiplier[defeated.rarity as CreatureRarity] || 1.0;
@@ -1150,7 +1282,8 @@ export const calculateCreatureRating = (creature: EnhancedCreature): number => {
   const stats = calculateCombatStats(creature);
 
   // Base stat total
-  const statTotal = stats.hp + stats.attack + stats.defense + stats.magicAttack + stats.magicDefense + stats.speed;
+  const statTotal =
+    stats.hp + stats.attack + stats.defense + stats.magicAttack + stats.magicDefense + stats.speed;
 
   // Level scaling
   const levelBonus = creature.level * 10;
@@ -1162,15 +1295,19 @@ export const calculateCreatureRating = (creature: EnhancedCreature): number => {
     rare: 150,
     epic: 300,
     legendary: 600,
-    mythical: 1200
+    mythical: 1200,
   };
 
   // Individual Values bonus
   let ivBonus = 0;
   if (creature.individualStats) {
-    const ivTotal = creature.individualStats.hpIV + creature.individualStats.attackIV +
-                   creature.individualStats.defenseIV + creature.individualStats.magicAttackIV +
-                   creature.individualStats.magicDefenseIV + creature.individualStats.speedIV;
+    const ivTotal =
+      creature.individualStats.hpIV +
+      creature.individualStats.attackIV +
+      creature.individualStats.defenseIV +
+      creature.individualStats.magicAttackIV +
+      creature.individualStats.magicDefenseIV +
+      creature.individualStats.speedIV;
     ivBonus = ivTotal * 2; // Max of 372 (31*6*2)
   }
 
@@ -1180,7 +1317,9 @@ export const calculateCreatureRating = (creature: EnhancedCreature): number => {
 /**
  * Get creature type advantages
  */
-export const getTypeAdvantages = (creatureType: CreatureType): {
+export const getTypeAdvantages = (
+  creatureType: CreatureType
+): {
   strongAgainst: CreatureType[];
   weakAgainst: CreatureType[];
 } => {
@@ -1195,13 +1334,13 @@ export const getTypeAdvantages = (creatureType: CreatureType): {
     demon: { strong: ['angel', 'spirit'], weak: ['angel', 'dragon'] },
     angel: { strong: ['demon', 'undead'], weak: ['demon', 'dragon'] },
     plant: { strong: ['construct', 'elemental'], weak: ['beast', 'insect'] },
-    insect: { strong: ['plant', 'fey'], weak: ['beast', 'elemental'] }
+    insect: { strong: ['plant', 'fey'], weak: ['beast', 'elemental'] },
   };
 
   const chart = typeChart[creatureType] || { strong: [], weak: [] };
   return {
     strongAgainst: chart.strong,
-    weakAgainst: chart.weak
+    weakAgainst: chart.weak,
   };
 };
 
@@ -1212,21 +1351,30 @@ export const getCollectionStats = (creatures: EnhancedCreature[], totalSpecies: 
   const captured = creatures.filter(c => c.capturedAt).length;
   const discovered = creatures.length;
 
-  const byType = creatures.reduce((acc, creature) => {
-    acc[creature.creatureType] = (acc[creature.creatureType] || 0) + 1;
-    return acc;
-  }, {} as Record<CreatureType, number>);
+  const byType = creatures.reduce(
+    (acc, creature) => {
+      acc[creature.creatureType] = (acc[creature.creatureType] || 0) + 1;
+      return acc;
+    },
+    {} as Record<CreatureType, number>
+  );
 
-  const byElement = creatures.reduce((acc, creature) => {
-    acc[creature.element] = (acc[creature.element] || 0) + 1;
-    return acc;
-  }, {} as Record<CreatureElement, number>);
+  const byElement = creatures.reduce(
+    (acc, creature) => {
+      acc[creature.element] = (acc[creature.element] || 0) + 1;
+      return acc;
+    },
+    {} as Record<CreatureElement, number>
+  );
 
-  const byRarity = creatures.reduce((acc, creature) => {
-    const rarity = creature.rarity as CreatureRarity;
-    acc[rarity] = (acc[rarity] || 0) + 1;
-    return acc;
-  }, {} as Record<CreatureRarity, number>);
+  const byRarity = creatures.reduce(
+    (acc, creature) => {
+      const rarity = creature.rarity as CreatureRarity;
+      acc[rarity] = (acc[rarity] || 0) + 1;
+      return acc;
+    },
+    {} as Record<CreatureRarity, number>
+  );
 
   return {
     discovered,
@@ -1240,7 +1388,7 @@ export const getCollectionStats = (creatures: EnhancedCreature[], totalSpecies: 
     byRarity,
     averageLevel: creatures.reduce((sum, c) => sum + c.level, 0) / creatures.length || 0,
     highestLevel: Math.max(...creatures.map(c => c.level), 0),
-    teamSize: creatures.filter(c => c.companionData?.isActive).length
+    teamSize: creatures.filter(c => c.companionData?.isActive).length,
   };
 };
 
@@ -1280,5 +1428,5 @@ export default {
   // Analysis
   calculateCreatureRating,
   getTypeAdvantages,
-  getCollectionStats
+  getCollectionStats,
 };

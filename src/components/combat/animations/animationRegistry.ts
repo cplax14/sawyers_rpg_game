@@ -70,7 +70,7 @@ export const ATTACK_ANIMATION_MAP: Record<string, AnimationMetadata> = {
     element: 'arcane',
     type: 'projectile',
     component: MagicBoltAnimation,
-    description: 'Basic arcane projectile attack'
+    description: 'Basic arcane projectile attack',
   },
 
   // Fire - Fireball spell (wizard level 1)
@@ -78,7 +78,7 @@ export const ATTACK_ANIMATION_MAP: Record<string, AnimationMetadata> = {
     element: 'fire',
     type: 'projectile',
     component: FireballAnimation,
-    description: 'Spinning fireball with explosive impact'
+    description: 'Spinning fireball with explosive impact',
   },
 
   // Ice - Ice Shard spell (wizard level 1)
@@ -86,7 +86,7 @@ export const ATTACK_ANIMATION_MAP: Record<string, AnimationMetadata> = {
     element: 'ice',
     type: 'projectile',
     component: IceShardAnimation,
-    description: 'Sharp crystalline ice shard with shatter effect'
+    description: 'Sharp crystalline ice shard with shatter effect',
   },
 
   // Thunder - Lightning spell (wizard level 5)
@@ -94,7 +94,7 @@ export const ATTACK_ANIMATION_MAP: Record<string, AnimationMetadata> = {
     element: 'lightning',
     type: 'beam',
     component: LightningAnimation,
-    description: 'Lightning bolt strike from sky'
+    description: 'Lightning bolt strike from sky',
   },
 
   // Holy - Divine light attack (paladin level 10)
@@ -102,7 +102,7 @@ export const ATTACK_ANIMATION_MAP: Record<string, AnimationMetadata> = {
     element: 'holy',
     type: 'beam',
     component: HolyBeamAnimation,
-    description: 'Divine light beam smiting evil'
+    description: 'Divine light beam smiting evil',
   },
 
   // ================================================
@@ -114,7 +114,7 @@ export const ATTACK_ANIMATION_MAP: Record<string, AnimationMetadata> = {
     element: 'fire',
     type: 'aoe',
     component: MeteorAnimation,
-    description: 'Meteor falling from sky with massive impact'
+    description: 'Meteor falling from sky with massive impact',
   },
 
   // ================================================
@@ -126,7 +126,7 @@ export const ATTACK_ANIMATION_MAP: Record<string, AnimationMetadata> = {
     element: 'holy',
     type: 'heal',
     component: HealAnimation,
-    description: 'Healing light restoring health'
+    description: 'Healing light restoring health',
   },
 
   // ================================================
@@ -138,7 +138,7 @@ export const ATTACK_ANIMATION_MAP: Record<string, AnimationMetadata> = {
     element: 'neutral',
     type: 'buff',
     component: ProtectAnimation,
-    description: 'Protective barrier increasing defense'
+    description: 'Protective barrier increasing defense',
   },
 
   // Shell - Magic defense boost (knight/paladin level 6)
@@ -146,7 +146,7 @@ export const ATTACK_ANIMATION_MAP: Record<string, AnimationMetadata> = {
     element: 'neutral',
     type: 'buff',
     component: ShellAnimation,
-    description: 'Magical barrier increasing magic defense'
+    description: 'Magical barrier increasing magic defense',
   },
 
   // Haste - Speed boost (rogue/ranger level 8)
@@ -154,8 +154,8 @@ export const ATTACK_ANIMATION_MAP: Record<string, AnimationMetadata> = {
     element: 'neutral',
     type: 'buff',
     component: HasteAnimation,
-    description: 'Speed enhancement increasing attack frequency'
-  }
+    description: 'Speed enhancement increasing attack frequency',
+  },
 };
 
 /**
@@ -206,5 +206,5 @@ export const DEFAULT_ANIMATION: AnimationMetadata = {
   element: 'arcane',
   type: 'projectile',
   component: MagicBoltAnimation,
-  description: 'Fallback animation for unmapped attacks'
+  description: 'Fallback animation for unmapped attacks',
 };

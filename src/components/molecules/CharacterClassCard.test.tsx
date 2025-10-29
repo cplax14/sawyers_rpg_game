@@ -44,9 +44,9 @@ describe('CharacterClassCard', () => {
     render(<CharacterClassCard {...defaultProps} />);
 
     expect(screen.getByText('120')).toBeInTheDocument(); // HP
-    expect(screen.getByText('30')).toBeInTheDocument();  // MP
-    expect(screen.getByText('85')).toBeInTheDocument();  // Attack
-    expect(screen.getByText('95')).toBeInTheDocument();  // Defense
+    expect(screen.getByText('30')).toBeInTheDocument(); // MP
+    expect(screen.getByText('85')).toBeInTheDocument(); // Attack
+    expect(screen.getByText('95')).toBeInTheDocument(); // Defense
   });
 
   it('displays secondary stats when showDetailedStats is true', () => {
@@ -88,7 +88,9 @@ describe('CharacterClassCard', () => {
     render(<CharacterClassCard {...defaultProps} showClassBonus={false} />);
 
     expect(screen.queryByText('Class Bonus')).not.toBeInTheDocument();
-    expect(screen.queryByText('Increased capture rate for defensive monsters')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('Increased capture rate for defensive monsters')
+    ).not.toBeInTheDocument();
   });
 
   it('shows selected state', () => {
@@ -184,18 +186,14 @@ describe('CharacterClassCard', () => {
   });
 
   it('applies custom className', () => {
-    const { container } = render(
-      <CharacterClassCard {...defaultProps} className="custom-class" />
-    );
+    const { container } = render(<CharacterClassCard {...defaultProps} className='custom-class' />);
 
     const card = container.firstChild;
     expect(card).toHaveClass('custom-class');
   });
 
   it('renders compact variant', () => {
-    render(
-      <CharacterClassCard {...defaultProps} variant="compact" />
-    );
+    render(<CharacterClassCard {...defaultProps} variant='compact' />);
 
     // Test functionality rather than CSS classes - compact variant should still render all content
     expect(screen.getByText('Knight')).toBeInTheDocument();
@@ -203,9 +201,7 @@ describe('CharacterClassCard', () => {
   });
 
   it('renders default variant', () => {
-    render(
-      <CharacterClassCard {...defaultProps} variant="default" />
-    );
+    render(<CharacterClassCard {...defaultProps} variant='default' />);
 
     // Test functionality rather than CSS classes - default variant should render all content
     expect(screen.getByText('Knight')).toBeInTheDocument();
@@ -229,9 +225,7 @@ describe('CharacterClassCard', () => {
     const handleCardClick = jest.fn();
     const handleButtonClick = jest.fn();
 
-    render(
-      <CharacterClassCard {...defaultProps} onClick={handleCardClick} />
-    );
+    render(<CharacterClassCard {...defaultProps} onClick={handleCardClick} />);
 
     // Mock the button click to test stopPropagation
     const button = screen.getByText('Choose Class');

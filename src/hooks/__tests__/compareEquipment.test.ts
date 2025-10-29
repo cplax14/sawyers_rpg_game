@@ -31,24 +31,24 @@ describe('compareEquipment Function', () => {
           magicAttack: 10,
           magicDefense: 12,
           speed: 14,
-          accuracy: 16
-        }
-      }
+          accuracy: 16,
+        },
+      },
     },
-    dispatch: jest.fn()
+    dispatch: jest.fn(),
   };
 
   const mockInventory = {
     inventoryState: {
       containers: {
         main: {
-          items: []
-        }
-      }
+          items: [],
+        },
+      },
     },
     addItem: jest.fn(),
     removeItem: jest.fn(),
-    addEventListener: jest.fn()
+    addEventListener: jest.fn(),
   };
 
   beforeEach(() => {
@@ -80,15 +80,15 @@ describe('compareEquipment Function', () => {
         equipmentSubtype: 'sword',
         statModifiers: {
           attack: 5,
-          defense: 1
+          defense: 1,
         },
         metadata: {
           addedAt: new Date().toISOString(),
           lastUsed: null,
           timesUsed: 0,
           source: 'shop',
-          tags: ['weapon']
-        }
+          tags: ['weapon'],
+        },
       };
 
       const newWeapon: EnhancedItem = {
@@ -100,17 +100,17 @@ describe('compareEquipment Function', () => {
         statModifiers: {
           attack: 12,
           defense: 2,
-          speed: 3
-        }
+          speed: 3,
+        },
       };
 
       const comparison = result.current.compareEquipment(currentWeapon, newWeapon);
 
       // Verify stat changes calculation
       expect(comparison.statChanges).toEqual({
-        attack: 7,      // 12 - 5
-        defense: 1,     // 2 - 1
-        speed: 3        // 3 - 0
+        attack: 7, // 12 - 5
+        defense: 1, // 2 - 1
+        speed: 3, // 3 - 0
       });
 
       // Verify improvements array
@@ -149,15 +149,15 @@ describe('compareEquipment Function', () => {
         statModifiers: {
           defense: 20,
           magicDefense: 10,
-          speed: -5
+          speed: -5,
         },
         metadata: {
           addedAt: new Date().toISOString(),
           lastUsed: null,
           timesUsed: 0,
           source: 'loot',
-          tags: ['armor', 'heavy']
-        }
+          tags: ['armor', 'heavy'],
+        },
       };
 
       const newArmor: EnhancedItem = {
@@ -171,17 +171,17 @@ describe('compareEquipment Function', () => {
         statModifiers: {
           defense: 8,
           magicDefense: 3,
-          speed: 2
-        }
+          speed: 2,
+        },
       };
 
       const comparison = result.current.compareEquipment(currentArmor, newArmor);
 
       // Verify stat changes calculation
       expect(comparison.statChanges).toEqual({
-        defense: -12,     // 8 - 20
+        defense: -12, // 8 - 20
         magicDefense: -7, // 3 - 10
-        speed: 7          // 2 - (-5)
+        speed: 7, // 2 - (-5)
       });
 
       // Verify improvements array
@@ -220,15 +220,15 @@ describe('compareEquipment Function', () => {
         statModifiers: {
           attack: 5,
           magicAttack: 8,
-          critical: 10
+          critical: 10,
         },
         metadata: {
           addedAt: new Date().toISOString(),
           lastUsed: null,
           timesUsed: 0,
           source: 'quest',
-          tags: ['ring', 'magic']
-        }
+          tags: ['ring', 'magic'],
+        },
       };
 
       const comparison = result.current.compareEquipment(null, newRing);
@@ -237,7 +237,7 @@ describe('compareEquipment Function', () => {
       expect(comparison.statChanges).toEqual({
         attack: 5,
         magicAttack: 8,
-        critical: 10
+        critical: 10,
       });
 
       expect(comparison.improvements).toContain('+5 attack');
@@ -272,15 +272,15 @@ describe('compareEquipment Function', () => {
         statModifiers: {
           defense: 10,
           magicDefense: 2,
-          attack: 3
+          attack: 3,
         },
         metadata: {
           addedAt: new Date().toISOString(),
           lastUsed: null,
           timesUsed: 0,
           source: 'shop',
-          tags: ['helmet', 'heavy']
-        }
+          tags: ['helmet', 'heavy'],
+        },
       };
 
       const newHelmet: EnhancedItem = {
@@ -291,18 +291,18 @@ describe('compareEquipment Function', () => {
         statModifiers: {
           defense: 4,
           magicDefense: 12,
-          magicAttack: 5
-        }
+          magicAttack: 5,
+        },
       };
 
       const comparison = result.current.compareEquipment(currentHelmet, newHelmet);
 
       // Mixed changes
       expect(comparison.statChanges).toEqual({
-        defense: -6,        // 4 - 10
-        magicDefense: 10,   // 12 - 2
-        attack: -3,         // 0 - 3
-        magicAttack: 5      // 5 - 0
+        defense: -6, // 4 - 10
+        magicDefense: 10, // 12 - 2
+        attack: -3, // 0 - 3
+        magicAttack: 5, // 5 - 0
       });
 
       // Verify improvements
@@ -347,8 +347,8 @@ describe('compareEquipment Function', () => {
           lastUsed: null,
           timesUsed: 0,
           source: 'shop',
-          tags: ['charm']
-        }
+          tags: ['charm'],
+        },
       };
 
       const newItem: EnhancedItem = {
@@ -356,8 +356,8 @@ describe('compareEquipment Function', () => {
         id: 'charm-2',
         name: 'Lucky Charm',
         statModifiers: {
-          accuracy: 5
-        }
+          accuracy: 5,
+        },
       };
 
       const comparison = result.current.compareEquipment(currentItem, newItem);
@@ -390,15 +390,15 @@ describe('compareEquipment Function', () => {
         equipmentSubtype: 'gloves',
         statModifiers: {
           defense: 2,
-          accuracy: 1
+          accuracy: 1,
         },
         metadata: {
           addedAt: new Date().toISOString(),
           lastUsed: null,
           timesUsed: 0,
           source: 'shop',
-          tags: ['gloves']
-        }
+          tags: ['gloves'],
+        },
       };
 
       const comparison = result.current.compareEquipment(item, item);
@@ -431,15 +431,15 @@ describe('compareEquipment Function', () => {
         equipmentSubtype: 'boots',
         statModifiers: {
           defense: 8,
-          speed: -4  // Heavy boots slow you down
+          speed: -4, // Heavy boots slow you down
         },
         metadata: {
           addedAt: new Date().toISOString(),
           lastUsed: null,
           timesUsed: 0,
           source: 'shop',
-          tags: ['boots', 'heavy']
-        }
+          tags: ['boots', 'heavy'],
+        },
       };
 
       const newBoots: EnhancedItem = {
@@ -449,8 +449,8 @@ describe('compareEquipment Function', () => {
         description: 'Lightweight boots',
         statModifiers: {
           defense: 3,
-          speed: 6
-        }
+          speed: 6,
+        },
       };
 
       const comparison = result.current.compareEquipment(currentBoots, newBoots);
@@ -459,7 +459,7 @@ describe('compareEquipment Function', () => {
       // Speed: 6 - (-4) = 10
       expect(comparison.statChanges).toEqual({
         defense: -5,
-        speed: 10
+        speed: 10,
       });
 
       expect(comparison.improvements).toContain('+10 speed');
@@ -491,15 +491,15 @@ describe('compareEquipment Function', () => {
         equipmentSubtype: 'necklace',
         statModifiers: {
           magicAttack: 10,
-          magicDefense: 5
+          magicDefense: 5,
         },
         metadata: {
           addedAt: new Date().toISOString(),
           lastUsed: null,
           timesUsed: 0,
           source: 'loot',
-          tags: ['necklace']
-        }
+          tags: ['necklace'],
+        },
       };
 
       const comparison = result.current.compareEquipment(null, item);

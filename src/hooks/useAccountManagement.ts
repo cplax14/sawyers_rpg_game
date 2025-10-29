@@ -94,7 +94,7 @@ export function useAccountManagement(): UseAccountManagementReturn {
     changePassword: authChangePassword,
     changeEmail: authChangeEmail,
     deleteAccount: authDeleteAccount,
-    sendPasswordReset: authSendPasswordReset
+    sendPasswordReset: authSendPasswordReset,
   } = useAuth();
 
   const [state, setState] = useState<AccountManagementState>({
@@ -106,7 +106,7 @@ export function useAccountManagement(): UseAccountManagementReturn {
     isDeletingAccount: false,
     lastOperation: null,
     lastError: null,
-    lastSuccess: null
+    lastSuccess: null,
   });
 
   // Clear messages after 5 seconds
@@ -116,7 +116,7 @@ export function useAccountManagement(): UseAccountManagementReturn {
         setState(prev => ({
           ...prev,
           lastSuccess: null,
-          lastError: null
+          lastError: null,
         }));
       }, 5000);
       return () => clearTimeout(timer);
@@ -149,144 +149,171 @@ export function useAccountManagement(): UseAccountManagementReturn {
   }, []);
 
   // Account operations with state management
-  const changePassword = useCallback(async (currentPassword: string, newPassword: string): Promise<AuthResult> => {
-    setState(prev => ({ ...prev, isChangingPassword: true, lastError: null, lastOperation: 'changePassword' }));
+  const changePassword = useCallback(
+    async (currentPassword: string, newPassword: string): Promise<AuthResult> => {
+      setState(prev => ({
+        ...prev,
+        isChangingPassword: true,
+        lastError: null,
+        lastOperation: 'changePassword',
+      }));
 
-    try {
-      const result = await authChangePassword(currentPassword, newPassword);
+      try {
+        const result = await authChangePassword(currentPassword, newPassword);
 
-      if (result.success) {
+        if (result.success) {
+          setState(prev => ({
+            ...prev,
+            isChangingPassword: false,
+            lastSuccess: 'Password changed successfully',
+          }));
+        } else {
+          setState(prev => ({
+            ...prev,
+            isChangingPassword: false,
+            lastError: result.error?.message || 'Failed to change password',
+          }));
+        }
+
+        return result;
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Password change failed';
         setState(prev => ({
           ...prev,
           isChangingPassword: false,
-          lastSuccess: 'Password changed successfully'
+          lastError: errorMessage,
         }));
-      } else {
-        setState(prev => ({
-          ...prev,
-          isChangingPassword: false,
-          lastError: result.error?.message || 'Failed to change password'
-        }));
+        throw error;
       }
+    },
+    [authChangePassword]
+  );
 
-      return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Password change failed';
+  const changeEmail = useCallback(
+    async (currentPassword: string, newEmail: string): Promise<AuthResult> => {
       setState(prev => ({
         ...prev,
-        isChangingPassword: false,
-        lastError: errorMessage
+        isChangingEmail: true,
+        lastError: null,
+        lastOperation: 'changeEmail',
       }));
-      throw error;
-    }
-  }, [authChangePassword]);
 
-  const changeEmail = useCallback(async (currentPassword: string, newEmail: string): Promise<AuthResult> => {
-    setState(prev => ({ ...prev, isChangingEmail: true, lastError: null, lastOperation: 'changeEmail' }));
+      try {
+        const result = await authChangeEmail(currentPassword, newEmail);
 
-    try {
-      const result = await authChangeEmail(currentPassword, newEmail);
+        if (result.success) {
+          setState(prev => ({
+            ...prev,
+            isChangingEmail: false,
+            lastSuccess: 'Email changed successfully',
+          }));
+        } else {
+          setState(prev => ({
+            ...prev,
+            isChangingEmail: false,
+            lastError: result.error?.message || 'Failed to change email',
+          }));
+        }
 
-      if (result.success) {
+        return result;
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Email change failed';
         setState(prev => ({
           ...prev,
           isChangingEmail: false,
-          lastSuccess: 'Email changed successfully'
+          lastError: errorMessage,
         }));
-      } else {
-        setState(prev => ({
-          ...prev,
-          isChangingEmail: false,
-          lastError: result.error?.message || 'Failed to change email'
-        }));
+        throw error;
       }
+    },
+    [authChangeEmail]
+  );
 
-      return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Email change failed';
+  const deleteAccount = useCallback(
+    async (currentPassword: string): Promise<AuthResult> => {
       setState(prev => ({
         ...prev,
-        isChangingEmail: false,
-        lastError: errorMessage
+        isDeletingAccount: true,
+        lastError: null,
+        lastOperation: 'deleteAccount',
       }));
-      throw error;
-    }
-  }, [authChangeEmail]);
 
-  const deleteAccount = useCallback(async (currentPassword: string): Promise<AuthResult> => {
-    setState(prev => ({ ...prev, isDeletingAccount: true, lastError: null, lastOperation: 'deleteAccount' }));
+      try {
+        const result = await authDeleteAccount(currentPassword);
 
-    try {
-      const result = await authDeleteAccount(currentPassword);
+        if (result.success) {
+          setState(prev => ({
+            ...prev,
+            isDeletingAccount: false,
+            lastSuccess: 'Account deleted successfully',
+          }));
+        } else {
+          setState(prev => ({
+            ...prev,
+            isDeletingAccount: false,
+            lastError: result.error?.message || 'Failed to delete account',
+          }));
+        }
 
-      if (result.success) {
+        return result;
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Account deletion failed';
         setState(prev => ({
           ...prev,
           isDeletingAccount: false,
-          lastSuccess: 'Account deleted successfully'
+          lastError: errorMessage,
         }));
-      } else {
-        setState(prev => ({
-          ...prev,
-          isDeletingAccount: false,
-          lastError: result.error?.message || 'Failed to delete account'
-        }));
+        throw error;
+      }
+    },
+    [authDeleteAccount]
+  );
+
+  const sendPasswordReset = useCallback(
+    async (email?: string): Promise<AuthResult> => {
+      const resetEmail = email || user?.email;
+      if (!resetEmail) {
+        const errorResult: AuthResult = {
+          success: false,
+          error: { code: 'missing-email', message: 'Email address is required' },
+        };
+        setState(prev => ({ ...prev, lastError: 'Email address is required' }));
+        return errorResult;
       }
 
-      return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Account deletion failed';
-      setState(prev => ({
-        ...prev,
-        isDeletingAccount: false,
-        lastError: errorMessage
-      }));
-      throw error;
-    }
-  }, [authDeleteAccount]);
+      setState(prev => ({ ...prev, lastError: null, lastOperation: 'sendPasswordReset' }));
 
-  const sendPasswordReset = useCallback(async (email?: string): Promise<AuthResult> => {
-    const resetEmail = email || user?.email;
-    if (!resetEmail) {
-      const errorResult: AuthResult = {
-        success: false,
-        error: { code: 'missing-email', message: 'Email address is required' }
-      };
-      setState(prev => ({ ...prev, lastError: 'Email address is required' }));
-      return errorResult;
-    }
+      try {
+        const result = await authSendPasswordReset(resetEmail);
 
-    setState(prev => ({ ...prev, lastError: null, lastOperation: 'sendPasswordReset' }));
+        if (result.success) {
+          setState(prev => ({
+            ...prev,
+            lastSuccess: `Password reset email sent to ${resetEmail}`,
+          }));
+        } else {
+          setState(prev => ({
+            ...prev,
+            lastError: result.error?.message || 'Failed to send password reset email',
+          }));
+        }
 
-    try {
-      const result = await authSendPasswordReset(resetEmail);
-
-      if (result.success) {
-        setState(prev => ({
-          ...prev,
-          lastSuccess: `Password reset email sent to ${resetEmail}`
-        }));
-      } else {
-        setState(prev => ({
-          ...prev,
-          lastError: result.error?.message || 'Failed to send password reset email'
-        }));
+        return result;
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to send reset email';
+        setState(prev => ({ ...prev, lastError: errorMessage }));
+        throw error;
       }
-
-      return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to send reset email';
-      setState(prev => ({ ...prev, lastError: errorMessage }));
-      throw error;
-    }
-  }, [authSendPasswordReset, user?.email]);
+    },
+    [authSendPasswordReset, user?.email]
+  );
 
   // Utility functions
   const clearMessages = useCallback(() => {
     setState(prev => ({
       ...prev,
       lastError: null,
-      lastSuccess: null
+      lastSuccess: null,
     }));
   }, []);
 
@@ -316,7 +343,7 @@ export function useAccountManagement(): UseAccountManagementReturn {
     setState(prev => ({
       ...prev,
       lastSuccess: `Password reset email sent to ${email}`,
-      showPasswordReset: false
+      showPasswordReset: false,
     }));
   }, []);
 
@@ -324,7 +351,7 @@ export function useAccountManagement(): UseAccountManagementReturn {
     setState(prev => ({
       ...prev,
       lastSuccess: 'Email verified successfully',
-      showEmailVerification: false
+      showEmailVerification: false,
     }));
   }, []);
 
@@ -354,7 +381,7 @@ export function useAccountManagement(): UseAccountManagementReturn {
     // Event handlers
     handleAccountChange,
     handlePasswordResetSuccess,
-    handleVerificationComplete
+    handleVerificationComplete,
   };
 }
 

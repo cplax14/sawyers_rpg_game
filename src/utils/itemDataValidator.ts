@@ -13,7 +13,7 @@ import type {
   EquipmentSlot,
   EquipmentSubtype,
   ItemCategory,
-  ItemRarity
+  ItemRarity,
 } from '../types/inventory';
 import type { PlayerStats } from '../types/game';
 
@@ -62,32 +62,59 @@ export interface ValidationReport {
 // =============================================================================
 
 const VALID_EQUIPMENT_SLOTS: EquipmentSlot[] = [
-  'helmet', 'necklace', 'armor', 'weapon', 'shield',
-  'gloves', 'boots', 'ring1', 'ring2', 'charm'
+  'helmet',
+  'necklace',
+  'armor',
+  'weapon',
+  'shield',
+  'gloves',
+  'boots',
+  'ring1',
+  'ring2',
+  'charm',
 ];
 
 const VALID_EQUIPMENT_SUBTYPES: EquipmentSubtype[] = [
-  'sword', 'bow', 'staff', 'dagger', 'axe', 'mace',
-  'helmet', 'chestplate', 'boots', 'gloves', 'shield',
-  'ring', 'necklace', 'charm'
+  'sword',
+  'bow',
+  'staff',
+  'dagger',
+  'axe',
+  'mace',
+  'helmet',
+  'chestplate',
+  'boots',
+  'gloves',
+  'shield',
+  'ring',
+  'necklace',
+  'charm',
 ];
 
 const VALID_ITEM_CATEGORIES: ItemCategory[] = [
-  'consumables', 'equipment', 'materials', 'quest', 'misc'
+  'consumables',
+  'equipment',
+  'materials',
+  'quest',
+  'misc',
 ];
 
-const VALID_RARITIES: ItemRarity[] = [
-  'common', 'rare', 'epic', 'legendary'
-];
+const VALID_RARITIES: ItemRarity[] = ['common', 'rare', 'epic', 'legendary'];
 
 const VALID_STAT_FIELDS: (keyof PlayerStats)[] = [
-  'attack', 'defense', 'magicAttack', 'magicDefense',
-  'speed', 'accuracy', 'maxHp', 'maxMp'
+  'attack',
+  'defense',
+  'magicAttack',
+  'magicDefense',
+  'speed',
+  'accuracy',
+  'maxHp',
+  'maxMp',
 ];
 
 // Legacy field names that need migration
 const LEGACY_FIELDS = {
-  STATS: 'stats',           // Should be 'statModifiers'
+  STATS: 'stats', // Should be 'statModifiers'
   OLD_SLOT_NAMES: ['accessory'], // Old slot names that need updating
 };
 
@@ -105,7 +132,7 @@ export function validateEquipmentItem(item: any, itemId?: string): ValidationRes
     warnings: [],
     migrationNeeded: false,
     itemId,
-    itemType: item?.type
+    itemType: item?.type,
   };
 
   // Basic existence check
@@ -114,7 +141,7 @@ export function validateEquipmentItem(item: any, itemId?: string): ValidationRes
     result.errors.push({
       code: 'ITEM_NULL',
       message: 'Item is null or undefined',
-      severity: 'error'
+      severity: 'error',
     });
     return result;
   }
@@ -189,8 +216,8 @@ export function validateItemData(items: Record<string, any>): ValidationReport {
     summary: {
       criticalErrors,
       warnings: warningCount,
-      byCategory: categoryStats
-    }
+      byCategory: categoryStats,
+    },
   };
 }
 
@@ -264,7 +291,7 @@ function validateRequiredFields(item: any, result: ValidationResult): void {
         code: 'MISSING_REQUIRED_FIELD',
         message: `Missing required field: ${field}`,
         field,
-        severity: 'error'
+        severity: 'error',
       });
     }
   }
@@ -276,7 +303,7 @@ function validateEquipmentSlot(item: any, result: ValidationResult): void {
       code: 'MISSING_EQUIPMENT_SLOT',
       message: 'Equipment item is missing equipmentSlot field',
       field: 'equipmentSlot',
-      severity: 'error'
+      severity: 'error',
     });
     result.migrationNeeded = true;
     return;
@@ -288,7 +315,7 @@ function validateEquipmentSlot(item: any, result: ValidationResult): void {
       result.warnings.push({
         code: 'LEGACY_SLOT_NAME',
         message: `Legacy equipment slot name: ${item.equipmentSlot}`,
-        recommendation: 'Migrate to new slot names: ring1, ring2, necklace, charm'
+        recommendation: 'Migrate to new slot names: ring1, ring2, necklace, charm',
       });
       result.migrationNeeded = true;
     } else {
@@ -297,7 +324,7 @@ function validateEquipmentSlot(item: any, result: ValidationResult): void {
         message: `Invalid equipmentSlot value: ${item.equipmentSlot}`,
         field: 'equipmentSlot',
         value: item.equipmentSlot,
-        severity: 'error'
+        severity: 'error',
       });
     }
   }
@@ -308,7 +335,8 @@ function validateEquipmentSubtype(item: any, result: ValidationResult): void {
     result.warnings.push({
       code: 'MISSING_EQUIPMENT_SUBTYPE',
       message: 'Equipment item is missing equipmentSubtype field',
-      recommendation: 'Add equipmentSubtype for better slot matching (e.g., "sword", "helmet", "ring")'
+      recommendation:
+        'Add equipmentSubtype for better slot matching (e.g., "sword", "helmet", "ring")',
     });
     result.migrationNeeded = true;
     return;
@@ -318,7 +346,7 @@ function validateEquipmentSubtype(item: any, result: ValidationResult): void {
     result.warnings.push({
       code: 'UNKNOWN_EQUIPMENT_SUBTYPE',
       message: `Unknown equipmentSubtype: ${item.equipmentSubtype}`,
-      recommendation: 'Verify this is a valid subtype for the equipment system'
+      recommendation: 'Verify this is a valid subtype for the equipment system',
     });
   }
 }
@@ -329,7 +357,7 @@ function validateStatModifiers(item: any, result: ValidationResult): void {
     result.warnings.push({
       code: 'LEGACY_STATS_FIELD',
       message: 'Item uses legacy "stats" field instead of "statModifiers"',
-      recommendation: 'Migrate to use "statModifiers" field'
+      recommendation: 'Migrate to use "statModifiers" field',
     });
     result.migrationNeeded = true;
   }
@@ -341,7 +369,7 @@ function validateStatModifiers(item: any, result: ValidationResult): void {
     result.warnings.push({
       code: 'NO_STAT_MODIFIERS',
       message: 'Equipment item has no stat modifiers defined',
-      recommendation: 'Add statModifiers object with stat bonuses'
+      recommendation: 'Add statModifiers object with stat bonuses',
     });
     return;
   }
@@ -352,7 +380,7 @@ function validateStatModifiers(item: any, result: ValidationResult): void {
       result.warnings.push({
         code: 'UNKNOWN_STAT_FIELD',
         message: `Unknown stat field: ${stat}`,
-        recommendation: `Valid stats are: ${VALID_STAT_FIELDS.join(', ')}`
+        recommendation: `Valid stats are: ${VALID_STAT_FIELDS.join(', ')}`,
       });
     }
 
@@ -362,7 +390,7 @@ function validateStatModifiers(item: any, result: ValidationResult): void {
         message: `Stat value must be a number: ${stat}`,
         field: `statModifiers.${stat}`,
         value,
-        severity: 'error'
+        severity: 'error',
       });
     }
   }
@@ -373,7 +401,7 @@ function validateRarity(item: any, result: ValidationResult): void {
     result.warnings.push({
       code: 'MISSING_RARITY',
       message: 'Item is missing rarity field',
-      recommendation: 'Add rarity: "common" | "rare" | "epic" | "legendary"'
+      recommendation: 'Add rarity: "common" | "rare" | "epic" | "legendary"',
     });
     return;
   }
@@ -384,7 +412,7 @@ function validateRarity(item: any, result: ValidationResult): void {
       message: `Invalid rarity value: ${item.rarity}`,
       field: 'rarity',
       value: item.rarity,
-      severity: 'warning'
+      severity: 'warning',
     });
   }
 }
@@ -403,7 +431,7 @@ function validateRequirements(item: any, result: ValidationResult): void {
       message: 'Level requirement must be a positive number',
       field: 'requirements.level',
       value: req.level,
-      severity: 'warning'
+      severity: 'warning',
     });
   }
 
@@ -414,7 +442,7 @@ function validateRequirements(item: any, result: ValidationResult): void {
       message: 'Class requirement must be an array',
       field: 'requirements.classes',
       value: req.classes,
-      severity: 'warning'
+      severity: 'warning',
     });
   }
 }
@@ -504,7 +532,9 @@ export function generateValidationReport(report: ValidationReport): string {
   lines.push('='.repeat(80));
   lines.push('');
   lines.push(`Total Items: ${report.totalItems}`);
-  lines.push(`Valid Items: ${report.validItems} (${((report.validItems / report.totalItems) * 100).toFixed(1)}%)`);
+  lines.push(
+    `Valid Items: ${report.validItems} (${((report.validItems / report.totalItems) * 100).toFixed(1)}%)`
+  );
   lines.push(`Invalid Items: ${report.invalidItems}`);
   lines.push(`Items Needing Migration: ${report.itemsNeedingMigration}`);
   lines.push('');

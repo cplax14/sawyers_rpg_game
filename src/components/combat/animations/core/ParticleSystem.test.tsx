@@ -10,7 +10,7 @@ describe('ParticleSystem', () => {
     particleCount: 20,
     colors: ['#ff0000', '#00ff00', '#0000ff'],
     spread: 100,
-    lifetime: 1000
+    lifetime: 1000,
   };
 
   describe('Rendering', () => {
@@ -47,39 +47,29 @@ describe('ParticleSystem', () => {
     });
 
     it('should handle different particle counts', () => {
-      const { container } = render(
-        <ParticleSystem {...defaultProps} particleCount={5} />
-      );
+      const { container } = render(<ParticleSystem {...defaultProps} particleCount={5} />);
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper.children.length).toBe(5);
     });
 
     it('should handle single color', () => {
-      const { container } = render(
-        <ParticleSystem {...defaultProps} colors={['#ffffff']} />
-      );
+      const { container } = render(<ParticleSystem {...defaultProps} colors={['#ffffff']} />);
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('should handle multiple colors', () => {
       const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff'];
-      const { container } = render(
-        <ParticleSystem {...defaultProps} colors={colors} />
-      );
+      const { container } = render(<ParticleSystem {...defaultProps} colors={colors} />);
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('should handle different spread values', () => {
-      const { container } = render(
-        <ParticleSystem {...defaultProps} spread={50} />
-      );
+      const { container } = render(<ParticleSystem {...defaultProps} spread={50} />);
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('should handle different lifetime values', () => {
-      const { container } = render(
-        <ParticleSystem {...defaultProps} lifetime={2000} />
-      );
+      const { container } = render(<ParticleSystem {...defaultProps} lifetime={2000} />);
       expect(container.firstChild).toBeInTheDocument();
     });
 
@@ -90,9 +80,7 @@ describe('ParticleSystem', () => {
     });
 
     it('should handle custom size', () => {
-      const { container } = render(
-        <ParticleSystem {...defaultProps} size={10} />
-      );
+      const { container } = render(<ParticleSystem {...defaultProps} size={10} />);
       const wrapper = container.firstChild as HTMLElement;
       const firstParticle = wrapper.firstChild as HTMLElement;
       // Size has random variation (80% to 120%), so we check it's set
@@ -106,16 +94,12 @@ describe('ParticleSystem', () => {
     });
 
     it('should handle positive gravity', () => {
-      const { container } = render(
-        <ParticleSystem {...defaultProps} gravity={100} />
-      );
+      const { container } = render(<ParticleSystem {...defaultProps} gravity={100} />);
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('should handle negative gravity (upward)', () => {
-      const { container } = render(
-        <ParticleSystem {...defaultProps} gravity={-50} />
-      );
+      const { container } = render(<ParticleSystem {...defaultProps} gravity={-50} />);
       expect(container.firstChild).toBeInTheDocument();
     });
 
@@ -126,16 +110,12 @@ describe('ParticleSystem', () => {
     });
 
     it('should handle fadeOut enabled', () => {
-      const { container } = render(
-        <ParticleSystem {...defaultProps} fadeOut={true} />
-      );
+      const { container } = render(<ParticleSystem {...defaultProps} fadeOut={true} />);
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('should handle fadeOut disabled', () => {
-      const { container } = render(
-        <ParticleSystem {...defaultProps} fadeOut={false} />
-      );
+      const { container } = render(<ParticleSystem {...defaultProps} fadeOut={false} />);
       expect(container.firstChild).toBeInTheDocument();
     });
   });
@@ -175,9 +155,7 @@ describe('ParticleSystem', () => {
 
     it('should apply random size variation', () => {
       const size = 10;
-      const { container } = render(
-        <ParticleSystem {...defaultProps} size={size} />
-      );
+      const { container } = render(<ParticleSystem {...defaultProps} size={size} />);
       const wrapper = container.firstChild as HTMLElement;
       const firstParticle = wrapper.firstChild as HTMLElement;
       // Size variation: 80% to 120% of base size (8 to 12)
@@ -211,16 +189,12 @@ describe('ParticleSystem', () => {
     });
 
     it('should not apply gravity when gravity is zero', () => {
-      const { container } = render(
-        <ParticleSystem {...defaultProps} gravity={0} />
-      );
+      const { container } = render(<ParticleSystem {...defaultProps} gravity={0} />);
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('should apply negative gravity for upward movement', () => {
-      const { container } = render(
-        <ParticleSystem {...defaultProps} gravity={-50} />
-      );
+      const { container } = render(<ParticleSystem {...defaultProps} gravity={-50} />);
       expect(container.firstChild).toBeInTheDocument();
     });
 
@@ -241,9 +215,7 @@ describe('ParticleSystem', () => {
 
   describe('Negative Spread (Converging)', () => {
     it('should handle negative spread for converging particles', () => {
-      const { container } = render(
-        <ParticleSystem {...defaultProps} spread={-80} />
-      );
+      const { container } = render(<ParticleSystem {...defaultProps} spread={-80} />);
       expect(container.firstChild).toBeInTheDocument();
       // Negative spread makes particles move inward (converge)
     });
@@ -286,54 +258,40 @@ describe('ParticleSystem', () => {
 
   describe('Edge Cases', () => {
     it('should handle zero particles', () => {
-      const { container } = render(
-        <ParticleSystem {...defaultProps} particleCount={0} />
-      );
+      const { container } = render(<ParticleSystem {...defaultProps} particleCount={0} />);
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper.children.length).toBe(0);
     });
 
     it('should handle single particle', () => {
-      const { container } = render(
-        <ParticleSystem {...defaultProps} particleCount={1} />
-      );
+      const { container } = render(<ParticleSystem {...defaultProps} particleCount={1} />);
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper.children.length).toBe(1);
     });
 
     it('should handle very large particle count', () => {
-      const { container } = render(
-        <ParticleSystem {...defaultProps} particleCount={100} />
-      );
+      const { container } = render(<ParticleSystem {...defaultProps} particleCount={100} />);
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper.children.length).toBe(100);
     });
 
     it('should handle zero spread', () => {
-      const { container } = render(
-        <ParticleSystem {...defaultProps} spread={0} />
-      );
+      const { container } = render(<ParticleSystem {...defaultProps} spread={0} />);
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('should handle very large spread', () => {
-      const { container } = render(
-        <ParticleSystem {...defaultProps} spread={500} />
-      );
+      const { container } = render(<ParticleSystem {...defaultProps} spread={500} />);
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('should handle zero lifetime', () => {
-      const { container } = render(
-        <ParticleSystem {...defaultProps} lifetime={0} />
-      );
+      const { container } = render(<ParticleSystem {...defaultProps} lifetime={0} />);
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('should handle very long lifetime', () => {
-      const { container } = render(
-        <ParticleSystem {...defaultProps} lifetime={10000} />
-      );
+      const { container } = render(<ParticleSystem {...defaultProps} lifetime={10000} />);
       expect(container.firstChild).toBeInTheDocument();
     });
 
@@ -356,16 +314,12 @@ describe('ParticleSystem', () => {
     });
 
     it('should handle zero size', () => {
-      const { container } = render(
-        <ParticleSystem {...defaultProps} size={0} />
-      );
+      const { container } = render(<ParticleSystem {...defaultProps} size={0} />);
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('should handle very large size', () => {
-      const { container } = render(
-        <ParticleSystem {...defaultProps} size={100} />
-      );
+      const { container } = render(<ParticleSystem {...defaultProps} size={100} />);
       const wrapper = container.firstChild as HTMLElement;
       const firstParticle = wrapper.firstChild as HTMLElement;
       expect(firstParticle.style.width).toBeTruthy();
@@ -396,7 +350,7 @@ describe('PARTICLE_PRESETS', () => {
         lifetime: 800,
         size: 8,
         gravity: 50,
-        fadeOut: true
+        fadeOut: true,
       });
     });
   });
@@ -413,7 +367,7 @@ describe('PARTICLE_PRESETS', () => {
         lifetime: 1200,
         size: 4,
         gravity: -20,
-        fadeOut: true
+        fadeOut: true,
       });
     });
 
@@ -434,7 +388,7 @@ describe('PARTICLE_PRESETS', () => {
         lifetime: 1000,
         size: 6,
         gravity: 150,
-        fadeOut: true
+        fadeOut: true,
       });
     });
 
@@ -455,7 +409,7 @@ describe('PARTICLE_PRESETS', () => {
         lifetime: 600,
         size: 5,
         gravity: 0,
-        fadeOut: false
+        fadeOut: false,
       });
     });
 
@@ -480,7 +434,7 @@ describe('PARTICLE_PRESETS', () => {
         lifetime: 2000,
         size: 3,
         gravity: 0,
-        fadeOut: true
+        fadeOut: true,
       });
     });
   });
@@ -497,7 +451,7 @@ describe('PARTICLE_PRESETS', () => {
         lifetime: 1500,
         size: 4,
         gravity: -30,
-        fadeOut: true
+        fadeOut: true,
       });
     });
 
@@ -518,7 +472,7 @@ describe('PARTICLE_PRESETS', () => {
         lifetime: 700,
         size: 5,
         gravity: 80,
-        fadeOut: true
+        fadeOut: true,
       });
     });
   });
@@ -535,7 +489,7 @@ describe('PARTICLE_PRESETS', () => {
         lifetime: 400,
         size: 3,
         gravity: 0,
-        fadeOut: true
+        fadeOut: true,
       });
     });
 
@@ -556,7 +510,7 @@ describe('PARTICLE_PRESETS', () => {
         lifetime: 1400,
         size: 6,
         gravity: -40,
-        fadeOut: true
+        fadeOut: true,
       });
     });
 
@@ -577,7 +531,7 @@ describe('PARTICLE_PRESETS', () => {
         lifetime: 2000,
         size: 8,
         gravity: -15,
-        fadeOut: true
+        fadeOut: true,
       });
     });
 
@@ -603,7 +557,7 @@ describe('PARTICLE_PRESETS', () => {
         'crystals',
         'lightning',
         'healing',
-        'poison'
+        'poison',
       ];
       expectedPresets.forEach(preset => {
         expect(PARTICLE_PRESETS).toHaveProperty(preset);

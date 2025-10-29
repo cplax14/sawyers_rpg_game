@@ -22,10 +22,7 @@ export type {
   LegacyAreaData,
   LegacyCharacterData,
   LegacyItemData,
-  LegacyMonsterData
+  LegacyMonsterData,
 } from './dataLoader';
 
-export type {
-  ValidationResult,
-  ValidationOptions
-} from './validation';
+export type { ValidationResult, ValidationOptions } from './validation';

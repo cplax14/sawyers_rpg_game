@@ -32,10 +32,7 @@ interface ReactItem {
 /**
  * Debounce utility for expensive operations
  */
-export const useDebounce = <T extends (...args: any[]) => any>(
-  callback: T,
-  delay: number
-): T => {
+export const useDebounce = <T extends (...args: any[]) => any>(callback: T, delay: number): T => {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const callbackRef = useRef(callback);
 
@@ -44,24 +41,24 @@ export const useDebounce = <T extends (...args: any[]) => any>(
     callbackRef.current = callback;
   }, [callback]);
 
-  return useCallback((...args: Parameters<T>) => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+  return useCallback(
+    (...args: Parameters<T>) => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
 
-    timeoutRef.current = setTimeout(() => {
-      callbackRef.current(...args);
-    }, delay);
-  }, [delay]) as T;
+      timeoutRef.current = setTimeout(() => {
+        callbackRef.current(...args);
+      }, delay);
+    },
+    [delay]
+  ) as T;
 };
 
 /**
  * Throttle utility for frequent operations
  */
-export const useThrottle = <T extends (...args: any[]) => any>(
-  callback: T,
-  delay: number
-): T => {
+export const useThrottle = <T extends (...args: any[]) => any>(callback: T, delay: number): T => {
   const lastCallRef = useRef<number>(0);
   const callbackRef = useRef(callback);
 
@@ -69,14 +66,17 @@ export const useThrottle = <T extends (...args: any[]) => any>(
     callbackRef.current = callback;
   }, [callback]);
 
-  return useCallback((...args: Parameters<T>) => {
-    const now = Date.now();
+  return useCallback(
+    (...args: Parameters<T>) => {
+      const now = Date.now();
 
-    if (now - lastCallRef.current >= delay) {
-      lastCallRef.current = now;
-      return callbackRef.current(...args);
-    }
-  }, [delay]) as T;
+      if (now - lastCallRef.current >= delay) {
+        lastCallRef.current = now;
+        return callbackRef.current(...args);
+      }
+    },
+    [delay]
+  ) as T;
 };
 
 /**
@@ -123,7 +123,7 @@ export const useAreaFilters = (areas: ReactArea[]) => {
     areasByType,
     areasByConnection,
     unlockedAreas,
-    dungeonAreas
+    dungeonAreas,
   };
 };
 
@@ -177,7 +177,7 @@ export const useMonsterCalculations = (monsters: ReactMonster[]) => {
     monstersBySpecies,
     averageLevel,
     typeDistribution,
-    rarityCount
+    rarityCount,
   };
 };
 
@@ -200,7 +200,7 @@ export const useItemCalculations = (items: ReactItem[]) => {
 
   const totalValue = useMemo(() => {
     return items.reduce((sum, item) => {
-      return sum + (item.value * (item.quantity || 1));
+      return sum + item.value * (item.quantity || 1);
     }, 0);
   }, [items]);
 
@@ -216,7 +216,7 @@ export const useItemCalculations = (items: ReactItem[]) => {
     itemsByType,
     totalValue,
     equipableItems,
-    consumableItems
+    consumableItems,
   };
 };
 
@@ -244,9 +244,7 @@ export const useSearch = <T>(
           return value.toLowerCase().includes(lowercaseTerm);
         }
         if (Array.isArray(value)) {
-          return value.some(v =>
-            typeof v === 'string' && v.toLowerCase().includes(lowercaseTerm)
-          );
+          return value.some(v => typeof v === 'string' && v.toLowerCase().includes(lowercaseTerm));
         }
         return false;
       })
@@ -338,12 +336,15 @@ export const usePerformanceMonitor = (name: string) => {
     return duration;
   }, [name]);
 
-  const measure = useCallback(<T>(fn: () => T): T => {
-    start();
-    const result = fn();
-    end();
-    return result;
-  }, [start, end]);
+  const measure = useCallback(
+    <T>(fn: () => T): T => {
+      start();
+      const result = fn();
+      end();
+      return result;
+    },
+    [start, end]
+  );
 
   return { start, end, measure };
 };

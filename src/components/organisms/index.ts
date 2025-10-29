@@ -4,6 +4,7 @@
 export * from './MainMenu';
 export * from './CharacterSelection';
 export * from './WorldMap';
+export * from './ShopInterface';
 
 // TODO: Implement remaining organisms
 // export * from './GameHUD';

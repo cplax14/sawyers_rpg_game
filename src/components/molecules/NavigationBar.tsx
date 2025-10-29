@@ -24,7 +24,7 @@ const QuickNavButton: React.FC<QuickNavButtonProps> = ({
   label,
   isActive,
   onClick,
-  badge
+  badge,
 }) => (
   <motion.button
     onClick={onClick}
@@ -44,23 +44,25 @@ const QuickNavButton: React.FC<QuickNavButtonProps> = ({
       fontWeight: isActive ? '600' : '400',
       transition: 'all 0.2s ease',
       position: 'relative',
-      minWidth: 'fit-content'
+      minWidth: 'fit-content',
     }}
   >
     <span style={{ fontSize: '1.1rem' }}>{icon}</span>
     <span>{label}</span>
 
     {badge && (
-      <span style={{
-        background: '#4fc3f7',
-        color: '#1a1a2e',
-        fontSize: '0.7rem',
-        fontWeight: 'bold',
-        padding: '0.2rem 0.4rem',
-        borderRadius: '10px',
-        minWidth: '18px',
-        textAlign: 'center'
-      }}>
+      <span
+        style={{
+          background: '#4fc3f7',
+          color: '#1a1a2e',
+          fontSize: '0.7rem',
+          fontWeight: 'bold',
+          padding: '0.2rem 0.4rem',
+          borderRadius: '10px',
+          minWidth: '18px',
+          textAlign: 'center',
+        }}
+      >
         {badge}
       </span>
     )}
@@ -71,21 +73,16 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
   showBackButton = true,
   showTabSwitcher = true,
   compact = false,
-  className = ''
+  className = '',
 }) => {
-  const {
-    navigationState,
-    navigateToTab,
-    goBack,
-    canGoBack,
-    isCurrentTab
-  } = useInventoryNavigation();
+  const { navigationState, navigateToTab, goBack, canGoBack, isCurrentTab } =
+    useInventoryNavigation();
 
   const tabs = [
     { id: 'equipment' as InventoryTab, icon: '⚔️', label: 'Equipment' },
     { id: 'items' as InventoryTab, icon: '🎒', label: 'Items' },
     { id: 'creatures' as InventoryTab, icon: '🐉', label: 'Creatures' },
-    { id: 'stats' as InventoryTab, icon: '📊', label: 'Stats' }
+    { id: 'stats' as InventoryTab, icon: '📊', label: 'Stats' },
   ];
 
   return (
@@ -98,7 +95,7 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
         padding: compact ? '0.75rem' : '1rem',
         background: 'rgba(0, 0, 0, 0.3)',
         borderBottom: '1px solid rgba(79, 195, 247, 0.2)',
-        borderRadius: '8px 8px 0 0'
+        borderRadius: '8px 8px 0 0',
       }}
     >
       {/* Back Button */}
@@ -119,7 +116,7 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
             alignItems: 'center',
             gap: '0.5rem',
             fontSize: '0.9rem',
-            transition: 'all 0.2s ease'
+            transition: 'all 0.2s ease',
           }}
         >
           <span style={{ fontSize: '1.1rem' }}>←</span>
@@ -128,15 +125,17 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
       )}
 
       {/* Current Tab Indicator */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.5rem',
-        padding: '0.5rem 1rem',
-        background: 'rgba(79, 195, 247, 0.1)',
-        borderRadius: '8px',
-        border: '1px solid rgba(79, 195, 247, 0.3)'
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          padding: '0.5rem 1rem',
+          background: 'rgba(79, 195, 247, 0.1)',
+          borderRadius: '8px',
+          border: '1px solid rgba(79, 195, 247, 0.3)',
+        }}
+      >
         <span style={{ fontSize: '1.1rem' }}>
           {tabs.find(t => t.id === navigationState.currentTab)?.icon}
         </span>
@@ -149,11 +148,13 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
 
       {/* Tab Switcher */}
       {showTabSwitcher && (
-        <div style={{
-          display: 'flex',
-          gap: '0.5rem',
-          marginLeft: 'auto'
-        }}>
+        <div
+          style={{
+            display: 'flex',
+            gap: '0.5rem',
+            marginLeft: 'auto',
+          }}
+        >
           {tabs.map(tab => (
             <QuickNavButton
               key={tab.id}

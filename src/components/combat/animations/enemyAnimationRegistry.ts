@@ -53,9 +53,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
     props: {
       variant: 'glob',
       colors: ['#4caf50', '#2e7d32'],
-      trajectory: 'arc'
+      trajectory: 'arc',
     },
-    description: 'Green slime glob with splatter'
+    description: 'Green slime glob with splatter',
   },
 
   king_slime: {
@@ -64,9 +64,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
       variant: 'glob',
       colors: ['#2196f3', '#1565c0'], // Blue for king
       trajectory: 'arc',
-      size: 22 // Larger
+      size: 22, // Larger
     },
-    description: 'Larger blue king slime glob'
+    description: 'Larger blue king slime glob',
   },
 
   gem_slime: {
@@ -75,9 +75,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
       variant: 'glob',
       colors: ['#9c27b0', '#6a1b9a'], // Purple/gem colors
       trajectory: 'arc',
-      size: 18
+      size: 18,
     },
-    description: 'Gem slime with crystalline glob'
+    description: 'Gem slime with crystalline glob',
   },
 
   magma_slime: {
@@ -86,9 +86,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
       variant: 'fire', // Fire variant for lava/magma
       colors: ['#ff6b00', '#ff0000'],
       trajectory: 'arc',
-      size: 20
+      size: 20,
     },
-    description: 'Magma slime with burning glob'
+    description: 'Magma slime with burning glob',
   },
 
   // ================================================
@@ -100,9 +100,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
     props: {
       weaponType: 'club',
       swingPattern: 'overhead',
-      colors: ['#8b4513', '#a0522d']
+      colors: ['#8b4513', '#a0522d'],
     },
-    description: 'Goblin club smash'
+    description: 'Goblin club smash',
   },
 
   hobgoblin: {
@@ -110,9 +110,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
     props: {
       weaponType: 'sword',
       swingPattern: 'horizontal',
-      colors: ['#708090', '#778899']
+      colors: ['#708090', '#778899'],
     },
-    description: 'Hobgoblin sword slash'
+    description: 'Hobgoblin sword slash',
   },
 
   orc: {
@@ -121,9 +121,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
       weaponType: 'axe',
       swingPattern: 'overhead',
       colors: ['#696969', '#808080'],
-      speed: 0.8 // Slower, heavier
+      speed: 0.8, // Slower, heavier
     },
-    description: 'Orc heavy axe'
+    description: 'Orc heavy axe',
   },
 
   orc_warrior: {
@@ -132,9 +132,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
       weaponType: 'axe',
       swingPattern: 'horizontal',
       colors: ['#696969', '#a0a0a0'],
-      speed: 0.9
+      speed: 0.9,
     },
-    description: 'Orc warrior battle axe'
+    description: 'Orc warrior battle axe',
   },
 
   skeleton: {
@@ -142,9 +142,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
     props: {
       weaponType: 'bone',
       swingPattern: 'overhead',
-      colors: ['#f5f5dc', '#fffaf0']
+      colors: ['#f5f5dc', '#fffaf0'],
     },
-    description: 'Skeleton bone club'
+    description: 'Skeleton bone club',
   },
 
   zombie: {
@@ -153,9 +153,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
       weaponType: 'claw',
       swingPattern: 'horizontal',
       colors: ['#556b2f', '#6b8e23'],
-      speed: 0.7 // Very slow
+      speed: 0.7, // Very slow
     },
-    description: 'Zombie claw swipe'
+    description: 'Zombie claw swipe',
   },
 
   // ================================================
@@ -167,9 +167,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
     props: {
       variant: 'bite',
       colors: ['#ffffff', '#ff0000', '#8b0000'],
-      speed: 1.2 // Fast
+      speed: 1.2, // Fast
     },
-    description: 'Wolf savage bite'
+    description: 'Wolf savage bite',
   },
 
   dire_wolf: {
@@ -178,9 +178,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
       variant: 'bite',
       colors: ['#4a4a4a', '#ff0000', '#8b0000'],
       creatureSize: 1.2,
-      speed: 1.3 // Faster
+      speed: 1.3, // Faster
     },
-    description: 'Dire wolf powerful bite'
+    description: 'Dire wolf powerful bite',
   },
 
   alpha_wolf: {
@@ -189,9 +189,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
       variant: 'bite',
       colors: ['#1a1a1a', '#ff0000', '#ff4500'],
       creatureSize: 1.4,
-      speed: 1.4 // Fastest
+      speed: 1.4, // Fastest
     },
-    description: 'Alpha wolf devastating bite'
+    description: 'Alpha wolf devastating bite',
   },
 
   wild_horse: {
@@ -199,9 +199,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
     props: {
       variant: 'trample',
       colors: ['#8b4513', '#a0522d', '#d2691e'],
-      creatureSize: 1.3
+      creatureSize: 1.3,
     },
-    description: 'Wild horse trampling kick'
+    description: 'Wild horse trampling kick',
   },
 
   bear: {
@@ -210,9 +210,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
       variant: 'claw',
       colors: ['#8b4513', '#a0522d', '#d2691e'],
       creatureSize: 1.5,
-      speed: 0.9 // Slower but powerful
+      speed: 0.9, // Slower but powerful
     },
-    description: 'Bear claw swipe'
+    description: 'Bear claw swipe',
   },
 
   // ================================================
@@ -224,9 +224,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
     props: {
       variant: 'talon',
       trailColors: ['#8b4513', '#daa520', '#f4a460'],
-      creatureSize: 0.9
+      creatureSize: 0.9,
     },
-    description: 'Hawk talon dive'
+    description: 'Hawk talon dive',
   },
 
   eagle: {
@@ -234,9 +234,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
     props: {
       variant: 'talon',
       trailColors: ['#8b4513', '#cd853f', '#daa520'],
-      creatureSize: 1.1 // Larger than hawk
+      creatureSize: 1.1, // Larger than hawk
     },
-    description: 'Eagle powerful talon strike'
+    description: 'Eagle powerful talon strike',
   },
 
   bat: {
@@ -244,9 +244,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
     props: {
       variant: 'screech',
       trailColors: ['#9370db', '#ba55d3', '#da70d6'],
-      creatureSize: 0.7
+      creatureSize: 0.7,
     },
-    description: 'Bat sonic screech'
+    description: 'Bat sonic screech',
   },
 
   vampire_bat: {
@@ -254,9 +254,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
     props: {
       variant: 'screech',
       trailColors: ['#8b0000', '#9370db', '#ba55d3'],
-      creatureSize: 0.8
+      creatureSize: 0.8,
     },
-    description: 'Vampire bat life drain'
+    description: 'Vampire bat life drain',
   },
 
   fire_bat: {
@@ -264,9 +264,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
     props: {
       variant: 'flame',
       trailColors: ['#ff6b00', '#ff8c00', '#ffa500', '#ffff00'],
-      creatureSize: 0.8
+      creatureSize: 0.8,
     },
-    description: 'Fire bat flame dive'
+    description: 'Fire bat flame dive',
   },
 
   wyvern: {
@@ -274,9 +274,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
     props: {
       variant: 'talon',
       trailColors: ['#4a4a4a', '#696969', '#808080'],
-      creatureSize: 1.5 // Large
+      creatureSize: 1.5, // Large
     },
-    description: 'Wyvern dive bomb'
+    description: 'Wyvern dive bomb',
   },
 
   dragon_whelp: {
@@ -284,9 +284,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
     props: {
       variant: 'flame',
       trailColors: ['#ff6b00', '#ff0000', '#ffa500'],
-      creatureSize: 1.3
+      creatureSize: 1.3,
     },
-    description: 'Dragon whelp flame dive'
+    description: 'Dragon whelp flame dive',
   },
 
   fire_drake: {
@@ -294,9 +294,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
     props: {
       variant: 'flame',
       trailColors: ['#ff4500', '#ff6b00', '#ff8c00'],
-      creatureSize: 1.6 // Very large
+      creatureSize: 1.6, // Very large
     },
-    description: 'Fire drake devastating dive'
+    description: 'Fire drake devastating dive',
   },
 
   phoenix_chick: {
@@ -304,9 +304,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
     props: {
       variant: 'flame',
       trailColors: ['#ffa500', '#ffff00', '#ff4500'],
-      creatureSize: 1.0
+      creatureSize: 1.0,
     },
-    description: 'Phoenix chick flame strike'
+    description: 'Phoenix chick flame strike',
   },
 
   // ================================================
@@ -318,9 +318,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
     props: {
       variant: 'fire',
       colors: ['#ff6b00', '#ff8c00'],
-      trajectory: 'straight'
+      trajectory: 'straight',
     },
-    description: 'Fire sprite fireball'
+    description: 'Fire sprite fireball',
   },
 
   ice_sprite: {
@@ -328,9 +328,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
     props: {
       variant: 'ice',
       colors: ['#00bfff', '#87ceeb'],
-      trajectory: 'straight'
+      trajectory: 'straight',
     },
-    description: 'Ice sprite ice shard'
+    description: 'Ice sprite ice shard',
   },
 
   thunder_sprite: {
@@ -338,9 +338,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
     props: {
       variant: 'magic',
       colors: ['#ffff00', '#ffd700'],
-      trajectory: 'straight'
+      trajectory: 'straight',
     },
-    description: 'Thunder sprite lightning bolt'
+    description: 'Thunder sprite lightning bolt',
   },
 
   nature_sprite: {
@@ -348,9 +348,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
     props: {
       variant: 'magic',
       colors: ['#4caf50', '#8bc34a'],
-      trajectory: 'arc'
+      trajectory: 'arc',
     },
-    description: 'Nature sprite nature magic'
+    description: 'Nature sprite nature magic',
   },
 
   fairy: {
@@ -359,9 +359,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
       variant: 'magic',
       colors: ['#ff69b4', '#ffc0cb'],
       trajectory: 'arc',
-      size: 12
+      size: 12,
     },
-    description: 'Fairy magic dust'
+    description: 'Fairy magic dust',
   },
 
   // ================================================
@@ -373,9 +373,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
     props: {
       variant: 'rock',
       colors: ['#696969', '#808080'],
-      trajectory: 'arc'
+      trajectory: 'arc',
     },
-    description: 'Rock lizard stone throw'
+    description: 'Rock lizard stone throw',
   },
 
   mountain_goat: {
@@ -383,9 +383,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
     props: {
       variant: 'trample',
       colors: ['#d2b48c', '#daa520'],
-      creatureSize: 1.1
+      creatureSize: 1.1,
     },
-    description: 'Mountain goat ram attack'
+    description: 'Mountain goat ram attack',
   },
 
   // ================================================
@@ -398,9 +398,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
       weaponType: 'club',
       swingPattern: 'slam',
       colors: ['#556b2f', '#6b8e23'],
-      speed: 0.6 // Very slow, very heavy
+      speed: 0.6, // Very slow, very heavy
     },
-    description: 'Cave troll massive club slam'
+    description: 'Cave troll massive club slam',
   },
 
   lava_golem: {
@@ -409,9 +409,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
       weaponType: 'fist',
       swingPattern: 'slam',
       colors: ['#ff6b00', '#ff0000'],
-      speed: 0.7
+      speed: 0.7,
     },
-    description: 'Lava golem molten punch'
+    description: 'Lava golem molten punch',
   },
 
   guardian_golem: {
@@ -420,9 +420,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
       weaponType: 'fist',
       swingPattern: 'slam',
       colors: ['#708090', '#778899'],
-      speed: 0.8
+      speed: 0.8,
     },
-    description: 'Guardian golem stone fist'
+    description: 'Guardian golem stone fist',
   },
 
   treant: {
@@ -431,9 +431,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
       weaponType: 'club', // Branch/limb
       swingPattern: 'overhead',
       colors: ['#8b4513', '#2e7d32'],
-      speed: 0.7
+      speed: 0.7,
     },
-    description: 'Treant branch slam'
+    description: 'Treant branch slam',
   },
 
   // ================================================
@@ -446,9 +446,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
       variant: 'flame',
       trailColors: ['#ff0000', '#ff6b00', '#ffff00'],
       creatureSize: 2.0, // Massive
-      impactColors: ['#ff0000', '#ff8c00']
+      impactColors: ['#ff0000', '#ff8c00'],
     },
-    description: 'Ancient dragon devastating flame dive'
+    description: 'Ancient dragon devastating flame dive',
   },
 
   unicorn: {
@@ -456,9 +456,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
     props: {
       variant: 'pounce',
       colors: ['#ffffff', '#ffd700', '#ff69b4'],
-      creatureSize: 1.3
+      creatureSize: 1.3,
     },
-    description: 'Unicorn horn strike'
+    description: 'Unicorn horn strike',
   },
 
   shadow_wraith: {
@@ -467,9 +467,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
       variant: 'magic',
       colors: ['#4b0082', '#8b008b'],
       trajectory: 'straight',
-      size: 16
+      size: 16,
     },
-    description: 'Shadow wraith dark bolt'
+    description: 'Shadow wraith dark bolt',
   },
 
   ancient_spirit: {
@@ -478,9 +478,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
       variant: 'magic',
       colors: ['#9370db', '#ba55d3'],
       trajectory: 'straight',
-      size: 18
+      size: 18,
     },
-    description: 'Ancient spirit ethereal blast'
+    description: 'Ancient spirit ethereal blast',
   },
 
   crystal_spider: {
@@ -489,9 +489,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
       variant: 'magic',
       colors: ['#00bfff', '#87ceeb'],
       trajectory: 'arc',
-      size: 14
+      size: 14,
     },
-    description: 'Crystal spider web shot'
+    description: 'Crystal spider web shot',
   },
 
   // ================================================
@@ -504,9 +504,9 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
       variant: 'fire',
       colors: ['#ff6b00', '#ff0000'],
       trajectory: 'straight',
-      size: 16
+      size: 16,
     },
-    description: 'Salamander flame breath'
+    description: 'Salamander flame breath',
   },
 
   // ================================================
@@ -519,10 +519,10 @@ export const ENEMY_ANIMATION_MAP: Record<string, EnemyAnimationMetadata> = {
     props: {
       variant: 'magic',
       colors: ['#8b5cf6', '#a78bfa'],
-      trajectory: 'straight'
+      trajectory: 'straight',
     },
-    description: 'Generic enemy attack (fallback)'
-  }
+    description: 'Generic enemy attack (fallback)',
+  },
 };
 
 /**
@@ -557,7 +557,7 @@ export function getEnemiesByAnimationType(
     projectile: EnemyProjectileAnimation,
     swoop: EnemySwoopAnimation,
     melee: EnemyMeleeAnimation,
-    lunge: EnemyLungeAnimation
+    lunge: EnemyLungeAnimation,
   };
 
   const targetComponent = componentMap[animationType];

@@ -10,7 +10,7 @@ import {
   RecoveryInfo,
   SaveRecoveryConfig,
   createSaveRecoveryManager,
-  SaveRecoveryUtils
+  SaveRecoveryUtils,
 } from '../utils/saveRecovery';
 import { ReactGameState } from '../types/game';
 
@@ -33,7 +33,11 @@ interface UseSaveRecoveryResult {
   dismissRecovery: () => void;
 
   // Save operation tracking
-  startTrackingSave: (slotNumber: number, saveName: string, gameState: ReactGameState) => SaveOperation;
+  startTrackingSave: (
+    slotNumber: number,
+    saveName: string,
+    gameState: ReactGameState
+  ) => SaveOperation;
   completeSaveTracking: (operationId: string) => void;
   failSaveTracking: (operationId: string, error: string) => void;
 
@@ -51,14 +55,14 @@ export const useSaveRecovery = (options: UseSaveRecoveryOptions = {}): UseSaveRe
   const {
     config = {},
     autoCheck = true,
-    checkInterval = 30000 // 30 seconds
+    checkInterval = 30000, // 30 seconds
   } = options;
 
   const recoveryManagerRef = useRef<SaveRecoveryManager | null>(null);
   const [recoveryInfo, setRecoveryInfo] = useState<RecoveryInfo>({
     hasRecoverableData: false,
     interruptedOperations: [],
-    recommendedAction: 'none'
+    recommendedAction: 'none',
   });
   const [isCheckingRecovery, setIsCheckingRecovery] = useState(false);
   const [hasRecoveryData, setHasRecoveryData] = useState(false);
@@ -101,7 +105,7 @@ export const useSaveRecovery = (options: UseSaveRecoveryOptions = {}): UseSaveRe
       return {
         hasRecoverableData: false,
         interruptedOperations: [],
-        recommendedAction: 'none'
+        recommendedAction: 'none',
       };
     }
 
@@ -125,23 +129,26 @@ export const useSaveRecovery = (options: UseSaveRecoveryOptions = {}): UseSaveRe
   }, [recoveryInfo]);
 
   // Retry a failed operation
-  const retryOperation = useCallback(async (operationId: string): Promise<SaveOperation | null> => {
-    if (!recoveryManagerRef.current) return null;
+  const retryOperation = useCallback(
+    async (operationId: string): Promise<SaveOperation | null> => {
+      if (!recoveryManagerRef.current) return null;
 
-    try {
-      const retriedOperation = recoveryManagerRef.current.retrySaveOperation(operationId);
+      try {
+        const retriedOperation = recoveryManagerRef.current.retrySaveOperation(operationId);
 
-      if (retriedOperation) {
-        // Refresh recovery info after retry
-        await checkForRecovery();
+        if (retriedOperation) {
+          // Refresh recovery info after retry
+          await checkForRecovery();
+        }
+
+        return retriedOperation;
+      } catch (error) {
+        console.error('Failed to retry operation:', error);
+        return null;
       }
-
-      return retriedOperation;
-    } catch (error) {
-      console.error('Failed to retry operation:', error);
-      return null;
-    }
-  }, [checkForRecovery]);
+    },
+    [checkForRecovery]
+  );
 
   // Clear all recovery data
   const clearRecoveryData = useCallback(() => {
@@ -150,7 +157,7 @@ export const useSaveRecovery = (options: UseSaveRecoveryOptions = {}): UseSaveRe
       setRecoveryInfo({
         hasRecoverableData: false,
         interruptedOperations: [],
-        recommendedAction: 'none'
+        recommendedAction: 'none',
       });
       setHasRecoveryData(false);
     }
@@ -162,36 +169,45 @@ export const useSaveRecovery = (options: UseSaveRecoveryOptions = {}): UseSaveRe
   }, []);
 
   // Start tracking a save operation
-  const startTrackingSave = useCallback((
-    slotNumber: number,
-    saveName: string,
-    gameState: ReactGameState
-  ): SaveOperation => {
-    if (!recoveryManagerRef.current) {
-      throw new Error('Recovery manager not initialized');
-    }
+  const startTrackingSave = useCallback(
+    (slotNumber: number, saveName: string, gameState: ReactGameState): SaveOperation => {
+      if (!recoveryManagerRef.current) {
+        throw new Error('Recovery manager not initialized');
+      }
 
-    const operation = recoveryManagerRef.current.startSaveOperation(slotNumber, saveName, gameState);
-    return operation;
-  }, []);
+      const operation = recoveryManagerRef.current.startSaveOperation(
+        slotNumber,
+        saveName,
+        gameState
+      );
+      return operation;
+    },
+    []
+  );
 
   // Complete save tracking
-  const completeSaveTracking = useCallback((operationId: string) => {
-    if (recoveryManagerRef.current) {
-      recoveryManagerRef.current.completeSaveOperation(operationId);
-      // Refresh recovery info after completion
-      setTimeout(() => checkForRecovery(), 100);
-    }
-  }, [checkForRecovery]);
+  const completeSaveTracking = useCallback(
+    (operationId: string) => {
+      if (recoveryManagerRef.current) {
+        recoveryManagerRef.current.completeSaveOperation(operationId);
+        // Refresh recovery info after completion
+        setTimeout(() => checkForRecovery(), 100);
+      }
+    },
+    [checkForRecovery]
+  );
 
   // Fail save tracking
-  const failSaveTracking = useCallback((operationId: string, error: string) => {
-    if (recoveryManagerRef.current) {
-      recoveryManagerRef.current.failSaveOperation(operationId, error);
-      // Refresh recovery info after failure
-      setTimeout(() => checkForRecovery(), 100);
-    }
-  }, [checkForRecovery]);
+  const failSaveTracking = useCallback(
+    (operationId: string, error: string) => {
+      if (recoveryManagerRef.current) {
+        recoveryManagerRef.current.failSaveOperation(operationId, error);
+        // Refresh recovery info after failure
+        setTimeout(() => checkForRecovery(), 100);
+      }
+    },
+    [checkForRecovery]
+  );
 
   // Get operation statistics
   const getOperationStats = useCallback(() => {
@@ -202,7 +218,7 @@ export const useSaveRecovery = (options: UseSaveRecoveryOptions = {}): UseSaveRe
         failed: 0,
         interrupted: 0,
         pending: 0,
-        successRate: 100
+        successRate: 100,
       };
     }
 
@@ -252,7 +268,7 @@ export const useSaveRecovery = (options: UseSaveRecoveryOptions = {}): UseSaveRe
     // UI utilities
     formatOperationDuration,
     getOperationStatusColor,
-    getOperationStatusText
+    getOperationStatusText,
   };
 };
 

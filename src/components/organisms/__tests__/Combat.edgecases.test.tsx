@@ -77,7 +77,7 @@ describe('Combat Edge Cases - Animation System', () => {
       // Act - Render multiple animations rapidly
       const { rerender } = render(
         <AnimationController
-          attackType="fire"
+          attackType='fire'
           attackData={attackData}
           onComplete={mockOnComplete1}
           isActive={true}
@@ -87,7 +87,7 @@ describe('Combat Edge Cases - Animation System', () => {
       // Rerender with second animation while first is still active
       rerender(
         <AnimationController
-          attackType="ice"
+          attackType='ice'
           attackData={attackData}
           onComplete={mockOnComplete2}
           isActive={true}
@@ -97,7 +97,7 @@ describe('Combat Edge Cases - Animation System', () => {
       // Rerender with third animation
       rerender(
         <AnimationController
-          attackType="thunder"
+          attackType='thunder'
           attackData={attackData}
           onComplete={mockOnComplete3}
           isActive={true}
@@ -142,7 +142,7 @@ describe('Combat Edge Cases - Animation System', () => {
       // Act - Try to queue same animation twice
       const { rerender } = render(
         <AnimationController
-          attackType="fire"
+          attackType='fire'
           attackData={attackData}
           onComplete={mockOnComplete}
           isActive={true}
@@ -151,7 +151,7 @@ describe('Combat Edge Cases - Animation System', () => {
 
       rerender(
         <AnimationController
-          attackType="fire"
+          attackType='fire'
           attackData={attackData}
           onComplete={mockOnComplete}
           isActive={true}
@@ -185,7 +185,7 @@ describe('Combat Edge Cases - Animation System', () => {
       // Act - Render an animation
       render(
         <AnimationController
-          attackType="fire"
+          attackType='fire'
           attackData={attackData}
           onComplete={mockOnComplete}
           isActive={true}
@@ -223,7 +223,7 @@ describe('Combat Edge Cases - Animation System', () => {
       // Act - Start animation
       const { unmount } = render(
         <AnimationController
-          attackType="fire"
+          attackType='fire'
           attackData={attackData}
           onComplete={mockOnComplete}
           isActive={true}
@@ -236,9 +236,7 @@ describe('Combat Edge Cases - Animation System', () => {
       });
 
       // Assert - Should clean up without errors
-      expect(consoleError).not.toHaveBeenCalledWith(
-        expect.stringContaining('error')
-      );
+      expect(consoleError).not.toHaveBeenCalledWith(expect.stringContaining('error'));
     });
 
     it('should clean up animation queue on unmount', async () => {
@@ -254,7 +252,7 @@ describe('Combat Edge Cases - Animation System', () => {
       // Act
       const { unmount } = render(
         <AnimationController
-          attackType="meteor"
+          attackType='meteor'
           attackData={attackData}
           onComplete={mockOnComplete}
           isActive={true}
@@ -268,9 +266,7 @@ describe('Combat Edge Cases - Animation System', () => {
       await waitFor(() => {
         const cleanupLogs = consoleLog.mock.calls
           .flat()
-          .filter((arg) =>
-            typeof arg === 'string' ? arg.includes('Cleaned up') : false
-          );
+          .filter(arg => (typeof arg === 'string' ? arg.includes('Cleaned up') : false));
         expect(cleanupLogs.length).toBeGreaterThan(0);
       });
     });
@@ -288,7 +284,7 @@ describe('Combat Edge Cases - Animation System', () => {
       // Act - Start animation then quickly set isActive to false
       const { rerender } = render(
         <AnimationController
-          attackType="holy"
+          attackType='holy'
           attackData={attackData}
           onComplete={mockOnComplete}
           isActive={true}
@@ -298,7 +294,7 @@ describe('Combat Edge Cases - Animation System', () => {
       // Deactivate animation
       rerender(
         <AnimationController
-          attackType="holy"
+          attackType='holy'
           attackData={attackData}
           onComplete={mockOnComplete}
           isActive={false}
@@ -403,7 +399,7 @@ describe('Combat Edge Cases - Animation System', () => {
       // Act
       render(
         <AnimationController
-          attackType="fire"
+          attackType='fire'
           attackData={invalidAttackData}
           onComplete={mockOnComplete}
           isActive={true}
@@ -414,9 +410,7 @@ describe('Combat Edge Cases - Animation System', () => {
       await waitFor(() => {
         const warnings = consoleWarn.mock.calls
           .flat()
-          .filter((arg) =>
-            typeof arg === 'string' ? arg.includes('Invalid position') : false
-          );
+          .filter(arg => (typeof arg === 'string' ? arg.includes('Invalid position') : false));
         expect(warnings.length).toBeGreaterThan(0);
         expect(mockOnComplete).toHaveBeenCalled();
       });
@@ -435,7 +429,7 @@ describe('Combat Edge Cases - Animation System', () => {
       // Act
       render(
         <AnimationController
-          attackType="ice"
+          attackType='ice'
           attackData={invalidAttackData}
           onComplete={mockOnComplete}
           isActive={true}
@@ -461,7 +455,7 @@ describe('Combat Edge Cases - Animation System', () => {
       // Act
       render(
         <AnimationController
-          attackType="thunder"
+          attackType='thunder'
           attackData={extremeAttackData}
           onComplete={mockOnComplete}
           isActive={true}
@@ -472,7 +466,7 @@ describe('Combat Edge Cases - Animation System', () => {
       await waitFor(() => {
         const warnings = consoleWarn.mock.calls
           .flat()
-          .filter((arg) =>
+          .filter(arg =>
             typeof arg === 'string'
               ? arg.includes('out of bounds') || arg.includes('Skipping animation')
               : false
@@ -494,7 +488,7 @@ describe('Combat Edge Cases - Animation System', () => {
       // Act
       render(
         <AnimationController
-          attackType="fire"
+          attackType='fire'
           attackData={zeroAttackData}
           onComplete={mockOnComplete}
           isActive={true}
@@ -528,7 +522,7 @@ describe('Combat Edge Cases - Animation System', () => {
       // Act - Request animation for unmapped spell
       render(
         <AnimationController
-          attackType="nonexistent_spell_xyz"
+          attackType='nonexistent_spell_xyz'
           attackData={attackData}
           onComplete={mockOnComplete}
           isActive={true}
@@ -539,9 +533,7 @@ describe('Combat Edge Cases - Animation System', () => {
       await waitFor(() => {
         const warnings = consoleWarn.mock.calls
           .flat()
-          .filter((arg) =>
-            typeof arg === 'string' ? arg.includes('No animation found') : false
-          );
+          .filter(arg => (typeof arg === 'string' ? arg.includes('No animation found') : false));
         expect(warnings.length).toBeGreaterThan(0);
       });
     });
@@ -575,7 +567,7 @@ describe('Combat Edge Cases - Animation System', () => {
       // Act - Normal render (error boundary wraps animations)
       render(
         <AnimationController
-          attackType="fire"
+          attackType='fire'
           attackData={attackData}
           onComplete={mockOnComplete}
           isActive={true}
@@ -590,9 +582,7 @@ describe('Combat Edge Cases - Animation System', () => {
         { timeout: 2000 }
       );
 
-      expect(consoleError).not.toHaveBeenCalledWith(
-        expect.stringContaining('crashed')
-      );
+      expect(consoleError).not.toHaveBeenCalledWith(expect.stringContaining('crashed'));
     });
   });
 
@@ -613,7 +603,7 @@ describe('Combat Edge Cases - Animation System', () => {
       // Act - Start animation then cancel it
       const { rerender } = render(
         <AnimationController
-          attackType="meteor"
+          attackType='meteor'
           attackData={attackData}
           onComplete={mockOnComplete}
           isActive={true}
@@ -623,7 +613,7 @@ describe('Combat Edge Cases - Animation System', () => {
       // Cancel animation
       rerender(
         <AnimationController
-          attackType="meteor"
+          attackType='meteor'
           attackData={attackData}
           onComplete={mockOnComplete}
           isActive={false}
@@ -650,7 +640,7 @@ describe('Combat Edge Cases - Animation System', () => {
       // Act - Rapidly change attack types
       const { rerender } = render(
         <AnimationController
-          attackType="fire"
+          attackType='fire'
           attackData={attackData}
           onComplete={mockOnComplete}
           isActive={true}
@@ -659,7 +649,7 @@ describe('Combat Edge Cases - Animation System', () => {
 
       rerender(
         <AnimationController
-          attackType="ice"
+          attackType='ice'
           attackData={attackData}
           onComplete={mockOnComplete}
           isActive={true}
@@ -668,7 +658,7 @@ describe('Combat Edge Cases - Animation System', () => {
 
       rerender(
         <AnimationController
-          attackType="thunder"
+          attackType='thunder'
           attackData={attackData}
           onComplete={mockOnComplete}
           isActive={true}
@@ -701,7 +691,7 @@ describe('Combat Edge Cases - Animation System', () => {
       // Act - Start animation then update positions
       const { rerender } = render(
         <AnimationController
-          attackType="holy"
+          attackType='holy'
           attackData={initialData}
           onComplete={mockOnComplete}
           isActive={true}
@@ -711,7 +701,7 @@ describe('Combat Edge Cases - Animation System', () => {
       // Update position mid-animation
       rerender(
         <AnimationController
-          attackType="holy"
+          attackType='holy'
           attackData={updatedData}
           onComplete={mockOnComplete}
           isActive={true}
@@ -752,13 +742,13 @@ describe('Combat Edge Cases - Animation System', () => {
       const { container } = render(
         <>
           <AnimationController
-            attackType="fire"
+            attackType='fire'
             attackData={attackData1}
             onComplete={mockOnComplete1}
             isActive={true}
           />
           <AnimationController
-            attackType="ice"
+            attackType='ice'
             attackData={attackData2}
             onComplete={mockOnComplete2}
             isActive={true}
@@ -792,13 +782,13 @@ describe('Combat Edge Cases - Animation System', () => {
       render(
         <>
           <AnimationController
-            attackType="meteor"
+            attackType='meteor'
             attackData={attackData}
             onComplete={mockOnComplete1}
             isActive={true}
           />
           <AnimationController
-            attackType="holy"
+            attackType='holy'
             attackData={attackData}
             onComplete={mockOnComplete2}
             isActive={true}
@@ -834,7 +824,7 @@ describe('Combat Edge Cases - Animation System', () => {
       // Act
       const { unmount } = render(
         <AnimationController
-          attackType="fire"
+          attackType='fire'
           attackData={attackData}
           onComplete={mockOnComplete}
           isActive={true}
@@ -847,9 +837,7 @@ describe('Combat Edge Cases - Animation System', () => {
       await waitFor(() => {
         const cleanupLogs = consoleLog.mock.calls
           .flat()
-          .filter((arg) =>
-            typeof arg === 'string' ? arg.includes('Cleaned up') : false
-          );
+          .filter(arg => (typeof arg === 'string' ? arg.includes('Cleaned up') : false));
         expect(cleanupLogs.length).toBeGreaterThan(0);
       });
     });
@@ -868,7 +856,7 @@ describe('Combat Edge Cases - Animation System', () => {
       for (let i = 0; i < 10; i++) {
         const { unmount } = render(
           <AnimationController
-            attackType="fire"
+            attackType='fire'
             attackData={attackData}
             onComplete={mockOnComplete}
             isActive={true}
@@ -914,7 +902,7 @@ describe('Combat Edge Cases - Animation System', () => {
       // Act - Sequence of edge cases
       const { rerender } = render(
         <AnimationController
-          attackType="fire"
+          attackType='fire'
           attackData={validData}
           onComplete={mockOnComplete}
           isActive={true}
@@ -924,7 +912,7 @@ describe('Combat Edge Cases - Animation System', () => {
       // Edge case: Invalid positions
       rerender(
         <AnimationController
-          attackType="ice"
+          attackType='ice'
           attackData={invalidData}
           onComplete={mockOnComplete}
           isActive={true}
@@ -934,7 +922,7 @@ describe('Combat Edge Cases - Animation System', () => {
       // Edge case: Missing animation
       rerender(
         <AnimationController
-          attackType="nonexistent_spell"
+          attackType='nonexistent_spell'
           attackData={validData}
           onComplete={mockOnComplete}
           isActive={true}
@@ -944,7 +932,7 @@ describe('Combat Edge Cases - Animation System', () => {
       // Edge case: Rapid changes
       rerender(
         <AnimationController
-          attackType="thunder"
+          attackType='thunder'
           attackData={validData}
           onComplete={mockOnComplete}
           isActive={true}
@@ -954,7 +942,7 @@ describe('Combat Edge Cases - Animation System', () => {
       // Edge case: Cancellation
       rerender(
         <AnimationController
-          attackType="meteor"
+          attackType='meteor'
           attackData={validData}
           onComplete={mockOnComplete}
           isActive={false}
@@ -967,9 +955,7 @@ describe('Combat Edge Cases - Animation System', () => {
       });
 
       // No crashes or unhandled errors
-      expect(consoleError).not.toHaveBeenCalledWith(
-        expect.stringContaining('Uncaught')
-      );
+      expect(consoleError).not.toHaveBeenCalledWith(expect.stringContaining('Uncaught'));
     });
   });
 });

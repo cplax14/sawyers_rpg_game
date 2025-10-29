@@ -163,9 +163,7 @@ export const useResponsive = (): ResponsiveState => {
 /**
  * Hook to check if current breakpoint matches given breakpoint(s)
  */
-export const useBreakpoint = (
-  breakpoints: Breakpoint | Breakpoint[]
-): boolean => {
+export const useBreakpoint = (breakpoints: Breakpoint | Breakpoint[]): boolean => {
   const { breakpoint } = useResponsive();
 
   if (Array.isArray(breakpoints)) {
@@ -178,10 +176,7 @@ export const useBreakpoint = (
 /**
  * Hook to get responsive values based on current breakpoint
  */
-export const useResponsiveValue = <T>(
-  values: Partial<Record<Breakpoint, T>>,
-  fallback: T
-): T => {
+export const useResponsiveValue = <T>(values: Partial<Record<Breakpoint, T>>, fallback: T): T => {
   const { breakpoint } = useResponsive();
 
   // Try exact match first

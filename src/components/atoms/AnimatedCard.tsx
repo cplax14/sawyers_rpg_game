@@ -79,7 +79,7 @@ export const AnimatedCard: React.FC<AnimatedCardProps> = ({
       alignItems: 'center',
       gap: '0.5rem',
       overflow: 'hidden',
-      fontSize: useResponsiveSize && responsiveItemSize ? responsiveItemSize.fontSize : '1rem'
+      fontSize: useResponsiveSize && responsiveItemSize ? responsiveItemSize.fontSize : '1rem',
     };
 
     if (useResponsiveSize && responsiveItemSize) {
@@ -88,35 +88,36 @@ export const AnimatedCard: React.FC<AnimatedCardProps> = ({
         ...baseStyles,
         minHeight: responsiveItemSize.minHeight,
         minWidth: responsiveItemSize.minWidth,
-        flexDirection: variant === 'stat' || variant === 'action' ? 'row' as const : 'column' as const,
-        justifyContent: variant === 'action' ? 'center' : 'flex-start'
+        flexDirection:
+          variant === 'stat' || variant === 'action' ? ('row' as const) : ('column' as const),
+        justifyContent: variant === 'action' ? 'center' : 'flex-start',
       };
     }
 
     const variantStyles = {
       item: {
         minHeight: '120px',
-        minWidth: '100px'
+        minWidth: '100px',
       },
       equipment: {
         minHeight: '140px',
-        minWidth: '120px'
+        minWidth: '120px',
       },
       creature: {
         minHeight: '160px',
-        minWidth: '140px'
+        minWidth: '140px',
       },
       stat: {
         minHeight: '80px',
         minWidth: '200px',
-        flexDirection: 'row' as const
+        flexDirection: 'row' as const,
       },
       action: {
         minHeight: '60px',
         minWidth: '120px',
         flexDirection: 'row' as const,
-        justifyContent: 'center'
-      }
+        justifyContent: 'center',
+      },
     };
 
     return { ...baseStyles, ...variantStyles[variant] };
@@ -138,38 +139,50 @@ export const AnimatedCard: React.FC<AnimatedCardProps> = ({
       boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
       borderColor: 'rgba(255, 255, 255, 0.1)',
       backgroundColor: 'rgba(255, 255, 255, 0.05)',
-      transition: { duration: 0.2, ease: 'easeOut' }
+      transition: { duration: 0.2, ease: 'easeOut' },
     },
-    hover: animationTrigger === 'hover' && !isDisabled ? {
-      scale: 1.03,
-      y: -2,
-      boxShadow: '0 8px 25px rgba(79, 195, 247, 0.3)',
-      borderColor: 'rgba(79, 195, 247, 0.4)',
-      transition: { duration: 0.2, ease: 'easeOut' }
-    } : {},
-    tap: animationTrigger === 'tap' && !isDisabled ? {
-      scale: 0.97,
-      transition: { duration: 0.1 }
-    } : {},
-    selected: isSelected ? {
-      borderColor: 'rgba(79, 195, 247, 0.6)',
-      backgroundColor: 'rgba(79, 195, 247, 0.1)',
-      boxShadow: '0 0 20px rgba(79, 195, 247, 0.3)',
-      transition: { duration: 0.3 }
-    } : {},
-    disabled: isDisabled ? {
-      opacity: 0.5,
-      filter: 'grayscale(50%)',
-      transition: { duration: 0.2 }
-    } : {},
-    shimmer: isLoading ? {
-      opacity: [0.3, 0.7, 0.3],
-      transition: {
-        duration: 1.5,
-        repeat: Infinity,
-        ease: 'easeInOut'
-      }
-    } : {}
+    hover:
+      animationTrigger === 'hover' && !isDisabled
+        ? {
+            scale: 1.03,
+            y: -2,
+            boxShadow: '0 8px 25px rgba(79, 195, 247, 0.3)',
+            borderColor: 'rgba(79, 195, 247, 0.4)',
+            transition: { duration: 0.2, ease: 'easeOut' },
+          }
+        : {},
+    tap:
+      animationTrigger === 'tap' && !isDisabled
+        ? {
+            scale: 0.97,
+            transition: { duration: 0.1 },
+          }
+        : {},
+    selected: isSelected
+      ? {
+          borderColor: 'rgba(79, 195, 247, 0.6)',
+          backgroundColor: 'rgba(79, 195, 247, 0.1)',
+          boxShadow: '0 0 20px rgba(79, 195, 247, 0.3)',
+          transition: { duration: 0.3 },
+        }
+      : {},
+    disabled: isDisabled
+      ? {
+          opacity: 0.5,
+          filter: 'grayscale(50%)',
+          transition: { duration: 0.2 },
+        }
+      : {},
+    shimmer: isLoading
+      ? {
+          opacity: [0.3, 0.7, 0.3],
+          transition: {
+            duration: 1.5,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          },
+        }
+      : {},
   };
 
   return (
@@ -177,10 +190,10 @@ export const AnimatedCard: React.FC<AnimatedCardProps> = ({
       className={`animated-card animated-card-${variant} ${className}`}
       style={{
         ...getVariantStyles(),
-        ...style
+        ...style,
       }}
       variants={combinedVariants}
-      initial="rest"
+      initial='rest'
       animate={getAnimationStates()}
       whileHover={!isDisabled && animationTrigger === 'hover' ? 'hover' : undefined}
       whileTap={!isDisabled && animationTrigger === 'tap' ? 'tap' : undefined}
@@ -207,7 +220,7 @@ export const AnimatedCard: React.FC<AnimatedCardProps> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            borderRadius: '8px'
+            borderRadius: '8px',
           }}
         >
           <motion.div
@@ -218,7 +231,7 @@ export const AnimatedCard: React.FC<AnimatedCardProps> = ({
               height: '24px',
               border: '2px solid rgba(79, 195, 247, 0.3)',
               borderTop: '2px solid #4fc3f7',
-              borderRadius: '50%'
+              borderRadius: '50%',
             }}
           />
         </motion.div>
@@ -242,7 +255,7 @@ export const AnimatedCard: React.FC<AnimatedCardProps> = ({
             justifyContent: 'center',
             fontSize: '0.8rem',
             color: '#ffffff',
-            fontWeight: 'bold'
+            fontWeight: 'bold',
           }}
         >
           ✓
@@ -266,7 +279,7 @@ export const AnimatedCard: React.FC<AnimatedCardProps> = ({
             justifyContent: 'center',
             borderRadius: '8px',
             fontSize: '2rem',
-            color: 'rgba(255, 255, 255, 0.6)'
+            color: 'rgba(255, 255, 255, 0.6)',
           }}
         >
           🚫
@@ -277,24 +290,29 @@ export const AnimatedCard: React.FC<AnimatedCardProps> = ({
 };
 
 // Specialized card variants
-export const ItemCard: React.FC<Omit<AnimatedCardProps, 'variant'>> = ({ useResponsiveSize = true, ...props }) => (
-  <AnimatedCard {...props} variant="item" useResponsiveSize={useResponsiveSize} />
-);
+export const ItemCard: React.FC<Omit<AnimatedCardProps, 'variant'>> = ({
+  useResponsiveSize = true,
+  ...props
+}) => <AnimatedCard {...props} variant='item' useResponsiveSize={useResponsiveSize} />;
 
-export const EquipmentCard: React.FC<Omit<AnimatedCardProps, 'variant'>> = ({ useResponsiveSize = true, ...props }) => (
-  <AnimatedCard {...props} variant="equipment" useResponsiveSize={useResponsiveSize} />
-);
+export const EquipmentCard: React.FC<Omit<AnimatedCardProps, 'variant'>> = ({
+  useResponsiveSize = true,
+  ...props
+}) => <AnimatedCard {...props} variant='equipment' useResponsiveSize={useResponsiveSize} />;
 
-export const CreatureCard: React.FC<Omit<AnimatedCardProps, 'variant'>> = ({ useResponsiveSize = true, ...props }) => (
-  <AnimatedCard {...props} variant="creature" useResponsiveSize={useResponsiveSize} />
-);
+export const CreatureCard: React.FC<Omit<AnimatedCardProps, 'variant'>> = ({
+  useResponsiveSize = true,
+  ...props
+}) => <AnimatedCard {...props} variant='creature' useResponsiveSize={useResponsiveSize} />;
 
-export const StatCard: React.FC<Omit<AnimatedCardProps, 'variant'>> = ({ useResponsiveSize = false, ...props }) => (
-  <AnimatedCard {...props} variant="stat" useResponsiveSize={useResponsiveSize} />
-);
+export const StatCard: React.FC<Omit<AnimatedCardProps, 'variant'>> = ({
+  useResponsiveSize = false,
+  ...props
+}) => <AnimatedCard {...props} variant='stat' useResponsiveSize={useResponsiveSize} />;
 
-export const ActionCard: React.FC<Omit<AnimatedCardProps, 'variant'>> = ({ useResponsiveSize = false, ...props }) => (
-  <AnimatedCard {...props} variant="action" useResponsiveSize={useResponsiveSize} />
-);
+export const ActionCard: React.FC<Omit<AnimatedCardProps, 'variant'>> = ({
+  useResponsiveSize = false,
+  ...props
+}) => <AnimatedCard {...props} variant='action' useResponsiveSize={useResponsiveSize} />;
 
 export default AnimatedCard;

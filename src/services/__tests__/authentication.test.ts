@@ -19,15 +19,15 @@ jest.mock('firebase/auth', () => ({
   updateEmail: jest.fn(),
   reauthenticateWithCredential: jest.fn(),
   EmailAuthProvider: {
-    credential: jest.fn()
+    credential: jest.fn(),
   },
   deleteUser: jest.fn(),
   onAuthStateChanged: jest.fn(),
-  getAuth: jest.fn(() => ({ currentUser: null }))
+  getAuth: jest.fn(() => ({ currentUser: null })),
 }));
 
 jest.mock('../../utils/retryManager', () => ({
-  retry: jest.fn((fn) => fn())
+  retry: jest.fn(fn => fn()),
 }));
 
 // Import mocked functions
@@ -44,7 +44,7 @@ import {
   EmailAuthProvider,
   deleteUser,
   onAuthStateChanged,
-  getAuth
+  getAuth,
 } from 'firebase/auth';
 
 describe('AuthenticationService', () => {
@@ -66,7 +66,7 @@ describe('AuthenticationService', () => {
       providerId: 'firebase',
       metadata: {
         creationTime: '2023-01-01T00:00:00.000Z',
-        lastSignInTime: '2023-01-02T00:00:00.000Z'
+        lastSignInTime: '2023-01-02T00:00:00.000Z',
       },
       providerData: [],
       refreshToken: 'mock-refresh-token',
@@ -75,14 +75,14 @@ describe('AuthenticationService', () => {
       getIdToken: jest.fn().mockResolvedValue('mock-id-token'),
       getIdTokenResult: jest.fn(),
       reload: jest.fn(),
-      toJSON: jest.fn()
+      toJSON: jest.fn(),
     } as unknown as User;
 
     // Mock user credential
     mockUserCredential = {
       user: mockUser,
       providerId: 'firebase',
-      operationType: 'signIn'
+      operationType: 'signIn',
     } as UserCredential;
 
     authService = new AuthenticationService();
@@ -110,7 +110,7 @@ describe('AuthenticationService', () => {
       const authError: AuthError = {
         code: 'auth/wrong-password',
         message: 'Wrong password',
-        name: 'FirebaseError'
+        name: 'FirebaseError',
       } as AuthError;
 
       (signInWithEmailAndPassword as jest.Mock).mockRejectedValue(authError);
@@ -126,7 +126,7 @@ describe('AuthenticationService', () => {
       const authError: AuthError = {
         code: 'auth/user-not-found',
         message: 'User not found',
-        name: 'FirebaseError'
+        name: 'FirebaseError',
       } as AuthError;
 
       (signInWithEmailAndPassword as jest.Mock).mockRejectedValue(authError);
@@ -141,7 +141,7 @@ describe('AuthenticationService', () => {
       const authError: AuthError = {
         code: 'auth/network-request-failed',
         message: 'Network request failed',
-        name: 'FirebaseError'
+        name: 'FirebaseError',
       } as AuthError;
 
       (signInWithEmailAndPassword as jest.Mock).mockRejectedValue(authError);
@@ -174,11 +174,7 @@ describe('AuthenticationService', () => {
       (updateProfile as jest.Mock).mockResolvedValue(undefined);
       (sendEmailVerification as jest.Mock).mockResolvedValue(undefined);
 
-      const result = await authService.register(
-        'newuser@example.com',
-        'password123',
-        'New User'
-      );
+      const result = await authService.register('newuser@example.com', 'password123', 'New User');
 
       expect(result.success).toBe(true);
       expect(result.user).toBe(mockUser);
@@ -196,16 +192,12 @@ describe('AuthenticationService', () => {
       const authError: AuthError = {
         code: 'auth/email-already-in-use',
         message: 'Email already in use',
-        name: 'FirebaseError'
+        name: 'FirebaseError',
       } as AuthError;
 
       (createUserWithEmailAndPassword as jest.Mock).mockRejectedValue(authError);
 
-      const result = await authService.register(
-        'existing@example.com',
-        'password123',
-        'User'
-      );
+      const result = await authService.register('existing@example.com', 'password123', 'User');
 
       expect(result.success).toBe(false);
       expect(result.error?.code).toBe(CloudErrorCode.UNKNOWN); // Falls through to generic
@@ -246,17 +238,14 @@ describe('AuthenticationService', () => {
       const result = await authService.resetPassword('test@example.com');
 
       expect(result.success).toBe(true);
-      expect(sendPasswordResetEmail).toHaveBeenCalledWith(
-        expect.any(Object),
-        'test@example.com'
-      );
+      expect(sendPasswordResetEmail).toHaveBeenCalledWith(expect.any(Object), 'test@example.com');
     });
 
     it('should handle user not found for password reset', async () => {
       const authError: AuthError = {
         code: 'auth/user-not-found',
         message: 'User not found',
-        name: 'FirebaseError'
+        name: 'FirebaseError',
       } as AuthError;
 
       (sendPasswordResetEmail as jest.Mock).mockRejectedValue(authError);
@@ -283,7 +272,7 @@ describe('AuthenticationService', () => {
 
       expect(result.success).toBe(true);
       expect(updateProfile).toHaveBeenCalledWith(mockUser, {
-        displayName: 'New Name'
+        displayName: 'New Name',
       });
     });
 
@@ -291,10 +280,7 @@ describe('AuthenticationService', () => {
       (updateEmail as jest.Mock).mockResolvedValue(undefined);
       (sendEmailVerification as jest.Mock).mockResolvedValue(undefined);
 
-      const result = await authService.updateUserEmail(
-        mockUser,
-        'newemail@example.com'
-      );
+      const result = await authService.updateUserEmail(mockUser, 'newemail@example.com');
 
       expect(result.success).toBe(true);
       expect(updateEmail).toHaveBeenCalledWith(mockUser, 'newemail@example.com');
@@ -319,21 +305,15 @@ describe('AuthenticationService', () => {
       const result = await authService.reauthenticate(mockUser, 'password123');
 
       expect(result.success).toBe(true);
-      expect(EmailAuthProvider.credential).toHaveBeenCalledWith(
-        mockUser.email!,
-        'password123'
-      );
-      expect(reauthenticateWithCredential).toHaveBeenCalledWith(
-        mockUser,
-        'mock-credential'
-      );
+      expect(EmailAuthProvider.credential).toHaveBeenCalledWith(mockUser.email!, 'password123');
+      expect(reauthenticateWithCredential).toHaveBeenCalledWith(mockUser, 'mock-credential');
     });
 
     it('should handle invalid credentials during reauthentication', async () => {
       const authError: AuthError = {
         code: 'auth/wrong-password',
         message: 'Wrong password',
-        name: 'FirebaseError'
+        name: 'FirebaseError',
       } as AuthError;
 
       (EmailAuthProvider.credential as jest.Mock).mockReturnValue('mock-credential');
@@ -369,7 +349,7 @@ describe('AuthenticationService', () => {
         uid: 'test-user-123',
         createdAt: expect.any(Date),
         lastLoginAt: expect.any(Date),
-        providerData: []
+        providerData: [],
       });
     });
 
@@ -400,10 +380,7 @@ describe('AuthenticationService', () => {
 
       const unsubscribe = authService.onAuthStateChanged(mockCallback);
 
-      expect(onAuthStateChanged).toHaveBeenCalledWith(
-        expect.any(Object),
-        mockCallback
-      );
+      expect(onAuthStateChanged).toHaveBeenCalledWith(expect.any(Object), mockCallback);
       expect(unsubscribe).toBe(mockUnsubscribe);
     });
 
@@ -443,7 +420,7 @@ describe('AuthenticationService', () => {
       const unknownError: AuthError = {
         code: 'auth/unknown-error',
         message: 'Unknown error',
-        name: 'FirebaseError'
+        name: 'FirebaseError',
       } as AuthError;
 
       (signInWithEmailAndPassword as jest.Mock).mockRejectedValue(unknownError);

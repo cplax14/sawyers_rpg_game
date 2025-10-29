@@ -17,7 +17,7 @@ import {
   LevelingEvent,
   ExperienceHistory,
   MAX_LEVEL,
-  ACTIVITY_BASE_XP
+  ACTIVITY_BASE_XP,
 } from './experienceUtils';
 
 describe('experienceUtils', () => {
@@ -184,7 +184,7 @@ describe('experienceUtils', () => {
       it('should apply single multiplier', () => {
         const baseXP = 100;
         const multipliers: ExperienceMultiplier[] = [
-          { name: 'bonus', multiplier: 1.5, source: 'test' }
+          { name: 'bonus', multiplier: 1.5, source: 'test' },
         ];
 
         const result = ExperienceCalculator.applyMultipliers(baseXP, multipliers);
@@ -196,7 +196,7 @@ describe('experienceUtils', () => {
         const baseXP = 100;
         const multipliers: ExperienceMultiplier[] = [
           { name: 'bonus1', multiplier: 1.5, source: 'test1' },
-          { name: 'bonus2', multiplier: 2.0, source: 'test2' }
+          { name: 'bonus2', multiplier: 2.0, source: 'test2' },
         ];
 
         const result = ExperienceCalculator.applyMultipliers(baseXP, multipliers);
@@ -209,7 +209,7 @@ describe('experienceUtils', () => {
         const now = Date.now();
         const multipliers: ExperienceMultiplier[] = [
           { name: 'active', multiplier: 2.0, source: 'test', expiresAt: now + 10000 },
-          { name: 'expired', multiplier: 3.0, source: 'test', expiresAt: now - 10000 }
+          { name: 'expired', multiplier: 3.0, source: 'test', expiresAt: now - 10000 },
         ];
 
         const result = ExperienceCalculator.applyMultipliers(baseXP, multipliers);
@@ -247,7 +247,7 @@ describe('experienceUtils', () => {
         tracker.addMultiplier({
           name: 'double_xp',
           multiplier: 2.0,
-          source: 'event'
+          source: 'event',
         });
 
         const gain = tracker.addExperienceGain('combat', 50, 'test');
@@ -295,7 +295,7 @@ describe('experienceUtils', () => {
         const multiplier: ExperienceMultiplier = {
           name: 'test_bonus',
           multiplier: 1.5,
-          source: 'test'
+          source: 'test',
         };
 
         tracker.addMultiplier(multiplier);
@@ -314,7 +314,7 @@ describe('experienceUtils', () => {
           name: 'expired',
           multiplier: 2.0,
           source: 'test',
-          expiresAt: Date.now() - 1000 // Expired 1 second ago
+          expiresAt: Date.now() - 1000, // Expired 1 second ago
         };
 
         tracker.addMultiplier(expiredMultiplier);
@@ -353,7 +353,7 @@ describe('experienceUtils', () => {
 
         const breakdown = tracker.getExperienceBreakdown({
           start: Date.now() - 1000,
-          end: Date.now() + 1000
+          end: Date.now() + 1000,
         });
 
         expect(breakdown.combat).toBe(150); // Should not include future XP
@@ -684,7 +684,7 @@ describe('experienceUtils', () => {
 
     it('should handle zero multipliers', () => {
       const result = ExperienceCalculator.applyMultipliers(100, [
-        { name: 'zero', multiplier: 0, source: 'test' }
+        { name: 'zero', multiplier: 0, source: 'test' },
       ]);
 
       expect(result).toBe(0);
@@ -692,7 +692,7 @@ describe('experienceUtils', () => {
 
     it('should handle very large multipliers', () => {
       const result = ExperienceCalculator.applyMultipliers(100, [
-        { name: 'huge', multiplier: 1000, source: 'test' }
+        { name: 'huge', multiplier: 1000, source: 'test' },
       ]);
 
       expect(result).toBe(100000);
@@ -705,7 +705,7 @@ describe('experienceUtils', () => {
         levelEvents: [],
         sessionStart: Date.now(),
         totalGainedThisSession: 0,
-        activitiesThisSession: new Set()
+        activitiesThisSession: new Set(),
       };
 
       expect(() => tracker.importHistory(malformedHistory as any)).not.toThrow();
@@ -757,13 +757,13 @@ describe('experienceUtils', () => {
         name: 'weekend_bonus',
         multiplier: 1.5,
         source: 'event',
-        expiresAt: Date.now() + 10000
+        expiresAt: Date.now() + 10000,
       });
 
       tracker.addMultiplier({
         name: 'premium_boost',
         multiplier: 2.0,
-        source: 'subscription'
+        source: 'subscription',
       });
 
       const gain = tracker.addExperienceGain('quest', 100, 'complex scenario');

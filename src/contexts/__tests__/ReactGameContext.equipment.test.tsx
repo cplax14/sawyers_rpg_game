@@ -43,7 +43,19 @@ function equipmentReducer(state: ReactGameState, action: EquipmentAction): React
       const { slot, itemId: equipItemId } = action.payload;
 
       // Basic validation: slot must be a valid equipment slot
-      const validSlots = ['weapon', 'armor', 'accessory', 'helmet', 'necklace', 'shield', 'gloves', 'boots', 'ring1', 'ring2', 'charm'];
+      const validSlots = [
+        'weapon',
+        'armor',
+        'accessory',
+        'helmet',
+        'necklace',
+        'shield',
+        'gloves',
+        'boots',
+        'ring1',
+        'ring2',
+        'charm',
+      ];
       if (!validSlots.includes(slot)) {
         console.warn(`⚠️ [EQUIP_ITEM] Invalid equipment slot: ${slot}`);
         return state;
@@ -61,9 +73,9 @@ function equipmentReducer(state: ReactGameState, action: EquipmentAction): React
           ...state.player,
           equipment: {
             ...state.player.equipment,
-            [slot]: equipItemId
-          }
-        }
+            [slot]: equipItemId,
+          },
+        },
       };
 
     case 'UNEQUIP_ITEM':
@@ -77,7 +89,19 @@ function equipmentReducer(state: ReactGameState, action: EquipmentAction): React
       const { slot: unequipSlot } = action.payload;
 
       // Basic validation: slot must be a valid equipment slot
-      const validUnequipSlots = ['weapon', 'armor', 'accessory', 'helmet', 'necklace', 'shield', 'gloves', 'boots', 'ring1', 'ring2', 'charm'];
+      const validUnequipSlots = [
+        'weapon',
+        'armor',
+        'accessory',
+        'helmet',
+        'necklace',
+        'shield',
+        'gloves',
+        'boots',
+        'ring1',
+        'ring2',
+        'charm',
+      ];
       if (!validUnequipSlots.includes(unequipSlot)) {
         console.warn(`⚠️ [UNEQUIP_ITEM] Invalid equipment slot: ${unequipSlot}`);
         return state;
@@ -89,9 +113,9 @@ function equipmentReducer(state: ReactGameState, action: EquipmentAction): React
           ...state.player,
           equipment: {
             ...state.player.equipment,
-            [unequipSlot]: null
-          }
-        }
+            [unequipSlot]: null,
+          },
+        },
       };
 
     default:
@@ -107,7 +131,7 @@ function createTestState(equipment: Partial<Equipment> = {}): ReactGameState {
     magicAttack: 10,
     magicDefense: 10,
     speed: 10,
-    accuracy: 10
+    accuracy: 10,
   };
 
   const defaultEquipment: Equipment = {
@@ -122,7 +146,7 @@ function createTestState(equipment: Partial<Equipment> = {}): ReactGameState {
     ring1: null,
     ring2: null,
     charm: null,
-    ...equipment
+    ...equipment,
   };
 
   const player: ReactPlayer = {
@@ -140,7 +164,7 @@ function createTestState(equipment: Partial<Equipment> = {}): ReactGameState {
     baseStats,
     stats: baseStats,
     equipment: defaultEquipment,
-    spells: []
+    spells: [],
   };
 
   return {
@@ -174,7 +198,7 @@ function createTestState(equipment: Partial<Equipment> = {}): ReactGameState {
       enableParticles: true,
       showDamageNumbers: true,
       autoProgressCombat: false,
-      combatSpeed: 'normal' as const
+      combatSpeed: 'normal' as const,
     },
     saveSlots: [],
     currentSaveSlot: null,
@@ -203,9 +227,9 @@ function createTestState(equipment: Partial<Equipment> = {}): ReactGameState {
         search: '',
         showFavorites: false,
         minLevel: undefined,
-        maxLevel: undefined
-      }
-    }
+        maxLevel: undefined,
+      },
+    },
   };
 }
 
@@ -216,7 +240,7 @@ describe('Equipment Reducer - EQUIP_ITEM Action', () => {
       const initialState = createTestState();
       const action: EquipItemAction = {
         type: 'EQUIP_ITEM',
-        payload: { slot: 'weapon', itemId: 'iron_sword' }
+        payload: { slot: 'weapon', itemId: 'iron_sword' },
       };
 
       // Act
@@ -229,11 +253,11 @@ describe('Equipment Reducer - EQUIP_ITEM Action', () => {
     it('should replace existing item in slot', () => {
       // Arrange
       const initialState = createTestState({
-        weapon: 'wooden_sword'
+        weapon: 'wooden_sword',
       });
       const action: EquipItemAction = {
         type: 'EQUIP_ITEM',
-        payload: { slot: 'weapon', itemId: 'iron_sword' }
+        payload: { slot: 'weapon', itemId: 'iron_sword' },
       };
 
       // Act
@@ -250,7 +274,7 @@ describe('Equipment Reducer - EQUIP_ITEM Action', () => {
       const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
       const action = {
         type: 'EQUIP_ITEM' as const,
-        payload: { slot: 'invalid_slot' as EquipmentSlot, itemId: 'iron_sword' }
+        payload: { slot: 'invalid_slot' as EquipmentSlot, itemId: 'iron_sword' },
       };
 
       // Act
@@ -271,7 +295,7 @@ describe('Equipment Reducer - EQUIP_ITEM Action', () => {
       const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
       const action: EquipItemAction = {
         type: 'EQUIP_ITEM',
-        payload: { slot: 'weapon', itemId: '' }
+        payload: { slot: 'weapon', itemId: '' },
       };
 
       // Act
@@ -292,7 +316,7 @@ describe('Equipment Reducer - EQUIP_ITEM Action', () => {
       const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
       const action: EquipItemAction = {
         type: 'EQUIP_ITEM',
-        payload: { slot: 'weapon', itemId: '   ' }
+        payload: { slot: 'weapon', itemId: '   ' },
       };
 
       // Act
@@ -314,7 +338,7 @@ describe('Equipment Reducer - EQUIP_ITEM Action', () => {
       const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
       const action: EquipItemAction = {
         type: 'EQUIP_ITEM',
-        payload: { slot: 'weapon', itemId: 'iron_sword' }
+        payload: { slot: 'weapon', itemId: 'iron_sword' },
       };
 
       // Act
@@ -334,7 +358,7 @@ describe('Equipment Reducer - EQUIP_ITEM Action', () => {
       const initialState = createTestState();
       const action: EquipItemAction = {
         type: 'EQUIP_ITEM',
-        payload: { slot: 'weapon', itemId: 'iron_sword' }
+        payload: { slot: 'weapon', itemId: 'iron_sword' },
       };
 
       // Act
@@ -350,11 +374,11 @@ describe('Equipment Reducer - EQUIP_ITEM Action', () => {
       // Arrange
       const initialState = createTestState({
         helmet: 'iron_helmet',
-        armor: 'leather_armor'
+        armor: 'leather_armor',
       });
       const action: EquipItemAction = {
         type: 'EQUIP_ITEM',
-        payload: { slot: 'weapon', itemId: 'iron_sword' }
+        payload: { slot: 'weapon', itemId: 'iron_sword' },
       };
 
       // Act
@@ -375,15 +399,24 @@ describe('Equipment Reducer - EQUIP_ITEM Action', () => {
       // Arrange
       const initialState = createTestState();
       const validSlots: EquipmentSlot[] = [
-        'weapon', 'armor', 'accessory', 'helmet', 'necklace',
-        'shield', 'gloves', 'boots', 'ring1', 'ring2', 'charm'
+        'weapon',
+        'armor',
+        'accessory',
+        'helmet',
+        'necklace',
+        'shield',
+        'gloves',
+        'boots',
+        'ring1',
+        'ring2',
+        'charm',
       ];
 
       // Act & Assert - Test each slot
-      validSlots.forEach((slot) => {
+      validSlots.forEach(slot => {
         const action: EquipItemAction = {
           type: 'EQUIP_ITEM',
-          payload: { slot, itemId: `test_${slot}` }
+          payload: { slot, itemId: `test_${slot}` },
         };
         const newState = equipmentReducer(initialState, action);
         expect(newState.player?.equipment[slot]).toBe(`test_${slot}`);
@@ -397,13 +430,13 @@ describe('Equipment Reducer - EQUIP_ITEM Action', () => {
       // Act - Equip ring1
       let newState = equipmentReducer(initialState, {
         type: 'EQUIP_ITEM',
-        payload: { slot: 'ring1', itemId: 'ruby_ring' }
+        payload: { slot: 'ring1', itemId: 'ruby_ring' },
       });
 
       // Act - Equip ring2
       newState = equipmentReducer(newState, {
         type: 'EQUIP_ITEM',
-        payload: { slot: 'ring2', itemId: 'sapphire_ring' }
+        payload: { slot: 'ring2', itemId: 'sapphire_ring' },
       });
 
       // Assert
@@ -418,11 +451,11 @@ describe('Equipment Reducer - UNEQUIP_ITEM Action', () => {
     it('should remove item from slot', () => {
       // Arrange
       const initialState = createTestState({
-        weapon: 'iron_sword'
+        weapon: 'iron_sword',
       });
       const action: UnequipItemAction = {
         type: 'UNEQUIP_ITEM',
-        payload: { slot: 'weapon' }
+        payload: { slot: 'weapon' },
       };
 
       // Act
@@ -436,11 +469,11 @@ describe('Equipment Reducer - UNEQUIP_ITEM Action', () => {
       // Arrange
       const initialState = createTestState({
         helmet: 'iron_helmet',
-        armor: 'leather_armor'
+        armor: 'leather_armor',
       });
       const action: UnequipItemAction = {
         type: 'UNEQUIP_ITEM',
-        payload: { slot: 'helmet' }
+        payload: { slot: 'helmet' },
       };
 
       // Act
@@ -454,11 +487,11 @@ describe('Equipment Reducer - UNEQUIP_ITEM Action', () => {
     it('should handle empty slot (no-op)', () => {
       // Arrange
       const initialState = createTestState({
-        weapon: null // Already empty
+        weapon: null, // Already empty
       });
       const action: UnequipItemAction = {
         type: 'UNEQUIP_ITEM',
-        payload: { slot: 'weapon' }
+        payload: { slot: 'weapon' },
       };
 
       // Act
@@ -475,7 +508,7 @@ describe('Equipment Reducer - UNEQUIP_ITEM Action', () => {
       const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
       const action = {
         type: 'UNEQUIP_ITEM' as const,
-        payload: { slot: 'invalid_slot' as EquipmentSlot }
+        payload: { slot: 'invalid_slot' as EquipmentSlot },
       };
 
       // Act
@@ -497,7 +530,7 @@ describe('Equipment Reducer - UNEQUIP_ITEM Action', () => {
       const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
       const action: UnequipItemAction = {
         type: 'UNEQUIP_ITEM',
-        payload: { slot: 'weapon' }
+        payload: { slot: 'weapon' },
       };
 
       // Act
@@ -515,11 +548,11 @@ describe('Equipment Reducer - UNEQUIP_ITEM Action', () => {
     it('should update equipment state immutably', () => {
       // Arrange
       const initialState = createTestState({
-        weapon: 'iron_sword'
+        weapon: 'iron_sword',
       });
       const action: UnequipItemAction = {
         type: 'UNEQUIP_ITEM',
-        payload: { slot: 'weapon' }
+        payload: { slot: 'weapon' },
       };
 
       // Act
@@ -536,11 +569,11 @@ describe('Equipment Reducer - UNEQUIP_ITEM Action', () => {
       const initialState = createTestState({
         weapon: 'iron_sword',
         helmet: 'iron_helmet',
-        armor: 'leather_armor'
+        armor: 'leather_armor',
       });
       const action: UnequipItemAction = {
         type: 'UNEQUIP_ITEM',
-        payload: { slot: 'weapon' }
+        payload: { slot: 'weapon' },
       };
 
       // Act
@@ -569,18 +602,27 @@ describe('Equipment Reducer - UNEQUIP_ITEM Action', () => {
         boots: 'test_boots',
         ring1: 'test_ring1',
         ring2: 'test_ring2',
-        charm: 'test_charm'
+        charm: 'test_charm',
       });
       const validSlots: EquipmentSlot[] = [
-        'weapon', 'armor', 'accessory', 'helmet', 'necklace',
-        'shield', 'gloves', 'boots', 'ring1', 'ring2', 'charm'
+        'weapon',
+        'armor',
+        'accessory',
+        'helmet',
+        'necklace',
+        'shield',
+        'gloves',
+        'boots',
+        'ring1',
+        'ring2',
+        'charm',
       ];
 
       // Act & Assert - Test each slot
-      validSlots.forEach((slot) => {
+      validSlots.forEach(slot => {
         const action: UnequipItemAction = {
           type: 'UNEQUIP_ITEM',
-          payload: { slot }
+          payload: { slot },
         };
         const newState = equipmentReducer(initialState, action);
         expect(newState.player?.equipment[slot]).toBe(null);
@@ -591,13 +633,13 @@ describe('Equipment Reducer - UNEQUIP_ITEM Action', () => {
       // Arrange
       const initialState = createTestState({
         ring1: 'ruby_ring',
-        ring2: 'sapphire_ring'
+        ring2: 'sapphire_ring',
       });
 
       // Act - Unequip ring1 only
       const newState = equipmentReducer(initialState, {
         type: 'UNEQUIP_ITEM',
-        payload: { slot: 'ring1' }
+        payload: { slot: 'ring1' },
       });
 
       // Assert
@@ -612,14 +654,14 @@ describe('Equipment Reducer - UNEQUIP_ITEM Action', () => {
       // Act - Equip weapon
       let newState = equipmentReducer(initialState, {
         type: 'EQUIP_ITEM',
-        payload: { slot: 'weapon', itemId: 'iron_sword' }
+        payload: { slot: 'weapon', itemId: 'iron_sword' },
       });
       expect(newState.player?.equipment.weapon).toBe('iron_sword');
 
       // Act - Unequip weapon
       newState = equipmentReducer(newState, {
         type: 'UNEQUIP_ITEM',
-        payload: { slot: 'weapon' }
+        payload: { slot: 'weapon' },
       });
 
       // Assert
@@ -636,17 +678,17 @@ describe('Equipment Reducer - Edge Cases', () => {
     // Act - Equip, unequip, equip different item
     let newState = equipmentReducer(initialState, {
       type: 'EQUIP_ITEM',
-      payload: { slot: 'weapon', itemId: 'wooden_sword' }
+      payload: { slot: 'weapon', itemId: 'wooden_sword' },
     });
 
     newState = equipmentReducer(newState, {
       type: 'UNEQUIP_ITEM',
-      payload: { slot: 'weapon' }
+      payload: { slot: 'weapon' },
     });
 
     newState = equipmentReducer(newState, {
       type: 'EQUIP_ITEM',
-      payload: { slot: 'weapon', itemId: 'iron_sword' }
+      payload: { slot: 'weapon', itemId: 'iron_sword' },
     });
 
     // Assert
@@ -660,17 +702,17 @@ describe('Equipment Reducer - Edge Cases', () => {
     // Act - Equip multiple slots
     let newState = equipmentReducer(initialState, {
       type: 'EQUIP_ITEM',
-      payload: { slot: 'weapon', itemId: 'iron_sword' }
+      payload: { slot: 'weapon', itemId: 'iron_sword' },
     });
 
     newState = equipmentReducer(newState, {
       type: 'EQUIP_ITEM',
-      payload: { slot: 'helmet', itemId: 'iron_helmet' }
+      payload: { slot: 'helmet', itemId: 'iron_helmet' },
     });
 
     newState = equipmentReducer(newState, {
       type: 'EQUIP_ITEM',
-      payload: { slot: 'armor', itemId: 'leather_armor' }
+      payload: { slot: 'armor', itemId: 'leather_armor' },
     });
 
     // Assert - All slots equipped correctly

@@ -8,7 +8,7 @@ import {
   QueuedOperation,
   QueueStatus,
   QueueOperationType,
-  offlineQueueManager
+  offlineQueueManager,
 } from '../utils/offlineQueue';
 import { CloudError } from '../utils/cloudErrors';
 import { useNetworkStatus } from './useNetworkStatus';
@@ -79,13 +79,16 @@ export function useOfflineQueue(options: UseOfflineQueueOptions = {}): UseOfflin
     return unsubscribe;
   }, []);
 
-  const enqueue = useCallback((
-    type: QueueOperationType,
-    data: any,
-    options?: Parameters<typeof offlineQueueManager.enqueue>[2]
-  ): string => {
-    return offlineQueueManager.enqueue(type, data, options);
-  }, []);
+  const enqueue = useCallback(
+    (
+      type: QueueOperationType,
+      data: any,
+      options?: Parameters<typeof offlineQueueManager.enqueue>[2]
+    ): string => {
+      return offlineQueueManager.enqueue(type, data, options);
+    },
+    []
+  );
 
   const dequeue = useCallback((operationId: string): boolean => {
     return offlineQueueManager.dequeue(operationId);
@@ -133,7 +136,7 @@ export function useOfflineQueue(options: UseOfflineQueueOptions = {}): UseOfflin
     getOperation,
     getOperationsByType,
     getOperationsByUser,
-    canProcessNow
+    canProcessNow,
   };
 }
 
@@ -144,98 +147,124 @@ export function useOfflineSave(userId: string) {
   const { enqueue, getOperationsByUser } = useOfflineQueue();
   const { isOnline } = useNetworkStatus();
 
-  const enqueueSave = useCallback((
-    slotNumber: number,
-    saveName: string,
-    gameState: any,
-    screenshot?: string,
-    options?: {
-      priority?: number;
-      onSuccess?: (result: any) => void;
-      onError?: (error: CloudError) => void;
-    }
-  ): string => {
-    return enqueue('save', {
-      slotNumber,
-      saveName,
-      gameState,
-      screenshot
-    }, {
-      priority: options?.priority ?? 8, // High priority for saves
-      metadata: {
-        userId,
-        slotNumber,
-        saveName,
-        description: `Save game to slot ${slotNumber}`
-      },
-      onSuccess: options?.onSuccess,
-      onError: options?.onError
-    });
-  }, [enqueue, userId]);
+  const enqueueSave = useCallback(
+    (
+      slotNumber: number,
+      saveName: string,
+      gameState: any,
+      screenshot?: string,
+      options?: {
+        priority?: number;
+        onSuccess?: (result: any) => void;
+        onError?: (error: CloudError) => void;
+      }
+    ): string => {
+      return enqueue(
+        'save',
+        {
+          slotNumber,
+          saveName,
+          gameState,
+          screenshot,
+        },
+        {
+          priority: options?.priority ?? 8, // High priority for saves
+          metadata: {
+            userId,
+            slotNumber,
+            saveName,
+            description: `Save game to slot ${slotNumber}`,
+          },
+          onSuccess: options?.onSuccess,
+          onError: options?.onError,
+        }
+      );
+    },
+    [enqueue, userId]
+  );
 
-  const enqueueLoad = useCallback((
-    slotNumber: number,
-    options?: {
-      priority?: number;
-      onSuccess?: (result: any) => void;
-      onError?: (error: CloudError) => void;
-    }
-  ): string => {
-    return enqueue('load', {
-      slotNumber
-    }, {
-      priority: options?.priority ?? 7, // High priority for loads
-      metadata: {
-        userId,
-        slotNumber,
-        description: `Load game from slot ${slotNumber}`
-      },
-      onSuccess: options?.onSuccess,
-      onError: options?.onError
-    });
-  }, [enqueue, userId]);
+  const enqueueLoad = useCallback(
+    (
+      slotNumber: number,
+      options?: {
+        priority?: number;
+        onSuccess?: (result: any) => void;
+        onError?: (error: CloudError) => void;
+      }
+    ): string => {
+      return enqueue(
+        'load',
+        {
+          slotNumber,
+        },
+        {
+          priority: options?.priority ?? 7, // High priority for loads
+          metadata: {
+            userId,
+            slotNumber,
+            description: `Load game from slot ${slotNumber}`,
+          },
+          onSuccess: options?.onSuccess,
+          onError: options?.onError,
+        }
+      );
+    },
+    [enqueue, userId]
+  );
 
-  const enqueueDelete = useCallback((
-    slotNumber: number,
-    options?: {
-      priority?: number;
-      onSuccess?: (result: any) => void;
-      onError?: (error: CloudError) => void;
-    }
-  ): string => {
-    return enqueue('delete', {
-      slotNumber
-    }, {
-      priority: options?.priority ?? 5, // Medium priority for deletes
-      metadata: {
-        userId,
-        slotNumber,
-        description: `Delete save from slot ${slotNumber}`
-      },
-      onSuccess: options?.onSuccess,
-      onError: options?.onError
-    });
-  }, [enqueue, userId]);
+  const enqueueDelete = useCallback(
+    (
+      slotNumber: number,
+      options?: {
+        priority?: number;
+        onSuccess?: (result: any) => void;
+        onError?: (error: CloudError) => void;
+      }
+    ): string => {
+      return enqueue(
+        'delete',
+        {
+          slotNumber,
+        },
+        {
+          priority: options?.priority ?? 5, // Medium priority for deletes
+          metadata: {
+            userId,
+            slotNumber,
+            description: `Delete save from slot ${slotNumber}`,
+          },
+          onSuccess: options?.onSuccess,
+          onError: options?.onError,
+        }
+      );
+    },
+    [enqueue, userId]
+  );
 
-  const enqueueSync = useCallback((
-    options?: {
+  const enqueueSync = useCallback(
+    (options?: {
       priority?: number;
       onSuccess?: (result: any) => void;
       onError?: (error: CloudError) => void;
-    }
-  ): string => {
-    return enqueue('sync', {
-      userId
-    }, {
-      priority: options?.priority ?? 3, // Lower priority for sync
-      metadata: {
-        userId,
-        description: 'Sync all saves with cloud'
-      },
-      onSuccess: options?.onSuccess,
-      onError: options?.onError
-    });
-  }, [enqueue, userId]);
+    }): string => {
+      return enqueue(
+        'sync',
+        {
+          userId,
+        },
+        {
+          priority: options?.priority ?? 3, // Lower priority for sync
+          metadata: {
+            userId,
+            description: 'Sync all saves with cloud',
+          },
+          onSuccess: options?.onSuccess,
+          onError: options?.onError,
+        }
+      );
+    },
+    [enqueue, userId]
+  );
 
   const pendingSaves = getOperationsByUser(userId).filter(op => op.type === 'save');
   const pendingLoads = getOperationsByUser(userId).filter(op => op.type === 'load');
@@ -251,8 +280,9 @@ export function useOfflineSave(userId: string) {
     pendingLoads,
     pendingDeletes,
     pendingSyncs,
-    hasPendingOperations: pendingSaves.length + pendingLoads.length + pendingDeletes.length + pendingSyncs.length > 0,
-    isOnline
+    hasPendingOperations:
+      pendingSaves.length + pendingLoads.length + pendingDeletes.length + pendingSyncs.length > 0,
+    isOnline,
   };
 }
 
@@ -286,14 +316,15 @@ export function useOperationStatus(operationId: string | undefined) {
       isProcessing: false,
       isFailed: false,
       isCompleted: false,
-      progress: 0
+      progress: 0,
     };
   }
 
   const isPending = operation.retryCount === 0;
-  const isProcessing = queueStatus.isProcessing &&
-                      operation.retryCount > 0 &&
-                      operation.retryCount < operation.maxRetries;
+  const isProcessing =
+    queueStatus.isProcessing &&
+    operation.retryCount > 0 &&
+    operation.retryCount < operation.maxRetries;
   const isFailed = operation.retryCount >= operation.maxRetries;
   const isCompleted = !operation; // Operation is removed from queue when completed
 
@@ -303,6 +334,6 @@ export function useOperationStatus(operationId: string | undefined) {
     isProcessing,
     isFailed,
     isCompleted,
-    progress: operation.retryCount / Math.max(operation.maxRetries, 1)
+    progress: operation.retryCount / Math.max(operation.maxRetries, 1),
   };
 }

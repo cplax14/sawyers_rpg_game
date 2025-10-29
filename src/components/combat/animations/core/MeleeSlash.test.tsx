@@ -11,7 +11,7 @@ describe('MeleeSlash', () => {
     endX: 200,
     endY: 150,
     color: '#ff0000',
-    duration: 600
+    duration: 600,
   };
 
   describe('Rendering', () => {
@@ -21,32 +21,24 @@ describe('MeleeSlash', () => {
     });
 
     it('should render with slash type', () => {
-      const { container } = render(
-        <MeleeSlash {...defaultProps} slashType="slash" />
-      );
+      const { container } = render(<MeleeSlash {...defaultProps} slashType='slash' />);
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('should render with stab type', () => {
-      const { container } = render(
-        <MeleeSlash {...defaultProps} slashType="stab" />
-      );
+      const { container } = render(<MeleeSlash {...defaultProps} slashType='stab' />);
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('should render with chop type', () => {
-      const { container } = render(
-        <MeleeSlash {...defaultProps} slashType="chop" />
-      );
+      const { container } = render(<MeleeSlash {...defaultProps} slashType='chop' />);
       expect(container.firstChild).toBeInTheDocument();
     });
   });
 
   describe('Prop Validation', () => {
     it('should handle different colors correctly', () => {
-      const { container } = render(
-        <MeleeSlash {...defaultProps} color="#00ff00" />
-      );
+      const { container } = render(<MeleeSlash {...defaultProps} color='#00ff00' />);
       const element = container.firstChild as HTMLElement;
       expect(element).toBeInTheDocument();
       // Color should be in the inline styles
@@ -55,25 +47,19 @@ describe('MeleeSlash', () => {
 
     it('should handle custom trail width', () => {
       const customWidth = 10;
-      const { container } = render(
-        <MeleeSlash {...defaultProps} trailWidth={customWidth} />
-      );
+      const { container } = render(<MeleeSlash {...defaultProps} trailWidth={customWidth} />);
       const element = container.firstChild as HTMLElement;
       expect(element.style.height).toBe(`${customWidth}px`);
     });
 
     it('should use default trail width when not provided', () => {
-      const { container } = render(
-        <MeleeSlash {...defaultProps} />
-      );
+      const { container } = render(<MeleeSlash {...defaultProps} />);
       const element = container.firstChild as HTMLElement;
       expect(element.style.height).toBe('4px'); // default trailWidth
     });
 
     it('should handle different durations', () => {
-      const { container } = render(
-        <MeleeSlash {...defaultProps} duration={1200} />
-      );
+      const { container } = render(<MeleeSlash {...defaultProps} duration={1200} />);
       expect(container.firstChild).toBeInTheDocument();
     });
   });
@@ -103,13 +89,7 @@ describe('MeleeSlash', () => {
 
     it('should calculate distance correctly', () => {
       const { container } = render(
-        <MeleeSlash
-          {...defaultProps}
-          startX={0}
-          startY={0}
-          endX={300}
-          endY={400}
-        />
+        <MeleeSlash {...defaultProps} startX={0} startY={0} endX={300} endY={400} />
       );
       const element = container.firstChild as HTMLElement;
       // Distance = sqrt(300^2 + 400^2) = 500
@@ -119,27 +99,21 @@ describe('MeleeSlash', () => {
     });
 
     it('should position slash type correctly', () => {
-      const { container } = render(
-        <MeleeSlash {...defaultProps} slashType="slash" />
-      );
+      const { container } = render(<MeleeSlash {...defaultProps} slashType='slash' />);
       const element = container.firstChild as HTMLElement;
       expect(element.style.left).toBe('100px');
       expect(element.style.top).toBe('100px');
     });
 
     it('should position stab type at origin', () => {
-      const { container } = render(
-        <MeleeSlash {...defaultProps} slashType="stab" />
-      );
+      const { container } = render(<MeleeSlash {...defaultProps} slashType='stab' />);
       const element = container.firstChild as HTMLElement;
       expect(element.style.left).toBe('0px');
       expect(element.style.top).toBe('0px');
     });
 
     it('should position chop type correctly', () => {
-      const { container } = render(
-        <MeleeSlash {...defaultProps} slashType="chop" />
-      );
+      const { container } = render(<MeleeSlash {...defaultProps} slashType='chop' />);
       const element = container.firstChild as HTMLElement;
       expect(element.style.left).toBe('100px');
       expect(element.style.top).toBe('100px');
@@ -149,9 +123,7 @@ describe('MeleeSlash', () => {
   describe('Visual Effects', () => {
     it('should apply glow effects with correct color', () => {
       const color = '#ff00ff';
-      const { container } = render(
-        <MeleeSlash {...defaultProps} color={color} />
-      );
+      const { container } = render(<MeleeSlash {...defaultProps} color={color} />);
       const element = container.firstChild as HTMLElement;
       expect(element.style.boxShadow).toContain(color);
     });
@@ -184,62 +156,38 @@ describe('MeleeSlash', () => {
   describe('Edge Cases', () => {
     it('should handle zero distance (same start and end)', () => {
       const { container } = render(
-        <MeleeSlash
-          {...defaultProps}
-          startX={100}
-          startY={100}
-          endX={100}
-          endY={100}
-        />
+        <MeleeSlash {...defaultProps} startX={100} startY={100} endX={100} endY={100} />
       );
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('should handle negative coordinates', () => {
       const { container } = render(
-        <MeleeSlash
-          {...defaultProps}
-          startX={-50}
-          startY={-50}
-          endX={50}
-          endY={50}
-        />
+        <MeleeSlash {...defaultProps} startX={-50} startY={-50} endX={50} endY={50} />
       );
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('should handle very large coordinates', () => {
       const { container } = render(
-        <MeleeSlash
-          {...defaultProps}
-          startX={10000}
-          startY={10000}
-          endX={20000}
-          endY={20000}
-        />
+        <MeleeSlash {...defaultProps} startX={10000} startY={10000} endX={20000} endY={20000} />
       );
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('should handle zero trail width', () => {
-      const { container } = render(
-        <MeleeSlash {...defaultProps} trailWidth={0} />
-      );
+      const { container } = render(<MeleeSlash {...defaultProps} trailWidth={0} />);
       const element = container.firstChild as HTMLElement;
       expect(element.style.height).toBe('0px');
     });
 
     it('should handle very short duration', () => {
-      const { container } = render(
-        <MeleeSlash {...defaultProps} duration={1} />
-      );
+      const { container } = render(<MeleeSlash {...defaultProps} duration={1} />);
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('should handle very long duration', () => {
-      const { container } = render(
-        <MeleeSlash {...defaultProps} duration={10000} />
-      );
+      const { container } = render(<MeleeSlash {...defaultProps} duration={10000} />);
       expect(container.firstChild).toBeInTheDocument();
     });
   });
@@ -255,7 +203,7 @@ describe('MeleeSlash', () => {
       const { container } = render(
         <MeleeSlash
           {...defaultProps}
-          slashType="stab"
+          slashType='stab'
           startX={startX}
           startY={startY}
           endX={endX}
@@ -277,7 +225,7 @@ describe('MeleeSlash', () => {
       const slashContainer = render(
         <MeleeSlash
           {...defaultProps}
-          slashType="slash"
+          slashType='slash'
           startX={startX}
           startY={startY}
           endX={endX}
@@ -288,7 +236,7 @@ describe('MeleeSlash', () => {
       const chopContainer = render(
         <MeleeSlash
           {...defaultProps}
-          slashType="chop"
+          slashType='chop'
           startX={startX}
           startY={startY}
           endX={endX}

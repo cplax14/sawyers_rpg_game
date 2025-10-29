@@ -10,7 +10,7 @@ import {
   SaveValidationResult,
   SaveSystemConfig,
   SaveOperationResult,
-  SaveSyncStatus
+  SaveSyncStatus,
 } from '../types/saveSystem';
 
 export class IndexedDbManager {
@@ -36,11 +36,11 @@ export class IndexedDbManager {
           console.error('❌ IndexedDB open failed:', {
             error: request.error,
             errorMessage,
-            readyState: request.readyState
+            readyState: request.readyState,
           });
           reject({
             success: false,
-            error: new Error(`Failed to open IndexedDB: ${errorMessage}`)
+            error: new Error(`Failed to open IndexedDB: ${errorMessage}`),
           });
         };
 
@@ -48,24 +48,25 @@ export class IndexedDbManager {
           this.db = request.result;
 
           // Set up error handling
-          this.db.onerror = (event) => {
+          this.db.onerror = event => {
             const target = event.target as IDBRequest;
-            const errorMessage = target.error?.message || target.error?.name || 'Unknown database error';
+            const errorMessage =
+              target.error?.message || target.error?.name || 'Unknown database error';
             console.error('❌ IndexedDB error:', {
               error: target.error,
               errorMessage,
               errorCode: target.error?.name,
-              transaction: (event.target as any).transaction?.mode
+              transaction: (event.target as any).transaction?.mode,
             });
           };
 
           resolve({
             success: true,
-            data: undefined
+            data: undefined,
           });
         };
 
-        request.onupgradeneeded = (event) => {
+        request.onupgradeneeded = event => {
           const db = (event.target as IDBOpenDBRequest).result;
 
           // Create save data store
@@ -98,7 +99,7 @@ export class IndexedDbManager {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error : new Error('Unknown initialization error')
+        error: error instanceof Error ? error : new Error('Unknown initialization error'),
       };
     }
   }
@@ -114,7 +115,7 @@ export class IndexedDbManager {
     if (!this.db) {
       return {
         success: false,
-        error: new Error('Database not initialized')
+        error: new Error('Database not initialized'),
       };
     }
 
@@ -125,7 +126,7 @@ export class IndexedDbManager {
       if (slotNumber < 0 || slotNumber >= this.config.maxSaveSlots) {
         return {
           success: false,
-          error: new Error(`Invalid slot number: ${slotNumber}`)
+          error: new Error(`Invalid slot number: ${slotNumber}`),
         };
       }
 
@@ -146,7 +147,9 @@ export class IndexedDbManager {
       if (dataSize > maxSizeBytes) {
         return {
           success: false,
-          error: new Error(`Save data too large: ${(dataSize / 1024 / 1024).toFixed(2)}MB (max: ${this.config.maxSaveFileSizeMB}MB)`)
+          error: new Error(
+            `Save data too large: ${(dataSize / 1024 / 1024).toFixed(2)}MB (max: ${this.config.maxSaveFileSizeMB}MB)`
+          ),
         };
       }
 
@@ -168,12 +171,12 @@ export class IndexedDbManager {
       const metadataStore = transaction.objectStore('metadata');
 
       // Add transaction error handler
-      transaction.onerror = (event) => {
+      transaction.onerror = event => {
         const target = event.target as IDBRequest;
         console.error('❌ Transaction error:', {
           error: target.error,
           message: target.error?.message,
-          name: target.error?.name
+          name: target.error?.name,
         });
       };
 
@@ -192,32 +195,35 @@ export class IndexedDbManager {
       }
 
       // Now save the new data
-      await this.promisifyRequest(saveStore.put({
-        id: saveId,
-        slotNumber,
-        ...processedData
-      }));
+      await this.promisifyRequest(
+        saveStore.put({
+          id: saveId,
+          slotNumber,
+          ...processedData,
+        })
+      );
 
       // Save metadata separately for quick access
-      await this.promisifyRequest(metadataStore.put({
-        id: saveId,
-        slotNumber,
-        ...processedData.metadata,
-        playerSummary: processedData.playerSummary,
-        progressSummary: processedData.progressSummary
-      }));
+      await this.promisifyRequest(
+        metadataStore.put({
+          id: saveId,
+          slotNumber,
+          ...processedData.metadata,
+          playerSummary: processedData.playerSummary,
+          progressSummary: processedData.progressSummary,
+        })
+      );
 
       onProgress?.(100, 'Save completed');
 
       return {
         success: true,
-        data: processedData
+        data: processedData,
       };
-
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error : new Error('Unknown save error')
+        error: error instanceof Error ? error : new Error('Unknown save error'),
       };
     }
   }
@@ -232,7 +238,7 @@ export class IndexedDbManager {
     if (!this.db) {
       return {
         success: false,
-        error: new Error('Database not initialized')
+        error: new Error('Database not initialized'),
       };
     }
 
@@ -253,20 +259,22 @@ export class IndexedDbManager {
       if (!saveData) {
         return {
           success: false,
-          error: new Error(`No save data found in slot ${slotNumber}`)
+          error: new Error(`No save data found in slot ${slotNumber}`),
         };
       }
 
       // Update last accessed time BEFORE doing any async processing
       // This ensures the transaction doesn't complete before we update metadata
       saveData.metadata.lastAccessed = new Date();
-      await this.promisifyRequest(metadataStore.put({
-        id: saveId,
-        slotNumber,
-        ...saveData.metadata,
-        playerSummary: saveData.playerSummary,
-        progressSummary: saveData.progressSummary
-      }));
+      await this.promisifyRequest(
+        metadataStore.put({
+          id: saveId,
+          slotNumber,
+          ...saveData.metadata,
+          playerSummary: saveData.playerSummary,
+          progressSummary: saveData.progressSummary,
+        })
+      );
 
       onProgress?.(60, 'Validating save data...');
 
@@ -275,7 +283,7 @@ export class IndexedDbManager {
       if (!validationResult.isValid) {
         return {
           success: false,
-          error: new Error(`Save data validation failed: ${validationResult.errors.join(', ')}`)
+          error: new Error(`Save data validation failed: ${validationResult.errors.join(', ')}`),
         };
       }
 
@@ -292,13 +300,12 @@ export class IndexedDbManager {
       return {
         success: true,
         data: processedData,
-        warnings: validationResult.warnings
+        warnings: validationResult.warnings,
       };
-
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error : new Error('Unknown load error')
+        error: error instanceof Error ? error : new Error('Unknown load error'),
       };
     }
   }
@@ -310,7 +317,7 @@ export class IndexedDbManager {
     if (!this.db) {
       return {
         success: false,
-        error: new Error('Database not initialized')
+        error: new Error('Database not initialized'),
       };
     }
 
@@ -325,15 +332,14 @@ export class IndexedDbManager {
       await Promise.all([
         this.promisifyRequest(saveStore.delete(saveId)),
         this.promisifyRequest(metadataStore.delete(saveId)),
-        this.promisifyRequest(syncStateStore.delete(slotNumber))
+        this.promisifyRequest(syncStateStore.delete(slotNumber)),
       ]);
 
       return { success: true };
-
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error : new Error('Unknown delete error')
+        error: error instanceof Error ? error : new Error('Unknown delete error'),
       };
     }
   }
@@ -345,7 +351,7 @@ export class IndexedDbManager {
     if (!this.db) {
       return {
         success: false,
-        error: new Error('Database not initialized')
+        error: new Error('Database not initialized'),
       };
     }
 
@@ -367,7 +373,7 @@ export class IndexedDbManager {
           isLocalAvailable: false,
           isCloudAvailable: false,
           syncStatus: SaveSyncStatus.LOCAL_ONLY,
-          lastError: null
+          lastError: null,
         });
       }
 
@@ -392,7 +398,7 @@ export class IndexedDbManager {
             isLocalAvailable: true,
             isCloudAvailable: false, // Will be updated by cloud sync manager
             syncStatus: SaveSyncStatus.LOCAL_ONLY,
-            lastError: null
+            lastError: null,
           };
         }
       });
@@ -409,13 +415,12 @@ export class IndexedDbManager {
 
       return {
         success: true,
-        data: slotInfo
+        data: slotInfo,
       };
-
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error : new Error('Unknown error getting slot info')
+        error: error instanceof Error ? error : new Error('Unknown error getting slot info'),
       };
     }
   }
@@ -423,7 +428,9 @@ export class IndexedDbManager {
   /**
    * Get storage quota information
    */
-  async getStorageQuota(): Promise<SaveOperationResult<{used: number, available: number, total: number}>> {
+  async getStorageQuota(): Promise<
+    SaveOperationResult<{ used: number; available: number; total: number }>
+  > {
     try {
       if ('storage' in navigator && 'estimate' in navigator.storage) {
         const estimate = await navigator.storage.estimate();
@@ -432,8 +439,8 @@ export class IndexedDbManager {
           data: {
             used: estimate.usage || 0,
             total: estimate.quota || 0,
-            available: (estimate.quota || 0) - (estimate.usage || 0)
-          }
+            available: (estimate.quota || 0) - (estimate.usage || 0),
+          },
         };
       } else {
         // Fallback estimation
@@ -442,14 +449,14 @@ export class IndexedDbManager {
           data: {
             used: 0,
             total: this.config.localStorageQuotaMB * 1024 * 1024,
-            available: this.config.localStorageQuotaMB * 1024 * 1024
-          }
+            available: this.config.localStorageQuotaMB * 1024 * 1024,
+          },
         };
       }
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error : new Error('Could not get storage quota')
+        error: error instanceof Error ? error : new Error('Could not get storage quota'),
       };
     }
   }
@@ -466,7 +473,7 @@ export class IndexedDbManager {
     if (!this.db) {
       return {
         success: false,
-        error: new Error('Database not initialized')
+        error: new Error('Database not initialized'),
       };
     }
 
@@ -479,19 +486,19 @@ export class IndexedDbManager {
         status,
         isCloudAvailable,
         lastError,
-        lastSyncAttempt: new Date().toISOString()
+        lastSyncAttempt: new Date().toISOString(),
       };
 
       await this.promisifyRequest(syncStateStore.put(syncStateData));
 
       return {
         success: true,
-        data: undefined
+        data: undefined,
       };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error : new Error('Failed to update sync status')
+        error: error instanceof Error ? error : new Error('Failed to update sync status'),
       };
     }
   }
@@ -499,11 +506,11 @@ export class IndexedDbManager {
   /**
    * Cleanup old saves and optimize database
    */
-  async cleanup(): Promise<SaveOperationResult<{deletedCount: number, reclaimedBytes: number}>> {
+  async cleanup(): Promise<SaveOperationResult<{ deletedCount: number; reclaimedBytes: number }>> {
     if (!this.db) {
       return {
         success: false,
-        error: new Error('Database not initialized')
+        error: new Error('Database not initialized'),
       };
     }
 
@@ -541,13 +548,19 @@ export class IndexedDbManager {
       for (const [slotNumber, records] of slotRecords) {
         if (records.length > 1) {
           // Sort by lastModified, newest first
-          records.sort((a, b) =>
-            new Date(b.lastModified || 0).getTime() - new Date(a.lastModified || 0).getTime()
+          records.sort(
+            (a, b) =>
+              new Date(b.lastModified || 0).getTime() - new Date(a.lastModified || 0).getTime()
           );
 
           // Keep the first (newest), delete the rest
           for (let i = 1; i < records.length; i++) {
-            console.warn('🧹 Cleaning up duplicate metadata for slot', slotNumber, ':', records[i].id);
+            console.warn(
+              '🧹 Cleaning up duplicate metadata for slot',
+              slotNumber,
+              ':',
+              records[i].id
+            );
             await this.promisifyRequest(metadataStore.delete(records[i].id));
             deletedCount++;
             reclaimedBytes += this.calculateDataSize(records[i]);
@@ -555,16 +568,18 @@ export class IndexedDbManager {
         }
       }
 
-      console.log(`✅ Cleanup completed: ${deletedCount} records removed, ${reclaimedBytes} bytes reclaimed`);
+      console.log(
+        `✅ Cleanup completed: ${deletedCount} records removed, ${reclaimedBytes} bytes reclaimed`
+      );
 
       return {
         success: true,
-        data: { deletedCount, reclaimedBytes }
+        data: { deletedCount, reclaimedBytes },
       };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error : new Error('Cleanup failed')
+        error: error instanceof Error ? error : new Error('Cleanup failed'),
       };
     }
   }
@@ -597,7 +612,7 @@ export class IndexedDbManager {
           name: error?.name,
           code: error?.name,
           transaction: (request.transaction as any)?.mode,
-          objectStore: (request.source as any)?.name
+          objectStore: (request.source as any)?.name,
         });
         reject(detailedError);
       };
@@ -613,7 +628,7 @@ export class IndexedDbManager {
     return {
       ...gameData,
       gameState: compressed as any,
-      isCompressed: true
+      isCompressed: true,
     };
   }
 
@@ -626,7 +641,7 @@ export class IndexedDbManager {
     return {
       ...gameData,
       gameState: parsedState,
-      isCompressed: false
+      isCompressed: false,
     };
   }
 
@@ -707,7 +722,7 @@ export class IndexedDbManager {
       warnings,
       checksumValid,
       versionCompatible,
-      dataIntegrityValid: errors.length === 0
+      dataIntegrityValid: errors.length === 0,
     };
   }
 

@@ -15,14 +15,12 @@ interface NotificationContainerProps {
 
 export const NotificationContainer: React.FC<NotificationContainerProps> = ({
   position = 'top-right',
-  maxNotifications = 5
+  maxNotifications = 5,
 }) => {
   const { notifications, dismissNotification } = useInventoryFeedback();
 
   // Limit the number of visible notifications
-  const visibleNotifications = notifications
-    .filter(n => !n.dismissed)
-    .slice(-maxNotifications);
+  const visibleNotifications = notifications.filter(n => !n.dismissed).slice(-maxNotifications);
 
   if (visibleNotifications.length === 0) {
     return null;
@@ -34,8 +32,8 @@ export const NotificationContainer: React.FC<NotificationContainerProps> = ({
       zIndex: 1000,
       pointerEvents: 'none' as const,
       display: 'flex',
-      flexDirection: position.includes('top') ? 'column' as const : 'column-reverse' as const,
-      gap: '0.5rem'
+      flexDirection: position.includes('top') ? ('column' as const) : ('column-reverse' as const),
+      gap: '0.5rem',
     };
 
     switch (position) {
@@ -53,7 +51,7 @@ export const NotificationContainer: React.FC<NotificationContainerProps> = ({
           top: '1rem',
           left: '50%',
           transform: 'translateX(-50%)',
-          alignItems: 'center'
+          alignItems: 'center',
         };
       default:
         return { ...base, top: '1rem', right: '1rem' };
@@ -62,12 +60,9 @@ export const NotificationContainer: React.FC<NotificationContainerProps> = ({
 
   return (
     <div style={getContainerStyles()}>
-      <AnimatePresence mode="popLayout">
-        {visibleNotifications.map((notification) => (
-          <div
-            key={notification.id}
-            style={{ pointerEvents: 'auto' }}
-          >
+      <AnimatePresence mode='popLayout'>
+        {visibleNotifications.map(notification => (
+          <div key={notification.id} style={{ pointerEvents: 'auto' }}>
             <NotificationToast
               notification={notification}
               onDismiss={dismissNotification}

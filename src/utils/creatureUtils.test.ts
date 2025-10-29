@@ -29,7 +29,7 @@ import {
   calculateExperienceGain,
   calculateCreatureRating,
   getTypeAdvantages,
-  getCollectionStats
+  getCollectionStats,
 } from './creatureUtils';
 
 import {
@@ -37,7 +37,7 @@ import {
   CreatureType,
   CreatureElement,
   CreatureRarity,
-  CreatureFilter
+  CreatureFilter,
 } from '../types/creatures';
 
 describe('creatureUtils', () => {
@@ -68,7 +68,7 @@ describe('creatureUtils', () => {
         discovered: true,
         captured: true,
         seen: true,
-        timesEncountered: 3
+        timesEncountered: 3,
       },
       personality: {
         traits: ['aggressive', 'loyal'],
@@ -77,7 +77,7 @@ describe('creatureUtils', () => {
         mood: 'neutral',
         happiness: 80,
         loyalty: 90,
-        energy: 75
+        energy: 75,
       },
       individualStats: {
         hpIV: 20,
@@ -85,21 +85,21 @@ describe('creatureUtils', () => {
         defenseIV: 15,
         magicAttackIV: 10,
         magicDefenseIV: 12,
-        speedIV: 28
+        speedIV: 28,
       },
       nature: {
         name: 'Adamant',
         statModifiers: {
           attack: 2,
-          speed: -1
-        }
+          speed: -1,
+        },
       },
       genetics: {
         parentIds: [],
         generation: 0,
         inheritedTraits: ['aggressive'],
         mutations: [],
-        breedingPotential: 100
+        breedingPotential: 100,
       },
       companionData: {
         isCompanion: true,
@@ -107,8 +107,8 @@ describe('creatureUtils', () => {
         isActiveTeamMember: true,
         bond: 75,
         experience: 1200,
-        lastInteraction: new Date()
-      }
+        lastInteraction: new Date(),
+      },
     },
     {
       id: 'creature_2',
@@ -135,7 +135,7 @@ describe('creatureUtils', () => {
         discovered: true,
         captured: true,
         seen: true,
-        timesEncountered: 1
+        timesEncountered: 1,
       },
       personality: {
         traits: ['proud', 'noble'],
@@ -144,7 +144,7 @@ describe('creatureUtils', () => {
         mood: 'content',
         happiness: 90,
         loyalty: 60,
-        energy: 85
+        energy: 85,
       },
       individualStats: {
         hpIV: 31,
@@ -152,21 +152,21 @@ describe('creatureUtils', () => {
         defenseIV: 20,
         magicAttackIV: 31,
         magicDefenseIV: 30,
-        speedIV: 31
+        speedIV: 31,
       },
       nature: {
         name: 'Modest',
         statModifiers: {
           magicAttack: 2,
-          attack: -1
-        }
+          attack: -1,
+        },
       },
       genetics: {
         parentIds: [],
         generation: 0,
         inheritedTraits: ['proud'],
         mutations: ['fire_immunity'],
-        breedingPotential: 120
+        breedingPotential: 120,
       },
       companionData: {
         isCompanion: true,
@@ -174,8 +174,8 @@ describe('creatureUtils', () => {
         isActiveTeamMember: false,
         bond: 45,
         experience: 3000,
-        lastInteraction: new Date(Date.now() - 86400000) // 1 day ago
-      }
+        lastInteraction: new Date(Date.now() - 86400000), // 1 day ago
+      },
     },
     {
       id: 'creature_3',
@@ -201,7 +201,7 @@ describe('creatureUtils', () => {
         discovered: true,
         captured: false,
         seen: true,
-        timesEncountered: 2
+        timesEncountered: 2,
       },
       personality: {
         traits: ['playful', 'curious'],
@@ -210,9 +210,9 @@ describe('creatureUtils', () => {
         mood: 'happy',
         happiness: 95,
         loyalty: 40,
-        energy: 90
-      }
-    }
+        energy: 90,
+      },
+    },
   ];
 
   describe('filterCreatures', () => {
@@ -350,7 +350,7 @@ describe('creatureUtils', () => {
 
       const rarityOrder = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythical'];
       for (let i = 1; i < result.length; i++) {
-        const prevIndex = rarityOrder.indexOf(result[i-1].rarity as string);
+        const prevIndex = rarityOrder.indexOf(result[i - 1].rarity as string);
         const currIndex = rarityOrder.indexOf(result[i].rarity as string);
         expect(prevIndex).toBeLessThanOrEqual(currIndex);
       }
@@ -396,8 +396,8 @@ describe('creatureUtils', () => {
         ...mockCreatures[0],
         personality: {
           ...mockCreatures[0].personality!,
-          energy: 20 // Too low
-        }
+          energy: 20, // Too low
+        },
       };
       const result = isBreedingEligible(exhaustedCreature);
 
@@ -430,7 +430,7 @@ describe('creatureUtils', () => {
       const creature2 = {
         ...mockCreatures[0],
         creatureId: 'different_001',
-        breedingGroup: ['fish', 'aquatic'] // Different groups
+        breedingGroup: ['fish', 'aquatic'], // Different groups
       };
 
       const result = checkBreedingCompatibility(creature1, creature2);
@@ -465,8 +465,8 @@ describe('creatureUtils', () => {
         personality: {
           ...mockCreatures[0].personality!,
           mood: 'happy', // Compatible with neutral
-          traits: ['protective', 'loyal'] // Compatible traits
-        }
+          traits: ['protective', 'loyal'], // Compatible traits
+        },
       };
 
       const result = checkBreedingCompatibility(creature1, creature2);
@@ -480,7 +480,7 @@ describe('creatureUtils', () => {
       const personality1 = mockCreatures[0].personality!;
       const personality2 = {
         ...personality1,
-        mood: 'content' // Compatible with neutral
+        mood: 'content', // Compatible with neutral
       };
 
       const result = calculatePersonalityCompatibility(personality1, personality2);
@@ -505,7 +505,7 @@ describe('creatureUtils', () => {
         loyalty: 90,
         happiness: 90,
         dominantTrait: 'aggressive' as const,
-        compatibility: 0
+        compatibility: 0,
       };
       const personality2 = {
         mood: 'sad' as const,
@@ -513,7 +513,7 @@ describe('creatureUtils', () => {
         loyalty: 10,
         happiness: 10,
         dominantTrait: 'docile' as const,
-        compatibility: 0
+        compatibility: 0,
       };
 
       const result = calculatePersonalityCompatibility(personality1, personality2);
@@ -639,7 +639,18 @@ describe('creatureUtils', () => {
       expect(result.length).toBeGreaterThan(0);
       expect(result.length).toBeLessThanOrEqual(3);
 
-      const validTraits = ['aggressive', 'docile', 'playful', 'serious', 'curious', 'lazy', 'energetic', 'protective', 'independent', 'clingy'];
+      const validTraits = [
+        'aggressive',
+        'docile',
+        'playful',
+        'serious',
+        'curious',
+        'lazy',
+        'energetic',
+        'protective',
+        'independent',
+        'clingy',
+      ];
       result.forEach(trait => {
         expect(validTraits).toContain(trait);
       });
@@ -657,7 +668,18 @@ describe('creatureUtils', () => {
     it('should return a valid element', () => {
       const result = getRandomElement();
 
-      const validElements = ['fire', 'water', 'earth', 'air', 'light', 'dark', 'ice', 'lightning', 'nature', 'neutral'];
+      const validElements = [
+        'fire',
+        'water',
+        'earth',
+        'air',
+        'light',
+        'dark',
+        'ice',
+        'lightning',
+        'nature',
+        'neutral',
+      ];
       expect(validElements).toContain(result);
     });
   });
@@ -753,7 +775,7 @@ describe('creatureUtils', () => {
       const playerCreature = {
         ...mockCreatures[0],
         creatureType: 'beast' as CreatureType,
-        level: 10
+        level: 10,
       };
 
       const result = canMakeTrade(beastTrader, beastTrade, playerCreature);
@@ -772,7 +794,7 @@ describe('creatureUtils', () => {
     it('should reject trades with unmet requirements', () => {
       const highRepTrade = {
         ...beastTrade,
-        requirements: { minReputation: 80 }
+        requirements: { minReputation: 80 },
       };
 
       const result = canMakeTrade(beastTrader, highRepTrade, mockCreatures[0], 50);
@@ -784,7 +806,7 @@ describe('creatureUtils', () => {
     it('should validate creature requirements', () => {
       const specificTrade = {
         ...beastTrade,
-        wants: { species: 'dragon', minLevel: 20 }
+        wants: { species: 'dragon', minLevel: 20 },
       };
 
       const result = canMakeTrade(beastTrader, specificTrade, mockCreatures[0]);
@@ -803,7 +825,7 @@ describe('creatureUtils', () => {
       const playerCreature = {
         ...mockCreatures[0],
         creatureType: trader.specialty === 'all' ? 'beast' : trader.specialty,
-        level: 15
+        level: 15,
       };
 
       const result = executeNPCTrade(trader, trade, playerCreature);
@@ -821,7 +843,7 @@ describe('creatureUtils', () => {
     it('should fail trade for invalid conditions', () => {
       const invalidCreature = {
         ...mockCreatures[0],
-        level: 1 // Too low level
+        level: 1, // Too low level
       };
 
       const result = executeNPCTrade(trader, trade, invalidCreature);
@@ -834,7 +856,7 @@ describe('creatureUtils', () => {
       const playerCreature = {
         ...mockCreatures[0],
         creatureType: trader.specialty === 'all' ? 'beast' : trader.specialty,
-        level: 15
+        level: 15,
       };
 
       const result = executeNPCTrade(trader, trade, playerCreature);
@@ -864,7 +886,7 @@ describe('creatureUtils', () => {
       const result = calculateCombatStats(creature);
 
       // IVs should boost stats based on level
-      const expectedHpBoost = Math.floor(creature.individualStats!.hpIV * creature.level / 100);
+      const expectedHpBoost = Math.floor((creature.individualStats!.hpIV * creature.level) / 100);
       expect(result.hp).toBeGreaterThanOrEqual(creature.hp + expectedHpBoost);
     });
 
@@ -1013,8 +1035,12 @@ describe('creatureUtils', () => {
 
     it('should include IV bonus', () => {
       const perfectIVs = {
-        hpIV: 31, attackIV: 31, defenseIV: 31,
-        magicAttackIV: 31, magicDefenseIV: 31, speedIV: 31
+        hpIV: 31,
+        attackIV: 31,
+        defenseIV: 31,
+        magicAttackIV: 31,
+        magicDefenseIV: 31,
+        speedIV: 31,
       };
 
       const perfectCreature = { ...mockCreatures[0], individualStats: perfectIVs };

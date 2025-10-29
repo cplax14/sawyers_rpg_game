@@ -6,10 +6,13 @@ import { VirtualizedGrid } from './VirtualizedGrid';
 // Mock Framer Motion
 jest.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, style, initial, animate, exit, transition, layout, ...props }: any) =>
-      <div style={style} {...props}>{children}</div>
+    div: ({ children, style, initial, animate, exit, transition, layout, ...props }: any) => (
+      <div style={style} {...props}>
+        {children}
+      </div>
+    ),
   },
-  AnimatePresence: ({ children }: any) => <>{children}</>
+  AnimatePresence: ({ children }: any) => <>{children}</>,
 }));
 
 // Test data
@@ -17,7 +20,7 @@ const generateTestItems = (count: number) =>
   Array.from({ length: count }, (_, i) => ({
     id: `item-${i}`,
     name: `Item ${i}`,
-    value: i * 10
+    value: i * 10,
   }));
 
 const renderTestItem = (item: any, index: number) => (
@@ -36,7 +39,7 @@ describe('VirtualizedGrid', () => {
     containerHeight: 400,
     renderItem: renderTestItem,
     getItemKey: getTestItemKey,
-    gap: 16
+    gap: 16,
   };
 
   beforeEach(() => {
@@ -50,7 +53,7 @@ describe('VirtualizedGrid', () => {
       right: 800,
       x: 0,
       y: 0,
-      toJSON: () => {}
+      toJSON: () => {},
     }));
   });
 
@@ -62,7 +65,7 @@ describe('VirtualizedGrid', () => {
       expect(container).toBeInTheDocument();
       expect(container).toHaveStyle({
         height: '400px',
-        overflowY: 'auto'
+        overflowY: 'auto',
       });
     });
 
@@ -79,13 +82,7 @@ describe('VirtualizedGrid', () => {
       const customStyle = { border: '1px solid red' };
       const customClassName = 'custom-grid';
 
-      render(
-        <VirtualizedGrid
-          {...defaultProps}
-          style={customStyle}
-          className={customClassName}
-        />
-      );
+      render(<VirtualizedGrid {...defaultProps} style={customStyle} className={customClassName} />);
 
       const container = screen.getByTestId('virtualized-grid');
       expect(container).toHaveClass(customClassName);
@@ -95,9 +92,7 @@ describe('VirtualizedGrid', () => {
 
   describe('Grid Layout', () => {
     it('should calculate correct grid layout with different itemsPerRow', () => {
-      const { rerender } = render(
-        <VirtualizedGrid {...defaultProps} itemsPerRow={2} />
-      );
+      const { rerender } = render(<VirtualizedGrid {...defaultProps} itemsPerRow={2} />);
 
       let container = screen.getByTestId('virtualized-grid');
       expect(container).toBeInTheDocument();
@@ -142,12 +137,7 @@ describe('VirtualizedGrid', () => {
     it('should call onScroll callback when provided', async () => {
       const onScrollMock = jest.fn();
 
-      render(
-        <VirtualizedGrid
-          {...defaultProps}
-          onScroll={onScrollMock}
-        />
-      );
+      render(<VirtualizedGrid {...defaultProps} onScroll={onScrollMock} />);
 
       const container = screen.getByTestId('virtualized-grid');
 
@@ -172,12 +162,7 @@ describe('VirtualizedGrid', () => {
       const largeDataset = generateTestItems(1000);
 
       const startTime = performance.now();
-      render(
-        <VirtualizedGrid
-          {...defaultProps}
-          items={largeDataset}
-        />
-      );
+      render(<VirtualizedGrid {...defaultProps} items={largeDataset} />);
       const endTime = performance.now();
 
       // Should render quickly even with large datasets
@@ -219,12 +204,7 @@ describe('VirtualizedGrid', () => {
       const { rerender } = render(<VirtualizedGrid {...defaultProps} />);
 
       // Change container height
-      rerender(
-        <VirtualizedGrid
-          {...defaultProps}
-          containerHeight={600}
-        />
-      );
+      rerender(<VirtualizedGrid {...defaultProps} containerHeight={600} />);
 
       const container = screen.getByTestId('virtualized-grid');
       expect(container).toHaveStyle({ height: '600px' });
@@ -237,12 +217,7 @@ describe('VirtualizedGrid', () => {
       const initialCount = initialItems.length;
 
       // Change items per row
-      rerender(
-        <VirtualizedGrid
-          {...defaultProps}
-          itemsPerRow={5}
-        />
-      );
+      rerender(<VirtualizedGrid {...defaultProps} itemsPerRow={5} />);
 
       const updatedItems = screen.getAllByTestId(/^item-\d+$/);
       // The count might change due to different layout
@@ -255,12 +230,7 @@ describe('VirtualizedGrid', () => {
       const { rerender } = render(<VirtualizedGrid {...defaultProps} />);
 
       // Scroll to index 50
-      rerender(
-        <VirtualizedGrid
-          {...defaultProps}
-          scrollToIndex={50}
-        />
-      );
+      rerender(<VirtualizedGrid {...defaultProps} scrollToIndex={50} />);
 
       const container = screen.getByTestId('virtualized-grid');
 
@@ -276,12 +246,7 @@ describe('VirtualizedGrid', () => {
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
       expect(() => {
-        render(
-          <VirtualizedGrid
-            {...defaultProps}
-            itemHeight={0}
-          />
-        );
+        render(<VirtualizedGrid {...defaultProps} itemHeight={0} />);
       }).not.toThrow();
 
       consoleSpy.mockRestore();
@@ -291,12 +256,7 @@ describe('VirtualizedGrid', () => {
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
       expect(() => {
-        render(
-          <VirtualizedGrid
-            {...defaultProps}
-            itemsPerRow={0}
-          />
-        );
+        render(<VirtualizedGrid {...defaultProps} itemsPerRow={0} />);
       }).not.toThrow();
 
       consoleSpy.mockRestore();
@@ -307,12 +267,7 @@ describe('VirtualizedGrid', () => {
     it('should use provided getItemKey function', () => {
       const customGetItemKey = jest.fn((item, index) => `custom-${item.id}`);
 
-      render(
-        <VirtualizedGrid
-          {...defaultProps}
-          getItemKey={customGetItemKey}
-        />
-      );
+      render(<VirtualizedGrid {...defaultProps} getItemKey={customGetItemKey} />);
 
       expect(customGetItemKey).toHaveBeenCalled();
     });
@@ -322,12 +277,7 @@ describe('VirtualizedGrid', () => {
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
       expect(() => {
-        render(
-          <VirtualizedGrid
-            {...defaultProps}
-            getItemKey={duplicateKeyFunction}
-          />
-        );
+        render(<VirtualizedGrid {...defaultProps} getItemKey={duplicateKeyFunction} />);
       }).not.toThrow();
 
       consoleSpy.mockRestore();

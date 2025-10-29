@@ -29,7 +29,7 @@ const ITEM_CATEGORIES: Array<{ id: ItemCategory | 'all'; name: string; icon: str
   { id: 'consumables', name: 'Consumables', icon: '🧪' },
   { id: 'materials', name: 'Materials', icon: '⚒️' },
   { id: 'quest', name: 'Quest Items', icon: '📜' },
-  { id: 'misc', name: 'Miscellaneous', icon: '🎒' }
+  { id: 'misc', name: 'Miscellaneous', icon: '🎒' },
 ];
 
 // Sort options
@@ -37,7 +37,7 @@ const SORT_OPTIONS: Array<{ id: string; name: string; icon: string }> = [
   { id: 'name', name: 'Name', icon: '🔤' },
   { id: 'rarity', name: 'Rarity', icon: '⭐' },
   { id: 'quantity', name: 'Quantity', icon: '🔢' },
-  { id: 'type', name: 'Type', icon: '📂' }
+  { id: 'type', name: 'Type', icon: '📂' },
 ];
 
 // Temporary styles since PostCSS is disabled
@@ -50,33 +50,33 @@ const inventoryStyles = {
     color: '#f4f4f4',
     padding: '1rem',
     boxSizing: 'border-box' as const,
-    overflow: 'hidden'
+    overflow: 'hidden',
   },
   header: {
     textAlign: 'center' as const,
-    marginBottom: '1.5rem'
+    marginBottom: '1.5rem',
   },
   title: {
     fontSize: '2rem',
     fontWeight: 'bold',
     margin: '0 0 0.5rem 0',
-    color: '#d4af37'
+    color: '#d4af37',
   },
   subtitle: {
     fontSize: '1rem',
     color: '#94a3b8',
-    margin: '0'
+    margin: '0',
   },
   controls: {
     display: 'flex',
     gap: '1rem',
     marginBottom: '1.5rem',
     flexWrap: 'wrap' as const,
-    alignItems: 'center'
+    alignItems: 'center',
   },
   searchContainer: {
     flex: '1 1 300px',
-    position: 'relative' as const
+    position: 'relative' as const,
   },
   searchInput: {
     width: '100%',
@@ -87,7 +87,7 @@ const inventoryStyles = {
     color: '#f4f4f4',
     fontSize: '0.9rem',
     outline: 'none',
-    transition: 'all 0.3s ease'
+    transition: 'all 0.3s ease',
   },
   searchIcon: {
     position: 'absolute' as const,
@@ -95,7 +95,7 @@ const inventoryStyles = {
     top: '50%',
     transform: 'translateY(-50%)',
     color: '#94a3b8',
-    fontSize: '1.2rem'
+    fontSize: '1.2rem',
   },
   clearSearch: {
     position: 'absolute' as const,
@@ -107,12 +107,12 @@ const inventoryStyles = {
     color: '#94a3b8',
     cursor: 'pointer',
     fontSize: '1rem',
-    padding: '0.25rem'
+    padding: '0.25rem',
   },
   filterTabs: {
     display: 'flex',
     gap: '0.5rem',
-    flexWrap: 'wrap' as const
+    flexWrap: 'wrap' as const,
   },
   filterTab: {
     padding: '0.5rem 1rem',
@@ -126,21 +126,21 @@ const inventoryStyles = {
     transition: 'all 0.3s ease',
     display: 'flex',
     alignItems: 'center',
-    gap: '0.5rem'
+    gap: '0.5rem',
   },
   filterTabActive: {
     background: 'rgba(212, 175, 55, 0.2)',
     border: '1px solid #d4af37',
-    color: '#d4af37'
+    color: '#d4af37',
   },
   sortContainer: {
     display: 'flex',
     alignItems: 'center',
-    gap: '0.5rem'
+    gap: '0.5rem',
   },
   sortLabel: {
     fontSize: '0.8rem',
-    color: '#94a3b8'
+    color: '#94a3b8',
   },
   sortSelect: {
     padding: '0.5rem',
@@ -149,13 +149,13 @@ const inventoryStyles = {
     background: 'rgba(255, 255, 255, 0.05)',
     color: '#f4f4f4',
     fontSize: '0.8rem',
-    outline: 'none'
+    outline: 'none',
   },
   content: {
     flex: 1,
     overflow: 'hidden',
     display: 'flex',
-    flexDirection: 'column' as const
+    flexDirection: 'column' as const,
   },
   statsBar: {
     display: 'flex',
@@ -166,7 +166,7 @@ const inventoryStyles = {
     borderRadius: '8px',
     marginBottom: '1rem',
     fontSize: '0.8rem',
-    color: '#94a3b8'
+    color: '#94a3b8',
   },
   itemGrid: {
     flex: 1,
@@ -175,64 +175,64 @@ const inventoryStyles = {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
     gap: '1rem',
-    alignContent: 'start'
+    alignContent: 'start',
   },
   mobileItemGrid: {
     gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-    gap: '0.75rem'
+    gap: '0.75rem',
   },
   emptyState: {
     textAlign: 'center' as const,
     color: '#94a3b8',
     fontSize: '1rem',
     padding: '3rem 1rem',
-    fontStyle: 'italic'
+    fontStyle: 'italic',
   },
   loadingContainer: {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    height: '200px'
+    height: '200px',
   },
   errorContainer: {
     textAlign: 'center' as const,
-    padding: '2rem'
+    padding: '2rem',
   },
   closeButton: {
     position: 'absolute' as const,
     top: '1rem',
     right: '1rem',
-    zIndex: 10
+    zIndex: 10,
   },
   advancedFilters: {
     background: 'rgba(255, 255, 255, 0.05)',
     borderRadius: '8px',
     padding: '1rem',
     marginBottom: '1rem',
-    border: '1px solid rgba(212, 175, 55, 0.3)'
+    border: '1px solid rgba(212, 175, 55, 0.3)',
   },
   filterRow: {
     display: 'flex',
     gap: '1rem',
     marginBottom: '0.75rem',
     flexWrap: 'wrap' as const,
-    alignItems: 'center'
+    alignItems: 'center',
   },
   filterGroup: {
     display: 'flex',
     flexDirection: 'column' as const,
     gap: '0.5rem',
-    minWidth: '150px'
+    minWidth: '150px',
   },
   filterLabel: {
     fontSize: '0.8rem',
     fontWeight: 'bold',
-    color: '#d4af37'
+    color: '#d4af37',
   },
   rarityChips: {
     display: 'flex',
     gap: '0.5rem',
-    flexWrap: 'wrap' as const
+    flexWrap: 'wrap' as const,
   },
   rarityChip: {
     padding: '0.25rem 0.5rem',
@@ -242,12 +242,12 @@ const inventoryStyles = {
     color: '#f4f4f4',
     fontSize: '0.7rem',
     cursor: 'pointer',
-    transition: 'all 0.2s ease'
+    transition: 'all 0.2s ease',
   },
   rarityChipActive: {
     background: 'rgba(212, 175, 55, 0.3)',
     border: '1px solid #d4af37',
-    color: '#d4af37'
+    color: '#d4af37',
   },
   numberInput: {
     padding: '0.4rem',
@@ -257,15 +257,15 @@ const inventoryStyles = {
     color: '#f4f4f4',
     fontSize: '0.8rem',
     outline: 'none',
-    width: '80px'
+    width: '80px',
   },
   checkboxGroup: {
     display: 'flex',
     alignItems: 'center',
-    gap: '0.5rem'
+    gap: '0.5rem',
   },
   checkbox: {
-    accentColor: '#d4af37'
+    accentColor: '#d4af37',
   },
   filterToggle: {
     background: 'rgba(212, 175, 55, 0.1)',
@@ -276,7 +276,7 @@ const inventoryStyles = {
     cursor: 'pointer',
     fontSize: '0.8rem',
     fontWeight: 'bold',
-    transition: 'all 0.3s ease'
+    transition: 'all 0.3s ease',
   },
   clearFiltersButton: {
     background: 'rgba(239, 68, 68, 0.1)',
@@ -287,15 +287,11 @@ const inventoryStyles = {
     cursor: 'pointer',
     fontSize: '0.8rem',
     fontWeight: 'bold',
-    transition: 'all 0.3s ease'
-  }
+    transition: 'all 0.3s ease',
+  },
 };
 
-
-export const InventoryScreen: React.FC<InventoryScreenProps> = ({
-  className,
-  onClose
-}) => {
+export const InventoryScreen: React.FC<InventoryScreenProps> = ({ className, onClose }) => {
   const { gameState } = useGameState();
   const { isMobile, isTablet } = useResponsive();
 
@@ -308,38 +304,45 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
     useItem,
     removeItem,
     isLoading,
-    error
+    error,
   } = useInventory();
 
   // Performance optimization hooks
   const cache = useInventoryCache();
-  const { filterItems } = useSmartItemFiltering(getFilteredItems('main').map(slot => slot.item!).filter(Boolean));
+  const { filterItems } = useSmartItemFiltering(
+    getFilteredItems('main')
+      .map(slot => slot.item!)
+      .filter(Boolean)
+  );
   const { computeItemStats } = useSmartAggregations();
 
   // User feedback and error handling
   const feedback = useInventoryFeedback();
 
   // Helper function for dropping items (used in sell fallback)
-  const handleDropItem = useCallback(async (item: EnhancedItem) => {
-    try {
-      const result = await removeItem?.(item.id, 1);
-      if (result?.result === 'success') {
-        feedback.showItemRemoved(item.name, 1);
-      } else {
-        feedback.showError(result?.error || `Failed to drop ${item.name}`, {
+  const handleDropItem = useCallback(
+    async (item: EnhancedItem) => {
+      try {
+        const result = await removeItem?.(item.id, 1);
+        if (result?.result === 'success') {
+          feedback.showItemRemoved(item.name, 1);
+        } else {
+          feedback.showError(result?.error || `Failed to drop ${item.name}`, {
+            itemId: item.id,
+            itemName: item.name,
+            operationType: 'drop',
+          });
+        }
+      } catch (error) {
+        feedback.showError(error, {
           itemId: item.id,
           itemName: item.name,
-          operationType: 'drop'
+          operationType: 'drop',
         });
       }
-    } catch (error) {
-      feedback.showError(error, {
-        itemId: item.id,
-        itemName: item.name,
-        operationType: 'drop'
-      });
-    }
-  }, [removeItem, feedback]);
+    },
+    [removeItem, feedback]
+  );
 
   // Local state
   const [searchQuery, setSearchQuery] = useState('');
@@ -358,27 +361,30 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
 
   // Smart filtering with caching
   const updateFilteredItems = useCallback(async () => {
-    const baseItems = selectedCategory === 'all'
-      ? getFilteredItems('main').map(slot => slot.item!).filter(Boolean)
-      : getItemsByCategory(selectedCategory);
+    const baseItems =
+      selectedCategory === 'all'
+        ? getFilteredItems('main')
+            .map(slot => slot.item!)
+            .filter(Boolean)
+        : getItemsByCategory(selectedCategory);
 
     const filterConfig = {
       category: selectedCategory,
       rarity: rarityFilter,
-      valueRange: valueFilter.min || valueFilter.max ? {
-        min: valueFilter.min ? parseFloat(valueFilter.min) : 0,
-        max: valueFilter.max ? parseFloat(valueFilter.max) : Infinity
-      } : undefined,
+      valueRange:
+        valueFilter.min || valueFilter.max
+          ? {
+              min: valueFilter.min ? parseFloat(valueFilter.min) : 0,
+              max: valueFilter.max ? parseFloat(valueFilter.max) : Infinity,
+            }
+          : undefined,
       search: searchQuery.trim() || undefined,
-      tags: [
-        ...(usableOnly ? ['usable'] : []),
-        ...(stackableOnly ? ['stackable'] : [])
-      ]
+      tags: [...(usableOnly ? ['usable'] : []), ...(stackableOnly ? ['stackable'] : [])],
     };
 
     const sortConfig = {
       field: sortBy,
-      order: sortOrder
+      order: sortOrder,
     };
 
     try {
@@ -386,7 +392,7 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
       setFilteredItems(result.data);
       setFilterStats({
         computeTime: result.computeTime,
-        cacheHit: result.cacheHit
+        cacheHit: result.cacheHit,
       });
 
       // Track performance in development
@@ -394,7 +400,7 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
         console.warn(`Slow inventory filtering: ${result.computeTime.toFixed(2)}ms`, {
           itemCount: baseItems.length,
           filters: filterConfig,
-          cacheHit: result.cacheHit
+          cacheHit: result.cacheHit,
         });
       }
     } catch (error) {
@@ -402,16 +408,34 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
       feedback.showError(error, {
         operationType: 'filter',
         category: selectedCategory,
-        searchQuery
+        searchQuery,
       });
       setFilteredItems(baseItems); // Fallback to unfiltered items
     }
-  }, [selectedCategory, searchQuery, sortBy, sortOrder, rarityFilter, valueFilter, usableOnly, stackableOnly]);
+  }, [
+    selectedCategory,
+    searchQuery,
+    sortBy,
+    sortOrder,
+    rarityFilter,
+    valueFilter,
+    usableOnly,
+    stackableOnly,
+  ]);
 
   // Update filtered items when dependencies change
   React.useEffect(() => {
     updateFilteredItems();
-  }, [selectedCategory, searchQuery, sortBy, sortOrder, rarityFilter, valueFilter, usableOnly, stackableOnly]);
+  }, [
+    selectedCategory,
+    searchQuery,
+    sortBy,
+    sortOrder,
+    rarityFilter,
+    valueFilter,
+    usableOnly,
+    stackableOnly,
+  ]);
 
   // Virtualized grid configuration
   const ITEM_CARD_HEIGHT = isMobile ? 200 : 240;
@@ -424,131 +448,137 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
     minItemWidth: ITEM_MIN_WIDTH,
     itemHeight: ITEM_CARD_HEIGHT,
     gap: isMobile ? 12 : 16,
-    threshold: 50 // Enable virtualization for 50+ items
+    threshold: 50, // Enable virtualization for 50+ items
   });
 
   // Optimized rendering with caching and performance monitoring
-  const renderItemOptimized = useCallback((item: EnhancedItem, index: number) => (
-    <ItemCard
-      item={item}
-      size={isMobile ? 'sm' : 'md'}
-      showActions={true}
-      showQuantity={true}
-      showDescription={true}
-      onUse={async (item) => {
-        performanceMonitor.trackUserInteraction('item-use');
-        try {
-          // Show loading state for item usage
-          const operationId = feedback.startOperation(`use-${item.id}`, `Using ${item.name}`);
+  const renderItemOptimized = useCallback(
+    (item: EnhancedItem, index: number) => (
+      <ItemCard
+        item={item}
+        size={isMobile ? 'sm' : 'md'}
+        showActions={true}
+        showQuantity={true}
+        showDescription={true}
+        onUse={async item => {
+          performanceMonitor.trackUserInteraction('item-use');
+          try {
+            // Show loading state for item usage
+            const operationId = feedback.startOperation(`use-${item.id}`, `Using ${item.name}`);
 
-          // Call the actual useItem function from the inventory hook
-          const result = await useItem?.(item.id);
+            // Call the actual useItem function from the inventory hook
+            const result = await useItem?.(item.id);
 
-          if (result?.success) {
-            feedback.completeOperation(operationId, {
-              success: true,
-              message: result.message || `Used ${item.name}${result.effects?.length ? ': ' + result.effects.join(', ') : ''}`
-            });
+            if (result?.success) {
+              feedback.completeOperation(operationId, {
+                success: true,
+                message:
+                  result.message ||
+                  `Used ${item.name}${result.effects?.length ? ': ' + result.effects.join(', ') : ''}`,
+              });
 
-            // Also show quick feedback
-            feedback.showItemUsed(item.name, result.effects?.join(', '));
-          } else {
-            feedback.completeOperation(operationId, {
-              success: false,
-              message: result?.message || `Failed to use ${item.name}`
+              // Also show quick feedback
+              feedback.showItemUsed(item.name, result.effects?.join(', '));
+            } else {
+              feedback.completeOperation(operationId, {
+                success: false,
+                message: result?.message || `Failed to use ${item.name}`,
+              });
+            }
+          } catch (error) {
+            feedback.showError(error, {
+              itemId: item.id,
+              itemName: item.name,
+              operationType: 'use',
             });
           }
-        } catch (error) {
-          feedback.showError(error, {
-            itemId: item.id,
-            itemName: item.name,
-            operationType: 'use'
-          });
-        }
-      }}
-      onSell={async (item) => {
-        performanceMonitor.trackUserInteraction('item-sell');
-        try {
-          // For now, simulate selling - in real implementation would call sell function
-          feedback.showWarning(
-            'Feature Not Available',
-            'Item selling is not yet implemented. This feature will be available in a future update.',
-            {
-              actions: [{
-                label: 'Drop Instead',
-                action: () => handleDropItem(item),
-                style: 'secondary'
-              }]
-            }
-          );
-        } catch (error) {
-          feedback.showError(error, {
-            itemId: item.id,
-            itemName: item.name,
-            operationType: 'sell'
-          });
-        }
-      }}
-      onDrop={async (item) => {
-        performanceMonitor.trackUserInteraction('item-drop');
-        try {
-          const operationId = feedback.startOperation(`drop-${item.id}`, `Dropping ${item.name}`);
-
-          // Call the actual removeItem function
-          const result = await removeItem?.(item.id, 1);
-
-          if (result?.result === 'success') {
-            feedback.completeOperation(operationId, {
-              success: true,
-              message: `Dropped ${item.name}`
-            });
-            feedback.showItemRemoved(item.name, 1);
-          } else {
-            feedback.completeOperation(operationId, {
-              success: false,
-              message: result?.error || `Failed to drop ${item.name}`
+        }}
+        onSell={async item => {
+          performanceMonitor.trackUserInteraction('item-sell');
+          try {
+            // For now, simulate selling - in real implementation would call sell function
+            feedback.showWarning(
+              'Feature Not Available',
+              'Item selling is not yet implemented. This feature will be available in a future update.',
+              {
+                actions: [
+                  {
+                    label: 'Drop Instead',
+                    action: () => handleDropItem(item),
+                    style: 'secondary',
+                  },
+                ],
+              }
+            );
+          } catch (error) {
+            feedback.showError(error, {
+              itemId: item.id,
+              itemName: item.name,
+              operationType: 'sell',
             });
           }
-        } catch (error) {
-          feedback.showError(error, {
-            itemId: item.id,
-            itemName: item.name,
-            operationType: 'drop'
-          });
-        }
-      }}
-      onInspect={(item) => {
-        performanceMonitor.trackUserInteraction('item-inspect');
-        try {
-          // Show detailed item information
-          feedback.showInfo(
-            item.name,
-            `${item.description || 'No description available.'}\n\nValue: ${item.value} gold\nRarity: ${item.rarity}\nQuantity: ${item.quantity || 1}`,
-            {
-              duration: 0, // Keep open until dismissed
-              actions: [{
-                label: 'Close',
-                action: () => {},
-                style: 'secondary'
-              }]
+        }}
+        onDrop={async item => {
+          performanceMonitor.trackUserInteraction('item-drop');
+          try {
+            const operationId = feedback.startOperation(`drop-${item.id}`, `Dropping ${item.name}`);
+
+            // Call the actual removeItem function
+            const result = await removeItem?.(item.id, 1);
+
+            if (result?.result === 'success') {
+              feedback.completeOperation(operationId, {
+                success: true,
+                message: `Dropped ${item.name}`,
+              });
+              feedback.showItemRemoved(item.name, 1);
+            } else {
+              feedback.completeOperation(operationId, {
+                success: false,
+                message: result?.error || `Failed to drop ${item.name}`,
+              });
             }
-          );
-        } catch (error) {
-          feedback.showError(error, {
-            itemId: item.id,
-            itemName: item.name,
-            operationType: 'inspect'
-          });
-        }
-      }}
-    />
-  ), [isMobile]);
+          } catch (error) {
+            feedback.showError(error, {
+              itemId: item.id,
+              itemName: item.name,
+              operationType: 'drop',
+            });
+          }
+        }}
+        onInspect={item => {
+          performanceMonitor.trackUserInteraction('item-inspect');
+          try {
+            // Show detailed item information
+            feedback.showInfo(
+              item.name,
+              `${item.description || 'No description available.'}\n\nValue: ${item.value} gold\nRarity: ${item.rarity}\nQuantity: ${item.quantity || 1}`,
+              {
+                duration: 0, // Keep open until dismissed
+                actions: [
+                  {
+                    label: 'Close',
+                    action: () => {},
+                    style: 'secondary',
+                  },
+                ],
+              }
+            );
+          } catch (error) {
+            feedback.showError(error, {
+              itemId: item.id,
+              itemName: item.name,
+              operationType: 'inspect',
+            });
+          }
+        }}
+      />
+    ),
+    [isMobile]
+  );
 
   // Enhanced rendering with performance optimization
-  const optimizedRenderer = useOptimizedInventoryRendering(
-    filteredItems,
-    renderItemOptimized
-  );
+  const optimizedRenderer = useOptimizedInventoryRendering(filteredItems, renderItemOptimized);
 
   // Performance tracking for component renders
   React.useEffect(() => {
@@ -562,90 +592,107 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
   const getItemKey = useCallback((item: EnhancedItem, index: number) => item.id, []);
 
   // Lazy loading setup for large inventories
-  const currentFilters = useMemo(() => ({
-    category: selectedCategory,
-    search: searchQuery,
-    sort: { field: sortBy, order: sortOrder },
-    rarity: rarityFilter,
-    value: valueFilter,
-    usableOnly,
-    stackableOnly
-  }), [selectedCategory, searchQuery, sortBy, sortOrder, rarityFilter, valueFilter, usableOnly, stackableOnly]);
+  const currentFilters = useMemo(
+    () => ({
+      category: selectedCategory,
+      search: searchQuery,
+      sort: { field: sortBy, order: sortOrder },
+      rarity: rarityFilter,
+      value: valueFilter,
+      usableOnly,
+      stackableOnly,
+    }),
+    [
+      selectedCategory,
+      searchQuery,
+      sortBy,
+      sortOrder,
+      rarityFilter,
+      valueFilter,
+      usableOnly,
+      stackableOnly,
+    ]
+  );
 
   // Mock lazy loading function (in real app, this would call an API)
-  const loadInventoryItems = useCallback(async (page: number, pageSize: number, filters: any) => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 300));
+  const loadInventoryItems = useCallback(
+    async (page: number, pageSize: number, filters: any) => {
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 300));
 
-    // Apply filters to get the full filtered dataset
-    let items: EnhancedItem[] = [];
-    if (filters.category === 'all') {
-      items = getFilteredItems('main').map(slot => slot.item!).filter(Boolean);
-    } else {
-      items = getItemsByCategory(filters.category);
-    }
-
-    // Apply search filter
-    if (filters.search?.trim()) {
-      items = searchItems(filters.search, items);
-    }
-
-    // Apply advanced filters
-    if (filters.rarity?.length > 0) {
-      items = items.filter(item => filters.rarity.includes(item.rarity || 'common'));
-    }
-
-    if (filters.value?.min || filters.value?.max) {
-      items = items.filter(item => {
-        const value = item.value || 0;
-        const min = filters.value.min ? parseFloat(filters.value.min) : 0;
-        const max = filters.value.max ? parseFloat(filters.value.max) : Infinity;
-        return value >= min && value <= max;
-      });
-    }
-
-    if (filters.usableOnly) {
-      items = items.filter(item => item.usable || item.itemType === 'consumable');
-    }
-
-    if (filters.stackableOnly) {
-      items = items.filter(item => item.stackable);
-    }
-
-    // Apply sorting
-    items.sort((a, b) => {
-      let comparison = 0;
-      switch (filters.sort.field) {
-        case 'name':
-          comparison = a.name.localeCompare(b.name);
-          break;
-        case 'rarity':
-          const rarityOrder = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythical'];
-          comparison = rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity);
-          break;
-        case 'quantity':
-          comparison = (a.quantity || 1) - (b.quantity || 1);
-          break;
-        case 'type':
-          comparison = (a.itemType || '').localeCompare(b.itemType || '');
-          break;
-        default:
-          comparison = 0;
+      // Apply filters to get the full filtered dataset
+      let items: EnhancedItem[] = [];
+      if (filters.category === 'all') {
+        items = getFilteredItems('main')
+          .map(slot => slot.item!)
+          .filter(Boolean);
+      } else {
+        items = getItemsByCategory(filters.category);
       }
-      return filters.sort.order === 'desc' ? -comparison : comparison;
-    });
 
-    // Paginate
-    const startIndex = page * pageSize;
-    const endIndex = startIndex + pageSize;
-    const pageItems = items.slice(startIndex, endIndex);
+      // Apply search filter
+      if (filters.search?.trim()) {
+        items = searchItems(filters.search, items);
+      }
 
-    return {
-      items: pageItems,
-      totalCount: items.length,
-      hasMore: endIndex < items.length
-    };
-  }, [getFilteredItems, getItemsByCategory, searchItems]);
+      // Apply advanced filters
+      if (filters.rarity?.length > 0) {
+        items = items.filter(item => filters.rarity.includes(item.rarity || 'common'));
+      }
+
+      if (filters.value?.min || filters.value?.max) {
+        items = items.filter(item => {
+          const value = item.value || 0;
+          const min = filters.value.min ? parseFloat(filters.value.min) : 0;
+          const max = filters.value.max ? parseFloat(filters.value.max) : Infinity;
+          return value >= min && value <= max;
+        });
+      }
+
+      if (filters.usableOnly) {
+        items = items.filter(item => item.usable || item.itemType === 'consumable');
+      }
+
+      if (filters.stackableOnly) {
+        items = items.filter(item => item.stackable);
+      }
+
+      // Apply sorting
+      items.sort((a, b) => {
+        let comparison = 0;
+        switch (filters.sort.field) {
+          case 'name':
+            comparison = a.name.localeCompare(b.name);
+            break;
+          case 'rarity':
+            const rarityOrder = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythical'];
+            comparison = rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity);
+            break;
+          case 'quantity':
+            comparison = (a.quantity || 1) - (b.quantity || 1);
+            break;
+          case 'type':
+            comparison = (a.itemType || '').localeCompare(b.itemType || '');
+            break;
+          default:
+            comparison = 0;
+        }
+        return filters.sort.order === 'desc' ? -comparison : comparison;
+      });
+
+      // Paginate
+      const startIndex = page * pageSize;
+      const endIndex = startIndex + pageSize;
+      const pageItems = items.slice(startIndex, endIndex);
+
+      return {
+        items: pageItems,
+        totalCount: items.length,
+        hasMore: endIndex < items.length,
+      };
+    },
+    [getFilteredItems, getItemsByCategory, searchItems]
+  );
 
   // Enable lazy loading for inventories with 100+ total items
   const shouldUseLazyLoading = getTotalItemCount() >= 100;
@@ -675,9 +722,7 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
   // Handle rarity filter
   const handleRarityFilterChange = useCallback((rarity: string) => {
     setRarityFilter(prev =>
-      prev.includes(rarity)
-        ? prev.filter(r => r !== rarity)
-        : [...prev, rarity]
+      prev.includes(rarity) ? prev.filter(r => r !== rarity) : [...prev, rarity]
     );
   }, []);
 
@@ -710,9 +755,8 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
   const categoryStats = useMemo(() => {
     return ITEM_CATEGORIES.map(cat => ({
       ...cat,
-      count: cat.id === 'all'
-        ? getTotalItemCount()
-        : getItemsByCategory(cat.id as ItemCategory).length
+      count:
+        cat.id === 'all' ? getTotalItemCount() : getItemsByCategory(cat.id as ItemCategory).length,
     }));
   }, [getTotalItemCount, getItemsByCategory]);
 
@@ -720,7 +764,7 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
     return (
       <div className={className} style={inventoryStyles.container}>
         <div style={inventoryStyles.loadingContainer}>
-          <LoadingSpinner size="large" />
+          <LoadingSpinner size='large' />
         </div>
       </div>
     );
@@ -732,7 +776,7 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
         <div style={inventoryStyles.errorContainer}>
           <h2>Inventory System Error</h2>
           <p>{error}</p>
-          <Button variant="primary" onClick={() => window.location.reload()}>
+          <Button variant='primary' onClick={() => window.location.reload()}>
             Reload
           </Button>
         </div>
@@ -743,12 +787,7 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
   return (
     <div className={className} style={inventoryStyles.container}>
       {onClose && (
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={onClose}
-          style={inventoryStyles.closeButton}
-        >
+        <Button variant='secondary' size='sm' onClick={onClose} style={inventoryStyles.closeButton}>
           ✕
         </Button>
       )}
@@ -760,15 +799,15 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <h1 style={{
-          ...inventoryStyles.title,
-          fontSize: isMobile ? '1.5rem' : '2rem'
-        }}>
+        <h1
+          style={{
+            ...inventoryStyles.title,
+            fontSize: isMobile ? '1.5rem' : '2rem',
+          }}
+        >
           Inventory
         </h1>
-        <p style={inventoryStyles.subtitle}>
-          Manage your items and consumables
-        </p>
+        <p style={inventoryStyles.subtitle}>Manage your items and consumables</p>
       </motion.div>
 
       {/* Controls */}
@@ -776,7 +815,7 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
         style={{
           ...inventoryStyles.controls,
           flexDirection: isMobile ? 'column' : 'row',
-          alignItems: isMobile ? 'stretch' : 'center'
+          alignItems: isMobile ? 'stretch' : 'center',
         }}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -785,8 +824,8 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
         {/* Search */}
         <div style={inventoryStyles.searchContainer}>
           <input
-            type="text"
-            placeholder="Search items..."
+            type='text'
+            placeholder='Search items...'
             value={searchQuery}
             onChange={handleSearchChange}
             style={inventoryStyles.searchInput}
@@ -795,7 +834,7 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
             <button
               onClick={handleClearSearch}
               style={inventoryStyles.clearSearch}
-              aria-label="Clear search"
+              aria-label='Clear search'
             >
               ✕
             </button>
@@ -834,11 +873,12 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
             🔧 {showAdvancedFilters ? 'Hide' : 'Show'} Filters
           </button>
 
-          {(rarityFilter.length > 0 || valueFilter.min || valueFilter.max || usableOnly || stackableOnly) && (
-            <button
-              onClick={handleClearAllFilters}
-              style={inventoryStyles.clearFiltersButton}
-            >
+          {(rarityFilter.length > 0 ||
+            valueFilter.min ||
+            valueFilter.max ||
+            usableOnly ||
+            stackableOnly) && (
+            <button onClick={handleClearAllFilters} style={inventoryStyles.clearFiltersButton}>
               🗑️ Clear Filters
             </button>
           )}
@@ -857,7 +897,7 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
             key={category.id}
             style={{
               ...inventoryStyles.filterTab,
-              ...(selectedCategory === category.id ? inventoryStyles.filterTabActive : {})
+              ...(selectedCategory === category.id ? inventoryStyles.filterTabActive : {}),
             }}
             onClick={() => handleCategoryChange(category.id)}
             whileHover={{ scale: 1.05 }}
@@ -868,13 +908,15 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
           >
             <span>{category.icon}</span>
             <span>{category.name}</span>
-            <span style={{
-              background: 'rgba(212, 175, 55, 0.2)',
-              borderRadius: '10px',
-              padding: '0.1rem 0.4rem',
-              fontSize: '0.7rem',
-              fontWeight: 'bold'
-            }}>
+            <span
+              style={{
+                background: 'rgba(212, 175, 55, 0.2)',
+                borderRadius: '10px',
+                padding: '0.1rem 0.4rem',
+                fontSize: '0.7rem',
+                fontWeight: 'bold',
+              }}
+            >
               {category.count}
             </span>
           </motion.button>
@@ -902,7 +944,7 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
                       onClick={() => handleRarityFilterChange(rarity)}
                       style={{
                         ...inventoryStyles.rarityChip,
-                        ...(rarityFilter.includes(rarity) ? inventoryStyles.rarityChipActive : {})
+                        ...(rarityFilter.includes(rarity) ? inventoryStyles.rarityChipActive : {}),
                       }}
                     >
                       {rarity}
@@ -918,18 +960,18 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
                 <span style={inventoryStyles.filterLabel}>Value Range</span>
                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                   <input
-                    type="number"
-                    placeholder="Min"
+                    type='number'
+                    placeholder='Min'
                     value={valueFilter.min}
-                    onChange={(e) => handleValueFilterChange('min', e.target.value)}
+                    onChange={e => handleValueFilterChange('min', e.target.value)}
                     style={inventoryStyles.numberInput}
                   />
                   <span style={{ color: '#94a3b8' }}>to</span>
                   <input
-                    type="number"
-                    placeholder="Max"
+                    type='number'
+                    placeholder='Max'
                     value={valueFilter.max}
-                    onChange={(e) => handleValueFilterChange('max', e.target.value)}
+                    onChange={e => handleValueFilterChange('max', e.target.value)}
                     style={inventoryStyles.numberInput}
                   />
                   <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>gold</span>
@@ -941,26 +983,26 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
             <div style={inventoryStyles.filterRow}>
               <div style={inventoryStyles.checkboxGroup}>
                 <input
-                  type="checkbox"
-                  id="usableOnly"
+                  type='checkbox'
+                  id='usableOnly'
                   checked={usableOnly}
-                  onChange={(e) => setUsableOnly(e.target.checked)}
+                  onChange={e => setUsableOnly(e.target.checked)}
                   style={inventoryStyles.checkbox}
                 />
-                <label htmlFor="usableOnly" style={{ fontSize: '0.8rem', color: '#f4f4f4' }}>
+                <label htmlFor='usableOnly' style={{ fontSize: '0.8rem', color: '#f4f4f4' }}>
                   Usable items only
                 </label>
               </div>
 
               <div style={inventoryStyles.checkboxGroup}>
                 <input
-                  type="checkbox"
-                  id="stackableOnly"
+                  type='checkbox'
+                  id='stackableOnly'
                   checked={stackableOnly}
-                  onChange={(e) => setStackableOnly(e.target.checked)}
+                  onChange={e => setStackableOnly(e.target.checked)}
                   style={inventoryStyles.checkbox}
                 />
-                <label htmlFor="stackableOnly" style={{ fontSize: '0.8rem', color: '#f4f4f4' }}>
+                <label htmlFor='stackableOnly' style={{ fontSize: '0.8rem', color: '#f4f4f4' }}>
                   Stackable items only
                 </label>
               </div>
@@ -972,7 +1014,7 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
                     ...inventoryStyles.filterToggle,
                     background: 'rgba(34, 197, 94, 0.1)',
                     border: '1px solid rgba(34, 197, 94, 0.3)',
-                    color: '#22c55e'
+                    color: '#22c55e',
                   }}
                 >
                   📦 Consolidate Stacks
@@ -996,9 +1038,7 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
             Showing {filteredItems.length} of {getTotalItemCount()} items
             {searchQuery && ` matching "${searchQuery}"`}
           </span>
-          <span>
-            Category: {ITEM_CATEGORIES.find(c => c.id === selectedCategory)?.name}
-          </span>
+          <span>Category: {ITEM_CATEGORIES.find(c => c.id === selectedCategory)?.name}</span>
         </motion.div>
 
         {/* Items Grid - With Lazy Loading and Virtualization */}
@@ -1014,10 +1054,10 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
             gap={isMobile ? 12 : 16}
             pageSize={50}
             preloadDistance={2}
-            skeletonType="item"
+            skeletonType='item'
             style={{
               borderRadius: '8px',
-              background: 'rgba(255, 255, 255, 0.02)'
+              background: 'rgba(255, 255, 255, 0.02)',
             }}
             emptyState={
               <motion.div
@@ -1025,10 +1065,9 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
               >
-                {searchQuery ?
-                  `No items found matching "${searchQuery}"` :
-                  `No items in ${ITEM_CATEGORIES.find(c => c.id === selectedCategory)?.name} category`
-                }
+                {searchQuery
+                  ? `No items found matching "${searchQuery}"`
+                  : `No items in ${ITEM_CATEGORIES.find(c => c.id === selectedCategory)?.name} category`}
               </motion.div>
             }
           />
@@ -1039,10 +1078,9 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            {searchQuery ?
-              `No items found matching "${searchQuery}"` :
-              `No items in ${ITEM_CATEGORIES.find(c => c.id === selectedCategory)?.name} category`
-            }
+            {searchQuery
+              ? `No items found matching "${searchQuery}"`
+              : `No items in ${ITEM_CATEGORIES.find(c => c.id === selectedCategory)?.name} category`}
           </motion.div>
         ) : virtualGridSettings.shouldVirtualize ? (
           // Use virtualized grid for medium inventories
@@ -1057,17 +1095,19 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
             overscan={virtualGridSettings.overscan}
             style={{
               borderRadius: '8px',
-              background: 'rgba(255, 255, 255, 0.02)'
+              background: 'rgba(255, 255, 255, 0.02)',
             }}
           />
         ) : (
           // Use regular grid for small inventories
-          <div style={{
-            ...inventoryStyles.itemGrid,
-            ...(isMobile ? inventoryStyles.mobileItemGrid : {}),
-            height: GRID_CONTAINER_HEIGHT,
-            maxHeight: GRID_CONTAINER_HEIGHT
-          }}>
+          <div
+            style={{
+              ...inventoryStyles.itemGrid,
+              ...(isMobile ? inventoryStyles.mobileItemGrid : {}),
+              height: GRID_CONTAINER_HEIGHT,
+              maxHeight: GRID_CONTAINER_HEIGHT,
+            }}
+          >
             <AnimatePresence>
               {filteredItems.map((item, index) => (
                 <motion.div
@@ -1077,7 +1117,7 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{
                     delay: index * 0.05,
-                    duration: 0.3
+                    duration: 0.3,
                   }}
                   layout
                 >
@@ -1090,7 +1130,7 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
       </div>
 
       {/* Notification Container for user feedback */}
-      <NotificationContainer position="top-right" maxNotifications={5} />
+      <NotificationContainer position='top-right' maxNotifications={5} />
     </div>
   );
 };

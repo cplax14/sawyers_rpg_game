@@ -15,7 +15,7 @@ declare global {
 
 export const SimpleInventoryScreen: React.FC<SimpleInventoryScreenProps> = ({
   className,
-  onClose
+  onClose,
 }) => {
   const [gameState, setGameState] = useState<any>(null);
   const [items, setItems] = useState<any[]>([]);
@@ -50,7 +50,7 @@ export const SimpleInventoryScreen: React.FC<SimpleInventoryScreenProps> = ({
             return {
               id: itemId,
               quantity,
-              ...itemData
+              ...itemData,
             };
           });
           setItems(itemArray);
@@ -75,19 +75,19 @@ export const SimpleInventoryScreen: React.FC<SimpleInventoryScreenProps> = ({
     color: '#f4f4f4',
     padding: '1rem',
     boxSizing: 'border-box',
-    overflow: 'auto'
+    overflow: 'auto',
   };
 
   const headerStyle: React.CSSProperties = {
     textAlign: 'center',
-    marginBottom: '1.5rem'
+    marginBottom: '1.5rem',
   };
 
   const titleStyle: React.CSSProperties = {
     fontSize: '2rem',
     fontWeight: 'bold',
     margin: '0 0 0.5rem 0',
-    color: '#d4af37'
+    color: '#d4af37',
   };
 
   const statsStyle: React.CSSProperties = {
@@ -97,14 +97,14 @@ export const SimpleInventoryScreen: React.FC<SimpleInventoryScreenProps> = ({
     borderRadius: '8px',
     padding: '1rem',
     marginBottom: '1rem',
-    fontSize: '1.1rem'
+    fontSize: '1.1rem',
   };
 
   const itemGridStyle: React.CSSProperties = {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
     gap: '1rem',
-    flex: 1
+    flex: 1,
   };
 
   const itemCardStyle: React.CSSProperties = {
@@ -112,7 +112,7 @@ export const SimpleInventoryScreen: React.FC<SimpleInventoryScreenProps> = ({
     border: '1px solid rgba(212, 175, 55, 0.3)',
     borderRadius: '8px',
     padding: '1rem',
-    transition: 'transform 0.2s, box-shadow 0.2s'
+    transition: 'transform 0.2s, box-shadow 0.2s',
   };
 
   const emptyStateStyle: React.CSSProperties = {
@@ -120,15 +120,15 @@ export const SimpleInventoryScreen: React.FC<SimpleInventoryScreenProps> = ({
     color: '#94a3b8',
     fontSize: '1.2rem',
     padding: '3rem 1rem',
-    fontStyle: 'italic'
+    fontStyle: 'italic',
   };
 
   return (
     <div className={className} style={containerStyle}>
       {onClose && (
         <Button
-          variant="secondary"
-          size="sm"
+          variant='secondary'
+          size='sm'
           onClick={onClose}
           style={{ position: 'absolute', top: '1rem', right: '1rem', zIndex: 10 }}
         >
@@ -138,9 +138,7 @@ export const SimpleInventoryScreen: React.FC<SimpleInventoryScreenProps> = ({
 
       <div style={headerStyle}>
         <h1 style={titleStyle}>Inventory</h1>
-        <p style={{ color: '#94a3b8', margin: '0' }}>
-          View your character progress and items
-        </p>
+        <p style={{ color: '#94a3b8', margin: '0' }}>View your character progress and items</p>
       </div>
 
       {/* Character Stats */}
@@ -161,12 +159,10 @@ export const SimpleInventoryScreen: React.FC<SimpleInventoryScreenProps> = ({
         <h3 style={{ color: '#d4af37', marginBottom: '1rem' }}>Items ({items.length})</h3>
 
         {items.length === 0 ? (
-          <div style={emptyStateStyle}>
-            No items in inventory
-          </div>
+          <div style={emptyStateStyle}>No items in inventory</div>
         ) : (
           <div style={itemGridStyle}>
-            {items.map((item) => (
+            {items.map(item => (
               <div key={item.id} style={itemCardStyle}>
                 <div style={{ fontWeight: 'bold', color: '#d4af37', marginBottom: '0.5rem' }}>
                   {item.name || item.id}
@@ -175,17 +171,17 @@ export const SimpleInventoryScreen: React.FC<SimpleInventoryScreenProps> = ({
                   Quantity: {item.quantity}
                 </div>
                 {item.description && (
-                  <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
-                    {item.description}
-                  </div>
+                  <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{item.description}</div>
                 )}
                 {item.rarity && item.rarity !== 'common' && (
-                  <div style={{
-                    fontSize: '0.7rem',
-                    color: '#d4af37',
-                    marginTop: '0.5rem',
-                    textTransform: 'uppercase'
-                  }}>
+                  <div
+                    style={{
+                      fontSize: '0.7rem',
+                      color: '#d4af37',
+                      marginTop: '0.5rem',
+                      textTransform: 'uppercase',
+                    }}
+                  >
                     {item.rarity}
                   </div>
                 )}
@@ -197,17 +193,22 @@ export const SimpleInventoryScreen: React.FC<SimpleInventoryScreenProps> = ({
 
       {/* Debug Info */}
       {process.env.NODE_ENV === 'development' && (
-        <div style={{
-          marginTop: '2rem',
-          padding: '1rem',
-          background: 'rgba(0,0,0,0.3)',
-          borderRadius: '4px',
-          fontSize: '0.8rem',
-          color: '#94a3b8'
-        }}>
-          <strong>Debug Info:</strong><br/>
-          GameState loaded: {window.GameState ? 'Yes' : 'No'}<br/>
-          ItemData loaded: {window.ItemData ? 'Yes' : 'No'}<br/>
+        <div
+          style={{
+            marginTop: '2rem',
+            padding: '1rem',
+            background: 'rgba(0,0,0,0.3)',
+            borderRadius: '4px',
+            fontSize: '0.8rem',
+            color: '#94a3b8',
+          }}
+        >
+          <strong>Debug Info:</strong>
+          <br />
+          GameState loaded: {window.GameState ? 'Yes' : 'No'}
+          <br />
+          ItemData loaded: {window.ItemData ? 'Yes' : 'No'}
+          <br />
           Raw inventory: {JSON.stringify(gameState?.player?.inventory?.items || {}, null, 2)}
         </div>
       )}

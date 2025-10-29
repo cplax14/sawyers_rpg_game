@@ -69,7 +69,7 @@ describe('AnimationController Integration Tests', () => {
     it('successfully renders Magic Bolt animation', async () => {
       // Arrange & Act
       const { container } = render(
-        <AnimationController {...defaultProps} attackType="magic_bolt" />
+        <AnimationController {...defaultProps} attackType='magic_bolt' />
       );
 
       // Assert - Animation controller wrapper should render
@@ -84,7 +84,7 @@ describe('AnimationController Integration Tests', () => {
 
       // Act
       render(
-        <AnimationController {...defaultProps} attackType="magic_bolt" onComplete={onComplete} />
+        <AnimationController {...defaultProps} attackType='magic_bolt' onComplete={onComplete} />
       );
 
       // Assert - onComplete should be called after animation (950ms total)
@@ -98,7 +98,7 @@ describe('AnimationController Integration Tests', () => {
 
     it('validates particle counts for Magic Bolt phases', async () => {
       // Arrange & Act
-      render(<AnimationController {...defaultProps} attackType="magic_bolt" />);
+      render(<AnimationController {...defaultProps} attackType='magic_bolt' />);
 
       // Assert - Should not have any particle count errors
       await waitFor(() => {
@@ -120,11 +120,7 @@ describe('AnimationController Integration Tests', () => {
 
       // Act
       const { container } = render(
-        <AnimationController
-          {...defaultProps}
-          attackType="magic_bolt"
-          attackData={customData}
-        />
+        <AnimationController {...defaultProps} attackType='magic_bolt' attackData={customData} />
       );
 
       // Assert - Animation should render with custom positions
@@ -169,10 +165,11 @@ describe('AnimationController Integration Tests', () => {
 
       // Should log a warning about using fallback
       const fallbackWarnings = consoleWarn.mock.calls.filter(call =>
-        call.some(arg =>
-          typeof arg === 'string' &&
-          arg.includes('No animation found') &&
-          arg.includes(unknownAttackType)
+        call.some(
+          arg =>
+            typeof arg === 'string' &&
+            arg.includes('No animation found') &&
+            arg.includes(unknownAttackType)
         )
       );
       expect(fallbackWarnings.length).toBeGreaterThan(0);
@@ -182,9 +179,7 @@ describe('AnimationController Integration Tests', () => {
   describe('Integration with Fireball Animation', () => {
     it('successfully renders Fireball animation', async () => {
       // Arrange & Act
-      const { container } = render(
-        <AnimationController {...defaultProps} attackType="fire" />
-      );
+      const { container } = render(<AnimationController {...defaultProps} attackType='fire' />);
 
       // Assert - Animation controller wrapper should render
       await waitFor(() => {
@@ -197,9 +192,7 @@ describe('AnimationController Integration Tests', () => {
       const onComplete = jest.fn();
 
       // Act
-      render(
-        <AnimationController {...defaultProps} attackType="fire" onComplete={onComplete} />
-      );
+      render(<AnimationController {...defaultProps} attackType='fire' onComplete={onComplete} />);
 
       // Assert - onComplete should be called after animation
       await waitFor(
@@ -212,7 +205,7 @@ describe('AnimationController Integration Tests', () => {
 
     it('validates particle counts for Fireball phases', async () => {
       // Arrange & Act
-      render(<AnimationController {...defaultProps} attackType="fire" />);
+      render(<AnimationController {...defaultProps} attackType='fire' />);
 
       // Assert - Should not have any particle count errors
       await waitFor(() => {
@@ -234,11 +227,7 @@ describe('AnimationController Integration Tests', () => {
 
       // Act
       const { container } = render(
-        <AnimationController
-          {...defaultProps}
-          attackType="fire"
-          attackData={customData}
-        />
+        <AnimationController {...defaultProps} attackType='fire' attackData={customData} />
       );
 
       // Assert - Animation should render with custom positions
@@ -251,9 +240,7 @@ describe('AnimationController Integration Tests', () => {
   describe('Integration with Ice Shard Animation', () => {
     it('successfully renders Ice Shard animation', async () => {
       // Arrange & Act
-      const { container } = render(
-        <AnimationController {...defaultProps} attackType="ice" />
-      );
+      const { container } = render(<AnimationController {...defaultProps} attackType='ice' />);
 
       // Assert
       await waitFor(() => {
@@ -263,7 +250,7 @@ describe('AnimationController Integration Tests', () => {
 
     it('validates particle counts for Ice Shard phases', async () => {
       // Arrange & Act
-      render(<AnimationController {...defaultProps} attackType="ice" />);
+      render(<AnimationController {...defaultProps} attackType='ice' />);
 
       // Wait a bit for animation to start
       await new Promise(resolve => setTimeout(resolve, 100));
@@ -279,9 +266,7 @@ describe('AnimationController Integration Tests', () => {
   describe('Integration with Lightning Animation', () => {
     it('successfully renders Lightning animation', async () => {
       // Arrange & Act
-      const { container } = render(
-        <AnimationController {...defaultProps} attackType="thunder" />
-      );
+      const { container } = render(<AnimationController {...defaultProps} attackType='thunder' />);
 
       // Assert
       await waitFor(() => {
@@ -295,7 +280,7 @@ describe('AnimationController Integration Tests', () => {
 
       // Act
       render(
-        <AnimationController {...defaultProps} attackType="thunder" onComplete={onComplete} />
+        <AnimationController {...defaultProps} attackType='thunder' onComplete={onComplete} />
       );
 
       // Assert
@@ -309,7 +294,7 @@ describe('AnimationController Integration Tests', () => {
 
     it('validates particle counts for Lightning phases', async () => {
       // Arrange & Act
-      render(<AnimationController {...defaultProps} attackType="thunder" />);
+      render(<AnimationController {...defaultProps} attackType='thunder' />);
 
       // Assert
       await waitFor(() => {
@@ -324,9 +309,7 @@ describe('AnimationController Integration Tests', () => {
   describe('Integration with Holy Beam Animation', () => {
     it('successfully renders Holy Beam animation', async () => {
       // Arrange & Act
-      const { container } = render(
-        <AnimationController {...defaultProps} attackType="holy" />
-      );
+      const { container } = render(<AnimationController {...defaultProps} attackType='holy' />);
 
       // Assert
       await waitFor(() => {
@@ -339,9 +322,7 @@ describe('AnimationController Integration Tests', () => {
       const onComplete = jest.fn();
 
       // Act
-      render(
-        <AnimationController {...defaultProps} attackType="holy" onComplete={onComplete} />
-      );
+      render(<AnimationController {...defaultProps} attackType='holy' onComplete={onComplete} />);
 
       // Assert
       await waitFor(
@@ -356,9 +337,7 @@ describe('AnimationController Integration Tests', () => {
   describe('Integration with Meteor Animation', () => {
     it('successfully renders Meteor animation', async () => {
       // Arrange & Act
-      const { container } = render(
-        <AnimationController {...defaultProps} attackType="meteor" />
-      );
+      const { container } = render(<AnimationController {...defaultProps} attackType='meteor' />);
 
       // Assert
       await waitFor(() => {
@@ -371,9 +350,7 @@ describe('AnimationController Integration Tests', () => {
       const onComplete = jest.fn();
 
       // Act
-      render(
-        <AnimationController {...defaultProps} attackType="meteor" onComplete={onComplete} />
-      );
+      render(<AnimationController {...defaultProps} attackType='meteor' onComplete={onComplete} />);
 
       // Assert
       await waitFor(
@@ -386,7 +363,7 @@ describe('AnimationController Integration Tests', () => {
 
     it('validates particle counts for Meteor phases', async () => {
       // Arrange & Act
-      render(<AnimationController {...defaultProps} attackType="meteor" />);
+      render(<AnimationController {...defaultProps} attackType='meteor' />);
 
       // Assert
       await waitFor(() => {
@@ -401,9 +378,7 @@ describe('AnimationController Integration Tests', () => {
   describe('Integration with Support Spell Animations', () => {
     it('successfully renders Heal animation', async () => {
       // Arrange & Act
-      const { container } = render(
-        <AnimationController {...defaultProps} attackType="heal" />
-      );
+      const { container } = render(<AnimationController {...defaultProps} attackType='heal' />);
 
       // Assert
       await waitFor(() => {
@@ -413,9 +388,7 @@ describe('AnimationController Integration Tests', () => {
 
     it('successfully renders Protect animation', async () => {
       // Arrange & Act
-      const { container } = render(
-        <AnimationController {...defaultProps} attackType="protect" />
-      );
+      const { container } = render(<AnimationController {...defaultProps} attackType='protect' />);
 
       // Assert
       await waitFor(() => {
@@ -425,9 +398,7 @@ describe('AnimationController Integration Tests', () => {
 
     it('successfully renders Shell animation', async () => {
       // Arrange & Act
-      const { container } = render(
-        <AnimationController {...defaultProps} attackType="shell" />
-      );
+      const { container } = render(<AnimationController {...defaultProps} attackType='shell' />);
 
       // Assert
       await waitFor(() => {
@@ -437,9 +408,7 @@ describe('AnimationController Integration Tests', () => {
 
     it('successfully renders Haste animation', async () => {
       // Arrange & Act
-      const { container } = render(
-        <AnimationController {...defaultProps} attackType="haste" />
-      );
+      const { container } = render(<AnimationController {...defaultProps} attackType='haste' />);
 
       // Assert
       await waitFor(() => {
@@ -454,11 +423,7 @@ describe('AnimationController Integration Tests', () => {
       // Act & Assert
       for (const spell of supportSpells) {
         const { container, unmount } = render(
-          <AnimationController
-            {...defaultProps}
-            attackType={spell}
-            onComplete={jest.fn()}
-          />
+          <AnimationController {...defaultProps} attackType={spell} onComplete={jest.fn()} />
         );
 
         // Verify animation controller renders
@@ -479,11 +444,7 @@ describe('AnimationController Integration Tests', () => {
       // Act & Assert - Each spell renders successfully
       for (const spell of spells) {
         const { container, unmount } = render(
-          <AnimationController
-            {...defaultProps}
-            attackType={spell}
-            onComplete={jest.fn()}
-          />
+          <AnimationController {...defaultProps} attackType={spell} onComplete={jest.fn()} />
         );
 
         // Verify animation controller renders
@@ -502,11 +463,7 @@ describe('AnimationController Integration Tests', () => {
       // Act - Render all spells
       for (const spell of spells) {
         const { unmount } = render(
-          <AnimationController
-            {...defaultProps}
-            attackType={spell}
-            onComplete={jest.fn()}
-          />
+          <AnimationController {...defaultProps} attackType={spell} onComplete={jest.fn()} />
         );
 
         // Wait a bit for animation to start
@@ -561,9 +518,10 @@ describe('AnimationController Integration Tests', () => {
 
       // No position validation errors should occur
       const positionWarnings = consoleWarn.mock.calls.filter(call =>
-        call.some(arg =>
-          typeof arg === 'string' &&
-          (arg.includes('Invalid position') || arg.includes('Position out of bounds'))
+        call.some(
+          arg =>
+            typeof arg === 'string' &&
+            (arg.includes('Invalid position') || arg.includes('Position out of bounds'))
         )
       );
       expect(positionWarnings.length).toBe(0);
@@ -583,7 +541,7 @@ describe('AnimationController Integration Tests', () => {
         const { unmount } = render(
           <AnimationController
             {...defaultProps}
-            attackType="fire"
+            attackType='fire'
             attackData={attackData}
             onComplete={onComplete}
           />
@@ -612,26 +570,17 @@ describe('AnimationController Integration Tests', () => {
         const onComplete = jest.fn();
 
         const { unmount } = render(
-          <AnimationController
-            {...defaultProps}
-            attackType={spell}
-            onComplete={onComplete}
-          />
+          <AnimationController {...defaultProps} attackType={spell} onComplete={onComplete} />
         );
 
         // Check for particle count errors
         await waitFor(() => {
           const particleErrors = consoleError.mock.calls.filter(call =>
-            call.some(arg =>
-              typeof arg === 'string' && arg.includes('EXCEEDS maximum')
-            )
+            call.some(arg => typeof arg === 'string' && arg.includes('EXCEEDS maximum'))
           );
 
           if (particleErrors.length > 0) {
-            console.error(
-              `Spell "${spell}" has particle count violations:`,
-              particleErrors
-            );
+            console.error(`Spell "${spell}" has particle count violations:`, particleErrors);
           }
 
           expect(particleErrors.length).toBe(0);
@@ -648,16 +597,12 @@ describe('AnimationController Integration Tests', () => {
 
       // Act
       const onComplete = jest.fn();
-      render(
-        <AnimationController {...defaultProps} attackType="fire" onComplete={onComplete} />
-      );
+      render(<AnimationController {...defaultProps} attackType='fire' onComplete={onComplete} />);
 
       // Assert - Should log animation timing
       await waitFor(() => {
         const timingLogs = consoleLog.mock.calls.filter(call =>
-          call.some(arg =>
-            typeof arg === 'string' && arg.includes('[Animation Timing]')
-          )
+          call.some(arg => typeof arg === 'string' && arg.includes('[Animation Timing]'))
         );
         expect(timingLogs.length).toBeGreaterThan(0);
       });
@@ -680,9 +625,7 @@ describe('AnimationController Integration Tests', () => {
       const onComplete = jest.fn();
 
       // Act
-      render(
-        <AnimationController {...defaultProps} attackType="fire" onComplete={onComplete} />
-      );
+      render(<AnimationController {...defaultProps} attackType='fire' onComplete={onComplete} />);
 
       // Assert - onComplete should still be called despite error
       await waitFor(
@@ -708,7 +651,7 @@ describe('AnimationController Integration Tests', () => {
       render(
         <AnimationController
           {...defaultProps}
-          attackType="fire"
+          attackType='fire'
           attackData={invalidData}
           onComplete={onComplete}
         />

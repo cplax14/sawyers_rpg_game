@@ -20,24 +20,24 @@ interface ConfirmationDialogProps {
 const dialogStyles = {
   content: {
     textAlign: 'center' as const,
-    padding: '1rem'
+    padding: '1rem',
   },
   message: {
     fontSize: '1rem',
     color: '#f4f4f4',
     marginBottom: '1.5rem',
-    lineHeight: '1.5'
+    lineHeight: '1.5',
   },
   actions: {
     display: 'flex',
     gap: '0.75rem',
     justifyContent: 'center',
     alignItems: 'center',
-    flexWrap: 'wrap' as const
+    flexWrap: 'wrap' as const,
   },
   children: {
-    marginBottom: '1rem'
-  }
+    marginBottom: '1rem',
+  },
 };
 
 export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
@@ -50,7 +50,7 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   cancelText = 'Cancel',
   confirmVariant = 'primary',
   isLoading = false,
-  children
+  children,
 }) => {
   const handleConfirm = () => {
     if (!isLoading) {
@@ -69,21 +69,15 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
       isOpen={isOpen}
       onClose={handleCancel}
       title={title}
-      size="sm"
+      size='sm'
       closeOnOverlayClick={!isLoading}
       closeOnEscape={!isLoading}
       showCloseButton={!isLoading}
     >
       <div style={dialogStyles.content}>
-        {children && (
-          <div style={dialogStyles.children}>
-            {children}
-          </div>
-        )}
+        {children && <div style={dialogStyles.children}>{children}</div>}
 
-        <p style={dialogStyles.message}>
-          {message}
-        </p>
+        <p style={dialogStyles.message}>{message}</p>
 
         <motion.div
           style={dialogStyles.actions}
@@ -91,12 +85,7 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Button
-            variant="secondary"
-            onClick={handleCancel}
-            disabled={isLoading}
-            size="md"
-          >
+          <Button variant='secondary' onClick={handleCancel} disabled={isLoading} size='md'>
             {cancelText}
           </Button>
 
@@ -105,7 +94,7 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
             onClick={handleConfirm}
             disabled={isLoading}
             loading={isLoading}
-            size="md"
+            size='md'
           >
             {confirmText}
           </Button>

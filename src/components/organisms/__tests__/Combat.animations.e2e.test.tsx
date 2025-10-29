@@ -555,8 +555,7 @@ describe('Combat Animation E2E Tests', () => {
         expect(metadata?.component).toBeDefined();
         // React components can be functions or objects (for React.memo, forwardRef, etc.)
         const isValidComponent =
-          typeof metadata?.component === 'function' ||
-          typeof metadata?.component === 'object';
+          typeof metadata?.component === 'function' || typeof metadata?.component === 'object';
         expect(isValidComponent).toBe(true);
       });
     });
@@ -660,18 +659,13 @@ describe('Combat Animation E2E Tests', () => {
       });
 
       // Verify we have exactly 10 spells
-      const wizardSpells = expectedSpells.filter(id =>
-        registeredSpells.includes(id)
-      );
+      const wizardSpells = expectedSpells.filter(id => registeredSpells.includes(id));
       expect(wizardSpells).toHaveLength(10);
     });
 
     it('should verify spell metadata completeness', () => {
       // Arrange
-      const allWizardSpells = [
-        ...WIZARD_SPELLS.OFFENSIVE,
-        ...WIZARD_SPELLS.DEFENSIVE,
-      ];
+      const allWizardSpells = [...WIZARD_SPELLS.OFFENSIVE, ...WIZARD_SPELLS.DEFENSIVE];
 
       // Act & Assert
       allWizardSpells.forEach(spell => {

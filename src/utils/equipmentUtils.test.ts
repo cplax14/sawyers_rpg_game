@@ -15,7 +15,7 @@ import {
   formatStatValue,
   calculateDurabilityImpact,
   getRarityMultiplier,
-  clearCompatibilityCache
+  clearCompatibilityCache,
 } from './equipmentUtils';
 
 import { EnhancedItem, EquipmentSet, EquipmentSlot } from '../types/inventory';
@@ -34,7 +34,7 @@ describe('equipmentUtils', () => {
     magicAttack: 10,
     magicDefense: 10,
     speed: 10,
-    accuracy: 85
+    accuracy: 85,
   };
 
   const mockSword: EnhancedItem = {
@@ -49,13 +49,13 @@ describe('equipmentUtils', () => {
     weight: 3,
     statModifiers: {
       attack: { value: 15, type: 'flat' },
-      speed: { value: -2, type: 'flat' }
+      speed: { value: -2, type: 'flat' },
     },
     requirements: {
       level: 5,
       classes: ['warrior', 'paladin'],
-      stats: { attack: 8 }
-    }
+      stats: { attack: 8 },
+    },
   };
 
   const mockShield: EnhancedItem = {
@@ -70,12 +70,12 @@ describe('equipmentUtils', () => {
     weight: 4,
     statModifiers: {
       defense: { value: 12, type: 'flat' },
-      magicDefense: { value: 5, type: 'flat' }
+      magicDefense: { value: 5, type: 'flat' },
     },
     requirements: {
       level: 3,
-      classes: ['warrior', 'paladin']
-    }
+      classes: ['warrior', 'paladin'],
+    },
   };
 
   const mockArmor: EnhancedItem = {
@@ -90,11 +90,11 @@ describe('equipmentUtils', () => {
     weight: 5,
     statModifiers: {
       defense: { value: 8, type: 'flat' },
-      speed: { value: 1, type: 'flat' }
+      speed: { value: 1, type: 'flat' },
     },
     requirements: {
-      level: 2
-    }
+      level: 2,
+    },
   };
 
   const mockBetterSword: EnhancedItem = {
@@ -109,13 +109,13 @@ describe('equipmentUtils', () => {
     weight: 3.5,
     statModifiers: {
       attack: { value: 25, type: 'flat' },
-      accuracy: { value: 5, type: 'flat' }
+      accuracy: { value: 5, type: 'flat' },
     },
     requirements: {
       level: 10,
       classes: ['warrior', 'paladin', 'ranger'],
-      stats: { attack: 8 } // Lowered from 12 to be compatible with mockPlayerStats (attack: 10)
-    }
+      stats: { attack: 8 }, // Lowered from 12 to be compatible with mockPlayerStats (attack: 10)
+    },
   };
 
   const mockEquipmentSet: EquipmentSet = {
@@ -128,7 +128,7 @@ describe('equipmentUtils', () => {
     necklace: undefined,
     ring1: undefined,
     ring2: undefined,
-    charm: undefined
+    charm: undefined,
   };
 
   describe('calculateEquipmentStats', () => {
@@ -169,7 +169,7 @@ describe('equipmentUtils', () => {
         necklace: undefined,
         ring1: undefined,
         ring2: undefined,
-        charm: undefined
+        charm: undefined,
       };
 
       const result = calculateEquipmentStats(emptySet, mockPlayerStats);
@@ -183,13 +183,13 @@ describe('equipmentUtils', () => {
       const highAccuracyItem: EnhancedItem = {
         ...mockSword,
         statModifiers: {
-          accuracy: { value: 50, type: 'flat' }
-        }
+          accuracy: { value: 50, type: 'flat' },
+        },
       };
 
       const equipmentSet: EquipmentSet = {
         ...mockEquipmentSet,
-        weapon: highAccuracyItem
+        weapon: highAccuracyItem,
       };
 
       const result = calculateEquipmentStats(equipmentSet, mockPlayerStats);
@@ -271,7 +271,7 @@ describe('equipmentUtils', () => {
     it('should generate warnings for suboptimal usage', () => {
       const legendaryItem: EnhancedItem = {
         ...mockSword,
-        rarity: 'legendary'
+        rarity: 'legendary',
       };
 
       const result = checkEquipmentCompatibility(
@@ -287,13 +287,10 @@ describe('equipmentUtils', () => {
     });
 
     it('should generate suggestions', () => {
-      const result = checkEquipmentCompatibility(
-        mockSword,
-        'weapon',
-        10,
-        'warrior',
-        { ...mockPlayerStats, attack: 15 }
-      );
+      const result = checkEquipmentCompatibility(mockSword, 'weapon', 10, 'warrior', {
+        ...mockPlayerStats,
+        attack: 15,
+      });
 
       expect(result.suggestions.length).toBeGreaterThan(0);
     });
@@ -333,8 +330,8 @@ describe('equipmentUtils', () => {
         requirements: {
           level: 15,
           classes: ['warrior', 'paladin'],
-          stats: { attack: 8 }
-        }
+          stats: { attack: 8 },
+        },
       };
 
       const result = checkEquipmentCompatibility(
@@ -397,8 +394,8 @@ describe('equipmentUtils', () => {
         ...mockSword,
         statModifiers: {
           attack: { value: 35, type: 'flat' }, // Much better
-          speed: { value: 5, type: 'flat' }
-        }
+          speed: { value: 5, type: 'flat' },
+        },
       };
 
       const result = compareEquipment(mockSword, superSword, mockPlayerStats);
@@ -431,8 +428,8 @@ describe('equipmentUtils', () => {
         id: 'super_shield',
         statModifiers: {
           defense: { value: 25, type: 'flat' },
-          magicDefense: { value: 15, type: 'flat' }
-        }
+          magicDefense: { value: 15, type: 'flat' },
+        },
       };
 
       const availableItems = [mockBetterSword, superShield];
@@ -449,7 +446,9 @@ describe('equipmentUtils', () => {
       expect(result.length).toBeGreaterThanOrEqual(1);
       // If multiple recommendations, should be sorted by priority and stat improvement
       if (result.length > 1) {
-        expect(result[0].statImprovement.total).toBeGreaterThanOrEqual(result[1].statImprovement.total);
+        expect(result[0].statImprovement.total).toBeGreaterThanOrEqual(
+          result[1].statImprovement.total
+        );
       }
     });
 
@@ -457,8 +456,8 @@ describe('equipmentUtils', () => {
       const highLevelSword: EnhancedItem = {
         ...mockBetterSword,
         requirements: {
-          level: 50 // Too high
-        }
+          level: 50, // Too high
+        },
       };
 
       const availableItems = [highLevelSword];
@@ -515,8 +514,8 @@ describe('equipmentUtils', () => {
         ...mockSword,
         id: 'weak_sword',
         statModifiers: {
-          attack: { value: 5, type: 'flat' }
-        }
+          attack: { value: 5, type: 'flat' },
+        },
       };
 
       const availableItems = [weakerSword];
@@ -558,7 +557,7 @@ describe('equipmentUtils', () => {
     it('should reject items without equipment slot', () => {
       const itemWithoutSlot: EnhancedItem = {
         ...mockSword,
-        equipmentSlot: undefined
+        equipmentSlot: undefined,
       };
 
       const result = validateEquipmentSlot(itemWithoutSlot, 'weapon');
@@ -638,12 +637,12 @@ describe('equipmentUtils', () => {
     it('should handle equipment with no stat modifiers', () => {
       const noStatsItem: EnhancedItem = {
         ...mockSword,
-        statModifiers: undefined
+        statModifiers: undefined,
       };
 
       const equipmentSet: EquipmentSet = {
         ...mockEquipmentSet,
-        weapon: noStatsItem
+        weapon: noStatsItem,
       };
 
       const result = calculateEquipmentStats(equipmentSet, mockPlayerStats);
@@ -655,7 +654,7 @@ describe('equipmentUtils', () => {
     it('should handle equipment comparison with items having no stat modifiers', () => {
       const noStatsItem: EnhancedItem = {
         ...mockSword,
-        statModifiers: undefined
+        statModifiers: undefined,
       };
 
       const result = compareEquipment(mockSword, noStatsItem, mockPlayerStats);
@@ -667,16 +666,13 @@ describe('equipmentUtils', () => {
     it('should handle equipment with requirements but no specific checks needed', () => {
       const noRequirementsItem: EnhancedItem = {
         ...mockSword,
-        requirements: undefined
+        requirements: undefined,
       };
 
-      const result = checkEquipmentCompatibility(
-        noRequirementsItem,
-        'weapon',
-        1,
-        'mage',
-        { ...mockPlayerStats, attack: 1 }
-      );
+      const result = checkEquipmentCompatibility(noRequirementsItem, 'weapon', 1, 'mage', {
+        ...mockPlayerStats,
+        attack: 1,
+      });
 
       expect(result.canEquip).toBe(true);
       expect(result.reasons).toHaveLength(0);

@@ -13,7 +13,7 @@ import {
   OptimizedAutoSaveState,
   PerformanceMetrics,
   createOptimizedAutoSaveConfig,
-  shouldPauseForPerformance
+  shouldPauseForPerformance,
 } from '../utils/autoSaveOptimized';
 import { ReactGameState } from '../types/game';
 
@@ -45,8 +45,8 @@ const getOptimizedPauseReason = (
       metrics: {
         fps: currentFPS,
         serializationTime: performanceMetrics.averageSerializationTime,
-        saveSize: performanceMetrics.averageSaveSize
-      }
+        saveSize: performanceMetrics.averageSaveSize,
+      },
     };
   }
 
@@ -55,7 +55,7 @@ const getOptimizedPauseReason = (
     return {
       reason: 'Game is loading',
       priority: 2,
-      source: 'system'
+      source: 'system',
     };
   }
 
@@ -64,7 +64,7 @@ const getOptimizedPauseReason = (
     return {
       reason: 'Combat in progress',
       priority: 3,
-      source: 'combat'
+      source: 'combat',
     };
   }
 
@@ -73,7 +73,7 @@ const getOptimizedPauseReason = (
     return {
       reason: 'Character creation in progress',
       priority: 4,
-      source: 'system'
+      source: 'system',
     };
   }
 
@@ -82,7 +82,7 @@ const getOptimizedPauseReason = (
     return {
       reason: 'Settings menu open',
       priority: 5,
-      source: 'user'
+      source: 'user',
     };
   }
 
@@ -132,7 +132,7 @@ const hasSignificantGameChanges = (
     'tutorial_completed',
     'first_boss_defeated',
     'chapter_completed',
-    'major_quest_completed'
+    'major_quest_completed',
   ];
 
   for (const flag of importantFlags) {
@@ -193,7 +193,7 @@ export const useOptimizedAutoSave = (
     autoStart = true,
     autoSaveSlot = 0,
     enablePerformanceMonitoring = true,
-    fpsThreshold = 30
+    fpsThreshold = 30,
   } = options;
 
   // Hooks
@@ -210,7 +210,7 @@ export const useOptimizedAutoSave = (
     lastSaveSuccess: true,
     lastSaveSize: 0,
     serializationTime: 0,
-    isDebouncing: false
+    isDebouncing: false,
   });
 
   const [performanceMetrics, setPerformanceMetrics] = useState<PerformanceMetrics>({
@@ -220,7 +220,7 @@ export const useOptimizedAutoSave = (
     maxSaveSize: 0,
     totalSaves: 0,
     failedSaves: 0,
-    debouncedSaves: 0
+    debouncedSaves: 0,
   });
 
   const [currentFPS, setCurrentFPS] = useState<number>(60);
@@ -235,11 +235,14 @@ export const useOptimizedAutoSave = (
   }>({ frameCount: 0, lastTime: performance.now(), intervalId: null });
 
   // Memoized config
-  const autoSaveConfig = useMemo(() => ({
-    ...createOptimizedAutoSaveConfig(),
-    autoSaveSlot,
-    ...configOverrides
-  }), [autoSaveSlot, configOverrides]);
+  const autoSaveConfig = useMemo(
+    () => ({
+      ...createOptimizedAutoSaveConfig(),
+      autoSaveSlot,
+      ...configOverrides,
+    }),
+    [autoSaveSlot, configOverrides]
+  );
 
   // Performance monitoring
   useEffect(() => {
@@ -250,7 +253,8 @@ export const useOptimizedAutoSave = (
       const currentTime = performance.now();
 
       if (currentTime - fpsMonitorRef.current.lastTime >= 1000) {
-        const fps = fpsMonitorRef.current.frameCount /
+        const fps =
+          fpsMonitorRef.current.frameCount /
           ((currentTime - fpsMonitorRef.current.lastTime) / 1000);
 
         setCurrentFPS(Math.round(fps));
@@ -275,18 +279,22 @@ export const useOptimizedAutoSave = (
     const callbacks = {
       onSave: async (gameState: ReactGameState, slotNumber: number) => {
         const result = await smartSave(slotNumber, 'Auto Save', gameState, {
-          skipFallback: false
+          skipFallback: false,
         });
         return result.success;
       },
-      onSaveSuccess: (timestamp: number, slotNumber: number, metrics: { saveTime: number; saveSize: number }) => {
+      onSaveSuccess: (
+        timestamp: number,
+        slotNumber: number,
+        metrics: { saveTime: number; saveSize: number }
+      ) => {
         setAutoSaveState(prev => ({
           ...prev,
           lastSaveTime: timestamp,
           lastSaveSuccess: true,
           consecutiveFailures: 0,
           lastSaveSize: metrics.saveSize,
-          serializationTime: metrics.saveTime
+          serializationTime: metrics.saveTime,
         }));
       },
       onSaveError: (error: Error, consecutiveFailures: number) => {
@@ -294,7 +302,7 @@ export const useOptimizedAutoSave = (
         setAutoSaveState(prev => ({
           ...prev,
           lastSaveSuccess: false,
-          consecutiveFailures
+          consecutiveFailures,
         }));
       },
       onAutoSaveDisabled: (reason: string) => {
@@ -302,7 +310,7 @@ export const useOptimizedAutoSave = (
         setAutoSaveState(prev => ({ ...prev, isActive: false }));
       },
       getGameState: () => gameState,
-      hasSignificantChanges: hasSignificantGameChanges
+      hasSignificantChanges: hasSignificantGameChanges,
     };
 
     autoSaveManagerRef.current = new OptimizedAutoSaveManager(autoSaveConfig, callbacks);
@@ -347,15 +355,15 @@ export const useOptimizedAutoSave = (
   }, [autoStart, autoSaveState.isActive]);
 
   // Derived values
-  const isPerformanceOptimal = currentFPS >= fpsThreshold &&
-    performanceMetrics.averageSerializationTime < 20;
+  const isPerformanceOptimal =
+    currentFPS >= fpsThreshold && performanceMetrics.averageSerializationTime < 20;
 
-  const serializationEfficiency = Math.max(0, Math.min(100,
-    100 - (performanceMetrics.averageSerializationTime / 50) * 100
-  ));
+  const serializationEfficiency = Math.max(
+    0,
+    Math.min(100, 100 - (performanceMetrics.averageSerializationTime / 50) * 100)
+  );
 
-  const lastAutoSave = autoSaveState.lastSaveTime > 0 ?
-    new Date(autoSaveState.lastSaveTime) : null;
+  const lastAutoSave = autoSaveState.lastSaveTime > 0 ? new Date(autoSaveState.lastSaveTime) : null;
 
   // Control functions
   const startAutoSave = useCallback(() => {
@@ -396,13 +404,13 @@ export const useOptimizedAutoSave = (
       // Increase interval if serialization is slow
       updateAutoSaveConfig({
         interval: Math.min(autoSaveConfig.interval * 1.5, 300000),
-        debounceTime: Math.min(autoSaveConfig.debounceTime * 1.2, 10000)
+        debounceTime: Math.min(autoSaveConfig.debounceTime * 1.2, 10000),
       });
     } else if (currentMetrics.averageSerializationTime < 10 && currentFPS > 50) {
       // Decrease interval if performance is good
       updateAutoSaveConfig({
         interval: Math.max(autoSaveConfig.interval * 0.8, 120000),
-        debounceTime: Math.max(autoSaveConfig.debounceTime * 0.8, 2000)
+        debounceTime: Math.max(autoSaveConfig.debounceTime * 0.8, 2000),
       });
     }
   }, [autoSaveConfig, currentFPS, updateAutoSaveConfig]);
@@ -439,6 +447,6 @@ export const useOptimizedAutoSave = (
 
     // Performance controls
     optimizePerformance,
-    resetPerformanceMetrics
+    resetPerformanceMetrics,
   };
 };

@@ -30,7 +30,7 @@ let globalPauseState: GamePauseState = {
   isPaused: false,
   pauseReason: null,
   pausedAt: null,
-  totalPausedTime: 0
+  totalPausedTime: 0,
 };
 
 const pauseListeners = new Set<(paused: boolean, reason?: string) => void>();
@@ -47,7 +47,7 @@ export const gamePauseManager = {
         isPaused: true,
         pauseReason: reason,
         pausedAt: timestamp,
-        totalPausedTime: globalPauseState.totalPausedTime
+        totalPausedTime: globalPauseState.totalPausedTime,
       };
 
       // Notify external systems
@@ -83,7 +83,7 @@ export const gamePauseManager = {
         isPaused: false,
         pauseReason: null,
         pausedAt: null,
-        totalPausedTime: globalPauseState.totalPausedTime + pauseDuration
+        totalPausedTime: globalPauseState.totalPausedTime + pauseDuration,
       };
 
       // Resume external systems
@@ -110,11 +110,14 @@ export const gamePauseManager = {
   addListener: (listener: (paused: boolean, reason?: string) => void) => {
     pauseListeners.add(listener);
     return () => pauseListeners.delete(listener);
-  }
+  },
 };
 
 // Store paused intervals and timeouts for resuming
-const pausedTimers = new Map<number, { type: 'interval' | 'timeout'; callback: Function; delay: number; startTime: number }>();
+const pausedTimers = new Map<
+  number,
+  { type: 'interval' | 'timeout'; callback: Function; delay: number; startTime: number }
+>();
 let originalSetInterval: typeof setInterval;
 let originalSetTimeout: typeof setTimeout;
 let originalClearInterval: typeof clearInterval;
@@ -141,7 +144,7 @@ function pauseOtherSystems(options: GamePauseOptions) {
           type: 'interval',
           callback,
           delay,
-          startTime: Date.now()
+          startTime: Date.now(),
         });
 
         return id;
@@ -160,7 +163,7 @@ function pauseOtherSystems(options: GamePauseOptions) {
           type: 'timeout',
           callback,
           delay,
-          startTime: Date.now()
+          startTime: Date.now(),
         });
 
         return id;
@@ -233,7 +236,7 @@ export const useGamePause = (): GamePauseManager => {
       pauseBackgroundProcesses: true,
       pauseAnimations: false, // Keep UI animations for better UX
       pauseAudio: false, // Keep audio unless specifically requested
-      ...options
+      ...options,
     });
   }, []);
 
@@ -259,7 +262,7 @@ export const useGamePause = (): GamePauseManager => {
     resumeGame,
     isPausedForReason,
     getTotalPausedTime,
-    addPauseListener
+    addPauseListener,
   };
 };
 
@@ -276,7 +279,7 @@ export const useInventoryPause = () => {
         pauseExplorationTimers: true,
         pauseBackgroundProcesses: true,
         pauseAnimations: false,
-        pauseAudio: false
+        pauseAudio: false,
       });
     }
   }, [state.currentScreen, state.currentEncounter, pauseGame]);
@@ -296,7 +299,7 @@ export const useInventoryPause = () => {
     pauseForInventory,
     resumeFromInventory,
     shouldPauseForInventory,
-    isInventoryPaused: isPausedForReason('inventory')
+    isInventoryPaused: isPausedForReason('inventory'),
   };
 };
 

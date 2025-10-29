@@ -23,7 +23,7 @@ jest.mock('./animationRegistry', () => {
         return () => clearTimeout(timer);
       }
     }, [onComplete]);
-    return <div data-testid="mock-animation">Fallback Animation</div>;
+    return <div data-testid='mock-animation'>Fallback Animation</div>;
   };
 
   return {
@@ -49,7 +49,7 @@ const MockAnimation = jest.fn<React.ReactElement, [AnimationComponentProps]>(
     }, [onComplete]);
 
     return (
-      <div data-testid="mock-animation">
+      <div data-testid='mock-animation'>
         Animation: ({casterX}, {casterY}) → ({targetX}, {targetY})
       </div>
     );
@@ -66,7 +66,7 @@ const FastMockAnimation = jest.fn<React.ReactElement, [AnimationComponentProps]>
       }
     }, [onComplete]);
 
-    return <div data-testid="fast-animation">Fast Animation</div>;
+    return <div data-testid='fast-animation'>Fast Animation</div>;
   }
 );
 
@@ -80,7 +80,7 @@ const SlowMockAnimation = jest.fn<React.ReactElement, [AnimationComponentProps]>
       }
     }, [onComplete]);
 
-    return <div data-testid="slow-animation">Slow Animation</div>;
+    return <div data-testid='slow-animation'>Slow Animation</div>;
   }
 );
 
@@ -93,7 +93,7 @@ const NeverCompleteAnimation = jest.fn<React.ReactElement, [AnimationComponentPr
       completeFnRef.current = onComplete;
     }, [onComplete]);
 
-    return <div data-testid="never-complete-animation">Never Completes</div>;
+    return <div data-testid='never-complete-animation'>Never Completes</div>;
   }
 );
 
@@ -136,9 +136,7 @@ describe('AnimationController', () => {
 
   describe('Rendering', () => {
     it('renders nothing when isActive is false', () => {
-      const { container } = render(
-        <AnimationController {...defaultProps} isActive={false} />
-      );
+      const { container } = render(<AnimationController {...defaultProps} isActive={false} />);
       expect(container.firstChild).toBeNull();
     });
 
@@ -157,7 +155,7 @@ describe('AnimationController', () => {
         type: 'projectile',
       });
 
-      render(<AnimationController {...defaultProps} attackType="ice" />);
+      render(<AnimationController {...defaultProps} attackType='ice' />);
 
       await waitFor(() => {
         expect(mockGetAnimationMetadata).toHaveBeenCalledWith('ice');
@@ -226,9 +224,7 @@ describe('AnimationController', () => {
     });
 
     it('changes state from idle → playing → complete', async () => {
-      const { rerender } = render(
-        <AnimationController {...defaultProps} isActive={false} />
-      );
+      const { rerender } = render(<AnimationController {...defaultProps} isActive={false} />);
 
       // Initially idle (nothing rendered)
       expect(screen.queryByTestId('mock-animation')).not.toBeInTheDocument();
@@ -332,7 +328,7 @@ describe('AnimationController', () => {
       // Spy on console.warn
       const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
 
-      render(<AnimationController {...defaultProps} attackType="unknown_spell" />);
+      render(<AnimationController {...defaultProps} attackType='unknown_spell' />);
 
       await waitFor(() => {
         expect(screen.getByTestId('mock-animation')).toBeInTheDocument();
@@ -348,7 +344,7 @@ describe('AnimationController', () => {
 
       const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
 
-      render(<AnimationController {...defaultProps} attackType="unmapped_attack" />);
+      render(<AnimationController {...defaultProps} attackType='unmapped_attack' />);
 
       await waitFor(() => {
         expect(warnSpy).toHaveBeenCalledWith(
@@ -369,7 +365,7 @@ describe('AnimationController', () => {
 
       // Render and trigger warning
       const { rerender } = render(
-        <AnimationController {...defaultProps} attackType="unmapped_spell" />
+        <AnimationController {...defaultProps} attackType='unmapped_spell' />
       );
 
       await waitFor(() => {
@@ -394,7 +390,7 @@ describe('AnimationController', () => {
       rerender(
         <AnimationController
           {...defaultProps}
-          attackType="unmapped_spell"
+          attackType='unmapped_spell'
           onComplete={secondOnComplete}
           isActive={false}
         />
@@ -403,7 +399,7 @@ describe('AnimationController', () => {
       rerender(
         <AnimationController
           {...defaultProps}
-          attackType="unmapped_spell"
+          attackType='unmapped_spell'
           onComplete={secondOnComplete}
           isActive={true}
         />
@@ -456,7 +452,7 @@ describe('AnimationController', () => {
       rerender(
         <AnimationController
           {...defaultProps}
-          attackType="ice"
+          attackType='ice'
           onComplete={jest.fn()}
           attackData={{
             ...defaultProps.attackData,
@@ -470,9 +466,7 @@ describe('AnimationController', () => {
 
       // Should log that animation is being queued
       await waitFor(() => {
-        expect(logSpy).toHaveBeenCalledWith(
-          expect.stringContaining('Queueing animation')
-        );
+        expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Queueing animation'));
       });
 
       process.env.NODE_ENV = originalEnv;
@@ -500,7 +494,7 @@ describe('AnimationController', () => {
       rerender(
         <AnimationController
           {...defaultProps}
-          attackType="ice"
+          attackType='ice'
           onComplete={jest.fn()}
           attackData={{
             ...defaultProps.attackData,
@@ -557,9 +551,7 @@ describe('AnimationController', () => {
 
       // Should warn about queue being full
       await waitFor(() => {
-        expect(warnSpy).toHaveBeenCalledWith(
-          expect.stringContaining('Queue full')
-        );
+        expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('Queue full'));
       });
 
       process.env.NODE_ENV = originalEnv;
@@ -610,7 +602,7 @@ describe('AnimationController', () => {
       rerender(
         <AnimationController
           {...defaultProps}
-          attackType="ice"
+          attackType='ice'
           onComplete={queuedComplete}
           attackData={{
             ...defaultProps.attackData,
@@ -725,9 +717,7 @@ describe('AnimationController', () => {
       expect(screen.queryByTestId('mock-animation')).not.toBeInTheDocument();
 
       // Activate animation
-      rerender(
-        <AnimationController {...defaultProps} onComplete={onComplete} isActive={true} />
-      );
+      rerender(<AnimationController {...defaultProps} onComplete={onComplete} isActive={true} />);
 
       // Should transition to playing and render animation
       await waitFor(() => {
@@ -810,9 +800,7 @@ describe('AnimationController', () => {
       render(<AnimationController {...defaultProps} />);
 
       await waitFor(() => {
-        expect(logSpy).toHaveBeenCalledWith(
-          expect.stringContaining('Starting animation: fire')
-        );
+        expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Starting animation: fire'));
       });
 
       logSpy.mockRestore();
@@ -825,9 +813,7 @@ describe('AnimationController', () => {
 
       await waitFor(
         () => {
-          expect(logSpy).toHaveBeenCalledWith(
-            expect.stringContaining('Animation complete')
-          );
+          expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Animation complete'));
         },
         { timeout: 200 }
       );
@@ -853,7 +839,7 @@ describe('AnimationController', () => {
       rerender(
         <AnimationController
           {...defaultProps}
-          attackType="ice"
+          attackType='ice'
           attackData={{
             ...defaultProps.attackData,
             casterX: 150,
@@ -862,9 +848,7 @@ describe('AnimationController', () => {
       );
 
       await waitFor(() => {
-        expect(logSpy).toHaveBeenCalledWith(
-          expect.stringContaining('Queueing animation')
-        );
+        expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Queueing animation'));
       });
 
       logSpy.mockRestore();
@@ -877,9 +861,7 @@ describe('AnimationController', () => {
 
       unmount();
 
-      expect(logSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Cleaned up on unmount')
-      );
+      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Cleaned up on unmount'));
 
       logSpy.mockRestore();
     });
