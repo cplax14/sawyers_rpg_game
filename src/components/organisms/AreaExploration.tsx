@@ -21,14 +21,38 @@ interface ExplorationResult {
   message: string;
 }
 
+/**
+ * Area completion requirements for story flag progression
+ * Maps area IDs to their completion story flags
+ */
+const AREA_COMPLETION_FLAGS: Record<
+  string,
+  {
+    flag: string;
+    encountersRequired: number;
+    description: string;
+  }
+> = {
+  forest_path: {
+    flag: 'forest_path_cleared',
+    encountersRequired: 3, // Complete 3 encounters to clear the area
+    description: 'Forest Path Cleared',
+  },
+  plains: {
+    flag: 'plains_explored',
+    encountersRequired: 3, // Complete 3 encounters to explore thoroughly
+    description: 'Grassy Plains Explored',
+  },
+};
+
 export const AreaExploration: React.FC<AreaExplorationProps> = ({ className }) => {
   const { getAreaById } = useAreas();
   const { player } = usePlayer();
-  const { currentAreaId, changeArea } = useWorld();
+  const { currentAreaId, changeArea, hasStoryFlag, setStoryFlag } = useWorld();
   const { navigateToScreen } = useUI();
   const { startCombat } = useCombat();
   const isMobile = useIsMobile();
-  const { state: gameState, discoverShop, unlockShop, openShop } = useReactGame();
+  const { state: gameState, discoverShop, unlockShop, openShop, incrementAreaEncounters } = useReactGame();
 
   // Calculate player level from XP (source of truth)
   const playerLevel = player?.experience
@@ -43,10 +67,33 @@ export const AreaExploration: React.FC<AreaExplorationProps> = ({ className }) =
   const [showShopDiscovery, setShowShopDiscovery] = useState<Shop | null>(null);
   const [explorationProgress, setExplorationProgress] = useState<number>(0);
 
+  // Use global area encounter tracking from game state
+  const areaEncounterCount = gameState.areaEncounters || {};
+  const [showAreaCompletionNotification, setShowAreaCompletionNotification] = useState<string | null>(null);
+
   // Get current area data
   const currentArea = useMemo(() => {
     return currentAreaId ? getAreaById(currentAreaId) : null;
   }, [currentAreaId, getAreaById]);
+
+  // DEBUG: Monitor story flags and area encounters
+  useEffect(() => {
+    if (currentAreaId) {
+      const completionReq = AREA_COMPLETION_FLAGS[currentAreaId];
+      if (completionReq) {
+        const currentCount = areaEncounterCount[currentAreaId] || 0;
+        const flagSet = hasStoryFlag ? hasStoryFlag(completionReq.flag) : false;
+
+        console.log(`📍 [AREA MONITOR] ${currentAreaId} status:`, {
+          encounters: currentCount,
+          required: completionReq.encountersRequired,
+          flagName: completionReq.flag,
+          flagSet,
+          allStoryFlags: gameState.storyFlags,
+        });
+      }
+    }
+  }, [currentAreaId, areaEncounterCount, hasStoryFlag, gameState.storyFlags]);
 
   // State for loaded shop data
   const [loadedShops, setLoadedShops] = useState<Shop[]>([]);
@@ -249,11 +296,82 @@ export const AreaExploration: React.FC<AreaExplorationProps> = ({ className }) =
   }, [isExploring, generateExplorationResult, shopStatus, discoverShop]);
 
   const handleCombat = useCallback(() => {
-    if (currentEncounter) {
+    if (currentEncounter && currentAreaId) {
+      // DEBUG: Log combat initiation
+      console.log(`⚔️ [COMBAT] Starting combat in area: ${currentAreaId}`, {
+        species: currentEncounter.species,
+        level: currentEncounter.level,
+      });
+
       startCombat(currentEncounter.species, currentEncounter.level);
       setCurrentEncounter(null);
+
+      // Increment encounter count in global state IMMEDIATELY when starting combat
+      // This ensures the count persists even if the component remounts
+      incrementAreaEncounters(currentAreaId);
+
+      // Get the updated encounter count (will be incremented in the next render)
+      const currentCount = (areaEncounterCount[currentAreaId] || 0);
+      const newCount = currentCount + 1; // Predict the new count
+
+      // DEBUG: Log encounter count
+      console.log(`📊 [AREA PROGRESS] Encounter count for ${currentAreaId}:`, newCount);
+
+      // Check if this area has completion requirements
+      const completionReq = AREA_COMPLETION_FLAGS[currentAreaId];
+      if (completionReq) {
+        const encountersCompleted = newCount;
+
+        // DEBUG: Log completion check
+        console.log(`🔍 [AREA COMPLETION] Checking completion for ${currentAreaId}:`, {
+          encountersCompleted,
+          required: completionReq.encountersRequired,
+          flagName: completionReq.flag,
+          hasStoryFlagFunction: typeof hasStoryFlag,
+          setStoryFlagFunction: typeof setStoryFlag,
+        });
+
+        // Check if we've met the encounter requirement and flag isn't already set
+        if (encountersCompleted >= completionReq.encountersRequired && hasStoryFlag) {
+          const flagAlreadySet = hasStoryFlag(completionReq.flag);
+
+          // DEBUG: Log flag status
+          console.log(`🚩 [STORY FLAG] Flag "${completionReq.flag}" status:`, {
+            alreadySet: flagAlreadySet,
+            willSet: !flagAlreadySet && !!setStoryFlag,
+          });
+
+          if (!flagAlreadySet && setStoryFlag) {
+            console.log(`✅ [AREA COMPLETE] Setting story flag "${completionReq.flag}" after ${encountersCompleted} encounters`);
+
+            // Set the story flag
+            setStoryFlag(completionReq.flag, true);
+
+            // VERIFY: Check if flag was set immediately after
+            setTimeout(() => {
+              const isNowSet = hasStoryFlag(completionReq.flag);
+              console.log(`🔍 [FLAG VERIFICATION] Flag "${completionReq.flag}" verification:`, {
+                isSet: isNowSet,
+                timestamp: new Date().toISOString(),
+              });
+            }, 100);
+
+            // Show completion notification
+            setShowAreaCompletionNotification(completionReq.description);
+
+            // Auto-dismiss notification after 5 seconds
+            setTimeout(() => {
+              setShowAreaCompletionNotification(null);
+            }, 5000);
+          } else if (flagAlreadySet) {
+            console.log(`ℹ️ [AREA COMPLETE] Flag "${completionReq.flag}" already set, skipping notification`);
+          }
+        }
+      } else {
+        console.log(`ℹ️ [AREA PROGRESS] No completion requirements for area: ${currentAreaId}`);
+      }
     }
-  }, [currentEncounter, startCombat]);
+  }, [currentEncounter, currentAreaId, startCombat, hasStoryFlag, setStoryFlag, incrementAreaEncounters, areaEncounterCount]);
 
   const handleFlee = useCallback(() => {
     setCurrentEncounter(null);
@@ -855,6 +973,44 @@ export const AreaExploration: React.FC<AreaExplorationProps> = ({ className }) =
       <AnimatePresence>
         {currentTradeAreaId && (
           <NPCTradeInterface areaId={currentTradeAreaId} onClose={handleCloseTrade} />
+        )}
+      </AnimatePresence>
+
+      {/* Area Completion Notification */}
+      <AnimatePresence>
+        {showAreaCompletionNotification && (
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -50 }}
+            style={{
+              position: 'fixed',
+              top: '20px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              background: 'linear-gradient(135deg, #10b981, #059669)',
+              color: '#ffffff',
+              padding: '1.5rem 2rem',
+              borderRadius: '12px',
+              boxShadow: '0 8px 32px rgba(16, 185, 129, 0.5)',
+              border: '2px solid rgba(255, 255, 255, 0.3)',
+              zIndex: 2000,
+              minWidth: '300px',
+              textAlign: 'center',
+              backdropFilter: 'blur(10px)',
+            }}
+          >
+            <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🎉</div>
+            <h3 style={{ margin: '0 0 0.5rem', fontSize: '1.3rem', fontWeight: 'bold' }}>
+              Area Complete!
+            </h3>
+            <p style={{ margin: 0, fontSize: '1rem', opacity: 0.95 }}>
+              {showAreaCompletionNotification}
+            </p>
+            <p style={{ margin: '0.5rem 0 0', fontSize: '0.9rem', opacity: 0.8 }}>
+              New areas may now be accessible!
+            </p>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

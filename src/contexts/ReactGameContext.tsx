@@ -179,6 +179,7 @@ export interface ReactGameState {
   unlockedAreas: string[];
   completedQuests: string[];
   storyFlags: Record<string, boolean>;
+  areaEncounters: Record<string, number>; // Track encounters per area for progression
 
   // Legacy collections (for backward compatibility)
   inventory: ReactItem[];
@@ -302,6 +303,7 @@ export type ReactGameAction =
   | { type: 'SET_CURRENT_AREA'; payload: string }
   | { type: 'UNLOCK_AREA'; payload: { areaId: string } }
   | { type: 'SET_STORY_FLAG'; payload: { flag: string; value: boolean } }
+  | { type: 'INCREMENT_AREA_ENCOUNTERS'; payload: { areaId: string } }
   | { type: 'COMPLETE_QUEST'; payload: { questId: string } }
   | { type: 'ADD_ITEM'; payload: { item: ReactItem; quantity: number } }
   | { type: 'REMOVE_ITEM'; payload: { itemId: string; quantity: number } }
@@ -520,6 +522,7 @@ const initialState: ReactGameState = {
   unlockedAreas: ['starting_village'],
   completedQuests: [],
   storyFlags: {},
+  areaEncounters: {}, // Track encounters per area for progression
   inventory: [],
   capturedMonsters: [],
   isLoading: false,
@@ -688,6 +691,18 @@ function reactGameReducer(state: ReactGameState, action: ReactGameAction): React
         ...state,
         storyFlags: { ...state.storyFlags, [action.payload.flag]: action.payload.value },
       };
+
+    case 'INCREMENT_AREA_ENCOUNTERS': {
+      const currentCount = state.areaEncounters[action.payload.areaId] || 0;
+      console.log(`📊 [AREA ENCOUNTERS] Incrementing ${action.payload.areaId}: ${currentCount} → ${currentCount + 1}`);
+      return {
+        ...state,
+        areaEncounters: {
+          ...state.areaEncounters,
+          [action.payload.areaId]: currentCount + 1,
+        },
+      };
+    }
 
     case 'COMPLETE_QUEST':
       if (state.completedQuests.includes(action.payload.questId)) return state;
@@ -2148,6 +2163,7 @@ interface ReactGameContextType {
 
   navigateToArea: (areaId: string) => void;
   unlockArea: (areaId: string) => void;
+  incrementAreaEncounters: (areaId: string) => void;
   addItems: (items: ReactItem[]) => void;
   removeItem: (itemId: string, quantity?: number) => void;
   useItem: (itemId: string) => void;
@@ -2362,6 +2378,10 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
 
   const unlockArea = (areaId: string) => {
     dispatch({ type: 'UNLOCK_AREA', payload: { areaId } });
+  };
+
+  const incrementAreaEncounters = (areaId: string) => {
+    dispatch({ type: 'INCREMENT_AREA_ENCOUNTERS', payload: { areaId } });
   };
 
   const addItems = (items: ReactItem[]) => {
@@ -2866,6 +2886,7 @@ export const ReactGameProvider: React.FC<ReactGameProviderProps> = ({ children }
     unequipItem,
     navigateToArea,
     unlockArea,
+    incrementAreaEncounters,
     addItems,
     removeItem,
     useItem,

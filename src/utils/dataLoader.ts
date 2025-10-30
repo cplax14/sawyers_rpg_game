@@ -589,24 +589,29 @@ export class GameDataLoader {
 
   /**
    * Transform unlock requirements to normalized format
+   * Preserves complex AND/OR logic from areas.js for proper unlock evaluation
    */
   private transformUnlockRequirements(requirements: any): UnlockRequirement {
     if (!requirements || typeof requirements !== 'object') {
       return {};
     }
 
-    const normalized: UnlockRequirement = {};
+    // Pass through the requirements object as-is to preserve complex AND/OR logic
+    // The AreaData.isAreaUnlocked function handles the evaluation
+    // We just need to ensure basic structure is valid
+    const normalized: UnlockRequirement = { ...requirements };
 
-    if (requirements.story) {
+    // Normalize simple fields for backward compatibility
+    if (requirements.story && !normalized.story) {
       normalized.story = this.sanitizeString(requirements.story);
     }
-    if (typeof requirements.level === 'number') {
+    if (typeof requirements.level === 'number' && !normalized.level) {
       normalized.level = Math.max(1, requirements.level);
     }
-    if (requirements.item) {
+    if (requirements.item && !normalized.items) {
       normalized.items = [this.sanitizeString(requirements.item)];
     }
-    if (requirements.items) {
+    if (requirements.items && Array.isArray(requirements.items)) {
       normalized.items = this.sanitizeStringArray(requirements.items);
     }
 

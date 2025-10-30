@@ -265,40 +265,62 @@ export const WorldMap: React.FC<WorldMapProps> = ({ onAreaEnter, className }) =>
       accessible: boolean;
       reason?: string;
     } => {
-      // Always accessible if unlocked
+      // DEBUG: Log accessibility check for key areas
+      if (area.id === 'deep_forest' || area.id === 'forest_path') {
+        console.log(`🔓 [ACCESSIBILITY] Checking ${area.name} (${area.id}):`, {
+          areaUnlocked: area.unlocked,
+          isAreaUnlockedResult: isAreaUnlocked(area.id),
+          requirements: area.unlockRequirements,
+          playerLevel,
+          storyFlags: gameState.storyFlags,
+        });
+      }
+
+      // Always accessible if area is marked as unlocked or if isAreaUnlocked returns true
+      // The isAreaUnlocked function handles all complex unlock logic from AreaData.js
       if (area.unlocked || isAreaUnlocked(area.id)) {
+        if (area.id === 'deep_forest' || area.id === 'forest_path') {
+          console.log(`✅ [ACCESSIBILITY] ${area.name} is ACCESSIBLE`);
+        }
         return { accessible: true };
       }
 
-      // Check if connected to current area
-      const isConnected = currentArea?.connections.includes(area.id);
-      if (!isConnected) {
-        return {
-          accessible: false,
-          reason: 'Not connected to current area',
-        };
-      }
-
-      // Check unlock requirements
+      // Area is locked - determine why for user feedback
       const requirements = area.unlockRequirements;
+      const reasons: string[] = [];
 
+      // Check level requirement
       if (requirements.level && playerLevel < requirements.level) {
-        return {
-          accessible: false,
-          reason: `Requires level ${requirements.level}`,
-        };
+        reasons.push(`Level ${requirements.level} required (current: ${playerLevel})`);
       }
 
+      // Check story requirement
       if (requirements.story && !hasStoryFlag(requirements.story)) {
-        return {
-          accessible: false,
-          reason: 'Story requirements not met',
-        };
+        const flagStatus = hasStoryFlag(requirements.story);
+        console.log(`🚩 [STORY FLAG CHECK] ${area.name} requires flag "${requirements.story}":`, {
+          hasFlag: flagStatus,
+          allFlags: gameState.storyFlags,
+        });
+        reasons.push(`Complete: ${requirements.story.replace(/_/g, ' ')}`);
       }
 
-      return { accessible: true };
+      // Check item requirements (if present in requirements object)
+      if (requirements.items && Array.isArray(requirements.items)) {
+        reasons.push(`Required items: ${requirements.items.join(', ')}`);
+      }
+
+      // DEBUG: Log locked status for key areas
+      if (area.id === 'deep_forest' || area.id === 'forest_path') {
+        console.log(`🔒 [ACCESSIBILITY] ${area.name} is LOCKED:`, reasons);
+      }
+
+      // Return locked with detailed reason
+      return {
+        accessible: false,
+        reason: reasons.length > 0 ? reasons.join(', ') : 'Unlock requirements not met',
+      };
     },
-    [isAreaUnlocked, currentArea, playerLevel, hasStoryFlag]
+    [isAreaUnlocked, playerLevel, hasStoryFlag, gameState.storyFlags]
   );
 
   if (isLoading) {
