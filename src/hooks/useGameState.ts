@@ -144,12 +144,21 @@ export const useWorld = () => {
 
   const setStoryFlag = useCallback(
     (flag: string, value: boolean = true) => {
+      // DEBUG: Log story flag being set
+      console.log(`🚩 [SET_STORY_FLAG] Setting flag "${flag}" to ${value}`, {
+        currentFlags: state.storyFlags,
+        timestamp: new Date().toISOString(),
+      });
+
       dispatch({
         type: 'SET_STORY_FLAG',
         payload: { flag, value },
       });
+
+      // DEBUG: Verify the flag after dispatch (will show in next render)
+      console.log(`✅ [SET_STORY_FLAG] Dispatch completed for flag "${flag}"`);
     },
-    [dispatch]
+    [dispatch, state.storyFlags]
   );
 
   const completeQuest = useCallback(
@@ -181,7 +190,18 @@ export const useWorld = () => {
 
   const hasStoryFlag = useCallback(
     (flag: string): boolean => {
-      return state.storyFlags[flag] === true;
+      const hasFlag = state.storyFlags[flag] === true;
+
+      // DEBUG: Log flag checks for area-related flags
+      if (flag.includes('forest') || flag.includes('cleared') || flag.includes('complete')) {
+        console.log(`🔍 [HAS_STORY_FLAG] Checking flag "${flag}":`, {
+          hasFlag,
+          flagValue: state.storyFlags[flag],
+          allFlags: state.storyFlags,
+        });
+      }
+
+      return hasFlag;
     },
     [state.storyFlags]
   );
